@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>まもボート FIX v1.0</title>
+<style>
+:root{--navy:#0b2f4a;--teal:#118f89;--bg:#f3f7f9;--line:#d7e4e9;--muted:#6b7c87;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:#102735}
+button,input,select{font:inherit}.app{max-width:760px;margin:auto;padding-bottom:92px}.top{position:sticky;top:0;z-index:20;background:#f3f7f9f5;border-bottom:1px solid var(--line);padding:14px 16px}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,var(--navy),var(--teal));font-size:29px}.brand h1{font-size:24px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}
+main{padding:14px}.screen{display:none}.screen.active{display:block}.grid{display:grid;gap:11px}.two{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:15px;box-shadow:0 7px 22px rgba(11,47,74,.06)}.eyebrow{font-weight:800;color:var(--teal);font-size:12px}.metric{font-size:29px;font-weight:900;margin-top:5px}.muted{color:var(--muted);font-size:13px;line-height:1.55}
+.title{display:flex;justify-content:space-between;align-items:end;margin:18px 2px 9px}.title h2{margin:0;font-size:21px}.title small{color:var(--muted)}
+.btn{border:0;border-radius:14px;min-height:48px;padding:12px 14px;font-weight:850}.primary{background:var(--navy);color:#fff}.teal{background:var(--teal);color:#fff}.secondary{background:#eef4f6;color:var(--navy);border:1px solid var(--line)}.danger{background:#fff0f0;color:#a74343;border:1px solid #efcccc}.full{width:100%}
+.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px max(10px,env(safe-area-inset-bottom));z-index:50}
+.nav{border:0;background:transparent;border-radius:13px;padding:7px 2px;color:#73838d;font-size:11px;font-weight:800}.nav span{display:block;font-size:21px}.nav.active{background:#e8f6f4;color:var(--navy)}
+.race{display:grid;gap:11px}.racehead{display:flex;justify-content:space-between;gap:10px}.racename{font-size:22px;font-weight:900}.count{font-weight:900;color:var(--navy)}
+.boats{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.boat{padding:8px 2px;border-radius:11px;text-align:center;font-size:10px;font-weight:800}.boat b{display:block;font-size:19px}
+.b1{background:#fff;border:1px solid #cad5da}.b2{background:#2e3439;color:#fff}.b3{background:#d94c4c;color:#fff}.b4{background:#4870d4;color:#fff}.b5{background:#e6c139}.b6{background:#45a56b;color:#fff}
+.pills{display:flex;flex-wrap:wrap;gap:6px}.pill{background:#eef4f6;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:800}.pill.t{background:#e5f6f4;color:#08716c}
+.choicegrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.choice{border:2px solid transparent;border-radius:11px;padding:10px 0;font-weight:900}.choice.sel{border-color:var(--teal);outline:3px solid #118f8922}.choice.used{opacity:.28}
+.rank{margin:12px 0}.rank h3{font-size:14px;margin:0 0 7px}.amount{display:grid;grid-template-columns:48px 1fr 48px;gap:7px}.amount input{width:100%;border:1px solid var(--line);border-radius:12px;text-align:center;font-size:19px;font-weight:900}.square{border:1px solid var(--line);border-radius:12px;background:#edf4f6;font-size:22px;font-weight:900}
+.notice{background:#eef5f8;border:1px solid #d4e3e9;border-radius:14px;padding:12px;font-size:13px;line-height:1.55}.good{background:#edf8f3;border-color:#c9e6d9;color:#23694f}.warn{background:#fff7e8;border-color:#ecd9a8;color:#765814}
+.modalbg{position:fixed;inset:0;background:#071e2c88;z-index:90;display:none;align-items:flex-end;padding:14px}.modalbg.show{display:flex}.modal{max-width:620px;width:100%;margin:auto;background:#fff;border-radius:22px;padding:18px;max-height:88vh;overflow:auto}.modal h2{margin:0 0 10px}.slider{width:100%}.imp{font-size:30px;font-weight:900;text-align:center;color:var(--navy)}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row .btn{flex:1 1 130px}.record{display:grid;gap:9px}.rec{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}.recgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;margin-top:8px}
+.onboard{position:fixed;inset:0;z-index:120;background:#edf6f8;padding:20px;overflow:auto;display:none}.onboard.show{display:block}.oncard{max-width:620px;margin:5vh auto;background:#fff;border:1px solid var(--line);border-radius:24px;padding:22px}.check{display:flex;gap:10px;padding:11px 0}.check input{width:22px;height:22px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}.hidden{display:none!important}
+@media(max-width:390px){.metric{font-size:25px}.card{padding:13px}.boats{gap:3px}.boat{font-size:9px}.choicegrid{gap:3px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand"><div class="logo">⛵</div><div><h1>まもボート <span style="font-size:12px;color:#118f89">FIX v1.0</span></h1><p>舟券は仮想。現金は守る。</p></div></div>
+</header>
+
+<main>
+<section id="home" class="screen active">
+  <div class="grid two">
+    <div class="card"><div class="eyebrow">仮想コイン残高</div><div id="hCoins" class="metric">10,000C</div><div class="muted">金銭的価値はありません。</div></div>
+    <div class="card"><div class="eyebrow">今週 守った推定金額</div><div id="hWeek" class="metric">0円</div></div>
+    <div class="card"><div class="eyebrow">累計 守った推定金額</div><div id="hTotal" class="metric">0円</div></div>
+    <div class="card"><div class="eyebrow">買わなかった日数</div><div id="hDays" class="metric">0日</div></div>
+    <div class="card"><div class="eyebrow">仮想投票回数</div><div id="hBets" class="metric">0回</div></div>
+    <div class="card"><div class="eyebrow">仮想回収率</div><div id="hRoi" class="metric">—</div></div>
+  </div>
+  <div class="title"><h2>直近の行動傾向</h2><small>診断ではありません</small></div>
+  <div class="card"><div id="hTrend" class="notice">まだ記録がありません。</div></div>
+  <div class="title"><h2>セーブ航海</h2><small>7日で灯台</small></div>
+  <div class="card"><div style="height:120px;border-radius:16px;background:linear-gradient(#d7eef4 0 56%,#2d8295 56%);position:relative;overflow:hidden"><div style="position:absolute;left:7%;bottom:23px;font-size:34px">⛵</div><div style="position:absolute;right:9%;bottom:42px;font-size:40px">🗼</div><div style="position:absolute;left:14%;right:16%;bottom:39px;border-top:3px dashed #ffffffcc"></div></div><p class="muted">実際の舟券を買わなかった日の記録で進みます。仮想的中だけでは進みません。</p></div>
+</section>
+
+<section id="race" class="screen">
+  <div class="title"><h2>レース</h2><small>架空データ</small></div>
+  <div id="raceList" class="grid"></div>
+  <div id="raceDetail"></div>
+</section>
+
+<section id="record" class="screen">
+  <div class="title"><h2>今日の実購入額</h2><small>任意・1日1回</small></div>
+  <div class="card">
+    <select id="actualSpend" style="width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 10px">
+      <option value="">選択してください</option><option value="0">0円</option><option value="1">1円〜1,000円</option><option value="2">1,001円〜5,000円</option><option value="3">5,001円〜10,000円</option><option value="4">10,001円以上</option><option value="x">回答しない</option>
+    </select>
+    <button class="btn primary full" style="margin-top:9px" onclick="saveActualSpend()">今日の記録を保存</button>
+    <div id="actualMsg" class="muted" style="margin-top:8px"></div>
+  </div>
+  <div class="title"><h2>仮想舟券の記録</h2><small id="recCount">0件</small></div>
+  <div id="records" class="record"></div>
+</section>
+
+<section id="analysis" class="screen">
+  <div class="title"><h2>現在の記録から見られる行動傾向</h2><small>ルールベース</small></div>
+  <div id="analysisCards" class="grid two"></div>
+  <div id="analysisText" class="grid" style="margin-top:12px"></div>
+  <div class="title"><h2>プレミアム機能・準備中</h2><small>月500円予定</small></div>
+  <div class="card"><div class="notice good"><b>月500円で、賭け方ではなく、自分の行動パターンを分析します。</b><br><br>個人別行動分析 / 追い上げ傾向 / 危険な時間帯・場・レース番号 / 個人別クールダウン / 週次・月次AIレポート / データ書き出し</div></div>
+</section>
+
+<section id="settings" class="screen">
+  <div class="title"><h2>設定</h2></div>
+  <div class="card">
+    <label class="eyebrow">週に使える仮想コイン上限</label>
+    <select id="weeklyLimit" onchange="changeWeekly()" style="width:100%;min-height:46px;margin:7px 0 14px;border:1px solid var(--line);border-radius:12px;padding:0 10px"><option>3000</option><option>5000</option><option>7000</option><option selected>10000</option></select>
+    <label class="eyebrow">1レースの仮想購入上限</label>
+    <select id="raceLimit" onchange="changeRaceLimit()" style="width:100%;min-height:46px;margin:7px 0 14px;border:1px solid var(--line);border-radius:12px;padding:0 10px"><option>500</option><option>1000</option><option>2000</option><option selected>3000</option><option>5000</option></select>
+    <button class="btn secondary full" onclick="exportData()">データを書き出す</button>
+    <button class="btn danger full" style="margin-top:9px" onclick="confirmReset()">デモデータを初期化する</button>
+  </div>
+  <div class="title"><h2>利用上の注意</h2></div>
+  <div class="card"><div class="notice">実際の舟券購入機能、投票サイトへのリンク、換金、仮想コイン販売・譲渡機能はありません。20歳未満は利用対象外です。医療診断・依存症治療を目的としたアプリではありません。</div></div>
+</section>
+</main>
+
+<nav class="bottom">
+<button id="nav-home" class="nav active" onclick="goTab('home')"><span>⌂</span>ホーム</button>
+<button id="nav-race" class="nav" onclick="goTab('race')"><span>⚑</span>レース</button>
+<button id="nav-record" class="nav" onclick="goTab('record')"><span>▤</span>記録</button>
+<button id="nav-analysis" class="nav" onclick="goTab('analysis')"><span>◔</span>分析</button>
+<button id="nav-settings" class="nav" onclick="goTab('settings')"><span>⚙</span>設定</button>
+</nav>
+</div>
+
+<div id="onboard" class="onboard">
+<div class="oncard"><div class="logo">⛵</div><h1>まもボート</h1><p class="muted" style="font-size:15px">まもボートは、実際の舟券を買わずに仮想舟券を楽しみ、自分の行動傾向を振り返るためのアプリです。仮想コインに金銭的価値はなく、換金や購入はできません。</p>
+<label class="check"><input id="age" type="checkbox" onchange="checkStart()"><b>私は20歳以上です</b></label>
+<label class="check"><input id="value" type="checkbox" onchange="checkStart()"><b>仮想コインに金銭的価値がないことを理解しました</b></label>
+<button id="start" disabled class="btn primary full" onclick="startApp()">同意して利用開始</button></div>
+</div>
+
+<div id="modalbg" class="modalbg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
+
+<script>
+(function(){
+const KEY="mamoboat_fixed_v1";
+const RACES=[
+ {id:"g10",venue:"蒲郡",no:10,remain:360,rough:"低〜中",conf:72,escape:"1号艇は逃げ傾向がやや高め",condition:"1号艇のST安定 / 3号艇のまくり差し指数が上向き",ai:[1,3,4],result:[1,3,4],resultOdds:7.0,names:["白石 航平","黒田 蒼真","赤坂 湊","青木 凌","黄瀬 遼","緑川 迅"]},
+ {id:"t11",venue:"常滑",no:11,remain:540,rough:"中〜高",conf:61,escape:"1号艇の逃げ傾向は標準域",condition:"4号艇の展示気配が良い想定 / 内2艇のSTばらつき",ai:[4,1,2],result:[4,1,2],resultOdds:18.4,names:["白浜 直樹","黒木 悠","赤井 律","青山 颯","黄川 海斗","緑谷 蓮"]},
+ {id:"s12",venue:"住之江",no:12,remain:720,rough:"中",conf:68,escape:"1号艇は逃げ傾向あり。2号艇の差し指数も高め",condition:"2・5号艇のターン評価が高い想定",ai:[2,5,1],result:[2,5,1],resultOdds:12.2,names:["白井 悠斗","黒崎 仁","赤松 輝","青柳 結人","黄島 岳","緑田 理久"]}
+];
+function def(){
+ const now=Date.now(), phases={};RACES.forEach((r,i)=>phases[r.id]={phase:"open",close:now+(r.remain+i*30)*1000});
+ return {accepted:false,coins:10000,weeklyLimit:10000,raceLimit:3000,tickets:[],actual:{},phases,selected:"g10"};
+}
+function load(){try{return Object.assign(def(),JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){return def()}}
+let S=load(),sel=[null,null,null],amt=500;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function fmt(n){return Number(n||0).toLocaleString("ja-JP")}
+function race(id){return RACES.find(x=>x.id===id)}
+function phase(r){const p=S.phases[r.id]||{phase:"open",close:Date.now()+300000};if(p.phase==="open"&&Date.now()>=p.close){p.phase="closed";S.phases[r.id]=p;save()}return p.phase}
+function makePlayable(r){if(!S.phases[r.id]||phase(r)!=="open"){S.phases[r.id]={phase:"open",close:Date.now()+Math.max(300,r.remain)*1000};save()}}
+function sumStake(){return S.tickets.reduce((a,t)=>a+t.stake,0)}
+function sumPay(){return S.tickets.reduce((a,t)=>a+(t.pay||0),0)}
+function roi(){return sumStake()?sumPay()/sumStake()*100:null}
+function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function odds(r,c){if(c.join("-")===r.result.join("-"))return r.resultOdds;return Math.round((6+((c[0]*7+c[1]*5+c[2]*3+r.no)%20)*1.1)*10)/10}
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.id==="nav-"+id))}
+window.goTab=function(id){show(id);if(id==="race")renderRaces();if(id==="record")renderRecords();if(id==="analysis")renderAnalysis();if(id==="home")renderHome();window.scrollTo(0,0)}
+window.checkStart=function(){document.getElementById("start").disabled=!(document.getElementById("age").checked&&document.getElementById("value").checked)}
+window.startApp=function(){S.accepted=true;save();document.getElementById("onboard").classList.remove("show");renderAll()}
+function openModal(h){document.getElementById("modal").innerHTML=h;document.getElementById("modalbg").classList.add("show")}
+window.closeModal=function(){document.getElementById("modalbg").classList.remove("show")}
+window.bgClose=function(e){if(e.target.id==="modalbg")closeModal()}
+function boats(r){return `<div class="boats">${r.names.map((n,i)=>`<div class="boat b${i+1}"><b>${i+1}</b>${n}</div>`).join("")}</div>`}
+function countdown(r){const p=S.phases[r.id];if(!p)return"—";if(p.phase==="result")return"結果確定";if(p.phase==="closed")return"締切済み";let x=Math.max(0,Math.floor((p.close-Date.now())/1000));return `${String(Math.floor(x/60)).padStart(2,"0")}:${String(x%60).padStart(2,"0")}`}
+function renderHome(){
+ document.getElementById("hCoins").textContent=fmt(S.coins)+"C";document.getElementById("hWeek").textContent=fmt(sumStake())+"円";document.getElementById("hTotal").textContent=fmt(sumStake())+"円";
+ document.getElementById("hDays").textContent=Object.values(S.actual).filter(x=>x==="0").length+"日";document.getElementById("hBets").textContent=S.tickets.length+"回";
+ document.getElementById("hRoi").textContent=roi()==null?"—":roi().toFixed(1)+"%";
+ let done=S.tickets.filter(t=>t.after!=null);let d=done.length?done.reduce((a,t)=>a+(t.before-t.after),0)/done.length:null;
+ document.getElementById("hTrend").textContent=d==null?"まだ記録がありません。仮想舟券を使うと、衝動の変化や購入傾向を振り返れます。":d>0.5?`仮想舟券の前後で衝動が平均 ${d.toFixed(1)} 下がっています。`:"現在の記録では、投票前後の衝動に大きな変化は見えていません。";
+}
+function raceCard(r){return `<div class="card race"><div class="racehead"><div><div class="eyebrow">架空レース</div><div class="racename">${r.venue} ${r.no}R</div></div><div><div class="muted">締切まで</div><div class="count" id="cd-${r.id}">${countdown(r)}</div></div></div>${boats(r)}<div class="pills"><span class="pill">荒れやすさ ${r.rough}</span><span class="pill t">AI信頼度 ${r.conf}%</span></div><button class="btn primary full" onclick="openRace('${r.id}')">レースを開く</button></div>`}
+function renderRaces(){document.getElementById("raceList").innerHTML=RACES.map(raceCard).join("");renderDetail(race(S.selected))}
+window.openRace=function(id){S.selected=id;makePlayable(race(id));sel=[null,null,null];amt=500;save();renderRaces();document.getElementById("raceDetail").scrollIntoView({behavior:"smooth",block:"start"})}
+function renderDetail(r){
+ if(!r)return;let ph=phase(r),ts=S.tickets.filter(t=>t.rid===r.id);
+ let builder=ph==="open"?builderHtml(r):`<div class="notice">${ph==="closed"?"締切済みです。下の「このレースを再スタート」で再度デモできます。":"結果確定済みです。"}</div>`;
+ let ai=ph==="open"?`<div class="notice">締切前は具体的なAI買い目は表示しません。</div>`:`<div class="notice good">締切後公開：AIは ${r.ai.join(" - ")} を上位候補としていました。</div>`;
+ let result=ph==="result"?`<div class="title"><h2>結果</h2></div><div class="card"><h2>${r.result.join(" - ")} / ${r.resultOdds.toFixed(1)}倍</h2>${ts.length?ts.map(t=>t.status==="hit"?`<div class="notice good">仮想的中です。${fmt(t.pay)}Cを獲得しました。実際の現金を使わずに楽しめたことも成功です。</div>`:`<div class="notice">今回は外れました。でも、実際の現金${fmt(t.stake)}円を使わずに守れました。</div>`).join(""):"<div class='muted'>このレースでは仮想投票していません。</div>"}</div>`:"";
+ document.getElementById("raceDetail").innerHTML=`<div class="title"><h2>${r.venue} ${r.no}R</h2><small>レース詳細</small></div><div class="card"><div class="grid two"><div class="notice"><b>1号艇の逃げ傾向</b><br>${r.escape}</div><div class="notice"><b>注目条件</b><br>${r.condition}</div></div><div style="margin-top:9px">${ai}</div></div><div class="title"><h2>仮想舟券</h2><small>3連単</small></div><div class="card">${builder}</div>${ts.length?`<div class="title"><h2>このレースの仮想舟券</h2></div><div class="card">${ts.map(t=>`<div class="notice" style="margin-bottom:7px"><b>${t.combo.join(" - ")}</b> / ${fmt(t.stake)}C / ${t.status==="pending"?"締切待ち":t.status==="hit"?"的中":"外れ"}</div>`).join("")}</div>`:""}${result}<div class="title"><h2>デモ操作</h2><small>実時間を待たない</small></div><div class="card"><div class="row"><button class="btn secondary" onclick="demoClose('${r.id}')">締切まで進める</button><button class="btn secondary" onclick="demoResult('${r.id}')">結果を確定する</button><button class="btn secondary" onclick="restartRace('${r.id}')">このレースを再スタート</button><button class="btn secondary" onclick="nextRace('${r.id}')">次のレースへ進む</button></div></div>`;
+ updateChoices(r);
+}
+function builderHtml(r){return `<div class="notice">仮想コインは購入・換金・譲渡できません。残高を使い切っても追加購入できません。</div>${[0,1,2].map(i=>`<div class="rank"><h3>${i+1}着</h3><div class="choicegrid">${[1,2,3,4,5,6].map(n=>`<button id="c-${i}-${n}" class="choice b${n}" onclick="pick(${i},${n},'${r.id}')">${n}</button>`).join("")}</div></div>`).join("")}<div class="rank"><h3>購入額（100C単位）</h3><div class="amount"><button class="square" onclick="chgAmt(-100,'${r.id}')">−</button><input id="amt" value="${amt}" inputmode="numeric" onchange="setAmt(this.value,'${r.id}')"><button class="square" onclick="chgAmt(100,'${r.id}')">＋</button></div></div><div id="preview" class="notice">1着・2着・3着を選択してください。</div><button class="btn teal full" style="margin-top:10px" onclick="review('${r.id}')">仮想舟券を確認</button>`}
+window.pick=function(rank,n,id){sel.forEach((v,i)=>{if(i!==rank&&v===n)sel[i]=null});sel[rank]=n;updateChoices(race(id))}
+window.chgAmt=function(d,id){amt=Math.max(100,Math.floor((amt+d)/100)*100);updateChoices(race(id))}
+window.setAmt=function(v,id){amt=Math.max(100,Math.floor((Number(v)||100)/100)*100);updateChoices(race(id))}
+function updateChoices(r){
+ for(let i=0;i<3;i++)for(let n=1;n<=6;n++){let e=document.getElementById(`c-${i}-${n}`);if(e){e.classList.toggle("sel",sel[i]===n);e.classList.toggle("used",sel.includes(n)&&sel[i]!==n)}}
+ let ai=document.getElementById("amt");if(ai)ai.value=amt;let p=document.getElementById("preview");if(!p)return;
+ if(sel.every(Boolean)){let o=odds(r,sel);p.innerHTML=`3連単 <b>${sel.join(" - ")}</b> / ${fmt(amt)}C / 簡易オッズ ${o.toFixed(1)}倍 / 仮想払戻目安 ${fmt(Math.floor(amt*o))}C`}else p.textContent="1着・2着・3着を選択してください。";
+}
+window.review=function(id){
+ let r=race(id);if(phase(r)!=="open")return alert("締切済みです。");if(!sel.every(Boolean))return alert("1着・2着・3着を選択してください。");
+ let used=S.tickets.filter(t=>t.rid===id).reduce((a,t)=>a+t.stake,0);if(amt>S.coins)return alert("仮想コイン残高が足りません。");if(used+amt>S.raceLimit)return alert("1レースの上限を超えています。");
+ openModal(`<h2>今、実際に舟券を買いたい気持ちはどのくらいですか？</h2><input id="pre" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('pv').textContent=this.value"><div id="pv" class="imp">5</div><div class="notice"><b>${r.venue} ${r.no}R</b><br>3連単 ${sel.join(" - ")} / ${fmt(amt)}C</div><div class="row" style="margin-top:12px"><button class="btn secondary" onclick="closeModal()">戻る</button><button class="btn teal" onclick="place('${id}')">仮想投票する</button></div>`)
+}
+window.place=function(id){let r=race(id),pre=Number(document.getElementById("pre").value),c=[...sel],o=odds(r,c);S.tickets.push({id:"t"+Date.now(),rid:id,venue:r.venue,no:r.no,combo:c,stake:amt,odds:o,before:pre,after:null,status:"pending",pay:0,time:new Date().toISOString()});S.coins-=amt;save();closeModal();sel=[null,null,null];amt=500;renderAll();goTab("race");renderDetail(r)}
+window.demoClose=function(id){S.phases[id].phase="closed";S.phases[id].close=Date.now();save();renderDetail(race(id))}
+window.demoResult=function(id){let r=race(id);S.phases[id].phase="closed";let pending=S.tickets.filter(t=>t.rid===id&&t.status==="pending");pending.forEach(t=>{let hit=t.combo.join("-")===r.result.join("-");t.status=hit?"hit":"miss";t.pay=hit?Math.floor(t.stake*r.resultOdds):0;if(hit)S.coins+=t.pay});S.phases[id].phase="result";save();renderAll();renderDetail(r);if(pending.length)postImpulse(id,pending.map(t=>t.id))}
+function postImpulse(id,ids){let r=race(id),list=S.tickets.filter(t=>ids.includes(t.id)),hit=list.some(t=>t.status==="hit");openModal(`<h2>${r.venue} ${r.no}R 結果：${r.result.join(" - ")}</h2><div class="notice ${hit?"good":""}">${hit?"仮想的中です。実際の現金を使わずに楽しめたことも成功です。":`今回は外れました。でも、実際の現金${fmt(list.reduce((a,t)=>a+t.stake,0))}円を使わずに守れました。`}</div><h3>今、実際に舟券を買いたい気持ちはどのくらいですか？</h3><input id="post" class="slider" type="range" min="0" max="10" value="4" oninput="document.getElementById('postv').textContent=this.value"><div id="postv" class="imp">4</div><button class="btn teal full" onclick="savePost('${id}','${ids.join(",")}')">保存する</button>`)}
+window.savePost=function(id,idstr){let v=Number(document.getElementById("post").value),ids=idstr.split(",");S.tickets.filter(t=>ids.includes(t.id)).forEach(t=>t.after=v);save();closeModal();renderAll();renderDetail(race(id))}
+window.restartRace=function(id){let r=race(id);if(S.tickets.some(t=>t.rid===id&&t.status==="pending"))return alert("先に結果を確定してください。");S.phases[id]={phase:"open",close:Date.now()+Math.max(300,r.remain)*1000};sel=[null,null,null];amt=500;save();renderAll();renderDetail(r)}
+window.nextRace=function(id){let i=RACES.findIndex(r=>r.id===id),n=RACES[(i+1)%RACES.length];S.selected=n.id;makePlayable(n);save();renderRaces();document.getElementById("raceDetail").scrollIntoView({behavior:"smooth"})}
+function renderRecords(){let arr=[...S.tickets].reverse();document.getElementById("recCount").textContent=arr.length+"件";document.getElementById("records").innerHTML=arr.length?arr.map(t=>`<div class="rec"><b>${t.venue} ${t.no}R　${t.combo.join(" - ")}</b><div class="recgrid"><span>仮想購入</span><b>${fmt(t.stake)}C</b><span>仮想払戻</span><b>${fmt(t.pay)}C</b><span>結果</span><b>${t.status==="pending"?"待ち":t.status==="hit"?"的中":"外れ"}</b><span>守った推定金額</span><b>${fmt(t.stake)}円</b><span>購入前衝動</span><b>${t.before}/10</b><span>結果後衝動</span><b>${t.after==null?"未入力":t.after+"/10"}</b></div></div>`).join(""):"<div class='card muted'>まだ記録がありません。</div>"}
+window.saveActualSpend=function(){let e=document.getElementById("actualSpend"),v=e.value;if(v==="")return alert("選択してください。");let d=today();if(S.actual[d]!==undefined)return alert("本日はすでに記録済みです。");S.actual[d]=v;save();document.getElementById("actualMsg").textContent=v==="0"?"実際の舟券を買わなかった日として記録しました。":"記録できたことが次の分析につながります。";renderHome()}
+function renderAnalysis(){let st=sumStake(),pay=sumPay(),r=roi(),done=S.tickets.filter(t=>t.after!=null),diff=done.length?done.reduce((a,t)=>a+(t.before-t.after),0)/done.length:null;document.getElementById("analysisCards").innerHTML=[["仮想収支",(pay-st>=0?"+":"")+fmt(pay-st)+"C"],["仮想回収率",r==null?"—":r.toFixed(1)+"%"],["累計で守った推定金額",fmt(st)+"円"],["衝動の平均変化",diff==null?"—":(diff>=0?"−":"＋")+Math.abs(diff).toFixed(1)]].map(x=>`<div class="card"><div class="eyebrow">${x[0]}</div><div class="metric">${x[1]}</div></div>`).join("");
+ let n=S.tickets.length,need=Math.max(0,5-n),loss=0,double=0,rapid=0;let a=[...S.tickets].sort((x,y)=>new Date(x.time)-new Date(y.time));for(let i=1;i<a.length;i++){if(a[i-1].status==="miss"&&a[i].stake>a[i-1].stake)loss++;if(a[i-1].status==="miss"&&a[i].stake>=a[i-1].stake*2)double++}for(let i=2;i<a.length;i++)if(new Date(a[i].time)-new Date(a[i-2].time)<=600000)rapid++;
+ document.getElementById("analysisText").innerHTML=`${need?`<div class="notice">分析には、あと${need}レース分の記録が必要です。</div>`:""}<div class="notice">外れ後に購入額を上げた記録：<b>${loss}回</b> / 2倍以上：<b>${double}回</b></div><div class="notice">10分以内に3回以上投票した並び：<b>${rapid}件</b></div><div class="notice">現在の記録から見られる行動傾向として表示しています。診断ではありません。</div>`}
+window.changeWeekly=function(){S.weeklyLimit=Number(document.getElementById("weeklyLimit").value);save()}
+window.changeRaceLimit=function(){S.raceLimit=Number(document.getElementById("raceLimit").value);save()}
+window.exportData=function(){let b=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="mamoboat-data.json";a.click()}
+window.confirmReset=function(){openModal(`<h2>データを初期化しますか？</h2><p class="muted">仮想舟券・残高・実購入額記録を初期状態に戻します。</p><div class="row"><button class="btn secondary" onclick="closeModal()">キャンセル</button><button class="btn danger" onclick="resetAll()">初期化する</button></div>`)}
+window.resetAll=function(){let accepted=S.accepted;S=def();S.accepted=accepted;save();closeModal();sel=[null,null,null];amt=500;renderAll();goTab("home")}
+function renderAll(){renderHome();renderRaces();renderRecords();renderAnalysis();document.getElementById("weeklyLimit").value=String(S.weeklyLimit);document.getElementById("raceLimit").value=String(S.raceLimit);document.getElementById("onboard").classList.toggle("show",!S.accepted)}
+setInterval(()=>{RACES.forEach(r=>{let e=document.getElementById("cd-"+r.id);if(e)e.textContent=countdown(r)})},1000);
+window.addEventListener("error",function(e){console.log("MAMO_ERROR",e.message)});
+renderAll();
+})();
+</script>
+</body>
+</html>
