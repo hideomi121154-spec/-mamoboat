@@ -1,0 +1,239 @@
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const C = require("../core.js");
+
+function resultDataset(payouts, payoutStatus = "paid") {
+  return {
+    date: "2026-08-09",
+    venues: [{
+      code: "12",
+      races: [{
+        number: 1,
+        result: {
+          finish: [
+            { position: 1, boatNumber: 1 },
+            { position: 2, boatNumber: 3 },
+            { position: 3, boatNumber: 5 },
+          ],
+          sanrensho: payouts,
+          payoutStatus,
+        },
+      }],
+    }],
+  };
+}
+
+let record = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  stake: 1000,
+  lines: [{ combo: [1, 3, 5], stake: 1000 }],
+};
+let settlement = C.settleRecord(
+  record,
+  resultDataset([{ combination: "1-3-5", payout: 4820, popularity: 4 }])
+);
+assert(settlement.changed);
+assert.equal(record.status, "hit");
+assert.equal(record.payoutC, 48200);
+
+const deadHeat = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  lines: [
+    { combo: [1, 3, 5], stake: 100 },
+    { combo: [1, 5, 3], stake: 200 },
+  ],
+};
+C.settleRecord(deadHeat, resultDataset([
+  { combination: "1-3-5", payout: 1000 },
+  { combination: "1-5-3", payout: 800 },
+]));
+assert.equal(deadHeat.status, "hit");
+assert.equal(deadHeat.payoutC, 2600);
+assert.equal(deadHeat.resultPayouts.length, 2);
+
+const allTypesDataset = resultDataset([]);
+allTypesDataset.venues[0].races[0].result.payouts = {
+  win: [{ combination: "1", payout: 170 }],
+  place: [
+    { combination: "1", payout: 200 },
+    { combination: "3", payout: 180 },
+  ],
+  exacta: [{ combination: "1-3", payout: 540 }],
+  quinella: [{ combination: "1-3", payout: 270 }],
+  wide: [
+    { combination: "1-3", payout: 100 },
+    { combination: "1-2", payout: 160 },
+    { combination: "2-3", payout: 110 },
+  ],
+  trifecta: [{ combination: "1-3-2", payout: 660 }],
+  trio: [{ combination: "1-2-3", payout: 300 }],
+};
+allTypesDataset.venues[0].races[0].result.payoutStatus = "paid";
+const allTypesRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  lines: [
+    { betType: "win", combo: [1], stake: 100 },
+    { betType: "place", combo: [3], stake: 200 },
+    { betType: "exacta", combo: [1, 3], stake: 100 },
+    { betType: "quinella", combo: [3, 1], stake: 100 },
+    { betType: "wide", combo: [2, 1], stake: 100 },
+    { betType: "trifecta", combo: [1, 3, 2], stake: 100 },
+    { betType: "trio", combo: [3, 1, 2], stake: 100 },
+  ],
+};
+const allTypesSettlement = C.settleRecord(allTypesRecord, allTypesDataset);
+assert(allTypesSettlement.changed);
+assert.equal(allTypesRecord.status, "hit");
+assert.equal(allTypesRecord.payoutC, 2460);
+assert.equal(allTypesRecord.resultPayouts.length, 10);
+
+const partialDataset = resultDataset([]);
+partialDataset.venues[0].races[0].result.payoutStatus = "partial";
+partialDataset.venues[0].races[0].result.notEstablishedTypes = [
+  "place", "quinella", "wide", "trifecta", "trio",
+];
+partialDataset.venues[0].races[0].result.payouts = {
+  win: [{ combination: "1", payout: 170 }],
+  exacta: [{ combination: "1-3", payout: 540 }],
+};
+const partialRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  stake: 600,
+  lines: [
+    { betType: "exacta", combo: [1, 3], stake: 100 },
+    { betType: "trifecta", combo: [1, 3, 2], stake: 200 },
+    { betType: "place", combo: [1], stake: 300 },
+  ],
+};
+C.settleRecord(partialRecord, partialDataset);
+assert.equal(partialRecord.status, "hit");
+assert.equal(partialRecord.payoutC, 1040);
+assert.equal(partialRecord.refundC, 500);
+
+const wrongDate = {
+  raceDate: "2026-08-08",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  lines: [{ combo: [1, 3, 5], stake: 100 }],
+};
+assert.equal(C.settleRecord(
+  wrongDate,
+  resultDataset([{ combination: "1-3-5", payout: 1000 }])
+).changed, false);
+
+const refund = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  stake: 700,
+  lines: [{ combo: [1, 3, 5], stake: 700 }],
+};
+const refundResult = C.settleRecord(refund, resultDataset([], "notEstablished"));
+assert(refundResult.changed);
+assert(refundResult.refunded);
+assert.equal(refund.status, "refunded");
+assert.equal(refund.payoutC, 700);
+assert.equal(refundResult.payoutAdded, 700);
+
+function completeDataset() {
+  const venues = Array.from({ length: 24 }, (_, venueIndex) => ({
+    code: String(venueIndex + 1).padStart(2, "0"),
+    name: `場${venueIndex + 1}`,
+    active: venueIndex === 6,
+    races: [],
+  }));
+  venues[6].races = Array.from({ length: 12 }, (_, raceIndex) => ({
+    number: raceIndex + 1,
+    closeTime: `2026-08-09T${String(9 + raceIndex).padStart(2, "0")}:00:00+09:00`,
+    entries: Array.from({ length: 6 }, (_, boatIndex) => ({
+      boatNumber: boatIndex + 1,
+      racerNumber: 4000 + raceIndex * 6 + boatIndex,
+      name: `選手${boatIndex + 1}`,
+    })),
+    result: null,
+  }));
+  return { schemaVersion: 7, date: "2026-08-09", venues };
+}
+
+const complete = completeDataset();
+assert(C.validateDataset(complete));
+complete.venues[6].races[3].entries.pop();
+assert.equal(C.validateDataset(complete), false);
+
+const totals = C.savedTotals([
+  { time: "2026-08-09T01:00:00+09:00", saved: 1000 },
+  { time: "2026-08-03T23:00:00+09:00", saved: 2000 },
+  { time: "2026-08-02T23:00:00+09:00", saved: 4000 },
+], new Date("2026-08-09T12:00:00+09:00"));
+assert.deepEqual(totals, { today: 1000, week: 3000, month: 7000, all: 7000 });
+
+const behavior = C.behaviorStats([
+  {
+    time: "2026-08-09T10:00:00+09:00",
+    status: "miss",
+    intendedYen: 1000,
+    reason: "なんとなく",
+    urge: 8,
+    afterUrge: 3,
+  },
+  {
+    time: "2026-08-09T10:10:00+09:00",
+    status: "pending",
+    intendedYen: 2000,
+    reason: "取り返したい",
+    urge: 9,
+    afterUrge: 4,
+  },
+  {
+    time: "2026-08-09T10:20:00+09:00",
+    status: "pending",
+    intendedYen: 500,
+    reason: "レースがあるから",
+    urge: 6,
+    afterUrge: 2,
+  },
+]);
+assert.equal(behavior.chase, 1);
+assert.equal(behavior.declaredChase, 1);
+assert.equal(behavior.postLossChase, 1);
+assert.equal(behavior.escalation, 1);
+assert.equal(behavior.rapid, 1);
+assert.equal(behavior.urgeDrop, 14 / 3);
+
+assert.equal(C.normalizeCombo("1 - 3 − 5"), "1-3-5");
+assert.equal(C.canonicalCombo([3, 1, 2], "trio"), "1-2-3");
+assert.equal(C.canonicalCombo([3, 1], "quinella"), "1-3");
+assert.equal(C.canonicalCombo([3, 1], "exacta"), "3-1");
+
+const official = JSON.parse(fs.readFileSync(
+  path.join(__dirname, "..", "data", "today.json"),
+  "utf8"
+));
+assert.equal(official.source.type, "official-lzh");
+assert(C.validateDataset(official));
+const officialRaces = official.venues.reduce((sum, venue) => sum + venue.races.length, 0);
+const officialEntries = official.venues.reduce(
+  (sum, venue) => sum + venue.races.reduce(
+    (raceSum, race) => raceSum + race.entries.length,
+    0
+  ),
+  0
+);
+assert.equal(officialRaces, official.quality.stats.scheduleRaces);
+assert.equal(officialEntries, official.quality.stats.scheduleEntries);
+console.log("logic tests OK");
