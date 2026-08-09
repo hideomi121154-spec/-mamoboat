@@ -104,6 +104,7 @@
           combo: Array.isArray(line.combo) ? line.combo.map(Number) : [],
           stake: Number(line.stake) || 100,
           odds: line.odds ?? "",
+          mode: ["normal", "box", "form"].includes(line.mode) ? line.mode : null,
         }))
         : Array.isArray(record.combo)
           ? [{ combo: record.combo.map(Number), stake: stake || 100, odds: "" }]
@@ -123,6 +124,16 @@
         raceDate,
         coinWeek: record.coinWeek || (record.time ? weekKey(record.time) : weekKey()),
         lines,
+        betMode: ["normal", "box", "form"].includes(record.betMode)
+          ? record.betMode
+          : null,
+        entrySnapshot: Array.isArray(record.entrySnapshot)
+          ? record.entrySnapshot.map((entry) => ({
+            boatNumber: Number(entry.boatNumber),
+            racerNumber: String(entry.racerNumber || ""),
+            name: String(entry.name || ""),
+          }))
+          : [],
         stake: stake || lines.reduce((sum, line) => sum + line.stake, 0),
         intendedYen: intended,
         conf: Number(record.conf ?? 5),
@@ -542,7 +553,7 @@
     combos.forEach((combo) => {
       const key = combo.join("-");
       if (!seen.has(key)) {
-        cart.push({ combo, stake: 100, odds: "" });
+        cart.push({ combo, stake: 100, odds: "", mode });
         seen.add(key);
       }
     });
@@ -625,6 +636,37 @@
       : "買い目を作成してください。";
   }
 
+  const betModeText = (value) => ({
+    normal: "通常",
+    box: "BOX",
+    form: "フォーメーション",
+  }[value] || "");
+
+  function betReceipt(lines, entries, betMode, title = "購入した買い目") {
+    const validLines = (lines || []).filter(
+      (line) => Array.isArray(line.combo) && line.combo.length === 3
+    );
+    if (!validLines.length) {
+      return '<div class="notice warn">この記録には買い目データがありません。</div>';
+    }
+    const names = new Map((entries || []).map(
+      (entry) => [Number(entry.boatNumber), String(entry.name || "")]
+    ));
+    const modeLabel = betModeText(betMode);
+    const meta = ["3連単", modeLabel, `${validLines.length}点`].filter(Boolean).join(" / ");
+    return `<details class="betreceipt" open><summary>${esc(title)}<span>${esc(meta)}</span></summary>
+      <div class="betlines">${validLines.map((line) => {
+        const combo = line.combo.map(Number);
+        const racerNames = combo.map(
+          (boat) => names.get(boat) ? `${boat}号艇 ${names.get(boat)}` : ""
+        ).filter(Boolean);
+        return `<div class="betline"><span class="bettype">3連単</span>
+          <b class="betcombo">${combo.join(" → ")}</b><b>${fmt(line.stake)}C</b>
+          ${racerNames.length === 3 ? `<div class="betnames">${racerNames.map(esc).join(" → ")}</div>` : ""}
+          ${Number(line.odds) > 0 ? `<div class="betnames">参加時の予想オッズ ${esc(line.odds)}倍</div>` : ""}</div>`;
+      }).join("")}</div></details>`;
+  }
+
   window.reviewBet = () => {
     const venueItem = venue(S.venue);
     const raceItem = race(venueItem?.code, S.raceNo);
@@ -636,6 +678,7 @@
     if (total > S.coins) return alert("仮想メダル残高が不足しています。");
     openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
       <div class="notice"><b>${cart.length}点 / ${fmt(total)}C</b></div>
+      <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
       <h3>このレースへの自信</h3>
       <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
       <h3>今、現金で買いたい気持ち</h3>
@@ -667,7 +710,18 @@
       venue: venueItem.name,
       raceNo: raceItem.number,
       raceName: raceItem.name || "",
-      lines: cart.map((line) => ({ combo: [...line.combo], stake: line.stake, odds: line.odds })),
+      betMode: mode,
+      entrySnapshot: raceItem.entries.map((entry) => ({
+        boatNumber: entry.boatNumber,
+        racerNumber: entry.racerNumber,
+        name: entry.name,
+      })),
+      lines: cart.map((line) => ({
+        combo: [...line.combo],
+        stake: line.stake,
+        odds: line.odds,
+        mode: line.mode || mode,
+      })),
       stake: total,
       intendedYen: intended,
       conf: Number($("conf").value),
@@ -751,9 +805,16 @@
         : record.settled
           ? "結果反映済"
           : "結果待ち";
+    const currentRace = record.raceDate === DATA.date
+      ? race(record.venueCode, record.raceNo)
+      : null;
+    const entrySnapshot = record.entrySnapshot?.length
+      ? record.entrySnapshot
+      : currentRace?.entries || [];
     return `<div class="card rec"><div class="venuehead"><div><b>${esc(record.venue)} ${record.raceNo}R</b>
       <div class="tiny">${(record.lines || []).length}点 / ${fmt(record.stake)}C / 現金予定 ${fmt(record.intendedYen)}円</div></div>
-      <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>${result}
+      <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
+      ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}
       <div class="recgrid"><span>自信</span><b>${record.conf}/10</b><span>購入前衝動</span><b>${record.urge}/10</b>
       <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>守った現金</span><b>${fmt(record.saved)}円</b></div>
       ${canReviewAfter(record) ? `<button class="btn secondary full" onclick="reviewAfter('${record.id}')">レース後の行動を記録</button>` : ""}
@@ -870,7 +931,7 @@
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v27-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v28-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
