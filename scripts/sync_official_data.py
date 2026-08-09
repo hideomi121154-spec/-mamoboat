@@ -6,11 +6,14 @@ import json
 import os
 import re
 import tempfile
+import time
 import unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.request import Request, urlopen
 
 
 JST = timezone(timedelta(hours=9))
@@ -45,6 +48,23 @@ RESULT_STATUS_RE = re.compile(
     r"妨|妨害|欠|欠場|不|不完走|返|返還|除|除外)$"
 )
 
+GRADE_PAGE_URL = "https://www.boatrace.jp/owpc/pc/race/gradesch"
+GRADE_PAGE_CATEGORIES = ("01", "02", "03")
+GRADE_LABELS = {
+    "SG": "SG",
+    "PG1": "PG1",
+    "G1": "GⅠ",
+    "G2": "GⅡ",
+    "G3": "GⅢ",
+    "GENERAL": "一般",
+}
+TIME_ZONE_CLASSES = {
+    "is-morning": "morning",
+    "is-summer": "summer",
+    "is-nighter": "night",
+    "is-midnight": "midnight",
+}
+
 
 def normalized(value: Any) -> str:
     return unicodedata.normalize("NFKC", str(value))
@@ -75,6 +95,199 @@ def ensure_text(content: str | bytes) -> str:
         except UnicodeDecodeError:
             continue
     return content.decode("cp932", errors="replace")
+
+
+def compact_text(value: Any) -> str:
+    """公式公開テキストの全角英数・全角空白を表示用に整える。"""
+    return re.sub(r"\s+", " ", normalized(value)).strip()
+
+
+class OfficialGradeScheduleParser(HTMLParser):
+    """
+    公式グレード日程の表から事実データだけを取り出す。
+
+    画像・CSS・公式ロゴは保存せず、開催期間、場、グレード、
+    大会名、時間帯のみを取り出す。
+    """
+
+    def __init__(self, year: int, category: str):
+        super().__init__(convert_charrefs=True)
+        self.year = year
+        self.category = category
+        self.events: list[dict[str, Any]] = []
+        self._row: list[dict[str, Any]] | None = None
+        self._cell: dict[str, Any] | None = None
+
+    def handle_starttag(self, tag: str, attrs):
+        attributes = dict(attrs)
+        if tag == "tr":
+            self._row = []
+            self._cell = None
+        elif tag == "td" and self._row is not None:
+            self._cell = {
+                "classes": set((attributes.get("class") or "").split()),
+                "text": [],
+                "imageAlt": None,
+            }
+            self._row.append(self._cell)
+        elif tag == "img" and self._cell is not None:
+            alt = compact_text(attributes.get("alt") or "")
+            if alt:
+                self._cell["imageAlt"] = alt
+
+    def handle_data(self, data: str):
+        if self._cell is not None:
+            self._cell["text"].append(data)
+
+    def handle_endtag(self, tag: str):
+        if tag == "td":
+            self._cell = None
+        elif tag == "tr" and self._row is not None:
+            event = self._parse_row(self._row)
+            if event:
+                self.events.append(event)
+            self._row = None
+            self._cell = None
+
+    def _parse_row(self, cells: list[dict[str, Any]]):
+        date_text = ""
+        venue_name = ""
+        title = ""
+        grade = None
+        time_zone = None
+
+        for cell in cells:
+            classes = cell["classes"]
+            text = compact_text("".join(cell["text"]))
+            if "td_date" in classes:
+                date_text = text
+            if cell.get("imageAlt") in NAME_TO_CODE:
+                venue_name = cell["imageAlt"]
+            if "is-alignL" in classes and text:
+                title = text
+            for class_name in classes:
+                match = re.fullmatch(r"is-(SG|G1|G2|G3)([ab])", class_name)
+                if not match:
+                    continue
+                raw_grade, group = match.groups()
+                if raw_grade == "G1" and group == "a" and self.category == "01":
+                    grade = "PG1"
+                else:
+                    grade = raw_grade
+                break
+            for class_name, zone in TIME_ZONE_CLASSES.items():
+                if class_name in classes:
+                    time_zone = zone
+
+        dates = parse_grade_date_range(date_text, self.year)
+        if not dates or not venue_name or not grade or not title:
+            return None
+        start_date, end_date = dates
+        return {
+            "venueCode": NAME_TO_CODE[venue_name],
+            "venueName": venue_name,
+            "startDate": start_date.isoformat(),
+            "endDate": end_date.isoformat(),
+            "grade": grade,
+            "gradeLabel": GRADE_LABELS[grade],
+            "title": title,
+            "timeZone": time_zone,
+        }
+
+
+def parse_grade_date_range(value: str, year: int):
+    match = re.fullmatch(
+        r"\s*(\d{1,2})/(\d{1,2})\s*-\s*(\d{1,2})/(\d{1,2})\s*",
+        normalized(value),
+    )
+    if not match:
+        return None
+    start_month, start_day, end_month, end_day = map(int, match.groups())
+    end_year = year + 1 if end_month < start_month else year
+    try:
+        return (
+            date(year, start_month, start_day),
+            date(end_year, end_month, end_day),
+        )
+    except ValueError:
+        return None
+
+
+def parse_grade_schedule_html(content: str | bytes, year: int, category: str):
+    parser = OfficialGradeScheduleParser(year, category)
+    parser.feed(ensure_text(content))
+    return parser.events
+
+
+def fetch_official_grade_schedule(year: int):
+    """公式の年間グレード日程を3ページ、直列・低頻度で取得する。"""
+    events: list[dict[str, Any]] = []
+    pages: list[str] = []
+    for index, category in enumerate(GRADE_PAGE_CATEGORIES):
+        url = f"{GRADE_PAGE_URL}?year={year}&hcd={category}"
+        request = Request(
+            url,
+            headers={
+                "User-Agent": "mamoboat-personal/3.2 (+official-grade-cache)",
+                "Accept": "text/html,application/xhtml+xml",
+                "Accept-Language": "ja",
+            },
+        )
+        with urlopen(request, timeout=60) as response:
+            html = response.read()
+        parsed = parse_grade_schedule_html(html, year, category)
+        if not parsed:
+            raise RuntimeError(
+                f"公式グレード日程を解析できません: year={year} hcd={category}"
+            )
+        events.extend(parsed)
+        pages.append(url)
+        if index + 1 < len(GRADE_PAGE_CATEGORIES):
+            time.sleep(1.0)
+    events.sort(key=lambda item: (item["startDate"], item["venueCode"], item["grade"]))
+    return {
+        "schemaVersion": 1,
+        "year": year,
+        "generatedAt": datetime.now(JST).isoformat(),
+        "source": {
+            "type": "official-grade-schedule",
+            "pages": pages,
+            "policy": "weekly-cache",
+        },
+        "events": events,
+    }
+
+
+def read_grade_schedule(path: Path | None):
+    if not path or not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return None
+    if payload.get("source", {}).get("type") != "official-grade-schedule":
+        return None
+    if not isinstance(payload.get("events"), list):
+        return None
+    return payload
+
+
+def event_for_date(
+    events: list[dict[str, Any]] | None,
+    target: date,
+    venue_code: str,
+):
+    for event in events or []:
+        if event.get("venueCode") != venue_code:
+            continue
+        try:
+            start = date.fromisoformat(event["startDate"])
+            end = date.fromisoformat(event["endDate"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if start <= target <= end:
+            return event
+    return None
 
 
 def control_marker(line: str, expected_kind: str | None = None):
@@ -201,9 +414,82 @@ def collect_entries_after_header(lines: list[str], header_index: int):
     return sorted(found, key=lambda item: item["boatNumber"])
 
 
+def parse_b_event_block(
+    lines: list[str],
+    marker_index: int,
+    venue_code: str,
+    target: date,
+):
+    """BBGN直後の実際の見出しから大会名・開催日数を取得する。"""
+    block: list[str] = []
+    for line in lines[marker_index + 1:marker_index + 24]:
+        if control_marker(line, "B") or race_header(line, target):
+            break
+        block.append(line)
+
+    day_number = None
+    event_date = None
+    title = ""
+    after_program_heading = False
+
+    for line in block:
+        text = compact_text(line)
+        if not text:
+            continue
+
+        if day_number is None:
+            day_match = re.search(r"第\s*([0-9]+)\s*日", text)
+            if day_match:
+                day_number = int(day_match.group(1))
+
+        if event_date is None:
+            date_match = re.search(
+                r"([0-9]{4})\s*年\s*([0-9]{1,2})\s*月\s*([0-9]{1,2})\s*日",
+                text,
+            )
+            if date_match:
+                try:
+                    event_date = date(*map(int, date_match.groups()))
+                except ValueError:
+                    event_date = None
+
+        if "*** 番組表 ***" in text or "***番組表***" in text:
+            after_program_heading = True
+            continue
+
+        if after_program_heading and not title:
+            excluded = (
+                "ボートレース" in text
+                or "内容について" in text
+                or bool(re.fullmatch(r"-+", text))
+                or bool(re.match(r"^第\s*[0-9]+\s*日\s+[0-9]{4}年", text))
+            )
+            if not excluded:
+                title = text
+
+    start_date = None
+    effective_date = event_date or target
+    if day_number and day_number > 0:
+        start_date = effective_date - timedelta(days=day_number - 1)
+
+    return {
+        "title": title,
+        "dayNumber": day_number,
+        "dayLabel": f"{day_number}日目" if day_number else None,
+        "eventDate": effective_date.isoformat(),
+        "startDate": start_date.isoformat() if start_date else None,
+        "endDate": None,
+        "grade": "GENERAL",
+        "gradeLabel": GRADE_LABELS["GENERAL"],
+        "gradeSource": "default",
+        "timeZone": None,
+    }
+
+
 def _parse_schedule(files: Mapping[str, str | bytes], target: date):
     races: dict[tuple[str, int], dict[str, Any]] = {}
     entries: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+    events: dict[str, dict[str, Any]] = {}
     debug: list[str] = []
     warnings: list[str] = []
     venue_race_counts: dict[str, int] = defaultdict(int)
@@ -237,6 +523,15 @@ def _parse_schedule(files: Mapping[str, str | bytes], target: date):
                     current_venue = code
                     marker_open = True
                     file_begins += 1
+                    block_event = parse_b_event_block(lines, index, code, target)
+                    previous_event = events.get(code)
+                    if previous_event and previous_event != block_event:
+                        warnings.append(
+                            f"{filename}:{index + 1} duplicate event metadata "
+                            f"venue={code}"
+                        )
+                    else:
+                        events[code] = block_event
                     debug.append(
                         f"{filename}:{index + 1} begin {code} {CODE_TO_NAME[code]}"
                     )
@@ -320,12 +615,12 @@ def _parse_schedule(files: Mapping[str, str | bytes], target: date):
                 f"{venue_entry_counts[code]} entries"
             )
 
-    return races, entries, debug, warnings
+    return races, entries, events, debug, warnings
 
 
 def parse_schedule(files: Mapping[str, str | bytes], target: date):
     """後方互換用。従来どおり races, entries, debug の3値を返す。"""
-    races, entries, debug, warnings = _parse_schedule(files, target)
+    races, entries, _events, debug, warnings = _parse_schedule(files, target)
     debug.extend(f"warning: {message}" for message in warnings)
     return races, entries, debug
 
@@ -333,6 +628,7 @@ def parse_schedule(files: Mapping[str, str | bytes], target: date):
 def validate_schedule(
     races: Mapping[tuple[str, int], Mapping[str, Any]],
     entries: Mapping[tuple[str, int], list[dict[str, Any]]],
+    events: Mapping[str, Mapping[str, Any]] | None = None,
 ):
     errors: list[str] = []
     active_codes = sorted({code for code, _ in races})
@@ -341,6 +637,15 @@ def validate_schedule(
         errors.append("no active venues")
 
     for code in active_codes:
+        if events is not None:
+            event = events.get(code) or {}
+            if not event.get("title"):
+                errors.append(f"{code} event title missing")
+            if not event.get("dayNumber"):
+                errors.append(f"{code} event day missing")
+            if not event.get("startDate"):
+                errors.append(f"{code} event start date missing")
+
         race_numbers = sorted(no for venue, no in races if venue == code)
         if race_numbers != list(range(1, 13)):
             errors.append(f"{code} race_numbers={race_numbers}")
@@ -708,13 +1013,14 @@ def build_payload_from_files(
     target: date,
     schedule_files: Mapping[str, str | bytes],
     performance_files: Mapping[str, str | bytes] | None = None,
+    grade_events: list[dict[str, Any]] | None = None,
     *,
     strict: bool = True,
 ):
-    races, entries, schedule_debug, schedule_warnings = _parse_schedule(
+    races, entries, events, schedule_debug, schedule_warnings = _parse_schedule(
         schedule_files, target
     )
-    schedule_errors = validate_schedule(races, entries)
+    schedule_errors = validate_schedule(races, entries, events)
     schedule_failures = [*schedule_warnings, *schedule_errors]
     if strict and schedule_failures:
         preview = "; ".join(schedule_failures[:12])
@@ -771,7 +1077,7 @@ def build_payload_from_files(
 
     active_codes = {code for code, _ in races}
     payload: dict[str, Any] = {
-        "schemaVersion": 8,
+        "schemaVersion": 9,
         "date": target.isoformat(),
         "generatedAt": datetime.now(JST).isoformat(),
         "source": {
@@ -780,6 +1086,8 @@ def build_payload_from_files(
             "performance": "BOAT RACE 競走成績ダウンロード",
             "performanceLoaded": performance_loaded,
             "performanceComplete": performance_complete,
+            "gradeSchedule": "BOAT RACE グレードスケジュール週次キャッシュ",
+            "gradeScheduleLoaded": bool(grade_events),
         },
         "venues": [],
         "quality": {
@@ -806,6 +1114,10 @@ def build_payload_from_files(
                 "sanrenshoPayouts": payout_count,
                 "totalPayoutEntries": all_payout_count,
                 "payoutsByType": payouts_by_type,
+                "gradedVenues": sum(
+                    event_for_date(grade_events, target, code) is not None
+                    for code in active_codes
+                ),
             },
         },
     }
@@ -876,10 +1188,47 @@ def build_payload_from_files(
                 "result": result,
             })
 
+        event = dict(events.get(code) or {})
+        grade_event = event_for_date(grade_events, target, code)
+        if grade_event:
+            event.update({
+                "grade": grade_event["grade"],
+                "gradeLabel": grade_event.get("gradeLabel")
+                    or GRADE_LABELS.get(grade_event["grade"], grade_event["grade"]),
+                "gradeSource": "official-grade-schedule",
+                "scheduleTitle": grade_event.get("title"),
+                "startDate": grade_event.get("startDate") or event.get("startDate"),
+                "endDate": grade_event.get("endDate"),
+                "timeZone": grade_event.get("timeZone"),
+            })
+
+        final_race = venue_races[-1] if venue_races else None
+        final_name = compact_text(final_race.get("name", "")) if final_race else ""
+        is_final_day = bool(
+            final_name and "優勝" in final_name and "準優勝" not in final_name
+        )
+        if event:
+            if event.get("endDate") == target.isoformat() or is_final_day:
+                event["dayLabel"] = "最終日"
+                event["isFinalDay"] = True
+                if not event.get("endDate"):
+                    event["endDate"] = target.isoformat()
+            else:
+                event["isFinalDay"] = False
+            event["officialUrl"] = (
+                "https://www.boatrace.jp/owpc/pc/race/raceindex"
+                f"?hd={target.strftime('%Y%m%d')}&jcd={code}"
+            )
+            schedule_debug.append(
+                f"{code} {venue_name} event: grade={event.get('gradeLabel')} "
+                f"day={event.get('dayLabel')} title={event.get('title')}"
+            )
+
         payload["venues"].append({
             "code": code,
             "name": venue_name,
             "active": code in active_codes,
+            "event": event or None,
             "races": venue_races,
             "boatcast": f"https://race.boatcast.jp/?jo={code}",
         })
@@ -887,7 +1236,13 @@ def build_payload_from_files(
     return payload
 
 
-def build_payload(target: date, cache_dir: Path, *, strict: bool = True):
+def build_payload(
+    target: date,
+    cache_dir: Path,
+    grade_events: list[dict[str, Any]] | None = None,
+    *,
+    strict: bool = True,
+):
     # 取得処理は既存のLzhDownloaderを維持し、解析だけを実構造に合わせる。
     try:
         from boatrace_lzh import LzhDownloader
@@ -917,6 +1272,7 @@ def build_payload(target: date, cache_dir: Path, *, strict: bool = True):
         target,
         schedule_files,
         performance_files,
+        grade_events,
         strict=strict,
     )
     if performance_download_message:
@@ -967,11 +1323,108 @@ def reuse_generated_at_when_unchanged(payload: dict[str, Any], path: Path):
         payload["generatedAt"] = previous["generatedAt"]
 
 
+def build_result_archive(payload: dict[str, Any]) -> dict[str, Any]:
+    """検索・長期保存用に、確定した成績と払戻だけを小さく残す。"""
+    venues = []
+    race_count = 0
+    payout_count = 0
+    for venue in payload.get("venues", []):
+        races = []
+        for race in venue.get("races", []):
+            result = race.get("result")
+            if not result:
+                continue
+            races.append(
+                {
+                    "number": race.get("number"),
+                    "name": race.get("name"),
+                    "closeTime": race.get("closeTime"),
+                    "result": result,
+                }
+            )
+            race_count += 1
+            payout_count += sum(
+                len(items) for items in result.get("payouts", {}).values()
+                if isinstance(items, list)
+            )
+        if races:
+            venues.append(
+                {
+                    "code": venue.get("code"),
+                    "name": venue.get("name"),
+                    "event": venue.get("event"),
+                    "races": races,
+                }
+            )
+    return {
+        "schemaVersion": 1,
+        "date": payload.get("date"),
+        "generatedAt": payload.get("generatedAt"),
+        "source": {"type": "official-lzh-result-archive"},
+        "venues": venues,
+        "stats": {
+            "venues": len(venues),
+            "races": race_count,
+            "payouts": payout_count,
+        },
+    }
+
+
+def write_result_archive(payload: dict[str, Any], output_dir: Path):
+    """日別アーカイブと、GitHub Pagesから参照できる日付索引を更新する。"""
+    archive_dir = output_dir / "results"
+    archive_path = archive_dir / f"{payload['date']}.json"
+    archive = build_result_archive(payload)
+    reuse_generated_at_when_unchanged(archive, archive_path)
+    atomic_write_text(
+        archive_path,
+        json.dumps(archive, ensure_ascii=False, indent=2),
+    )
+
+    dates = []
+    for path in sorted(archive_dir.glob("????-??-??.json"), reverse=True):
+        try:
+            item = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            continue
+        stats = item.get("stats", {})
+        dates.append(
+            {
+                "date": item.get("date") or path.stem,
+                "venues": int(stats.get("venues") or 0),
+                "races": int(stats.get("races") or 0),
+                "payouts": int(stats.get("payouts") or 0),
+                "generatedAt": item.get("generatedAt"),
+            }
+        )
+    index_payload = {
+        "schemaVersion": 1,
+        "generatedAt": payload.get("generatedAt"),
+        "dates": dates,
+    }
+    index_path = archive_dir / "index.json"
+    reuse_generated_at_when_unchanged(index_payload, index_path)
+    atomic_write_text(
+        index_path,
+        json.dumps(index_payload, ensure_ascii=False, indent=2),
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--date")
     parser.add_argument("--output", default="data/today.json")
     parser.add_argument("--cache-dir", default=".cache/boatrace_lzh")
+    parser.add_argument(
+        "--grade-cache",
+        default="",
+        help="公式グレード日程の低頻度キャッシュJSON",
+    )
+    parser.add_argument(
+        "--refresh-grade-cache",
+        action="store_true",
+        help="公式グレード日程3ページを再取得する（週次用）",
+    )
     parser.add_argument(
         "--allow-partial",
         action="store_true",
@@ -986,11 +1439,34 @@ def main():
 
     raw_date = (args.date or "").strip()
     target = date.fromisoformat(raw_date) if raw_date else datetime.now(JST).date()
+    grade_cache = Path(args.grade_cache) if args.grade_cache else Path(
+        f"data/grade_schedule_{target.year}.json"
+    )
+    grade_payload = read_grade_schedule(grade_cache)
+    grade_error = None
+    if (
+        args.refresh_grade_cache
+        or grade_payload is None
+        or int(grade_payload.get("year") or 0) != target.year
+    ):
+        try:
+            refreshed = fetch_official_grade_schedule(target.year)
+            atomic_write_text(
+                grade_cache,
+                json.dumps(refreshed, ensure_ascii=False, indent=2),
+            )
+            grade_payload = refreshed
+        except Exception as error:
+            grade_error = f"grade schedule cache pending: {error}"
+
     payload = build_payload(
         target,
         Path(args.cache_dir),
+        (grade_payload or {}).get("events", []),
         strict=not args.allow_partial,
     )
+    if grade_error:
+        payload["quality"]["warnings"].append(grade_error)
     if args.require_performance and not payload["source"]["performanceLoaded"]:
         raise RuntimeError(f"競走成績を取得できませんでした: {target}")
 
@@ -1003,6 +1479,7 @@ def main():
     atomic_write_text(dated, text)
     if target == datetime.now(JST).date():
         atomic_write_text(output, text)
+    write_result_archive(payload, output.parent)
 
     active = sum(venue["active"] for venue in payload["venues"])
     race_count = sum(len(venue["races"]) for venue in payload["venues"])
