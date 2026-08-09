@@ -865,3 +865,195 @@ body[data-screen="home"] .topbar { display: none; }
   .result-place { grid-template-columns: auto auto; }
   .result-place span { grid-column: 1 / -1; }
 }
+
+/* v3.7 — 実利用向けの操作性・参考オッズ・モバイル補正 */
+html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+.app-shell, main, .screen, #raceView { width: 100%; min-width: 0; max-width: 100%; }
+.real-bet-dock { display: none !important; }
+
+.race-path { max-width: 100%; overflow-x: auto; padding: 2px 1px 4px; scrollbar-width: none; }
+.race-path::-webkit-scrollbar { display: none; }
+.race-path-venue, .event-venue-switch, .race-venue-button {
+  border: 1px solid currentColor; border-radius: 4px; padding: 3px 7px;
+  background: transparent; color: inherit; font-weight: 1000;
+}
+.race-path-venue { flex: 0 0 auto; color: var(--teal-dark); }
+.event-venue-switch { padding: 2px 6px; color: #fff; }
+.race-venue-button { color: var(--teal-dark); white-space: nowrap; }
+.event-banner, .raceboard, .betdesk { min-width: 0; max-width: 100%; }
+.event-banner h1 { max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+.racechips { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.racechip { width: 100%; min-width: 0; padding-left: 2px; padding-right: 2px; }
+.raceheadline, .raceheadline > div { min-width: 0; }
+.racename { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; min-width: 0; }
+.racename span { min-width: 0; overflow-wrap: anywhere; }
+.boat { grid-template-columns: 43px minmax(0, 1fr) 72px; min-width: 0; }
+.boat > div { min-width: 0; }
+.boat > div:nth-child(2) b { overflow-wrap: anywhere; }
+.officialmenu { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.officiallink { overflow: hidden; }
+.officiallink b { overflow-wrap: anywhere; }
+
+.betgrid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.pick { width: 100%; min-width: 0; }
+.pick.b1 {
+  border: 2px solid #82939b;
+  background: #fff;
+  color: #111;
+  box-shadow: inset 0 0 0 2px #fff, 0 2px 4px rgba(5, 35, 62, .18);
+}
+.pick.b1.sel {
+  border-color: var(--navy);
+  background: #fff;
+  outline: 3px solid var(--teal);
+  box-shadow: inset 0 0 0 2px #fff, 0 3px 7px rgba(4, 183, 197, .28);
+}
+.num.b1 { border: 2px solid #82939b; box-shadow: inset 0 0 0 2px #fff; }
+
+.odds-snapshot { margin: 9px 0 6px; padding: 10px 11px; border-radius: 7px; }
+.odds-snapshot.available { border: 1px solid #8bd2d8; border-left: 5px solid var(--teal); background: #edfafa; }
+.odds-snapshot.pending { border: 1px solid #e2cf9b; border-left: 5px solid var(--gold); background: var(--warn); }
+.odds-snapshot > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.odds-snapshot span { color: var(--teal-dark); font-size: 9px; font-weight: 1000; letter-spacing: .06em; }
+.odds-snapshot strong { color: var(--navy); font-size: 12px; }
+.odds-snapshot p { margin: 5px 0 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.odds-caution { padding: 7px 9px; border-left: 3px solid var(--coral); background: #fff5f4; color: #7b5551; font-size: 8px; font-weight: 750; line-height: 1.5; }
+.cart-odds { display: grid; min-width: 0; min-height: 42px; align-content: center; padding: 4px 2px; border: 1px solid #8bd2d8; border-radius: 4px; background: #edfafa; text-align: center; }
+.cart-odds b { color: var(--teal-dark); font-size: 11px; white-space: nowrap; }
+.cart-odds small { color: var(--muted); font-size: 6px; white-space: nowrap; }
+
+.venue-switcher > p { color: var(--muted); font-size: 10px; line-height: 1.6; }
+.venue-switch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 12px 0; }
+.venue-switch-card { min-width: 0; min-height: 86px; border: 1px solid var(--line); border-radius: 7px; padding: 9px; background: white; color: var(--navy); text-align: left; }
+.venue-switch-card.current { border: 2px solid var(--teal); background: var(--mint); box-shadow: 2px 2px 0 rgba(4, 183, 197, .22); }
+.venue-switch-card span, .venue-switch-card strong, .venue-switch-card small { display: block; }
+.venue-switch-card span { color: var(--teal-dark); font-size: 7px; font-weight: 1000; letter-spacing: .06em; }
+.venue-switch-card strong { margin-top: 4px; font-size: 17px; }
+.venue-switch-card small { margin-top: 5px; overflow: hidden; color: var(--muted); font-size: 8px; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+
+.result-search-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.result-search-grid label, .result-search-grid input, .result-search-grid select { min-width: 0; max-width: 100%; }
+
+@media (max-width: 620px) {
+  .app-shell { padding-bottom: 122px; }
+  .nav { min-height: 55px; padding-left: 0; padding-right: 0; }
+  .nav b { font-size: 16px; }
+  .nav span { font-size: 7px; white-space: nowrap; }
+  .raceheadline { gap: 7px; }
+  .raceclock { flex-basis: 106px; padding-left: 5px; padding-right: 5px; }
+  .racename { font-size: 17px; }
+  .boat { grid-template-columns: 43px minmax(0, 1fr) 64px; gap: 6px; }
+  .officialmenu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .event-banner a { position: relative; right: auto; bottom: auto; display: inline-block; margin-top: 10px; }
+  .event-banner p { padding-right: 0; }
+  .cartrow { grid-template-columns: 43px 52px minmax(65px, 1fr) 68px 30px; }
+  .cartrow input, .odds-input input { font-size: 16px; }
+  .result-search-grid input, .result-search-grid select, .field input, .field select, .field textarea { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+  .result-search-grid { grid-template-columns: 1fr; }
+  .result-keyword { grid-column: auto; }
+  .raceheadline { display: grid; grid-template-columns: minmax(0, 1fr) 98px; }
+  .raceclock { width: 98px; }
+  .venue-switch-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 360px) {
+  .nav span { font-size: 6px; }
+  .cartrow { grid-template-columns: 39px 45px minmax(59px, 1fr) 62px 27px; gap: 3px; padding: 5px 3px; }
+  .cart-odds b { font-size: 9px; }
+}
+
+/* v3.7.1 — 公式投票は操作領域に重ねず、アプリ外側の専用レールへ */
+body { padding-right: 36px; }
+.app-shell { max-width: 720px; margin-left: auto; margin-right: auto; }
+.bottom-nav {
+  left: 0;
+  width: calc(100% - 36px);
+  transform: none;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.real-bet-rail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  display: flex;
+  width: 36px;
+  align-items: center;
+  justify-content: center;
+  background: var(--navy);
+  border-left: 1px solid rgba(255,255,255,.22);
+  box-shadow: -3px 0 10px rgba(7,27,43,.13);
+}
+.real-bet-rail button {
+  display: flex;
+  width: 36px;
+  min-height: 154px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-top: 2px solid rgba(255,255,255,.9);
+  border-bottom: 2px solid rgba(255,255,255,.9);
+  padding: 10px 4px;
+  background: var(--coral);
+  color: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,.24);
+}
+.real-bet-rail button:active { background: #d9534e; }
+.real-bet-rail span { display: none; }
+.real-bet-rail strong {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+  line-height: 1;
+}
+.real-bet-rail b { font-size: 15px; line-height: 1; }
+
+@media (min-width: 860px) {
+  body { padding-right: 0; }
+  .bottom-nav {
+    left: 50%;
+    width: min(720px, 100%);
+    transform: translateX(-50%);
+  }
+  .real-bet-rail {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: calc(50% + 365px);
+    width: 64px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    transform: translateY(-50%);
+  }
+  .real-bet-rail button {
+    width: 64px;
+    min-height: 132px;
+    gap: 7px;
+    border: 2px solid white;
+    border-left: 0;
+    border-radius: 0 9px 9px 0;
+    padding: 10px 6px;
+  }
+  .real-bet-rail span {
+    display: block;
+    font-size: 7px;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+  .real-bet-rail strong {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    font-size: 13px;
+    letter-spacing: 0;
+    line-height: 1.25;
+  }
+}

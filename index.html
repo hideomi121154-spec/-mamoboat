@@ -8,14 +8,14 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
-  <title>まもボート v3.6</title>
+  <title>まもボート v3.7.1</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.6</small></span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.7.1</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と追加メニューを開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -157,25 +157,21 @@
           <p>BOAT RACE公式のサービスではありません。Bメダルは換金・購入・入出金・譲渡できません。</p>
           <div id="syncStats" class="sync-detail">同期状態を確認中…</div>
           <div class="action-stack">
-            <button class="btn secondary full" onclick="reloadData()">実データを再読込・未精算を確認</button>
+            <button class="btn primary full" onclick="reloadData(this)">最新情報に更新</button>
             <button class="btn secondary full" onclick="exportData()">記録をJSONで書き出す</button>
             <button class="btn danger full" onclick="resetData()">記録を初期化</button>
           </div>
         </div>
         <div class="section-head small"><div><span class="section-number">SAFE</span><h2>安全なデータ取得</h2></div></div>
         <div class="panel policy-grid">
-          <div><b>約15分ごと</b><h3>公式公開LZH</h3><p>番組表・競走成績だけを1並列で取得。変化がない時は更新しません。</p></div>
-          <div><b>週1回</b><h3>公式グレード日程</h3><p>SG・PG1・GⅠ〜GⅢの日程3ページだけを低頻度でキャッシュします。</p></div>
-          <div><b>押した時だけ</b><h3>公式画面</h3><p>オッズ・結果・選手情報・映像は、利用者が押した場合だけ別画面で開きます。</p></div>
+          <div><b>約15分ごと</b><h3>レース情報を自動更新</h3><p>番組表と確定結果を、負担を抑えながら自動で確認します。</p></div>
+          <div><b>ずっと保存</b><h3>結果アーカイブ</h3><p>確定した着順と払戻を日付ごとに残し、あとから検索できます。</p></div>
+          <div><b>更新時刻を表示</b><h3>参考オッズ</h3><p>締切前に低頻度で取得し、倍率・更新時刻・注意事項を一緒に表示します。</p></div>
         </div>
         <a class="official-wide" href="https://www.boatrace.jp/owpc/pc/extra/data/download.html" target="_blank" rel="noopener noreferrer">公式データダウンロード案内 <span>↗</span></a>
         <p class="footnote">公式データの公開・更新には遅れが生じる場合があります。最終確認は公式サイトで行ってください。</p>
       </section>
     </main>
-
-    <aside class="real-bet-dock" aria-label="公式投票へのリンク">
-      <button type="button" onclick="openRealBetConfirm()"><span>現金を使う前に確認</span><strong>公式投票へ ↗</strong></button>
-    </aside>
 
     <nav class="bottom-nav" aria-label="メインメニュー">
       <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
@@ -186,6 +182,12 @@
       <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
     </nav>
   </div>
+
+  <aside class="real-bet-rail" aria-label="公式投票への外部導線">
+    <button type="button" onclick="openRealBetConfirm()">
+      <span>現金を使う前に確認</span><strong>公式投票</strong><b>↗</b>
+    </button>
+  </aside>
 
   <div id="onboard" class="onboard">
     <div class="onboard-shell">
