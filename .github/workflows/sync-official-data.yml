@@ -8,7 +8,7 @@ on:
         required: false
         type: string
   schedule:
-    - cron: "15 0-14,21-23 * * *"
+    - cron: "*/15 0-14,21-23 * * *"
     - cron: "35 15,20 * * *"
 
 permissions:
@@ -46,20 +46,24 @@ jobs:
           TARGET_DATE: ${{ inputs.target_date }}
           SCHEDULE: ${{ github.event.schedule }}
         run: |
+          GRADE_ARGS=()
+          if [ "$(TZ=Asia/Tokyo date +%u-%H)" = "1-09" ]; then
+            GRADE_ARGS+=(--refresh-grade-cache)
+          fi
           if [ -n "$TARGET_DATE" ]; then
-            python scripts/sync_official_data.py --date "$TARGET_DATE"
+            python scripts/sync_official_data.py --date "$TARGET_DATE" "${GRADE_ARGS[@]}"
           elif [ "$SCHEDULE" = "35 15,20 * * *" ]; then
             YESTERDAY_JST="$(TZ=Asia/Tokyo date -d yesterday +%F)"
-            python scripts/sync_official_data.py --date "$YESTERDAY_JST"
+            python scripts/sync_official_data.py --date "$YESTERDAY_JST" "${GRADE_ARGS[@]}"
           else
-            python scripts/sync_official_data.py
+            python scripts/sync_official_data.py "${GRADE_ARGS[@]}"
           fi
 
       - name: Commit validated JSON
         run: |
           git config user.name "mamoboat-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/*.json
+          git add data
           if git diff --cached --quiet; then
             echo "No official data changes"
           else
