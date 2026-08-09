@@ -64,7 +64,7 @@ def detect_file_venue(lines):
 
 def race_header(line, target):
     s = hw(line)
-    m = re.search(r"^\s*([0-9]{1,2})R\b?(.*)$", s)
+    m = re.search(r"^\s*([0-9]{1,2})R\s*(.*)$", s)
     if not m:
         return None
 
@@ -281,7 +281,7 @@ def build_payload(target, cache_dir):
     active_codes = {code for code, _ in races.keys()}
 
     payload = {
-        "schemaVersion": 5,
+        "schemaVersion": 6,
         "date": target.isoformat(),
         "generatedAt": datetime.now(JST).isoformat(),
         "source": {
