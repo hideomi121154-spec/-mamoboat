@@ -248,6 +248,34 @@
     return totals;
   }
 
+  function rewardOutcome(record) {
+    if (!record || record.rewardChallenge !== true) return "not-selected";
+    if (!record.settled) return "pending";
+    if (record.status === "hit") return "double-win";
+    if (["miss", "refunded"].includes(record.status)) return "defense-stamp";
+    return "pending";
+  }
+
+  function rewardMetrics(records, now = new Date()) {
+    const today = jstDate(now);
+    const list = records || [];
+    const challenges = list.filter((record) => record.rewardChallenge === true);
+    const doubleWins = list.filter((record) =>
+      (record.rewardOutcome || rewardOutcome(record)) === "double-win"
+    );
+    const defenseStamps = list.filter((record) =>
+      (record.rewardOutcome || rewardOutcome(record)) === "defense-stamp"
+    );
+    return {
+      challenges: challenges.length,
+      doubleWins: doubleWins.length,
+      defenseStamps: defenseStamps.length,
+      defenseMilestones: Math.floor(defenseStamps.length / 5),
+      stampProgress: defenseStamps.length % 5,
+      todayChallenge: challenges.find((record) => record.raceDate === today) || null,
+    };
+  }
+
   function behaviorStats(records, windowMinutes = 30) {
     const ordered = (records || [])
       .filter((record) => !Number.isNaN(new Date(record.time).getTime()))
@@ -296,6 +324,12 @@
         byVenue[venue] = (byVenue[venue] || 0) + Number(record.saved);
       }
     });
+    const virtualHits = ordered.filter((record) => record.status === "hit");
+    const reward = rewardMetrics(ordered);
+    const intendedTotal = ordered.reduce(
+      (sum, record) => sum + (Number(record.intendedYen) || 0),
+      0
+    );
     return {
       chase: chaseIndexes.size,
       declaredChase: ordered.filter((record) => record.reason === "取り返したい").length,
@@ -305,6 +339,16 @@
       urgeDrop,
       topReason: Object.entries(byReason).sort((a, b) => b[1] - a[1])[0] || null,
       topVenue: Object.entries(byVenue).sort((a, b) => b[1] - a[1])[0] || null,
+      records: ordered.length,
+      replacedTotal: intendedTotal,
+      virtualHits: virtualHits.length,
+      virtualHitRate: ordered.filter((record) => record.settled).length
+        ? virtualHits.length / ordered.filter((record) => record.settled).length
+        : null,
+      intendedTotal,
+      intendedAverage: ordered.length ? intendedTotal / ordered.length : 0,
+      doubleWins: reward.doubleWins,
+      defenseStamps: reward.defenseStamps,
     };
   }
 
@@ -318,8 +362,9 @@
     settleRecord,
     validateDataset,
     savedTotals,
+    rewardOutcome,
+    rewardMetrics,
     behaviorStats,
     jstDate,
   };
 });
-

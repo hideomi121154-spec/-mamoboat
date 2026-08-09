@@ -8,16 +8,16 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
-  <title>まもボート v3.7.2</title>
+  <title>まもボート v3.9.0</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.7.2</small></span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PILOT v3.9.0</small></span>
       </button>
-      <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と追加メニューを開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
+      <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
 
     <main>
@@ -29,10 +29,10 @@
             <small>MAMO BOAT</small>
             <div><span>PERSONAL</span><b>非公式・個人用</b></div>
           </div>
-          <button class="masthead-wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と追加メニューを開く">
+          <button class="masthead-wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く">
             <span><i class="mini-medal">B</i>Bメダル残高 <i class="info-dot">i</i></span>
             <strong id="homeCoins">-- B</strong>
-            <small>タップして追加</small>
+            <small>タップして履歴</small>
           </button>
           <div class="masthead-callout"><span>今日の</span><strong>舞台を<em>選べ。</em></strong></div>
         </div>
@@ -79,8 +79,8 @@
         </div>
         <div class="stat-grid three-stats">
           <div class="stat-card"><span>残りBメダル</span><strong id="coins"></strong></div>
-          <div class="stat-card coral"><span>今日守った現金</span><strong id="savedToday"></strong></div>
-          <div class="stat-card"><span>今月守った現金</span><strong id="savedMonth"></strong></div>
+          <div class="stat-card coral"><span>今日の仮想置換</span><strong id="savedToday"></strong></div>
+          <div class="stat-card"><span>今月の仮想置換</span><strong id="savedMonth"></strong></div>
         </div>
         <div class="tactical-note"><span class="manga-label">MAMORU'S NOTE</span><p id="aiMemo"></p></div>
         <span id="savedWeek" hidden></span>
@@ -104,14 +104,14 @@
 
       <section id="records" class="screen">
         <div class="page-intro record-intro">
-          <div><span class="kicker">BATTLE LOG</span><h1>戦績ログ</h1><p>買い目・実結果・B払戻・守った現金を、ひとつの流れで確認。</p></div>
+          <div><span class="kicker">BATTLE LOG</span><h1>戦績ログ</h1><p>買い目・実結果・B払戻・仮想投票への置換額を確認。</p></div>
           <img src="mamoru-hero.webp" alt="" aria-hidden="true">
         </div>
         <div class="section-head small"><div><span class="section-number">LOG</span><h2>参加記録</h2></div><span id="recordCount" class="section-meta"></span></div>
         <div class="filter-rail">
           <button class="filter active" data-rec="all" onclick="setRecFilter('all')">すべて</button>
           <button class="filter" data-rec="pending" onclick="setRecFilter('pending')">結果待ち</button>
-          <button class="filter" data-rec="saved" onclick="setRecFilter('saved')">現金を守った</button>
+          <button class="filter" data-rec="saved" onclick="setRecFilter('saved')">仮想置換</button>
           <button class="filter" data-rec="hit" onclick="setRecFilter('hit')">B的中</button>
         </div>
         <div id="recordList" class="record-list"></div>
@@ -139,11 +139,12 @@
         <div id="analysisCards" class="stat-grid"></div>
         <div class="section-head small"><div><span class="section-number">B</span><h2>行動パターン</h2></div></div>
         <div id="analysisList" class="analysis-list"></div>
-        <div class="section-head small"><div><span class="section-number">C</span><h2>航海EXP</h2></div><span class="section-meta">換金不可</span></div>
-        <div class="panel xp-panel">
-          <div class="xp-head"><div><span>航海EXP</span><strong id="xpValue"></strong></div><button class="text-action" onclick="copyAnalysis()">分析用データをコピー</button></div>
-          <div class="progress"><i id="xpBar"></i></div>
-          <div id="rewards" class="reward-grid"></div>
+        <div class="section-head small"><div><span class="section-number">C</span><h2>ダブルWIN・防衛スタンプ</h2></div><span class="section-meta">1日1レース</span></div>
+        <div class="panel reward-route-panel">
+          <div id="rewardRouteSummary" class="reward-route-summary"></div>
+          <div id="defenseStampRail" class="defense-stamp-rail" aria-label="防衛スタンプ"></div>
+          <div id="rewardWallet" class="reward-wallet"></div>
+          <button class="text-action reward-copy" onclick="copyAnalysis()">分析用データをコピー</button>
         </div>
       </section>
 
@@ -160,6 +161,18 @@
             <button class="btn primary full" onclick="reloadData(this)">最新情報に更新</button>
             <button class="btn secondary full" onclick="exportData()">記録をJSONで書き出す</button>
             <button class="btn danger full" onclick="resetData()">記録を初期化</button>
+          </div>
+        </div>
+        <div class="section-head small"><div><span class="section-number">PILOT</span><h2>行動データ計測</h2></div><span class="section-meta">匿名・同意制</span></div>
+        <div class="panel pilot-panel">
+          <p>仮想投票額、投票前後の衝動、実結果、追い上げ傾向、特典への反応を記録します。現金購入の自己申告、氏名、メール、決済情報は取得しません。</p>
+          <div class="field"><label for="pilotParticipantId">テスター番号（氏名は入力しない）</label><input id="pilotParticipantId" type="text" maxlength="40" autocomplete="off" placeholder="例：P01"></div>
+          <label class="check pilot-consent"><input id="pilotConsent" type="checkbox"><span><b>匿名の行動イベント送信に同意する</b><small>同意しない場合も端末内記録とJSON書き出しは利用できます</small></span></label>
+          <div id="pilotStatus" class="pilot-status"></div>
+          <div class="pilot-actions">
+            <button class="btn primary full" type="button" onclick="savePilotSettings()">計測設定を保存</button>
+            <button class="btn secondary full" type="button" onclick="sendPilotDataNow(this)">未送信データを送る</button>
+            <button class="btn secondary full" type="button" onclick="exportPilotCSV()">イベントCSVを書き出す</button>
           </div>
         </div>
         <div class="section-head small"><div><span class="section-number">SAFE</span><h2>安全なデータ取得</h2></div></div>
@@ -200,12 +213,12 @@
       <div class="onboard-panel" data-onboard="1">
         <div class="onboard-copy"><span class="kicker">HOW IT WORKS</span><h1>実レースから、<br><em>行動分析まで。</em></h1></div>
         <div class="onboard-route">
-          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>Bメダルで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>守った現金を記録</span></div>
+          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>Bメダルで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>置換額を自動記録</span></div>
         </div>
         <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button class="btn primary" onclick="onboardNext()">次へ →</button></div>
       </div>
       <div class="onboard-panel" data-onboard="2">
-        <div class="onboard-copy"><span class="kicker">FINAL CHECK</span><h1>これは現金ではなく、<br><em>Bメダルです。</em></h1><p>公式サービスではなく、メダルに金銭的価値はありません。記録はこの端末内だけに保存されます。</p></div>
+        <div class="onboard-copy"><span class="kicker">FINAL CHECK</span><h1>これは現金ではなく、<br><em>Bメダルです。</em></h1><p>初回残高は100,000Bです。任意追加・自動復活・換金はできません。公式払戻と防衛行動で増減し、記録は原則この端末内に保存されます。</p></div>
         <label class="check"><input id="age" type="checkbox" onchange="checkStart()"><span><b>私は20歳以上です</b><small>成人向けの自己管理ツールとして利用します</small></span></label>
         <label class="check"><input id="value" type="checkbox" onchange="checkStart()"><span><b>Bメダルに金銭的価値がないことを理解しました</b><small>換金・購入・入出金・譲渡はできません</small></span></label>
         <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button id="startBtn" class="btn coral-btn" disabled onclick="startApp()">航海を始める</button></div>
@@ -216,6 +229,7 @@
 
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
   <script src="core.js"></script>
+  <script src="pilot-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,9 +1,10 @@
-const CACHE = "mamoboat-v372";
+const CACHE = "mamoboat-v390";
 const SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./core.js",
+  "./pilot-config.js",
   "./app.js",
   "./manifest.webmanifest",
   "./icon.svg",

@@ -2,13 +2,21 @@
   "use strict";
 
   const C = window.MamoCore;
-  const KEY = "mamoboat_v27_personal";
+  const APP_VERSION = "3.9.0";
+  const KEY = "mamoboat_v39_personal";
   const LEGACY_KEYS = [
+    "mamoboat_v38_personal",
+    "mamoboat_v27_personal",
     "mamoboat_v26_personal",
     "mamoboat_v25_personal",
     "mamoboat_v24_live",
     "mamoboat_real_v22",
   ];
+  const PILOT_CONFIG = window.MAMOBOAT_PILOT || {};
+  const COLLECTOR = PILOT_CONFIG.collector || {};
+  const SESSION_ID = window.crypto?.randomUUID
+    ? window.crypto.randomUUID()
+    : `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const VENUES = [
     ["01", "桐生"], ["02", "戸田"], ["03", "江戸川"], ["04", "平和島"],
     ["05", "多摩川"], ["06", "浜名湖"], ["07", "蒲郡"], ["08", "常滑"],
@@ -66,6 +74,19 @@
     const match = String(value ?? "").trim().match(/^([0-9]+(?:\.[0-9]+)?)/);
     return match ? Number(match[1]) : 0;
   };
+
+  function uniqueId(prefix = "id") {
+    return window.crypto?.randomUUID
+      ? window.crypto.randomUUID()
+      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (character) => {
+        const random = Math.floor(Math.random() * 16);
+        return (character === "x" ? random : (random & 0x3) | 0x8).toString(16);
+      });
+  }
+
+  function participantCode() {
+    return `P-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  }
 
   function raceOddsType(raceItem, type = betType) {
     return raceItem?.odds?.types?.[C.normalizeBetType(type)] || null;
@@ -197,20 +218,40 @@
   }
 
   function fresh() {
+    const createdAt = new Date().toISOString();
     return {
       accepted: false,
-      coins: 10000,
+      coins: 100000,
       coinWeek: weekKey(),
+      walletVersion: 2,
+      walletCreatedAt: createdAt,
+      lastLoginBonusDate: C.jstDate(),
+      ledger: [{
+        id: "initial-grant",
+        uniqueKey: "initial-grant",
+        type: "initial_grant",
+        amount: 100000,
+        balanceAfter: 100000,
+        at: createdAt,
+        label: "初回B付与",
+      }],
       records: [],
       venue: "12",
       raceNo: 1,
       filter: "active",
       homeFilter: "all",
       favorites: [],
-      medalAdditions: [],
       realBetExits: [],
       recFilter: "all",
-      xp: 0,
+      rewardClaims: [],
+      pilot: {
+        participantId: participantCode(),
+        consent: false,
+        events: [],
+        sentCount: 0,
+        lastSyncAt: null,
+        lastError: "",
+      },
       lastDataDate: null,
     };
   }
@@ -223,22 +264,45 @@
         ? state.sets
         : [];
     state.coins = Math.max(0, Number(state.coins) || 0);
-    state.xp = Math.max(0, Number(state.xp) || 0);
+    state.ledger = Array.isArray(source?.ledger)
+      ? source.ledger.filter((item) => item && item.id && Number.isFinite(Number(item.amount)))
+      : [{
+        id: "legacy-opening-balance",
+        uniqueKey: "legacy-opening-balance",
+        type: "opening_balance",
+        amount: raw.length ? state.coins : 100000,
+        balanceAfter: raw.length ? state.coins : 100000,
+        at: source?.walletCreatedAt || new Date().toISOString(),
+        label: "v3.9開始残高",
+      }];
+    if (!source?.ledger && !raw.length) state.coins = 100000;
+    state.walletVersion = 2;
+    state.walletCreatedAt ||= state.ledger[0]?.at || new Date().toISOString();
+    state.lastLoginBonusDate ||= C.jstDate();
     if (!["all", "selling", "grade", "night", "favorite"].includes(state.homeFilter)) {
       state.homeFilter = "all";
     }
     state.favorites = Array.isArray(state.favorites)
       ? [...new Set(state.favorites.map(String).filter((code) => VENUE_ROMAJI[code]))]
       : [];
-    state.medalAdditions = Array.isArray(state.medalAdditions)
-      ? state.medalAdditions.map((item) => ({
-        amount: Number(item?.amount) || 0,
-        at: item?.at || null,
-      })).filter((item) => item.amount > 0)
-      : [];
     state.realBetExits = Array.isArray(state.realBetExits)
       ? state.realBetExits.filter((item) => item && item.at).slice(-500)
       : [];
+    state.rewardClaims = Array.isArray(state.rewardClaims)
+      ? state.rewardClaims.filter((item) => item && item.id).slice(-500)
+      : [];
+    const pilot = Object.assign(fresh().pilot, state.pilot || {});
+    pilot.participantId = String(pilot.participantId || participantCode())
+      .replace(/[^A-Za-z0-9_-]/g, "-")
+      .slice(0, 40) || participantCode();
+    pilot.consent = pilot.consent === true;
+    pilot.events = Array.isArray(pilot.events)
+      ? pilot.events.filter((item) => item && item.event_id && item.event_name).slice(-5000)
+      : [];
+    pilot.sentCount = Math.max(0, Number(pilot.sentCount) || 0);
+    pilot.lastSyncAt = pilot.lastSyncAt || null;
+    pilot.lastError = String(pilot.lastError || "").slice(0, 300);
+    state.pilot = pilot;
     state.records = raw.map((record, index) => {
       const stake = Number(record.stake ?? record.total ?? 0) || 0;
       const intended = Number(
@@ -261,10 +325,6 @@
       const status = ["pending", "hit", "miss", "refunded"].includes(record.status)
         ? record.status
         : "pending";
-      const reviewed = record.cashReviewed === true
-        || record.cashBought === true
-        || record.cashBought === false
-        || Number(record.saved || 0) > 0;
       const raceDate = record.raceDate
         || record.date
         || (record.time ? C.jstDate(record.time) : null);
@@ -284,7 +344,7 @@
           }))
           : [],
         stake: stake || lines.reduce((sum, line) => sum + line.stake, 0),
-        intendedYen: intended,
+        intendedYen: stake || intended,
         conf: Number(record.conf ?? 5),
         urge: Number(record.urge ?? record.before ?? 5),
         afterUrge: record.afterUrge ?? record.after ?? null,
@@ -293,11 +353,18 @@
         payoutC: Number(record.payoutC ?? record.payout ?? 0) || 0,
         refundC: Number(record.refundC || 0) || 0,
         resultPayouts: Array.isArray(record.resultPayouts) ? record.resultPayouts : [],
-        cashReviewed: reviewed,
-        saved: Number(record.saved || 0) || 0,
+        behaviorReviewed: record.behaviorReviewed === true || record.cashReviewed === true,
+        saved: stake || Number(record.saved || 0) || 0,
+        rewardChallenge: record.rewardChallenge === true,
+        rewardOutcome: record.rewardChallenge === true && (record.settled === true || ["hit", "miss", "refunded"].includes(status))
+          ? C.rewardOutcome({ ...record, settled: true, status, rewardChallenge: true })
+          : null,
+        rewardEvaluatedAt: record.rewardEvaluatedAt || null,
       });
     });
     delete state.sets;
+    delete state.xp;
+    delete state.medalAdditions;
     return state;
   }
 
@@ -322,10 +389,317 @@
   let S = load();
 
   const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+
+  function postLedger(type, amount, uniqueKey, details = {}) {
+    const value = Math.round(Number(amount) || 0);
+    if (!value || !uniqueKey) return false;
+    if (S.ledger.some((item) => item.uniqueKey === uniqueKey)) return false;
+    if (value < 0 && S.coins + value < 0) return false;
+    S.coins += value;
+    S.ledger.push({
+      id: uniqueId("ledger"),
+      uniqueKey,
+      type,
+      amount: value,
+      balanceAfter: S.coins,
+      at: new Date().toISOString(),
+      ...details,
+    });
+    S.ledger = S.ledger.slice(-5000);
+    trackEvent("wallet_ledger_posted", {
+      ledger_type: type,
+      amount_b: value,
+      balance_b: S.coins,
+      unique_key: uniqueKey,
+      record_id: details.recordId || null,
+      label: details.label || "",
+    }, {
+      raceDate: details.day || null,
+      venueCode: details.venueCode || null,
+      raceNo: details.raceNo || null,
+    });
+    return true;
+  }
+
+  function awardDefenseBonus(record, kind, requestedAmount, label) {
+    const day = record.raceDate || C.jstDate(record.time);
+    const used = S.ledger
+      .filter((item) => item.type === "defense_bonus" && item.day === day)
+      .reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
+    const amount = Math.min(requestedAmount, Math.max(0, 2000 - used));
+    if (!amount) return false;
+    return postLedger("defense_bonus", amount, `defense:${kind}:${record.id}`, {
+      label,
+      day,
+      recordId: record.id,
+      venueCode: record.venueCode,
+      raceNo: record.raceNo,
+    });
+  }
+
+  function awardLoginBonus() {
+    const today = C.jstDate();
+    if (S.lastLoginBonusDate === today) return;
+    if (postLedger("login_bonus", 100, `login:${today}`, { label: "乗船ボーナス" })) {
+      S.lastLoginBonusDate = today;
+      save();
+    }
+  }
+
+  function processObservedBonuses() {
+    let changed = false;
+    const now = Date.now();
+    for (const record of S.records) {
+      if (record.walletVersionAtBet !== 2 || !record.closeTime) continue;
+      const close = new Date(record.closeTime).getTime();
+      const end = close + 15 * 60 * 1000;
+      if (!Number.isFinite(close) || now < end) continue;
+      const chased = S.records.some((other) => {
+        if (other.id === record.id || !other.time) return false;
+        const time = new Date(other.time).getTime();
+        return time > close && time <= end;
+      });
+      if (!chased) {
+        changed = awardDefenseBonus(record, "cooldown-15", 300, "15分クールダウンボーナス") || changed;
+      }
+    }
+    if (changed) save();
+  }
+
   const venue = (code) => DATA.venues.find((item) => item.code === code);
   const race = (code, number) => venue(code)?.races?.find(
     (item) => Number(item.number) === Number(number)
   );
+
+  let pilotFlushPromise = null;
+  let pilotFlushTimer = null;
+
+  function safePayload(value, depth = 0) {
+    if (depth > 4 || value == null) return value == null ? null : String(value).slice(0, 160);
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value === "string") return value.slice(0, 300);
+    if (Array.isArray(value)) return value.slice(0, 30).map((item) => safePayload(item, depth + 1));
+    if (typeof value === "object") {
+      return Object.fromEntries(Object.entries(value).slice(0, 40).map(
+        ([key, item]) => [String(key).slice(0, 60), safePayload(item, depth + 1)]
+      ));
+    }
+    return String(value).slice(0, 160);
+  }
+
+  function collectorReady() {
+    return COLLECTOR.enabled === true && /^https:\/\//.test(String(COLLECTOR.endpoint || ""));
+  }
+
+  function schedulePilotFlush() {
+    if (!S.pilot.consent || !collectorReady()) return;
+    clearTimeout(pilotFlushTimer);
+    pilotFlushTimer = setTimeout(() => flushPilotEvents(), 1200);
+  }
+
+  function trackEvent(eventName, payload = {}, context = {}) {
+    if (!S?.pilot || !eventName) return;
+    const event = {
+      event_id: uniqueId("event"),
+      study_id: String(PILOT_CONFIG.studyId || "mamoboat-pilot-v1").slice(0, 80),
+      participant_id: S.pilot.participantId,
+      session_id: SESSION_ID,
+      occurred_at: new Date().toISOString(),
+      event_name: String(eventName).slice(0, 80),
+      app_version: APP_VERSION,
+      screen: context.screen || document.body.dataset.screen || "home",
+      race_date: context.raceDate || null,
+      venue_code: context.venueCode || null,
+      race_no: context.raceNo == null ? null : Number(context.raceNo),
+      payload: safePayload(payload),
+      sent_at: null,
+    };
+    S.pilot.events.push(event);
+    S.pilot.events = S.pilot.events.slice(-5000);
+    save();
+    schedulePilotFlush();
+  }
+
+  async function flushPilotEvents() {
+    if (pilotFlushPromise) return pilotFlushPromise;
+    if (!S.pilot.consent) return { ok: false, reason: "consent" };
+    if (!collectorReady()) return { ok: false, reason: "collector" };
+    const pending = S.pilot.events.filter((item) => !item.sent_at).slice(0, 100);
+    if (!pending.length) return { ok: true, sent: 0 };
+    pilotFlushPromise = (async () => {
+      let timeoutId = null;
+      try {
+        const headers = { "Content-Type": "application/json", Prefer: "return=minimal" };
+        let endpoint = String(COLLECTOR.endpoint || "");
+        if (COLLECTOR.anonKey) {
+          headers.apikey = COLLECTOR.anonKey;
+          headers.Authorization = `Bearer ${COLLECTOR.anonKey}`;
+          headers.Prefer = "resolution=ignore-duplicates,return=minimal";
+          const url = new URL(endpoint);
+          if (!url.searchParams.has("on_conflict")) {
+            url.searchParams.set("on_conflict", "event_id");
+          }
+          endpoint = url.toString();
+        }
+        const rows = pending.map(({ sent_at, ...row }) => row);
+        const controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), 15000);
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(rows),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const sentAt = new Date().toISOString();
+        const ids = new Set(pending.map((item) => item.event_id));
+        S.pilot.events.forEach((item) => {
+          if (ids.has(item.event_id)) item.sent_at = sentAt;
+        });
+        S.pilot.sentCount += pending.length;
+        S.pilot.lastSyncAt = sentAt;
+        S.pilot.lastError = "";
+        save();
+        if (S.pilot.events.some((item) => !item.sent_at)) schedulePilotFlush();
+        return { ok: true, sent: pending.length };
+      } catch (error) {
+        S.pilot.lastError = error?.name === "AbortError"
+          ? "送信が15秒でタイムアウトしました"
+          : String(error?.message || error).slice(0, 300);
+        save();
+        return { ok: false, reason: "network", error: S.pilot.lastError };
+      } finally {
+        clearTimeout(timeoutId);
+        pilotFlushPromise = null;
+        renderPilotSettings();
+      }
+    })();
+    return pilotFlushPromise;
+  }
+
+  function activeCampaign(kind) {
+    return (PILOT_CONFIG.rewards || []).find(
+      (item) => item?.active === true && item.kind === kind && item.id && item.title
+    ) || null;
+  }
+
+  function ensureRewardClaim(kind, sourceId, earnedAt = new Date().toISOString()) {
+    const existing = S.rewardClaims.find(
+      (item) => item.kind === kind && item.sourceId === sourceId
+    );
+    if (existing) return existing;
+    const campaign = activeCampaign(kind);
+    if (!campaign) return null;
+    const claim = {
+      id: uniqueId("claim"),
+      sourceId,
+      kind,
+      campaignId: campaign.id,
+      sponsor: campaign.sponsor,
+      title: campaign.title,
+      description: campaign.description || "",
+      code: campaign.code || "",
+      url: campaign.url || "",
+      expiresAt: campaign.expiresAt || "",
+      terms: campaign.terms || "",
+      earnedAt,
+      openedAt: null,
+      redeemedAt: null,
+    };
+    S.rewardClaims.push(claim);
+    S.rewardClaims = S.rewardClaims.slice(-500);
+    trackEvent("partner_reward_issued", {
+      reward_kind: kind,
+      campaign_id: campaign.id,
+    });
+    return claim;
+  }
+
+  function syncDefenseMilestoneClaims() {
+    const metrics = C.rewardMetrics(S.records);
+    for (let cycle = 1; cycle <= metrics.defenseMilestones; cycle += 1) {
+      ensureRewardClaim("defense-5", `defense-cycle-${cycle}`);
+    }
+  }
+
+  function rewardEventPayload(record) {
+    return {
+      record_id: record.id,
+      status: record.status,
+      saved_yen: Number(record.saved) || 0,
+      intended_yen: Number(record.intendedYen) || 0,
+      stake_b: Number(record.stake) || 0,
+      payout_b: Number(record.payoutC) || 0,
+      line_count: (record.lines || []).length,
+      bet_types: [...new Set((record.lines || []).map(
+        (line) => C.normalizeBetType(line.betType)
+      ))],
+      confidence: Number(record.conf) || 0,
+      urge_before: Number(record.urge) || 0,
+      urge_after: record.afterUrge == null ? null : Number(record.afterUrge),
+      reason: record.reason || "未入力",
+    };
+  }
+
+  function evaluateReward(record) {
+    if (!record || record.rewardEvaluatedAt) return record?.rewardOutcome || null;
+    const outcome = C.rewardOutcome(record);
+    if (["pending", "not-selected"].includes(outcome)) return null;
+    record.rewardEvaluatedAt = new Date().toISOString();
+    record.rewardOutcome = outcome;
+    if (outcome === "double-win") {
+      ensureRewardClaim("double-win", record.id, record.rewardEvaluatedAt);
+      trackEvent("double_win_earned", rewardEventPayload(record), {
+        raceDate: record.raceDate,
+        venueCode: record.venueCode,
+        raceNo: record.raceNo,
+      });
+    } else if (outcome === "defense-stamp") {
+      trackEvent("defense_stamp_earned", rewardEventPayload(record), {
+        raceDate: record.raceDate,
+        venueCode: record.venueCode,
+        raceNo: record.raceNo,
+      });
+      syncDefenseMilestoneClaims();
+    } else {
+      trackEvent("reward_not_eligible", { record_id: record.id }, {
+        raceDate: record.raceDate, venueCode: record.venueCode, raceNo: record.raceNo,
+      });
+    }
+    save();
+    return outcome;
+  }
+
+  function settlementPayload(record, source) {
+    return Object.assign(rewardEventPayload(record), {
+      settlement_source: source,
+      result_combo: record.resultCombo || null,
+      refund_b: Number(record.refundC) || 0,
+    });
+  }
+
+  function recordSettlement(record, source) {
+    if (record.resultEventAt) return;
+    if (record.payoutC > 0) {
+      postLedger(record.status === "refunded" ? "refund" : "official_payout", record.payoutC, `settlement:${record.id}`, {
+        label: record.status === "refunded"
+          ? `${record.venue} ${record.raceNo}R 返還`
+          : `${record.venue} ${record.raceNo}R 公式払戻`,
+        recordId: record.id,
+        venueCode: record.venueCode,
+        raceNo: record.raceNo,
+      });
+    }
+    awardDefenseBonus(record, "virtual-complete", 300, "仮想投票完了ボーナス");
+    record.resultEventAt = new Date().toISOString();
+    trackEvent("result_settled", settlementPayload(record, source), {
+      raceDate: record.raceDate,
+      venueCode: record.venueCode,
+      raceNo: record.raceNo,
+    });
+    evaluateReward(record);
+  }
 
   async function fetchDataset(date, force = false) {
     const basePath = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;
@@ -376,8 +750,6 @@
     const dates = [...new Set(
       S.records.filter((record) => !record.settled).map((record) => record.raceDate).filter(Boolean)
     )];
-    let totalAdded = 0;
-    let hitBonus = 0;
     let changed = false;
     const cache = liveLoaded ? { [DATA.date]: DATA } : {};
     for (const date of dates) {
@@ -396,13 +768,10 @@
         const result = C.settleRecord(record, dataset);
         if (!result.changed) continue;
         changed = true;
-        totalAdded += result.payoutAdded;
-        if (result.hit) hitBonus += 20;
+        recordSettlement(record, "automatic");
       }
     }
     if (changed) {
-      S.coins += totalAdded;
-      S.xp += hitBonus;
       save();
     }
   }
@@ -491,46 +860,47 @@
   }
 
   window.openMedalTopup = () => {
+    const rows = [...S.ledger].reverse().slice(0, 12).map((item) => `<div class="ledger-row">
+      <span>${esc(item.label || item.type)}<small>${timeText(item.at)}</small></span>
+      <b class="${item.amount > 0 ? "plus" : "minus"}">${item.amount > 0 ? "+" : ""}${fmt(item.amount)}B</b>
+    </div>`).join("");
     openModal(`<div class="medal-topup">
       <span class="kicker">B MEDAL BALANCE</span>
-      <h2>Bメダルを追加</h2>
+      <h2>Bメダル残高</h2>
       <div class="topup-balance"><span>現在の残高</span><strong>${fmt(S.coins)}B</strong></div>
-      <p>Bメダルは換金不能です。必要な時だけ手動で追加します。</p>
-      <div class="topup-grid">
-        <button type="button" onclick="addMedals(100)"><span>少しだけ</span><strong>＋100B</strong></button>
-        <button type="button" onclick="addMedals(1000)"><span>標準追加</span><strong>＋1,000B</strong></button>
-        <button type="button" onclick="addMedals(10000)"><span>まとめて</span><strong>＋10,000B</strong></button>
-      </div>
-      <div class="notice warn topup-policy"><b>自動補充はありません。</b><br>追加しなければ残高はそのままです。週替わり・日替わりで自動復活しません。</div>
-      <button class="btn secondary full" type="button" onclick="closeModal()">追加しないで閉じる</button>
+      <p>Bは購入・換金・任意追加できません。公式払戻と、アプリが記録した防衛行動だけで増えます。</p>
+      <div class="notice warn topup-policy"><b>自動復活はありません。</b><br>日替わり・週替わり・再読み込みで残高はリセットされません。</div>
+      <h3>最近のB履歴</h3><div class="wallet-ledger">${rows || '<p class="muted">履歴はまだありません。</p>'}</div>
+      <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button>
     </div>`);
   };
 
-  window.addMedals = (amount) => {
-    const value = Number(amount);
-    if (![100, 1000, 10000].includes(value)) return;
-    S.coins += value;
-    S.medalAdditions.push({ amount: value, at: new Date().toISOString() });
-    save();
-    $("topCoins").textContent = `${fmt(S.coins)} B`;
-    $("homeCoins").textContent = `${fmt(S.coins)}B`;
-    $("coins").textContent = `${fmt(S.coins)} B`;
-    window.closeModal();
-    if (document.body.dataset.screen === "home") renderHome();
-  };
-
   window.openRealBetConfirm = () => {
+    trackEvent("official_bet_prompt_opened", {}, {
+      raceDate: DATA.date,
+      venueCode: S.venue,
+      raceNo: S.raceNo,
+    });
     openModal(`<div class="real-bet-confirm">
       <span class="kicker">OFFICIAL CASH BETTING</span>
       <h2>公式投票へ移動しますか？</h2>
       <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>まもボートのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
       <p>いま現金を使わずに済ませたい場合は、下の「Bメダル投票に戻る」を選んでください。</p>
       <div class="real-bet-actions">
-        <button class="btn primary full" type="button" onclick="closeModal()">Bメダル投票に戻る</button>
+        <button class="btn primary full" type="button" onclick="recordRealBetAvoided()">Bメダル投票に戻る</button>
         <a class="btn real-cash-link full" href="${REAL_BET_URL}" target="_blank" rel="noopener noreferrer" onclick="recordRealBetExit()">公式TELEBOATログインへ ↗</a>
       </div>
       <small>公式サイトでの登録・ログイン・投票・入出金は、まもボートには保存されません。</small>
     </div>`);
+  };
+
+  window.recordRealBetAvoided = () => {
+    trackEvent("official_bet_prompt_cancelled", {}, {
+      raceDate: DATA.date,
+      venueCode: S.venue,
+      raceNo: S.raceNo,
+    });
+    window.closeModal();
   };
 
   window.recordRealBetExit = () => {
@@ -541,6 +911,11 @@
       raceNo: S.raceNo || null,
     });
     S.realBetExits = S.realBetExits.slice(-500);
+    trackEvent("official_bet_exit", {}, {
+      raceDate: DATA.date,
+      venueCode: S.venue,
+      raceNo: S.raceNo,
+    });
     save();
     window.closeModal();
   };
@@ -683,6 +1058,11 @@
       (item) => item.classList.toggle("active", item.id === `nav-${id}`)
     );
     renderCurrent(id);
+    trackEvent("screen_view", { destination: id }, {
+      venueCode: S.venue,
+      raceNo: id === "race" ? S.raceNo : null,
+      raceDate: id === "race" ? DATA.date : null,
+    });
     window.scrollTo(0, 0);
   };
   function renderOnboard() {
@@ -706,6 +1086,7 @@
   };
   window.startApp = () => {
     S.accepted = true;
+    trackEvent("onboarding_completed", { age_confirmed: true, b_medal_terms_confirmed: true });
     save();
     renderAll();
     window.scrollTo(0, 0);
@@ -911,11 +1292,19 @@
         </article>`).join("")
       : `<div class="card muted">${isFresh() ? "この後の締切はありません。" : "今日の実データ同期待ちです。"}</div>`;
     const unreviewed = S.records.filter(
-      (record) => (record.settled || canReviewAfter(record)) && !record.cashReviewed
+      (record) => (record.settled || canReviewAfter(record)) && !record.behaviorReviewed
     ).length;
-    $("settledNotice").innerHTML = unreviewed
-      ? `<div class="notice good" style="margin-top:10px"><b>${unreviewed}件のレース後記録が未入力です。</b> 戦績画面で現金を使ったか記録できます。</div>`
-      : "";
+    const unseenReward = [...S.records].reverse().find(
+      (record) => record.rewardOutcome && !record.rewardCelebratedAt
+    );
+    const notices = [];
+    if (unreviewed) {
+      notices.push(`<div class="notice good" style="margin-top:10px"><b>${unreviewed}件のレース後振り返りがあります。</b> 任意で衝動の変化を記録できます。</div>`);
+    }
+    if (unseenReward) {
+      notices.push(`<div class="notice reward-arrived" style="margin-top:10px"><b>${unseenReward.rewardOutcome === "double-win" ? "DOUBLE WIN達成！" : "防衛スタンプを獲得！"}</b><br>${esc(unseenReward.venue)} ${unseenReward.raceNo}Rの成果を確認できます。<button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${unseenReward.id}')">成果を見る</button></div>`);
+    }
+    $("settledNotice").innerHTML = notices.join("");
   }
 
   window.setFilter = (filter) => {
@@ -943,6 +1332,11 @@
     S.venue = code;
     S.raceNo = preferredRaceNumber(venue(code));
     resetBuilder();
+    trackEvent("venue_opened", { source: "venue-list" }, {
+      raceDate: DATA.date,
+      venueCode: code,
+      raceNo: S.raceNo,
+    });
     save();
     window.go("race");
   };
@@ -971,6 +1365,11 @@
     S.venue = code;
     S.raceNo = preferredRaceNumber(selected);
     resetBuilder();
+    trackEvent("venue_opened", { source: "venue-switcher" }, {
+      raceDate: DATA.date,
+      venueCode: code,
+      raceNo: S.raceNo,
+    });
     save();
     window.closeModal();
     renderRace();
@@ -980,12 +1379,22 @@
     S.venue = code;
     S.raceNo = number;
     resetBuilder();
+    trackEvent("race_opened", { source: "deadline" }, {
+      raceDate: DATA.date,
+      venueCode: code,
+      raceNo: number,
+    });
     save();
     window.go("race");
   };
   window.selectRace = (number) => {
     S.raceNo = number;
     resetBuilder();
+    trackEvent("race_opened", { source: "race-tabs" }, {
+      raceDate: DATA.date,
+      venueCode: S.venue,
+      raceNo: number,
+    });
     save();
     renderRace();
   };
@@ -1421,6 +1830,12 @@
       }).join("")}</div></details>`;
   }
 
+  function dailyChallengeRecord(date = DATA.date) {
+    return S.records.find(
+      (record) => record.raceDate === date && record.rewardChallenge === true
+    ) || null;
+  }
+
   window.reviewBet = () => {
     const venueItem = venue(S.venue);
     const raceItem = race(venueItem?.code, S.raceNo);
@@ -1430,15 +1845,28 @@
     if (!cart.length) return alert("買い目を追加してください。");
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
     if (total > S.coins) return alert("Bメダル残高が不足しています。");
+    const challenge = dailyChallengeRecord(DATA.date);
+    const challengePanel = challenge
+      ? `<div class="notice challenge-taken"><b>今日の防衛勝負は選択済み</b><br>${esc(challenge.venue)} ${challenge.raceNo}Rが、ダブルWIN・防衛スタンプの対象です。この投票は通常のB投票として記録されます。</div>`
+      : `<label class="challenge-select"><input id="rewardChallenge" type="checkbox" checked><span><b>このレースを「今日の防衛勝負」にする</b><small>1日1レース限定。結果とアプリ内行動から自動判定します。</small></span></label>`;
+    trackEvent("bet_review_opened", {
+      line_count: cart.length,
+      stake_b: total,
+      challenge_available: !challenge,
+    }, {
+      raceDate: DATA.date,
+      venueCode: venueItem.code,
+      raceNo: raceItem.number,
+    });
     openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
       <div class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
+      ${challengePanel}
       <h3>このレースへの自信</h3>
       <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
       <h3>今、現金で買いたい気持ち</h3>
       <input id="urge" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('uv').textContent=this.value"><div id="uv" class="big">5</div>
       <div class="field"><label>参加理由</label><select id="reason"><option>なんとなく</option><option>レースがあるから</option><option>自信がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
-      <div class="field"><label>現金ならいくら使うつもりだった？</label><input id="intended" type="number" min="0" step="100" value="${total}"></div>
       <div class="field"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="なぜ買いたくなったか等"></textarea></div>
       <button class="btn teal full" onclick="placeBet()">Bメダルで投票する</button>`);
   };
@@ -1452,11 +1880,19 @@
     }
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
     if (!cart.length || total > S.coins) return alert("Bメダル残高が不足しています。");
-    const intended = Math.max(0, Math.floor((Number($("intended").value) || 0) / 100) * 100);
     const event = eventInfo(venueItem);
-    S.coins -= total;
-    S.records.push({
-      id: window.crypto?.randomUUID ? window.crypto.randomUUID() : `r-${Date.now()}`,
+    const challenge = dailyChallengeRecord(DATA.date);
+    const rewardChallenge = !challenge && $("rewardChallenge")?.checked === true;
+    const recordId = window.crypto?.randomUUID ? window.crypto.randomUUID() : `r-${Date.now()}`;
+    if (!postLedger("virtual_bet", -total, `bet:${recordId}`, {
+      label: `${venueItem.name} ${raceItem.number}R 仮想投票`,
+      recordId,
+      venueCode: venueItem.code,
+      raceNo: raceItem.number,
+    })) return alert("Bメダル残高が不足しています。");
+    const record = {
+      id: recordId,
+      walletVersionAtBet: 2,
       raceDate: DATA.date,
       coinWeek: S.coinWeek,
       time: new Date().toISOString(),
@@ -1486,7 +1922,7 @@
         mode: line.mode || mode,
       })),
       stake: total,
-      intendedYen: intended,
+      intendedYen: total,
       conf: Number($("conf").value),
       urge: Number($("urge").value),
       reason: $("reason").value,
@@ -1499,10 +1935,33 @@
       resultPayout: null,
       resultPayouts: [],
       refundC: 0,
-      cashReviewed: false,
-      cashBought: null,
+      behaviorReviewed: false,
       afterUrge: null,
-      saved: 0,
+      saved: total,
+      rewardChallenge,
+      rewardOutcome: null,
+      rewardEvaluatedAt: null,
+    };
+    S.records.push(record);
+    trackEvent("virtual_bet_placed", {
+      record_id: record.id,
+      line_count: record.lines.length,
+      bet_types: [...new Set(record.lines.map((line) => line.betType))],
+      bet_mode: record.betMode,
+      stake_b: record.stake,
+      intended_yen: record.intendedYen,
+      confidence: record.conf,
+      urge_before: record.urge,
+      reason: record.reason,
+      reward_challenge: record.rewardChallenge,
+      seconds_to_close: record.closeTime
+        ? Math.max(0, Math.round((new Date(record.closeTime).getTime() - Date.now()) / 1000))
+        : null,
+      odds_lines_available: record.lines.filter((line) => oddsNumber(line.odds) > 0).length,
+    }, {
+      raceDate: record.raceDate,
+      venueCode: record.venueCode,
+      raceNo: record.raceNo,
     });
     save();
     window.closeModal();
@@ -1512,7 +1971,7 @@
   };
 
   function canReviewAfter(record) {
-    if (record.cashReviewed) return false;
+    if (record.behaviorReviewed) return false;
     if (record.settled) return true;
     return !!record.closeTime && Date.now() > new Date(record.closeTime).getTime();
   }
@@ -1523,23 +1982,34 @@
     openModal(`<h2>${esc(record.venue)} ${record.raceNo}R</h2>
       <h3>レース後、現金で買いたい気持ちは？</h3>
       <input id="after" class="slider" type="range" min="0" max="10" value="3" oninput="document.getElementById('av').textContent=this.value"><div id="av" class="big">3</div>
-      <div class="field"><label>実際にも現金で舟券を買いましたか？</label><select id="cash"><option value="no">買っていない</option><option value="yes">買った</option><option value="x">回答しない</option></select></div>
-      <button class="btn teal full" onclick="saveAfter('${record.id}')">保存する</button>`);
+      <h3>取り返すため、次も買いたい気持ちは？</h3>
+      <input id="chaseAfter" class="slider" type="range" min="0" max="10" value="2" oninput="document.getElementById('cav').textContent=this.value"><div id="cav" class="big">2</div>
+      <p class="muted">現金購入の自己申告は不要です。この入力は衝動変化の分析だけに使用します。</p>
+      <button class="btn teal full" onclick="saveAfter('${record.id}')">振り返りを保存する</button>`);
   };
 
   window.saveAfter = (id) => {
     const record = S.records.find((item) => item.id === id);
-    if (!record || record.cashReviewed) return;
+    if (!record || record.behaviorReviewed) return;
     record.afterUrge = Number($("after").value);
-    const cash = $("cash").value;
-    record.cashBought = cash === "yes" ? true : cash === "no" ? false : null;
-    record.cashReviewed = true;
+    record.chaseUrge = Number($("chaseAfter").value);
+    record.behaviorReviewed = true;
     record.reviewedAt = new Date().toISOString();
-    if (cash === "no") {
-      record.saved = Number(record.intendedYen ?? record.stake ?? 0) || 0;
-      S.xp += 50;
-      if (record.conf <= 4) S.xp += 15;
-    }
+    trackEvent("post_race_urge_recorded", {
+      record_id: record.id,
+      replaced_yen: Number(record.saved) || 0,
+      urge_before: Number(record.urge) || 0,
+      urge_after: record.afterUrge,
+      chase_urge_after: record.chaseUrge,
+      confidence: Number(record.conf) || 0,
+      reason: record.reason || "未入力",
+      result_status: record.settled ? record.status : "pending",
+      reward_challenge: record.rewardChallenge === true,
+    }, {
+      raceDate: record.raceDate,
+      venueCode: record.venueCode,
+      raceNo: record.raceNo,
+    });
     save();
     window.closeModal();
     renderAll();
@@ -1562,12 +2032,14 @@
       }
       const result = C.settleRecord(record, dataset);
       if (result.changed) {
-        S.coins += result.payoutAdded;
-        if (result.hit) S.xp += 20;
+        recordSettlement(record, "manual-refresh");
         save();
         renderAll();
+        const rewardOutcome = record.rewardOutcome;
         openModal(`<div class="instant-result success"><span class="kicker">RESULT UPDATED</span><h2>結果を反映しました</h2>
-          <div class="notice good"><b>${esc(record.venue)} ${record.raceNo}R　${record.status === "hit" ? "B的中" : record.status === "refunded" ? "不成立・返還" : "外れ"}</b><br>実着順 ${esc(record.resultCombo || "確定")} / B払戻 ${fmt(record.payoutC)}B</div>
+          <div class="notice good"><b>${esc(record.venue)} ${record.raceNo}R　${record.status === "hit" ? "B的中" : record.status === "refunded" ? "不成立・返還" : "不的中"}</b><br>実着順 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? `払戻 ＋${fmt(record.payoutC)}B` : record.status === "refunded" ? `返還 ＋${fmt(record.payoutC)}B` : `投票 −${fmt(record.stake)}B`}</div>
+          ${rewardOutcome === "double-win" ? '<div class="double-win-mini"><b>DOUBLE WIN達成！</b><span>今日の防衛勝負でB的中しました。</span></div>' : rewardOutcome === "defense-stamp" ? '<div class="defense-mini"><b>防衛スタンプ獲得</b><span>仮想投票でレースを完了しました。</span></div>' : ""}
+          ${rewardOutcome ? `<button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${record.id}')">ご褒美結果を見る</button>` : ""}
           <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
         return;
       }
@@ -1587,6 +2059,115 @@
         button.textContent = "結果を今すぐ再確認";
       }
     }
+  };
+
+  function rewardClaimForRecord(record) {
+    return S.rewardClaims.find(
+      (claim) => claim.kind === "double-win" && claim.sourceId === record.id
+    ) || null;
+  }
+
+  function claimHtml(claim) {
+    if (!claim) return "";
+    const state = claim.redeemedAt ? "使用済みとして記録" : claim.openedAt ? "確認済み" : "未確認";
+    return `<div class="partner-reward-card">
+      <span class="partner-label">MAMOBOAT PARTNER REWARD</span>
+      <small>${esc(claim.sponsor || "協賛店舗")}</small>
+      <h3>${esc(claim.title)}</h3>
+      ${claim.description ? `<p>${esc(claim.description)}</p>` : ""}
+      ${claim.code ? `<div class="reward-code"><span>提示コード</span><strong>${esc(claim.code)}</strong></div>` : ""}
+      ${claim.expiresAt ? `<div class="tiny">期限：${esc(claim.expiresAt)}</div>` : ""}
+      ${claim.terms ? `<details><summary>利用条件</summary><p>${esc(claim.terms)}</p></details>` : ""}
+      <div class="reward-claim-actions">
+        ${claim.url ? `<a class="btn coral-btn full" href="${esc(claim.url)}" target="_blank" rel="noopener noreferrer" onclick="openRewardClaim('${claim.id}')">特典を利用する ↗</a>` : ""}
+        ${!claim.redeemedAt ? `<button class="btn secondary full" type="button" onclick="markRewardUsed('${claim.id}')">使用済みにする</button>` : ""}
+      </div><div class="tiny">状態：${esc(state)}／換金・譲渡不可</div>
+    </div>`;
+  }
+
+  function rewardRecordHtml(record) {
+    if (!record.rewardChallenge) return "";
+    if (!record.rewardOutcome) {
+      return `<div class="challenge-record pending"><span>今日の防衛勝負</span><b>実結果待ち</b></div>`;
+    }
+    if (record.rewardOutcome === "double-win") {
+      const claim = rewardClaimForRecord(record);
+      return `<div class="challenge-record double"><span>DOUBLE WIN</span><b>防衛勝負でB的中</b><small>${claim ? esc(claim.title) : "限定特典の提携準備中・達成記録は保存済み"}</small>
+        <button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${record.id}')">ご褒美結果を見る</button></div>`;
+    }
+    if (record.rewardOutcome === "defense-stamp") {
+      return `<div class="challenge-record defended"><span>DEFENSE SUCCESS</span><b>防衛スタンプを1個獲得</b><small>仮想投票でレースを完了しました。</small>
+        <button class="btn secondary full" type="button" onclick="openRewardCelebration('${record.id}')">防衛結果を見る</button></div>`;
+    }
+    return "";
+  }
+
+  window.openRewardCelebration = (id) => {
+    const record = S.records.find((item) => item.id === id);
+    if (!record?.rewardOutcome) return;
+    record.rewardCelebratedAt ||= new Date().toISOString();
+    trackEvent("reward_celebration_opened", {
+      record_id: record.id,
+      reward_outcome: record.rewardOutcome,
+      saved_yen: Number(record.saved) || 0,
+    }, {
+      raceDate: record.raceDate,
+      venueCode: record.venueCode,
+      raceNo: record.raceNo,
+    });
+    const metrics = C.rewardMetrics(S.records);
+    if (record.rewardOutcome === "double-win") {
+      const claim = ensureRewardClaim("double-win", record.id, record.rewardEvaluatedAt);
+      openModal(`<div class="reward-celebration double-win-celebration">
+        <span class="kicker">DOUBLE WIN</span><div class="celebration-mark">W</div>
+        <h2>今日の防衛勝負でB的中！</h2>
+        <p>${esc(record.venue)} ${record.raceNo}Rで、公式払戻に連動して${fmt(record.payoutC)}Bを獲得しました。</p>
+        ${claim ? claimHtml(claim) : '<div class="notice partner-wait"><b>限定特典の提携準備中</b><br>ダブルWIN達成記録は保存しました。現在は実店舗で使えるクーポンを発行していません。</div>'}
+        <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
+    } else if (record.rewardOutcome === "defense-stamp") {
+      const cycle = Math.floor(metrics.defenseStamps / 5);
+      const modalProgress = metrics.defenseStamps > 0 && metrics.stampProgress === 0
+        ? 5
+        : metrics.stampProgress;
+      const milestoneClaim = cycle
+        ? S.rewardClaims.find((claim) => claim.kind === "defense-5" && claim.sourceId === `defense-cycle-${cycle}`)
+        : null;
+      openModal(`<div class="reward-celebration defense-celebration">
+        <span class="kicker">DEFENSE SUCCESS</span><div class="celebration-mark shield">守</div>
+        <h2>防衛スタンプを獲得</h2>
+        <p>${esc(record.venue)} ${record.raceNo}Rを仮想投票で完了しました。</p>
+        <div class="modal-stamps">${Array.from({ length: 5 }, (_, index) => `<i class="${index < modalProgress ? "on" : ""}">${index + 1}</i>`).join("")}</div>
+        <div class="notice good"><b>防衛スタンプ ${metrics.defenseStamps}個</b><br>${modalProgress === 5 ? "5個達成しました。" : `次の特典まであと${5 - modalProgress}個です。`}</div>
+        ${milestoneClaim ? claimHtml(milestoneClaim) : metrics.stampProgress === 0 && metrics.defenseStamps ? '<div class="notice partner-wait"><b>限定特典の提携準備中</b><br>5個達成記録は保存されています。</div>' : ""}
+        <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
+    }
+    save();
+  };
+
+  window.openRewardClaim = (id) => {
+    const claim = S.rewardClaims.find((item) => item.id === id);
+    if (!claim) return;
+    claim.openedAt ||= new Date().toISOString();
+    trackEvent("partner_reward_opened", {
+      claim_id: claim.id,
+      reward_kind: claim.kind,
+      campaign_id: claim.campaignId,
+    });
+    save();
+  };
+
+  window.markRewardUsed = (id) => {
+    const claim = S.rewardClaims.find((item) => item.id === id);
+    if (!claim || claim.redeemedAt) return;
+    claim.redeemedAt = new Date().toISOString();
+    trackEvent("partner_reward_marked_used", {
+      claim_id: claim.id,
+      reward_kind: claim.kind,
+      campaign_id: claim.campaignId,
+    });
+    save();
+    window.closeModal();
+    renderAll();
   };
 
   function recCard(record) {
@@ -1610,11 +2191,15 @@
           ? `3連単 ${esc(record.resultCombo)} ${fmt(record.resultPayout)}円`
           : "";
       result = `<div class="notice ${record.status === "hit" ? "good" : ""}">
-        <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "B的中" : "外れ"}</div>
-        ${payouts ? `公式払戻 ${payouts}<br>` : ""}B払戻 ${fmt(record.payoutC)}B${record.refundC ? `（うち不成立返還 ${fmt(record.refundC)}B）` : ""}</div>`;
+        <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "的中！" : "今回の買い目は不的中"}</div>
+        ${payouts ? `公式払戻 ${payouts}<br>` : ""}${record.status === "hit" ? `払戻 ＋${fmt(record.payoutC)}B` : `投票 −${fmt(record.stake)}B`}${record.refundC ? `（一部返還 ＋${fmt(record.refundC)}B）` : ""}</div>`;
     }
-    const badge = record.saved
-      ? "現金を守った"
+    const badge = record.rewardOutcome === "double-win"
+      ? "ダブルWIN"
+      : record.rewardOutcome === "defense-stamp"
+        ? "防衛スタンプ"
+        : record.saved
+      ? "仮想投票へ置換"
       : record.status === "refunded"
         ? "不成立・返還"
         : record.settled
@@ -1634,14 +2219,16 @@
       ? record.entrySnapshot
       : currentRace?.entries || [];
     return `<div class="card rec"><div class="venuehead"><div><b>${esc(record.venue)} ${record.raceNo}R</b>
-      <div class="tiny">${eventLine ? `${esc(eventLine)}<br>` : ""}${(record.lines || []).length}点 / ${fmt(record.stake)}B / 現金予定 ${fmt(record.intendedYen)}円</div></div>
+      <div class="tiny">${eventLine ? `${esc(eventLine)}<br>` : ""}${(record.lines || []).length}点 / ${fmt(record.stake)}B / 置換 ${fmt(record.saved)}円</div></div>
       <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
       ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}
       ${record.settled && officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果と払戻を照合 ↗</a>` : ""}
       <div class="recgrid"><span>自信</span><b>${record.conf}/10</b><span>購入前衝動</span><b>${record.urge}/10</b>
-      <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>守った現金</span><b>${fmt(record.saved)}円</b></div>
+      <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>仮想投票へ置換</span><b>${fmt(record.saved)}円</b>
+      ${record.behaviorReviewed ? `<span>購入後衝動</span><b>${record.afterUrge ?? "—"}/10</b><span>追い上げ衝動</span><b>${record.chaseUrge ?? "—"}/10</b>` : ""}</div>
       ${canReviewAfter(record) ? `<button class="btn secondary full" onclick="reviewAfter('${record.id}')">レース後の行動を記録</button>` : ""}
-      ${record.saved ? `<div class="reward"><span class="manga-label">CASH SAVED</span> ${fmt(record.saved)}円を現金では使わずに済みました。</div>` : ""}</div>`;
+      ${rewardRecordHtml(record)}
+      ${record.saved ? `<div class="reward"><span class="manga-label">VIRTUAL SHIFT</span> ${fmt(record.saved)}円分をB投票へ置き換えました。</div>` : ""}</div>`;
   }
 
   window.setRecFilter = (filter) => {
@@ -1787,21 +2374,26 @@
     const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
     const stats = C.behaviorStats(S.records);
     const saved = C.savedTotals(S.records).all;
-    return `低自信×高衝動 ${low}件。追い上げ傾向 ${stats.chase}件、短時間の金額増加 ${stats.escalation}件。これまで ${fmt(saved)}円を現金では使わずに済みました。`;
+    return `低自信×高衝動 ${low}件。追い上げ傾向 ${stats.chase}件、短時間の金額増加 ${stats.escalation}件。これまで ${fmt(saved)}円分を仮想投票へ置き換えました。`;
   }
 
   function renderAnalysis() {
+    S.records.forEach((record) => evaluateReward(record));
     const stats = C.behaviorStats(S.records);
     const total = C.savedTotals(S.records).all;
+    const reward = C.rewardMetrics(S.records);
     const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
     const settled = S.records.filter((item) => item.settled).length;
     $("analysisCards").innerHTML = [
-      ["守った現金", `${fmt(total)}円`],
-      ["低自信×高衝動", `${low}件`],
-      ["追い上げ傾向", `${stats.chase}件`],
-      ["実結果反映", `${settled}件`],
+      ["仮想投票へ置換", `${fmt(total)}円`],
+      ["現在のB残高", `${fmt(S.coins)}B`],
+      ["ダブルWIN", `${reward.doubleWins}回`],
+      ["防衛スタンプ", `${reward.defenseStamps}個`],
     ].map(([label, value]) => `<div class="stat-card"><div class="eyebrow">${label}</div><div class="metric">${value}</div></div>`).join("");
     const items = [
+      ["B投票と結果", `${S.records.length}件中 ${settled}件反映・B的中 ${stats.virtualHits}件`],
+      ["仮想投票総額", `${fmt(stats.replacedTotal)}円相当`],
+      ["低自信×高衝動", `${low}件（自信4以下・衝動7以上）`],
       ["取り返したい参加", `${stats.declaredChase}件`],
       ["短時間の金額増加", `${stats.escalation}件（30分以内に予定額が増加）`],
       ["外れ後の追い上げ", `${stats.postLossChase}件（30分以内・予定額増加）`],
@@ -1810,27 +2402,54 @@
         ? "レース後データ待ち"
         : `B投票後、平均 ${stats.urgeDrop >= 0 ? "−" : "＋"}${Math.abs(stats.urgeDrop).toFixed(1)}`],
       ["多い参加理由", stats.topReason ? `${stats.topReason[0]}：${stats.topReason[1]}件` : "データ待ち"],
-      ["守れた場", stats.topVenue ? `${stats.topVenue[0]}：${fmt(stats.topVenue[1])}円` : "データ待ち"],
+      ["置換額が多い場", stats.topVenue ? `${stats.topVenue[0]}：${fmt(stats.topVenue[1])}円` : "データ待ち"],
+      ["公式投票への移動", `${S.realBetExits.length}回`],
     ];
     $("analysisList").innerHTML = items.map(([label, value]) =>
       `<div class="card"><b>${esc(label)}</b><p class="muted">${esc(value)}</p></div>`
     ).join("");
-    $("xpValue").textContent = `${fmt(S.xp)} XP`;
-    $("xpBar").style.width = `${Math.min(100, (S.xp % 500) / 5)}%`;
-    const rewards = [
-      [100, "青緑の帆", "帆"], [300, "灯台バッジ", "灯"],
-      [600, "夜航海背景", "夜"], [1000, "金の錨", "錨"],
-    ];
-    $("rewards").innerHTML = rewards.map(([xp, name, symbol]) =>
-      `<div class="rewarditem ${S.xp < xp ? "lock" : ""}"><div class="reward-symbol">${symbol}</div><b>${name}</b><div class="tiny">${S.xp >= xp ? "解放済み" : `${xp} XPで解放`}</div></div>`
-    ).join("");
+    renderRewardRoute(reward);
+  }
+
+  function renderRewardRoute(metrics = C.rewardMetrics(S.records)) {
+    S.records.filter((record) => record.rewardOutcome === "double-win").forEach(
+      (record) => ensureRewardClaim("double-win", record.id, record.rewardEvaluatedAt)
+    );
+    syncDefenseMilestoneClaims();
+    const today = metrics.todayChallenge;
+    const todayState = !today
+      ? "まだ選択していません"
+      : today.rewardOutcome === "double-win"
+        ? "ダブルWIN達成"
+        : today.rewardOutcome === "defense-stamp"
+          ? "防衛スタンプ獲得"
+          : "実結果待ち";
+    $("rewardRouteSummary").innerHTML = `<div class="today-challenge ${today ? "selected" : ""}">
+      <span>TODAY'S DEFENSE RACE</span><b>${today ? `${esc(today.venue)} ${today.raceNo}R` : "今日の防衛勝負"}</b><small>${esc(todayState)}</small>
+      ${today?.rewardOutcome ? `<button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${today.id}')">成果を見る</button>` : ""}
+    </div><div class="reward-score"><div><span>DOUBLE WIN</span><b>${metrics.doubleWins}</b><small>累計達成</small></div><div><span>DEFENSE</span><b>${metrics.defenseStamps}</b><small>スタンプ</small></div></div>`;
+    const visibleProgress = metrics.defenseStamps > 0 && metrics.stampProgress === 0
+      ? 5
+      : metrics.stampProgress;
+    $("defenseStampRail").innerHTML = `<div class="stamp-copy"><b>今日の防衛勝負をBで完了すると1個</b><span>${visibleProgress === 5 ? "5個達成" : `次の限定特典まであと${5 - visibleProgress}個`}</span></div>
+      <div class="stamp-row">${Array.from({ length: 5 }, (_, index) => `<i class="${index < visibleProgress ? "on" : ""}"><span>守</span><small>${index + 1}</small></i>`).join("")}</div>`;
+    const claims = [...S.rewardClaims].reverse();
+    $("rewardWallet").innerHTML = claims.length
+      ? `<div class="wallet-title"><b>獲得した限定特典</b><span>${claims.length}件</span></div>${claims.map(claimHtml).join("")}`
+      : `<div class="notice partner-wait"><b>限定特典は提携準備中です</b><br>ダブルWINと防衛スタンプの達成記録は保存されます。実際に利用できる協賛クーポンだけを、提携開始後にここへ表示します。</div>`;
   }
 
   function analysisSummary() {
     const stats = C.behaviorStats(S.records);
+    const reward = C.rewardMetrics(S.records);
     return `まもボート行動分析用データ
+テスター番号: ${S.pilot.participantId}
 記録数: ${S.records.length}
-守った現金: ${C.savedTotals(S.records).all}円
+仮想投票へ置き換えた金額: ${C.savedTotals(S.records).all}円
+B残高: ${S.coins}B
+B的中: ${stats.virtualHits}件
+ダブルWIN: ${reward.doubleWins}件
+防衛スタンプ: ${reward.defenseStamps}個
 低自信×高衝動: ${S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length}件
 追い上げ傾向: ${stats.chase}件
 取り返したい参加: ${stats.declaredChase}件
@@ -1840,6 +2459,8 @@
 平均衝動変化: ${stats.urgeDrop == null ? "未集計" : stats.urgeDrop.toFixed(2)}
 主な理由: ${stats.topReason ? stats.topReason.join(" / ") : "未集計"}
 場別最大セーブ: ${stats.topVenue ? stats.topVenue.join(" / ") : "未集計"}
+公式投票への移動: ${S.realBetExits.length}回
+匿名イベント: ${S.pilot.events.length}件（未送信 ${S.pilot.events.filter((item) => !item.sent_at).length}件）
 
 このデータから、衝動的に現金を使いやすい条件と、仮想投票への置換が有効だった条件を分析してください。`;
   }
@@ -1861,7 +2482,97 @@
       本日の開催 ${stats.scheduleVenues || 0}場 / ${stats.scheduleRaces || 0}レース / ${stats.scheduleEntries || 0}艇<br>
       確定結果 ${stats.completedResultRaces || 0}レース / 払戻情報 ${stats.totalPayoutEntries || stats.sanrenshoPayouts || 0}件<br>
       参考オッズ ${stats.oddsRaces || 0}レース / 最終データ時刻 ${timeText(DATA.generatedAt)}`;
+    renderPilotSettings();
   }
+
+  function renderPilotSettings() {
+    if (!$("pilotStatus")) return;
+    const pending = S.pilot.events.filter((item) => !item.sent_at).length;
+    $("pilotParticipantId").value = S.pilot.participantId;
+    $("pilotConsent").checked = S.pilot.consent;
+    const collectorState = collectorReady()
+      ? S.pilot.consent
+        ? '<b class="pilot-good">中央集約：接続可能</b>'
+        : '<b>中央集約：同意待ち</b>'
+      : '<b class="pilot-warn">中央集約：未接続（現在は端末内保存のみ）</b>';
+    $("pilotStatus").innerHTML = `${collectorState}<br>
+      テスター番号 ${esc(S.pilot.participantId)} / 端末内イベント ${fmt(S.pilot.events.length)}件 / 未送信 ${fmt(pending)}件 / 送信済み ${fmt(S.pilot.sentCount)}件
+      ${S.pilot.lastSyncAt ? `<br>最終送信 ${new Date(S.pilot.lastSyncAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}` : ""}
+      ${S.pilot.lastError ? `<br><span class="pilot-error">直近エラー：${esc(S.pilot.lastError)}</span>` : ""}`;
+  }
+
+  window.savePilotSettings = () => {
+    const participantId = String($("pilotParticipantId").value || "")
+      .trim()
+      .replace(/[^A-Za-z0-9_-]/g, "-")
+      .slice(0, 40);
+    if (participantId.length < 3) {
+      return alert("テスター番号は英数字・ハイフンで3文字以上にしてください。例：P01");
+    }
+    const previousId = S.pilot.participantId;
+    S.pilot.participantId = participantId;
+    S.pilot.consent = $("pilotConsent").checked;
+    S.pilot.events.forEach((event) => {
+      if (!event.sent_at && event.participant_id === previousId) {
+        event.participant_id = participantId;
+      }
+    });
+    trackEvent("pilot_settings_saved", {
+      consent: S.pilot.consent,
+      collector_configured: collectorReady(),
+      participant_changed: previousId !== participantId,
+    });
+    save();
+    renderPilotSettings();
+    if (S.pilot.consent && collectorReady()) flushPilotEvents();
+    alert(collectorReady()
+      ? "計測設定を保存しました。未送信データを安全に送信します。"
+      : "計測設定を保存しました。現在は端末内に記録されます。中央集約先の接続後にまとめて送信できます。");
+  };
+
+  window.sendPilotDataNow = async (button) => {
+    if (!S.pilot.consent) return alert("先に匿名データ送信への同意を有効にしてください。");
+    if (!collectorReady()) return alert("中央集約先がまだ接続されていません。データは端末内に残り、JSON・CSVで書き出せます。");
+    if (button) {
+      button.disabled = true;
+      button.textContent = "送信中…";
+    }
+    const result = await flushPilotEvents();
+    if (button && document.body.contains(button)) {
+      button.disabled = false;
+      button.textContent = "未送信データを送る";
+    }
+    renderPilotSettings();
+    alert(result?.ok ? `${result.sent || 0}件を送信しました。` : "送信できませんでした。未送信データは端末内に残っています。");
+  };
+
+  function csvCell(value) {
+    const text = String(value == null ? "" : value).replaceAll('"', '""');
+    return `"${text}"`;
+  }
+
+  window.exportPilotCSV = () => {
+    const header = [
+      "event_id", "study_id", "participant_id", "session_id", "occurred_at",
+      "event_name", "app_version", "screen", "race_date", "venue_code",
+      "race_no", "payload_json", "sent_at",
+    ];
+    const rows = S.pilot.events.map((event) => [
+      event.event_id, event.study_id, event.participant_id, event.session_id,
+      event.occurred_at, event.event_name, event.app_version, event.screen,
+      event.race_date, event.venue_code, event.race_no,
+      JSON.stringify(event.payload || {}), event.sent_at,
+    ]);
+    const csv = `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n")}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const anchor = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    anchor.href = url;
+    anchor.download = `mamoboat-pilot-${S.pilot.participantId}-${C.jstDate()}.csv`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    trackEvent("pilot_csv_exported", { event_count: S.pilot.events.length });
+  };
 
   window.reloadData = async (button) => {
     if (button) {
@@ -1869,6 +2580,12 @@
       button.textContent = "更新しています…";
     }
     const result = await loadOfficialData(true);
+    trackEvent("official_data_refresh", {
+      success: result?.ok === true,
+      generated_at: DATA.generatedAt || null,
+      schedule_venues: Number(DATA.quality?.stats?.scheduleVenues) || 0,
+      completed_results: Number(DATA.quality?.stats?.completedResultRaces) || 0,
+    });
     if (button && document.body.contains(button)) {
       button.disabled = false;
       button.textContent = "最新情報に更新";
@@ -1888,21 +2605,26 @@
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v372-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v380-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
   window.resetData = () => {
-    if (!confirm("記録を初期化しますか？この操作は取り消せません。")) return;
+    if (!confirm("投票・行動イベント・特典の記録をすべて初期化しますか？この操作は取り消せません。必要なら先にJSONを書き出してください。")) return;
     const accepted = S.accepted;
+    const participantId = S.pilot.participantId;
+    const consent = S.pilot.consent;
     S = fresh();
     S.accepted = accepted;
+    S.pilot.participantId = participantId;
+    S.pilot.consent = consent;
     save();
     renderAll();
     window.go("home");
   };
 
   function renderAll() {
+    processObservedBonuses();
     if (!document.body.dataset.screen) document.body.dataset.screen = "home";
     $("onboard").classList.toggle("show", !S.accepted);
     renderOnboard();
@@ -1916,10 +2638,19 @@
   }
 
   initRealBetFloat();
+  awardLoginBonus();
+  trackEvent("app_opened", {
+    returning_user: S.accepted === true,
+    local_records: S.records.length,
+    collector_configured: collectorReady(),
+  });
   renderAll();
   loadOfficialData();
   setInterval(() => {
-    if (!document.hidden) updateTimeDisplays();
+    if (!document.hidden) {
+      updateTimeDisplays();
+      processObservedBonuses();
+    }
   }, 10 * 1000);
   setInterval(() => {
     if (!document.hidden && Date.now() - lastLoadAt >= 5 * 60 * 1000) {
@@ -1928,6 +2659,7 @@
   }, 60 * 1000);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && Date.now() - lastLoadAt > 5 * 60 * 1000) loadOfficialData();
+    if (document.hidden) flushPilotEvents();
   });
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
