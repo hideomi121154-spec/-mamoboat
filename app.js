@@ -31,6 +31,7 @@
   const PAYOUT_DISPLAY_ORDER = [
     "win", "place", "exacta", "quinella", "wide", "trifecta", "trio",
   ];
+  const REAL_BET_URL = "https://www.boatrace.jp/owsp/sp/login";
   const MODE_LABELS = {
     normal: "通常",
     box: "BOX",
@@ -162,6 +163,7 @@
   let form = [new Set(), new Set(), new Set()];
   let cart = [];
   let onboardStep = 0;
+  let resultIndexRequested = false;
 
   function weekKey(value = new Date()) {
     const today = C.jstDate(value);
@@ -183,6 +185,8 @@
       filter: "active",
       homeFilter: "all",
       favorites: [],
+      medalAdditions: [],
+      realBetExits: [],
       recFilter: "all",
       xp: 0,
       lastDataDate: null,
@@ -204,6 +208,15 @@
     state.favorites = Array.isArray(state.favorites)
       ? [...new Set(state.favorites.map(String).filter((code) => VENUE_ROMAJI[code]))]
       : [];
+    state.medalAdditions = Array.isArray(state.medalAdditions)
+      ? state.medalAdditions.map((item) => ({
+        amount: Number(item?.amount) || 0,
+        at: item?.at || null,
+      })).filter((item) => item.amount > 0)
+      : [];
+    state.realBetExits = Array.isArray(state.realBetExits)
+      ? state.realBetExits.filter((item) => item && item.at).slice(-500)
+      : [];
     state.records = raw.map((record, index) => {
       const stake = Number(record.stake ?? record.total ?? 0) || 0;
       const intended = Number(
@@ -215,6 +228,7 @@
           betType: C.normalizeBetType(line.betType),
           stake: Number(line.stake) || 100,
           odds: line.odds ?? "",
+          oddsCapturedAt: line.oddsCapturedAt || null,
           mode: ["normal", "box", "form"].includes(line.mode) ? line.mode : null,
         }))
         : Array.isArray(record.combo)
@@ -282,11 +296,6 @@
   }
 
   let S = load();
-  if (S.coinWeek !== weekKey()) {
-    S.coinWeek = weekKey();
-    S.coins = 10000;
-    localStorage.setItem(KEY, JSON.stringify(S));
-  }
 
   const save = () => localStorage.setItem(KEY, JSON.stringify(S));
   const venue = (code) => DATA.venues.find((item) => item.code === code);
@@ -294,8 +303,9 @@
     (item) => Number(item.number) === Number(number)
   );
 
-  async function fetchDataset(date) {
-    const path = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;
+  async function fetchDataset(date, force = false) {
+    const basePath = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;
+    const path = force ? `${basePath}?refresh=${Date.now()}` : basePath;
     const response = await fetch(path, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status} ${path}`);
     const dataset = await response.json();
@@ -305,12 +315,12 @@
     return dataset;
   }
 
-  async function loadOfficialData() {
+  async function loadOfficialData(force = false) {
     if (dataLoadPromise) return dataLoadPromise;
     dataLoadPromise = (async () => {
       dataError = "";
       try {
-        DATA = await fetchDataset(C.jstDate());
+        DATA = await fetchDataset(C.jstDate(), force);
         liveLoaded = true;
         S.lastDataDate = DATA.date;
         save();
@@ -354,7 +364,7 @@
         const result = C.settleRecord(record, dataset);
         if (!result.changed) continue;
         changed = true;
-        if (record.coinWeek === S.coinWeek) totalAdded += result.payoutAdded;
+        totalAdded += result.payoutAdded;
         if (result.hit) hitBonus += 20;
       }
     }
@@ -377,6 +387,21 @@
 
   function officialResultUrl(code, number, date = DATA.date) {
     return officialRaceUrl("raceresult", code, number, date);
+  }
+
+  function officialResultListUrl(code, date = DATA.date) {
+    const raceDate = String(date || C.jstDate()).replaceAll("-", "");
+    const venueCode = String(code || "").padStart(2, "0");
+    return `https://www.boatrace.jp/owpc/pc/race/resultlist?hd=${encodeURIComponent(raceDate)}&jcd=${encodeURIComponent(venueCode)}`;
+  }
+
+  function githubSyncWorkflowUrl() {
+    const host = window.location.hostname.toLowerCase();
+    if (!host.endsWith(".github.io")) return "";
+    const owner = host.slice(0, -".github.io".length);
+    const firstPath = window.location.pathname.split("/").filter(Boolean)[0];
+    const repository = firstPath || `${owner}.github.io`;
+    return `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/actions/workflows/sync-official-data.yml`;
   }
 
   function officialOddsUrl(code, number, type = betType, date = DATA.date) {
@@ -441,6 +466,61 @@
     $("modal").innerHTML = html;
     $("modalBg").classList.add("show");
   }
+
+  window.openMedalTopup = () => {
+    openModal(`<div class="medal-topup">
+      <span class="kicker">B MEDAL BALANCE</span>
+      <h2>Bメダルを追加</h2>
+      <div class="topup-balance"><span>現在の残高</span><strong>${fmt(S.coins)}B</strong></div>
+      <p>Bメダルは換金不能です。必要な時だけ手動で追加します。</p>
+      <div class="topup-grid">
+        <button type="button" onclick="addMedals(100)"><span>少しだけ</span><strong>＋100B</strong></button>
+        <button type="button" onclick="addMedals(1000)"><span>標準追加</span><strong>＋1,000B</strong></button>
+        <button type="button" onclick="addMedals(10000)"><span>まとめて</span><strong>＋10,000B</strong></button>
+      </div>
+      <div class="notice warn topup-policy"><b>自動補充はありません。</b><br>追加しなければ残高はそのままです。週替わり・日替わりで自動復活しません。</div>
+      <button class="btn secondary full" type="button" onclick="closeModal()">追加しないで閉じる</button>
+    </div>`);
+  };
+
+  window.addMedals = (amount) => {
+    const value = Number(amount);
+    if (![100, 1000, 10000].includes(value)) return;
+    S.coins += value;
+    S.medalAdditions.push({ amount: value, at: new Date().toISOString() });
+    save();
+    $("topCoins").textContent = `${fmt(S.coins)} B`;
+    $("homeCoins").textContent = `${fmt(S.coins)}B`;
+    $("coins").textContent = `${fmt(S.coins)} B`;
+    window.closeModal();
+    if (document.body.dataset.screen === "home") renderHome();
+  };
+
+  window.openRealBetConfirm = () => {
+    openModal(`<div class="real-bet-confirm">
+      <span class="kicker">OFFICIAL CASH BETTING</span>
+      <h2>公式投票へ移動しますか？</h2>
+      <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>まもボートのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
+      <p>いま現金を使わずに済ませたい場合は、下の「Bメダル投票に戻る」を選んでください。</p>
+      <div class="real-bet-actions">
+        <button class="btn primary full" type="button" onclick="closeModal()">Bメダル投票に戻る</button>
+        <a class="btn real-cash-link full" href="${REAL_BET_URL}" target="_blank" rel="noopener noreferrer" onclick="recordRealBetExit()">公式TELEBOATログインへ ↗</a>
+      </div>
+      <small>公式サイトでの登録・ログイン・投票・入出金は、まもボートには保存されません。</small>
+    </div>`);
+  };
+
+  window.recordRealBetExit = () => {
+    S.realBetExits.push({
+      at: new Date().toISOString(),
+      screen: document.body.dataset.screen || "home",
+      venueCode: S.venue || null,
+      raceNo: S.raceNo || null,
+    });
+    S.realBetExits = S.realBetExits.slice(-500);
+    save();
+    window.closeModal();
+  };
 
   window.closeModal = () => $("modalBg").classList.remove("show");
   window.bgClose = (event) => {
@@ -865,8 +945,9 @@
     ).join("")}</div>
     <div id="betGuide" class="notice betguide"></div>
     <div id="modeTabs" class="bet-tabs"></div><div id="builder"></div>
-    <div class="title" style="margin-top:14px"><h2 style="font-size:16px">買い目</h2><span id="cartCount">0点</span></div>
-    <div id="cart" class="cart"></div><div id="cartSum" class="notice">買い目を作成してください。</div>
+    <div id="addedNotice" class="added-notice" aria-live="polite"></div>
+    <div class="title cart-title" style="margin-top:14px"><div><h2 style="font-size:16px">購入する買い目</h2><small>別の組み合わせ・舟券種も続けて追加できます</small></div><span id="cartCount">0点</span></div>
+    <div id="cart" class="cart"></div><div id="cartTools" class="cart-tools"></div><div id="cartSum" class="notice">買い目を作成してください。</div>
     <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">B投票を確認</button>`;
   }
 
@@ -920,8 +1001,8 @@
     const raceItem = race(venueItem?.code, S.raceNo);
     const oddsUrl = officialOddsUrl(venueItem?.code, raceItem?.number, betType);
     $("betGuide").innerHTML = `<div><b>${spec.label}</b>：${BET_GUIDES[betType]}。1点100Bから、100B単位。</div>
-      <a class="inline-official" href="${oddsUrl}" target="_blank" rel="noopener noreferrer">公式 ${officialOddsLabel(betType)}オッズを見る ↗</a>
-      <div class="tiny">オッズは自動取得せず、公式画面の更新時刻を確認して必要なら任意入力します。</div>`;
+      <a class="inline-official odds-now" href="${oddsUrl}" target="_blank" rel="noopener noreferrer">選択中レースの公式オッズを今すぐ確認 ↗</a>
+      <div class="tiny">公式画面で「更新」を押して時刻を確認し、必要な倍率を買い目欄へ入力してください。公開APIがないため自動転載は行いません。</div>`;
     const oddsMain = $("officialOddsMain");
     if (oddsMain) oddsMain.href = oddsUrl;
     const oddsMainLabel = $("officialOddsMainLabel");
@@ -973,15 +1054,29 @@
     const seen = new Set(cart.map(
       (line) => `${C.normalizeBetType(line.betType)}:${C.canonicalCombo(line.combo, line.betType)}`
     ));
+    let added = 0;
     combos.forEach((combo) => {
       const canonical = C.canonicalCombo(combo, betType).split("-").map(Number);
       const key = `${betType}:${canonical.join("-")}`;
       if (!seen.has(key)) {
-        cart.push({ combo: canonical, betType, stake: 100, odds: "", mode });
+        cart.push({ combo: canonical, betType, stake: 100, odds: "", oddsCapturedAt: null, mode });
         seen.add(key);
+        added += 1;
       }
     });
-    renderCart();
+    if (added) {
+      resetSelections();
+      refreshBuilder();
+    } else {
+      renderCart();
+    }
+    const notice = $("addedNotice");
+    if (notice) {
+      notice.className = `added-notice ${added ? "show" : "duplicate"}`;
+      notice.textContent = added
+        ? `${added}点を追加しました。続けて別の買い目を選べます。`
+        : "同じ買い目はすでに追加されています。";
+    }
   }
 
   window.addNormal = () => {
@@ -1050,11 +1145,24 @@
       cart[index].stake = Math.max(100, Math.floor((Number(value) || 100) / 100) * 100);
     } else {
       cart[index].odds = value;
+      cart[index].oddsCapturedAt = Number(value) > 0 ? new Date().toISOString() : null;
     }
     renderCart();
   };
   window.removeLine = (index) => {
     cart.splice(index, 1);
+    renderCart();
+  };
+
+  window.setAllStakes = (amount) => {
+    const value = Math.max(100, Math.floor((Number(amount) || 100) / 100) * 100);
+    cart.forEach((line) => { line.stake = value; });
+    renderCart();
+  };
+
+  window.clearCart = () => {
+    if (!cart.length || !confirm("追加した買い目をすべて削除しますか？")) return;
+    cart = [];
     renderCart();
   };
 
@@ -1064,11 +1172,14 @@
       ? cart.map((line, index) => `<div class="cartrow"><b class="tickettype">${C.BET_TYPES[C.normalizeBetType(line.betType)].label}</b>
           <b>${line.combo.join("-")}</b>
           <input value="${line.stake}" inputmode="numeric" aria-label="投票メダル" onchange="changeLine(${index},'stake',this.value)">
-          <input value="${esc(line.odds)}" inputmode="decimal" aria-label="予想オッズ" placeholder="倍率" onchange="changeLine(${index},'odds',this.value)">
+          <label class="odds-input"><input value="${esc(line.odds)}" inputmode="decimal" aria-label="参加時オッズ" placeholder="倍率" onchange="changeLine(${index},'odds',this.value)">${line.oddsCapturedAt ? `<small>${timeText(line.oddsCapturedAt)}入力</small>` : ""}</label>
           <button class="xbtn" aria-label="削除" onclick="removeLine(${index})">×</button></div>`).join("")
       : '<div class="muted">買い目はまだありません。</div>';
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
     $("cartCount").textContent = `${cart.length}点`;
+    $("cartTools").innerHTML = cart.length
+      ? `<span>全点のBメダル</span><button type="button" onclick="setAllStakes(100)">100B</button><button type="button" onclick="setAllStakes(200)">200B</button><button type="button" onclick="setAllStakes(500)">500B</button><button type="button" onclick="setAllStakes(1000)">1,000B</button><button class="clear" type="button" onclick="clearCart()">全削除</button>`
+      : "";
     const estimates = cart.filter((line) => Number(line.odds) > 0)
       .map((line) => line.stake * Number(line.odds));
     $("cartSum").innerHTML = cart.length
@@ -1108,7 +1219,7 @@
         return `<div class="betline"><span class="bettype">${C.BET_TYPES[type].label}</span>
           <b class="betcombo">${combo.join(separator)}</b><b>${fmt(line.stake)}B</b>
           ${racerNames.length === combo.length ? `<div class="betnames">${lineMode ? `${lineMode} / ` : ""}${racerNames.map(esc).join(separator)}</div>` : ""}
-          ${Number(line.odds) > 0 ? `<div class="betnames">参加時の予想オッズ ${esc(line.odds)}倍</div>` : ""}</div>`;
+          ${Number(line.odds) > 0 ? `<div class="betnames">参加時オッズ ${esc(line.odds)}倍${line.oddsCapturedAt ? ` / ${timeText(line.oddsCapturedAt)}入力` : ""}</div>` : ""}</div>`;
       }).join("")}</div></details>`;
   }
 
@@ -1171,6 +1282,7 @@
         betType: C.normalizeBetType(line.betType),
         stake: line.stake,
         odds: line.odds,
+        oddsCapturedAt: line.oddsCapturedAt || null,
         mode: line.mode || mode,
       })),
       stake: total,
@@ -1234,6 +1346,52 @@
     window.go("records");
   };
 
+  window.refreshResultNow = async (id, button) => {
+    const record = S.records.find((item) => item.id === id);
+    if (!record || record.settled || !record.raceDate) return;
+    if (button) {
+      button.disabled = true;
+      button.textContent = "最新結果を確認中…";
+    }
+    try {
+      const dataset = await fetchDataset(record.raceDate, true);
+      if (dataset.date === C.jstDate()) {
+        DATA = dataset;
+        liveLoaded = true;
+        lastLoadAt = Date.now();
+      }
+      const result = C.settleRecord(record, dataset);
+      if (result.changed) {
+        S.coins += result.payoutAdded;
+        if (result.hit) S.xp += 20;
+        save();
+        renderAll();
+        openModal(`<div class="instant-result success"><span class="kicker">RESULT UPDATED</span><h2>結果を反映しました</h2>
+          <div class="notice good"><b>${esc(record.venue)} ${record.raceNo}R　${record.status === "hit" ? "B的中" : record.status === "refunded" ? "不成立・返還" : "外れ"}</b><br>実着順 ${esc(record.resultCombo || "確定")} / B払戻 ${fmt(record.payoutC)}B</div>
+          <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
+        return;
+      }
+      const generated = dataset.generatedAt
+        ? new Date(dataset.generatedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })
+        : "更新時刻不明";
+      const official = officialResultUrl(record.venueCode, record.raceNo, record.raceDate);
+      const workflow = githubSyncWorkflowUrl();
+      openModal(`<div class="instant-result"><span class="kicker">RESULT CHECK</span><h2>まだ確定結果が届いていません</h2>
+        <div class="notice warn">保存データを今すぐ再読込しました。最終データ更新：${esc(generated)}</div>
+        <p>公式結果が表示済みでも、精算用の日次競走成績LZHへの収録には時間差があります。</p>
+        <a class="btn real-cash-link full" href="${official}" target="_blank" rel="noopener noreferrer">このレースの公式結果を見る ↗</a>
+        ${workflow ? `<a class="btn secondary full" href="${workflow}" target="_blank" rel="noopener noreferrer">GitHub Actionsで同期を今すぐ実行 ↗</a>` : ""}
+        <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button></div>`);
+    } catch (error) {
+      openModal(`<div class="instant-result"><h2>再確認できませんでした</h2><div class="notice warn">通信状態またはGitHub Pagesの更新待ちです。少し時間をおいてもう一度お試しください。</div><button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button></div>`);
+    } finally {
+      if (button && document.body.contains(button)) {
+        button.disabled = false;
+        button.textContent = "結果を今すぐ再確認";
+      }
+    }
+  };
+
   function recCard(record) {
     const officialResult = record.venueCode && record.raceNo && record.raceDate
       ? officialResultUrl(record.venueCode, record.raceNo, record.raceDate)
@@ -1241,7 +1399,8 @@
     let result;
     if (!record.settled) {
       result = `<div class="notice"><b>実結果待ち</b><br>公式公開の日次競走成績が届くと自動精算します。直後の結果は公式画面で確認できます。</div>
-        ${officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果を確認 ↗</a>` : ""}`;
+        <div class="pending-result-actions"><button class="btn primary" type="button" onclick="refreshResultNow('${record.id}',this)">結果を今すぐ再確認</button>
+        ${officialResult ? `<a class="btn secondary" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果を見る ↗</a>` : ""}</div>`;
     } else if (record.status === "refunded") {
       result = `<div class="notice warn"><div class="result">舟券 不成立 / Bメダル返還</div>${fmt(record.payoutC)}Bを返還しました。</div>`;
     } else {
@@ -1306,7 +1465,123 @@
     $("recordList").innerHTML = records.length
       ? records.map(recCard).join("")
       : '<div class="card muted">該当する記録はありません。</div>';
+    initializeResultSearch();
   }
+
+  function initializeResultSearch() {
+    const dateInput = $("resultSearchDate");
+    const venueInput = $("resultSearchVenue");
+    const raceInput = $("resultSearchRace");
+    if (!dateInput || !venueInput || !raceInput) return;
+    if (!dateInput.value) dateInput.value = DATA.date || C.jstDate();
+    if (venueInput.options.length === 1) {
+      venueInput.insertAdjacentHTML("beforeend", VENUES.map(([code, name]) =>
+        `<option value="${code}">${code} ${esc(name)}</option>`
+      ).join(""));
+    }
+    if (raceInput.options.length === 1) {
+      raceInput.insertAdjacentHTML("beforeend", Array.from({ length: 12 }, (_, index) =>
+        `<option value="${index + 1}">${index + 1}R</option>`
+      ).join(""));
+    }
+    loadResultDateIndex();
+  }
+
+  async function loadResultDateIndex() {
+    if (resultIndexRequested || !$("resultArchiveDates")) return;
+    resultIndexRequested = true;
+    try {
+      const response = await fetch("data/results/index.json", { cache: "no-store" });
+      if (!response.ok) return;
+      const index = await response.json();
+      const dates = Array.isArray(index.dates) ? index.dates.slice(0, 14) : [];
+      $("resultArchiveDates").innerHTML = dates.length
+        ? `<span>保存済み：</span>${dates.map((item) => `<button type="button" onclick="pickResultDate('${esc(item.date)}')">${esc(dateShort(item.date))}<small>${fmt(item.races)}R</small></button>`).join("")}`
+        : "";
+    } catch (error) {
+      // 索引がない旧版でも、日付を直接指定すれば履歴JSONを検索できる。
+    }
+  }
+
+  window.pickResultDate = (date) => {
+    $("resultSearchDate").value = date;
+    window.searchOfficialResults();
+  };
+
+  async function fetchResultArchive(date) {
+    const archivePath = `data/results/${date}.json`;
+    const response = await fetch(archivePath, { cache: "no-store" });
+    if (response.ok) {
+      const archive = await response.json();
+      if (archive.source?.type === "official-lzh-result-archive" && Array.isArray(archive.venues)) {
+        return archive;
+      }
+      throw new Error(`構造検証エラー ${archivePath}`);
+    }
+    return fetchDataset(date);
+  }
+
+  function resultCard(venueItem, raceItem, date) {
+    const result = raceItem.result || {};
+    const event = eventInfo(venueItem);
+    const finish = (result.finish || []).slice(0, 3);
+    const finishHtml = finish.length
+      ? finish.map((item) => `<div class="result-place place-${item.position}"><b>${item.position}着</b><i>${item.boatNumber}</i><span>${esc(item.name || `${item.boatNumber}号艇`)}</span></div>`).join("")
+      : '<div class="muted">着順情報なし</div>';
+    const payouts = PAYOUT_DISPLAY_ORDER.flatMap((type) =>
+      (result.payouts?.[type] || []).map((item) => ({ type, ...item }))
+    );
+    const payoutHtml = payouts.length
+      ? payouts.map((item) => `<div><span>${esc(C.BET_TYPES[item.type]?.label || item.type)} ${esc(item.combination)}</span><b>${fmt(item.payout)}円</b></div>`).join("")
+      : '<p class="muted">払戻情報なし</p>';
+    return `<article class="official-result-card">
+      <div class="official-result-head"><div>${gradeBadge(venueItem)}<b>${esc(venueItem.name)} ${raceItem.number}R</b></div><span>${esc(raceItem.name || "")}</span></div>
+      <p class="official-result-event">${esc(event.title)} / ${esc(event.dayLabel)}</p>
+      <div class="result-finish">${finishHtml}</div>
+      <details><summary>全払戻を見る（${payouts.length}件）</summary><div class="result-payouts">${payoutHtml}</div></details>
+      <a class="link" href="${officialResultUrl(venueItem.code, raceItem.number, date)}" target="_blank" rel="noopener noreferrer">公式結果で照合 ↗</a>
+    </article>`;
+  }
+
+  window.searchOfficialResults = async () => {
+    initializeResultSearch();
+    const date = $("resultSearchDate").value;
+    const venueCode = $("resultSearchVenue").value;
+    const raceNo = $("resultSearchRace").value;
+    const keyword = $("resultSearchKeyword").value.trim().toLocaleLowerCase("ja-JP");
+    if (!date) return;
+    $("resultSearchStatus").textContent = "公式結果アーカイブを読み込み中…";
+    $("resultSearchList").innerHTML = "";
+    try {
+      const dataset = await fetchResultArchive(date);
+      const found = [];
+      for (const venueItem of dataset.venues || []) {
+        if (venueCode && venueItem.code !== venueCode) continue;
+        for (const raceItem of venueItem.races || []) {
+          if (!raceItem.result) continue;
+          if (raceNo && Number(raceItem.number) !== Number(raceNo)) continue;
+          const event = eventInfo(venueItem);
+          const searchText = [
+            venueItem.name, raceItem.name, event.title, event.gradeLabel, event.dayLabel,
+            ...(raceItem.entries || []).map((item) => item.name),
+            ...(raceItem.result.finish || []).map((item) => item.name),
+          ].filter(Boolean).join(" ").toLocaleLowerCase("ja-JP");
+          if (keyword && !searchText.includes(keyword)) continue;
+          found.push([venueItem, raceItem]);
+        }
+      }
+      const officialListLink = venueCode
+        ? `<a class="result-list-link" href="${officialResultListUrl(venueCode, date)}" target="_blank" rel="noopener noreferrer">この日の公式結果一覧 ↗</a>`
+        : "";
+      $("resultSearchStatus").innerHTML = `${esc(date)}：${found.length}レース見つかりました。${officialListLink}`;
+      $("resultSearchList").innerHTML = found.length
+        ? found.map(([venueItem, raceItem]) => resultCard(venueItem, raceItem, date)).join("")
+        : '<div class="notice warn">条件に合う確定結果はまだありません。公式公開後、約15分ごとの同期で反映されます。</div>';
+    } catch (error) {
+      $("resultSearchStatus").textContent = `${date} の保存結果を取得できませんでした。`;
+      $("resultSearchList").innerHTML = '<div class="notice warn">その日付のアーカイブがまだありません。</div>';
+    }
+  };
 
   function aiText() {
     if (!S.records.length) {
@@ -1393,13 +1668,13 @@
       検証警告: ${warningCount}件`;
   }
 
-  window.reloadData = () => loadOfficialData();
+  window.reloadData = () => loadOfficialData(true);
   window.exportData = () => {
     const blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v33-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v36-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };

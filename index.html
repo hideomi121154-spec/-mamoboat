@@ -8,16 +8,16 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
-  <title>まもボート v3.3</title>
+  <title>まもボート v3.6</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.3</small></span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.6</small></span>
       </button>
-      <div class="wallet" aria-label="Bメダル残高"><span>B BALANCE</span><strong id="topCoins">-- B</strong></div>
+      <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と追加メニューを開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
 
     <main>
@@ -29,10 +29,11 @@
             <small>MAMO BOAT</small>
             <div><span>PERSONAL</span><b>非公式・個人用</b></div>
           </div>
-          <div class="masthead-wallet" aria-label="Bメダル残高">
+          <button class="masthead-wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と追加メニューを開く">
             <span><i class="mini-medal">B</i>Bメダル残高 <i class="info-dot">i</i></span>
             <strong id="homeCoins">-- B</strong>
-          </div>
+            <small>タップして追加</small>
+          </button>
           <div class="masthead-callout"><span>今日の</span><strong>舞台を<em>選べ。</em></strong></div>
         </div>
 
@@ -114,6 +115,19 @@
           <button class="filter" data-rec="hit" onclick="setRecFilter('hit')">B的中</button>
         </div>
         <div id="recordList" class="record-list"></div>
+        <div class="section-head small result-search-heading"><div><span class="section-number">R</span><h2>公式結果を検索</h2></div><span class="section-meta">永久保存アーカイブ</span></div>
+        <div class="panel result-search-panel">
+          <div class="result-search-grid">
+            <label><span>日付</span><input id="resultSearchDate" type="date"></label>
+            <label><span>開催場</span><select id="resultSearchVenue"><option value="">すべての場</option></select></label>
+            <label><span>レース</span><select id="resultSearchRace"><option value="">全レース</option></select></label>
+            <label class="result-keyword"><span>選手名・大会名</span><input id="resultSearchKeyword" type="search" placeholder="例：峰竜太、GⅠ"></label>
+          </div>
+          <div id="resultArchiveDates" class="result-archive-dates" aria-label="保存済みの日付"></div>
+          <button class="btn primary full" type="button" onclick="searchOfficialResults()">結果を検索</button>
+          <div id="resultSearchStatus" class="result-search-status">日付を選んで検索してください。</div>
+          <div id="resultSearchList" class="official-result-list"></div>
+        </div>
       </section>
 
       <section id="analysis" class="screen">
@@ -150,7 +164,7 @@
         </div>
         <div class="section-head small"><div><span class="section-number">SAFE</span><h2>安全なデータ取得</h2></div></div>
         <div class="panel policy-grid">
-          <div><b>毎時</b><h3>公式公開LZH</h3><p>番組表・競走成績だけを1並列で取得。変化がない時は更新しません。</p></div>
+          <div><b>約15分ごと</b><h3>公式公開LZH</h3><p>番組表・競走成績だけを1並列で取得。変化がない時は更新しません。</p></div>
           <div><b>週1回</b><h3>公式グレード日程</h3><p>SG・PG1・GⅠ〜GⅢの日程3ページだけを低頻度でキャッシュします。</p></div>
           <div><b>押した時だけ</b><h3>公式画面</h3><p>オッズ・結果・選手情報・映像は、利用者が押した場合だけ別画面で開きます。</p></div>
         </div>
@@ -158,6 +172,10 @@
         <p class="footnote">公式データの公開・更新には遅れが生じる場合があります。最終確認は公式サイトで行ってください。</p>
       </section>
     </main>
+
+    <aside class="real-bet-dock" aria-label="公式投票へのリンク">
+      <button type="button" onclick="openRealBetConfirm()"><span>現金を使う前に確認</span><strong>公式投票へ ↗</strong></button>
+    </aside>
 
     <nav class="bottom-nav" aria-label="メインメニュー">
       <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
