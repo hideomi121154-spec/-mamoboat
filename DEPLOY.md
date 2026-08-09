@@ -1,18 +1,26 @@
-# v2.6 GitHub Pages 更新
+# v2.7 GitHub Pages 更新
 
-リポジトリのルートへZIP内のファイル/フォルダをそのまま配置してください。特に次が必要です。
+ZIP内のファイルとフォルダを、GitHub Pages用リポジトリのルートへそのまま配置してください。
 
-- index.html
-- core.js
-- sw.js
-- manifest.webmanifest
-- icon.svg
-- data/
-- scripts/
-- requirements.txt
-- .github/workflows/sync-official-data.yml
+主な配置物:
 
-配置後、GitHubの **Actions → Sync BOAT RACE data → Run workflow** を実行します。
-成功すると `data/today.json` と日付別JSONが更新されます。Pagesはmain/root設定のままで構いません。
+- `index.html` / `app.js` / `core.js`
+- `sw.js` / `manifest.webmanifest` / `icon.svg`
+- `data/`
+- `scripts/sync_official_data.py`
+- `requirements.txt`
+- `.github/workflows/sync-official-data.yml`
+- `tests/`
 
-PWAを以前ホーム画面へ追加済みの場合、更新後にSafariで一度ページを開き直してください。v2.6はservice workerのキャッシュ名を変更してあります。
+配置後の手順:
+
+1. GitHubのActionsを開く
+2. `Sync BOAT RACE data` → `Run workflow` を1回実行
+3. ログ末尾で開催場数・レース数・出走数・警告数を確認
+4. `data/today.json` の更新コミットを確認
+5. GitHub Pagesを開く
+6. 設定画面で番組表・成績の同期件数を確認
+
+Pagesはmainブランチ/root公開のままで動作します。Actionsからpushできない場合は、リポジトリのSettings → Actions → General → Workflow permissionsで書き込みを許可してください。
+
+以前のPWAをホーム画面へ追加済みの場合は、更新後にSafariで一度ページを開き直してください。v2.7ではService Workerのキャッシュ名を更新し、`app.js`も更新対象へ追加しています。
