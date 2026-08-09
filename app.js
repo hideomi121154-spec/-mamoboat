@@ -17,6 +17,14 @@
     ["17", "宮島"], ["18", "徳山"], ["19", "下関"], ["20", "若松"],
     ["21", "芦屋"], ["22", "福岡"], ["23", "唐津"], ["24", "大村"],
   ];
+  const VENUE_ROMAJI = {
+    "01": "KIRYU", "02": "TODA", "03": "EDOGAWA", "04": "HEIWAJIMA",
+    "05": "TAMAGAWA", "06": "HAMANAKO", "07": "GAMAGORI", "08": "TOKONAME",
+    "09": "TSU", "10": "MIKUNI", "11": "BIWAKO", "12": "SUMINOE",
+    "13": "AMAGASAKI", "14": "NARUTO", "15": "MARUGAME", "16": "KOJIMA",
+    "17": "MIYAJIMA", "18": "TOKUYAMA", "19": "SHIMONOSEKI", "20": "WAKAMATSU",
+    "21": "ASHIYA", "22": "FUKUOKA", "23": "KARATSU", "24": "OMURA",
+  };
   const BET_ORDER = [
     "trifecta", "trio", "exacta", "quinella", "wide", "win", "place",
   ];
@@ -54,9 +62,79 @@
     })
     : "—";
 
+  const dateShort = (value) => {
+    if (!value) return "";
+    const parts = String(value).split("-").map(Number);
+    return parts.length === 3 && parts.every(Number.isFinite)
+      ? `${parts[1]}/${parts[2]}`
+      : String(value);
+  };
+
+  function eventInfo(venueItem) {
+    const event = venueItem?.event || {};
+    return {
+      title: event.title || venueItem?.races?.[0]?.name || "開催情報",
+      grade: event.grade || "GENERAL",
+      gradeLabel: event.gradeLabel || "一般",
+      dayLabel: event.dayLabel || "開催中",
+      startDate: event.startDate || null,
+      endDate: event.endDate || null,
+      timeZone: event.timeZone || null,
+      officialUrl: event.officialUrl || null,
+    };
+  }
+
+  function gradeClass(grade) {
+    return String(grade || "GENERAL").toLowerCase();
+  }
+
+  function gradeBadge(venueItem) {
+    const event = eventInfo(venueItem);
+    return `<span class="grade ${gradeClass(event.grade)}">${esc(event.gradeLabel)}</span>`;
+  }
+
+  function eventPeriod(event) {
+    if (event.startDate && event.endDate) {
+      return `${dateShort(event.startDate)}–${dateShort(event.endDate)}`;
+    }
+    if (event.startDate) return `${dateShort(event.startDate)} START`;
+    return dateShort(DATA.date);
+  }
+
+  function venueIsNight(venueItem) {
+    const event = eventInfo(venueItem);
+    if (["night", "midnight"].includes(event.timeZone)) return true;
+    const firstClose = venueItem?.races?.[0]?.closeTime;
+    if (!firstClose) return false;
+    const hour = Number(new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Tokyo",
+      hour: "2-digit",
+      hour12: false,
+    }).format(new Date(firstClose)));
+    return hour >= 14;
+  }
+
+  function venueProgress(venueItem) {
+    const races = venueItem?.races || [];
+    const now = Date.now();
+    const next = races.find(
+      (item) => item.closeTime && new Date(item.closeTime).getTime() > now
+    );
+    const resultCount = races.filter((item) => item.result).length;
+    return { next, resultCount, finished: !!races.length && !next };
+  }
+
+  function preferredRaceNumber(venueItem) {
+    const races = venueItem?.races || [];
+    const progress = venueProgress(venueItem);
+    if (progress.next) return progress.next.number;
+    const latestResult = [...races].reverse().find((item) => item.result);
+    return latestResult?.number || races[0]?.number || 1;
+  }
+
   function unavailableDataset(message = "公式データを取得できませんでした") {
     return {
-      schemaVersion: 8,
+      schemaVersion: 9,
       date: C.jstDate(),
       generatedAt: null,
       source: { type: "unavailable" },
@@ -83,6 +161,7 @@
   let box = new Set();
   let form = [new Set(), new Set(), new Set()];
   let cart = [];
+  let onboardStep = 0;
 
   function weekKey(value = new Date()) {
     const today = C.jstDate(value);
@@ -102,6 +181,8 @@
       venue: "12",
       raceNo: 1,
       filter: "active",
+      homeFilter: "all",
+      favorites: [],
       recFilter: "all",
       xp: 0,
       lastDataDate: null,
@@ -117,6 +198,12 @@
         : [];
     state.coins = Math.max(0, Number(state.coins) || 0);
     state.xp = Math.max(0, Number(state.xp) || 0);
+    if (!["all", "selling", "grade", "night", "favorite"].includes(state.homeFilter)) {
+      state.homeFilter = "all";
+    }
+    state.favorites = Array.isArray(state.favorites)
+      ? [...new Set(state.favorites.map(String).filter((code) => VENUE_ROMAJI[code]))]
+      : [];
     state.records = raw.map((record, index) => {
       const stake = Number(record.stake ?? record.total ?? 0) || 0;
       const intended = Number(
@@ -360,6 +447,7 @@
     if (event.target.id === "modalBg") window.closeModal();
   };
   window.go = (id) => {
+    document.body.dataset.screen = id;
     document.querySelectorAll(".screen").forEach(
       (item) => item.classList.toggle("active", item.id === id)
     );
@@ -369,6 +457,22 @@
     renderCurrent(id);
     window.scrollTo(0, 0);
   };
+  function renderOnboard() {
+    document.querySelectorAll("[data-onboard]").forEach((panel) => {
+      panel.classList.toggle("active", Number(panel.dataset.onboard) === onboardStep);
+    });
+    document.querySelectorAll(".onboard-dots i").forEach((dot, index) => {
+      dot.classList.toggle("active", index === onboardStep);
+    });
+  }
+  window.onboardNext = () => {
+    onboardStep = Math.min(2, onboardStep + 1);
+    renderOnboard();
+  };
+  window.onboardBack = () => {
+    onboardStep = Math.max(0, onboardStep - 1);
+    renderOnboard();
+  };
   window.checkStart = () => {
     $("startBtn").disabled = !($("age").checked && $("value").checked);
   };
@@ -376,6 +480,7 @@
     S.accepted = true;
     save();
     renderAll();
+    window.scrollTo(0, 0);
   };
 
   function renderCurrent(id) {
@@ -402,27 +507,63 @@
         : " / 結果待ち";
       return `公式公開LZH ${stats.scheduleVenues || 0}場・${stats.scheduleRaces || 0}R・${stats.scheduleEntries || 0}艇${results} / ${generated}更新`;
     }
-    if (liveLoaded) return `公式データは ${DATA.date} 分です。今日の仮想投票は停止中です。`;
-    return `公式データを利用できないため、仮想投票を停止しています。${dataError ? ` ${dataError}` : ""}`;
+    if (liveLoaded) return `公式データは ${DATA.date} 分です。今日のB投票は停止中です。`;
+    return `公式データを利用できないため、B投票を停止しています。${dataError ? ` ${dataError}` : ""}`;
   }
 
-  function vcard(item) {
-    const raceCount = (item.races || []).length;
-    const entryCount = (item.races || []).reduce(
-      (sum, raceItem) => sum + (raceItem.entries?.length || 0),
-      0
-    );
-    return `<div class="card venue">
-      <div class="venuehead">
-        <div><div class="eyebrow">${esc(item.code)}</div><div class="venuename">${esc(item.name)}</div></div>
-        <span class="status ${item.active ? "on" : "off"}">${item.active ? "本日開催" : "本日なし"}</span>
-      </div>
-      <div class="tiny">${item.active ? `${raceCount}R / ${entryCount}艇を公式番組表から取得` : "架空レースは表示しません"}</div>
-      ${item.active
-        ? `<button class="btn primary full" onclick="openVenue('${item.code}')">レースを見る</button>
-           <a class="link" href="${esc(item.boatcast)}" target="_blank" rel="noopener">▶ 公式映像</a>`
-        : '<div class="notice">本日開催なし</div>'}
-    </div>`;
+  function vcard(item, compact = false) {
+    const event = eventInfo(item);
+    const progress = venueProgress(item);
+    const night = venueIsNight(item);
+    const stateClass = !item.active ? "inactive" : progress.finished ? "closed" : "active-card";
+    let statusLabel = "本日開催なし";
+    let statusValue = "—";
+    if (item.active && progress.next) {
+      statusLabel = `NEXT ${progress.next.number}R`;
+      statusValue = timeText(progress.next.closeTime);
+    } else if (item.active && progress.resultCount) {
+      statusLabel = "結果反映";
+      statusValue = `${progress.resultCount}/12R`;
+    } else if (item.active) {
+      statusLabel = "発売終了";
+      statusValue = "結果待ち";
+    }
+    const officialEvent = event.officialUrl
+      || `https://www.boatrace.jp/owpc/pc/race/raceindex?hd=${String(DATA.date || "").replaceAll("-", "")}&jcd=${item.code}`;
+    const favorite = S.favorites.includes(item.code);
+    if (compact) {
+      const isGeneral = event.grade === "GENERAL";
+      const topMarker = item.active && !isGeneral
+        ? gradeBadge(item)
+        : `<span class="venue-time-icon ${night && item.active ? "night" : progress.finished ? "finished" : item.active ? "day" : "off"}">${night && item.active ? "☾" : progress.finished ? "✓" : item.active ? "☀" : "◌"}</span>`;
+      const compactStatus = item.active && progress.next
+        ? `<span>次 <b>${progress.next.number}R</b></span><strong>締切 ${timeText(progress.next.closeTime)}</strong><i>›</i>`
+        : item.active && progress.resultCount
+          ? `<span></span><strong>結果確定</strong><i>✓</i>`
+          : item.active
+            ? `<span></span><strong>発売終了</strong><i>×</i>`
+            : `<span></span><strong>次回 —</strong><i></i>`;
+      return `<article class="venue-card compact ${stateClass} grade-${gradeClass(event.grade)} ${night ? "is-night" : ""}">
+        <button class="venue-card-main" ${item.active ? `onclick="openVenue('${item.code}')"` : "disabled"} aria-label="${esc(item.name)}${item.active ? "のレース一覧へ" : "は本日開催なし"}">
+          <div class="venue-compact-marker">${topMarker}</div>
+          <div class="venue-compact-name"><strong>${esc(item.name)}</strong><small>${esc(VENUE_ROMAJI[item.code] || "")}</small></div>
+          <div class="venue-dayline">${item.active && isGeneral ? gradeBadge(item) : ""}<b>${item.active ? esc(event.dayLabel) : ""}</b></div>
+          <div class="event-title">${item.active ? esc(event.title) : "開催予定なし"}</div>
+          <div class="event-meta"><span>${item.active ? esc(eventPeriod(event)) : "—　—　—"}</span></div>
+          <div class="venue-next">${compactStatus}</div>
+        </button>
+        <button class="favorite-star ${favorite ? "selected" : ""}" type="button" onclick="toggleFavorite('${item.code}',event)" aria-label="${esc(item.name)}をお気に入り${favorite ? "から外す" : "に追加"}">${favorite ? "★" : "☆"}</button>
+      </article>`;
+    }
+    return `<article class="venue-card ${stateClass}">
+      <button class="venue-card-main" ${item.active ? `onclick="openVenue('${item.code}')"` : "disabled"}>
+        <div class="venue-top"><div><span class="venue-code">VENUE ${esc(item.code)}</span><strong class="venue-name">${esc(item.name)}</strong></div>${item.active ? gradeBadge(item) : '<span class="grade general">—</span>'}</div>
+        <div class="event-title">${item.active ? esc(event.title) : "本日の公式開催なし"}</div>
+        <div class="event-meta"><span>${item.active ? esc(event.dayLabel) : "NO RACE"}</span><span>${item.active ? esc(eventPeriod(event)) : ""}</span>${night && item.active ? '<span class="night-tag">NIGHT</span>' : ""}</div>
+        <div class="venue-next"><span>${esc(statusLabel)}</span><strong>${esc(statusValue)}</strong></div>
+      </button>
+      ${item.active ? `<div class="venue-links"><a href="${esc(officialEvent)}" target="_blank" rel="noopener noreferrer">公式開催詳細 ↗</a><a href="${esc(item.boatcast)}" target="_blank" rel="noopener noreferrer">映像 ↗</a></div>` : ""}
+    </article>`;
   }
 
   function nextRaces() {
@@ -437,35 +578,115 @@
     )).filter((item) => item.close > now).sort((a, b) => a.close - b.close).slice(0, 5);
   }
 
+  function homeDateText(value) {
+    if (!value) return "—";
+    const [year, month, day] = String(value).split("-").map(Number);
+    if (![year, month, day].every(Number.isFinite)) return String(value);
+    const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
+      new Date(Date.UTC(year, month - 1, day)).getUTCDay()
+    ];
+    return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} ${weekday}`;
+  }
+
+  function homeVenueSort(left, right) {
+    const gradeRank = { SG: 6, PG1: 5, G1: 4, G2: 3, G3: 2, GENERAL: 1 };
+    const gradeDifference = (gradeRank[eventInfo(right).grade] || 0)
+      - (gradeRank[eventInfo(left).grade] || 0);
+    if (gradeDifference) return gradeDifference;
+    const leftNext = venueProgress(left).next;
+    const rightNext = venueProgress(right).next;
+    if (!!leftNext !== !!rightNext) return leftNext ? -1 : 1;
+    const leftClose = leftNext?.closeTime ? new Date(leftNext.closeTime).getTime() : Infinity;
+    const rightClose = rightNext?.closeTime ? new Date(rightNext.closeTime).getTime() : Infinity;
+    if (leftClose !== rightClose) return leftClose - rightClose;
+    return String(left.code).localeCompare(String(right.code));
+  }
+
+  window.toggleFavorite = (code, event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const current = new Set(S.favorites);
+    if (current.has(code)) current.delete(code);
+    else current.add(code);
+    S.favorites = [...current];
+    save();
+    renderHome();
+  };
+
+  window.showVenueCommand = () => {
+    S.homeFilter = "all";
+    save();
+    renderHome();
+  };
+
+  window.showFavorites = () => {
+    S.homeFilter = "favorite";
+    save();
+    renderHome();
+  };
+
+  window.scrollToDeadlines = () => {
+    document.querySelectorAll("[data-home-command]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.homeCommand === "deadline");
+    });
+    $("deadlineSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  window.setHomeFilter = (filter) => {
+    if (!["all", "selling", "grade", "night", "favorite"].includes(filter)) return;
+    S.homeFilter = filter;
+    save();
+    renderHome();
+  };
+
   function renderHome() {
-    $("dataStatus").className = `notice ${isFresh() ? "good" : "warn"}`;
+    $("dataStatus").className = `sync-strip ${isFresh() ? "good" : "warn"}`;
     $("dataStatus").textContent = statusText();
+    $("homeDateText").textContent = homeDateText(DATA.date);
+    $("homeSyncLabel").textContent = isFresh()
+      ? "✓ 公式公開データ更新済み"
+      : liveLoaded
+        ? `△ ${DATA.date}分の公式データ`
+        : "△ 公式公開データを確認中";
     const totals = C.savedTotals(S.records);
-    $("coins").textContent = `${fmt(S.coins)}C`;
+    $("coins").textContent = `${fmt(S.coins)} B`;
+    $("topCoins").textContent = `${fmt(S.coins)} B`;
+    $("homeCoins").textContent = `${fmt(S.coins)}B`;
     $("savedToday").textContent = `${fmt(totals.today)}円`;
     $("savedWeek").textContent = `${fmt(totals.week)}円`;
     $("savedMonth").textContent = `${fmt(totals.month)}円`;
-    const active = DATA.venues.filter((item) => item.active);
-    $("activeCount").textContent = `${active.length}場`;
-    $("homeVenues").innerHTML = active.length
-      ? active.map(vcard).join("")
-      : '<div class="card muted">本日の公式開催データはありません。</div>';
+    const active = DATA.venues.filter((item) => item.active).sort(homeVenueSort);
+    $("activeCount").textContent = `${active.length}場 / ${active.reduce((sum, item) => sum + (item.races?.length || 0), 0)}R`;
+    document.querySelectorAll("[data-home-filter]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.homeFilter === S.homeFilter);
+    });
+    document.querySelectorAll("[data-home-command]").forEach((button) => {
+      const command = S.homeFilter === "favorite" ? "favorite" : "venues";
+      button.classList.toggle("active", button.dataset.homeCommand === command);
+    });
+    let visible = [...active, ...DATA.venues.filter((item) => !item.active)];
+    if (S.homeFilter === "selling") visible = active.filter((item) => !!venueProgress(item).next);
+    if (S.homeFilter === "grade") visible = active.filter((item) => eventInfo(item).grade !== "GENERAL");
+    if (S.homeFilter === "night") visible = active.filter(venueIsNight);
+    if (S.homeFilter === "favorite") visible = DATA.venues.filter((item) => S.favorites.includes(item.code));
+    $("homeVenues").innerHTML = visible.length
+      ? visible.map((item) => vcard(item, true)).join("")
+      : `<div class="card muted empty-home">${S.homeFilter === "favorite" ? "☆を押すと、お気に入りの開催場をここに表示します。" : "該当する公式開催データはありません。"}</div>`;
     $("aiMemo").textContent = aiText();
     const upcoming = nextRaces();
     $("nextRaces").innerHTML = upcoming.length
-      ? upcoming.map((item) => `<div class="card">
-          <div class="venuehead"><div><b>${esc(item.venue.name)} ${item.race.number}R</b>
-          <div class="tiny">${esc(item.race.name || "")}</div></div>
-          <span class="status on">${timeText(item.race.closeTime)}</span></div>
-          <div class="race-mini-clock" data-countdown="${item.close}">締切まで ${durationText(item.close - Date.now())}</div>
-          <button class="btn secondary full" style="margin-top:8px" onclick="jumpRace('${item.venue.code}',${item.race.number})">仮想で参加</button>
-        </div>`).join("")
+      ? upcoming.map((item) => `<article class="deadline-card">
+          <div class="deadline-top"><h3>${esc(item.venue.name)} ${item.race.number}R</h3><span class="deadline-time">${timeText(item.race.closeTime)}</span></div>
+          <p>${esc(eventInfo(item.venue).title)} / ${esc(item.race.name || "")}</p>
+          <div class="deadline-count" data-countdown="${item.close}">締切まで ${durationText(item.close - Date.now())}</div>
+          <button class="btn secondary full" style="margin-top:8px" onclick="jumpRace('${item.venue.code}',${item.race.number})">${item.race.number}Rへ進む →</button>
+        </article>`).join("")
       : `<div class="card muted">${isFresh() ? "この後の締切はありません。" : "今日の実データ同期待ちです。"}</div>`;
     const unreviewed = S.records.filter(
       (record) => (record.settled || canReviewAfter(record)) && !record.cashReviewed
     ).length;
     $("settledNotice").innerHTML = unreviewed
-      ? `<div class="notice good"><b>${unreviewed}件のレース後記録が未入力です。</b> 記録画面から、実際に現金で買ったかを入力できます。</div>`
+      ? `<div class="notice good" style="margin-top:10px"><b>${unreviewed}件のレース後記録が未入力です。</b> 戦績画面で現金を使ったか記録できます。</div>`
       : "";
   }
 
@@ -486,13 +707,13 @@
         ? DATA.venues.filter((item) => !item.active)
         : DATA.venues;
     $("venueList").innerHTML = list.length
-      ? list.map(vcard).join("")
+      ? list.map((item) => vcard(item, true)).join("")
       : '<div class="card muted">該当する開催場はありません。</div>';
   }
 
   window.openVenue = (code) => {
     S.venue = code;
-    S.raceNo = venue(code)?.races?.[0]?.number || 1;
+    S.raceNo = preferredRaceNumber(venue(code));
     resetBuilder();
     save();
     window.go("race");
@@ -524,16 +745,16 @@
       venueItem = DATA.venues.find((item) => item.active);
       if (venueItem) {
         S.venue = venueItem.code;
-        S.raceNo = venueItem.races?.[0]?.number || 1;
+        S.raceNo = preferredRaceNumber(venueItem);
       }
     }
     if (!venueItem) {
-      $("raceView").innerHTML = '<div class="card notice warn">本日の公式開催データがありません。仮想投票は停止中です。</div>';
+      $("raceView").innerHTML = '<div class="card notice warn">本日の公式開催データがありません。B投票は停止中です。</div>';
       return;
     }
     const raceItem = race(venueItem.code, S.raceNo) || venueItem.races?.[0];
     if (!raceItem) {
-      $("raceView").innerHTML = '<div class="card notice warn">番組表データが完全ではないため、仮想投票を停止しています。</div>';
+      $("raceView").innerHTML = '<div class="card notice warn">番組表データが完全ではないため、B投票を停止しています。</div>';
       return;
     }
     S.raceNo = raceItem.number;
@@ -554,9 +775,18 @@
     const open = closeState(raceItem);
     lastRenderedRaceOpen = open;
     const raceStatus = raceStatusInfo(raceItem);
-    $("raceView").innerHTML = `<div class="title"><h2>${esc(venueItem.name)}</h2><span>${DATA.date}</span></div>
+    const event = eventInfo(venueItem);
+    const officialEvent = event.officialUrl
+      || `https://www.boatrace.jp/owpc/pc/race/raceindex?hd=${String(DATA.date || "").replaceAll("-", "")}&jcd=${venueItem.code}`;
+    $("raceView").innerHTML = `<div class="race-path"><span>開催場</span><b>›</b><span>${esc(venueItem.name)}</span><b>›</b><span>${raceItem.number}R</span><b>›</b><span>出走表</span><b>›</b><span>B投票</span></div>
+      <div class="event-banner">
+        ${gradeBadge(venueItem)}
+        <h1>${esc(event.title)}</h1>
+        <p>${esc(venueItem.name)} / ${esc(event.dayLabel)} / ${esc(eventPeriod(event))}${venueIsNight(venueItem) ? " / NIGHT" : ""}</p>
+        <a href="${esc(officialEvent)}" target="_blank" rel="noopener noreferrer">公式開催詳細 ↗</a>
+      </div>
       <div class="racechips">${chips}</div>
-      <div class="card raceboard" style="margin-top:10px">
+      <div class="panel raceboard">
         <div class="raceheadline"><div><div class="eyebrow">公式公開番組表を反映</div>
         <div class="racename">${esc(venueItem.name)} <strong>${raceItem.number}R</strong> ${esc(raceItem.name || "")}</div>
         <div class="tiny">電話投票締切予定 ${timeText(raceItem.closeTime)} ※変更される場合があります</div></div>
@@ -570,12 +800,12 @@
         </div>
         <div class="source-note">外部情報はボタンを押した時だけ公式サイトで開きます。オッズ画面の更新時刻を必ず確認してください。</div>
       </div>
-      <div class="title"><h2>仮想メダルで参加</h2><span>公式7舟券種</span></div>
-      <div class="card betdesk">${open
+      <div class="section-head small"><div><span class="section-number">B</span><h2>Bメダルで投票</h2></div><span class="section-meta">公式7舟券種</span></div>
+      <div class="panel betdesk">${open
         ? builderShell()
         : isFresh()
-          ? '<div class="notice warn">公式締切時刻を過ぎています。新規仮想投票はできません。</div>'
-          : '<div class="notice warn">今日の検証済み公式データではないため、新規仮想投票を停止しています。</div>'}</div>`;
+          ? '<div class="notice warn">公式締切時刻を過ぎています。新規B投票はできません。</div>'
+          : '<div class="notice warn">今日の検証済み公式データではないため、新規B投票を停止しています。</div>'}</div>`;
     if (open) renderBuilder();
   }
 
@@ -618,7 +848,7 @@
       (type) => C.BET_TYPES[C.normalizeBetType(type)].label
     );
     if (raceItem.result.payoutStatus === "notEstablished" && !payouts.length) {
-      return '<div class="notice warn" style="margin-top:9px"><b>舟券 不成立</b><br>このレースの仮想投票額は、公式競走成績の反映後に自動返還されます。</div>';
+      return '<div class="notice warn" style="margin-top:9px"><b>舟券 不成立</b><br>このレースのB投票額は、公式競走成績の反映後に自動返還されます。</div>';
     }
     if (!payouts.length) {
       return `<div class="notice" style="margin-top:9px"><b>実着順 ${finish || "集計中"}</b><br>公式払戻の確定待ちです。</div>`;
@@ -637,7 +867,7 @@
     <div id="modeTabs" class="bet-tabs"></div><div id="builder"></div>
     <div class="title" style="margin-top:14px"><h2 style="font-size:16px">買い目</h2><span id="cartCount">0点</span></div>
     <div id="cart" class="cart"></div><div id="cartSum" class="notice">買い目を作成してください。</div>
-    <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">仮想投票を確認</button>`;
+    <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">B投票を確認</button>`;
   }
 
   function allowedModes(type = betType) {
@@ -689,7 +919,7 @@
     const venueItem = venue(S.venue);
     const raceItem = race(venueItem?.code, S.raceNo);
     const oddsUrl = officialOddsUrl(venueItem?.code, raceItem?.number, betType);
-    $("betGuide").innerHTML = `<div><b>${spec.label}</b>：${BET_GUIDES[betType]}。1点100Cから、100C単位。</div>
+    $("betGuide").innerHTML = `<div><b>${spec.label}</b>：${BET_GUIDES[betType]}。1点100Bから、100B単位。</div>
       <a class="inline-official" href="${oddsUrl}" target="_blank" rel="noopener noreferrer">公式 ${officialOddsLabel(betType)}オッズを見る ↗</a>
       <div class="tiny">オッズは自動取得せず、公式画面の更新時刻を確認して必要なら任意入力します。</div>`;
     const oddsMain = $("officialOddsMain");
@@ -842,8 +1072,8 @@
     const estimates = cart.filter((line) => Number(line.odds) > 0)
       .map((line) => line.stake * Number(line.odds));
     $("cartSum").innerHTML = cart.length
-      ? `<b>${cart.length}点 / 合計 ${fmt(total)}C</b>${estimates.length
-        ? `<br>入力オッズの最低想定払戻 ${fmt(Math.min(...estimates))}C${Math.min(...estimates) < total ? " / トリガミ候補" : ""}`
+      ? `<b>${cart.length}点 / 合計 ${fmt(total)}B</b>${estimates.length
+        ? `<br>入力オッズの最低想定払戻 ${fmt(Math.min(...estimates))}B${Math.min(...estimates) < total ? " / トリガミ候補" : ""}`
         : ""}<br>最終精算は公式の確定払戻で行います。`
       : "買い目を作成してください。";
   }
@@ -876,7 +1106,7 @@
         ).filter(Boolean);
         const lineMode = MODE_LABELS[line.mode || betMode] || "";
         return `<div class="betline"><span class="bettype">${C.BET_TYPES[type].label}</span>
-          <b class="betcombo">${combo.join(separator)}</b><b>${fmt(line.stake)}C</b>
+          <b class="betcombo">${combo.join(separator)}</b><b>${fmt(line.stake)}B</b>
           ${racerNames.length === combo.length ? `<div class="betnames">${lineMode ? `${lineMode} / ` : ""}${racerNames.map(esc).join(separator)}</div>` : ""}
           ${Number(line.odds) > 0 ? `<div class="betnames">参加時の予想オッズ ${esc(line.odds)}倍</div>` : ""}</div>`;
       }).join("")}</div></details>`;
@@ -886,13 +1116,13 @@
     const venueItem = venue(S.venue);
     const raceItem = race(venueItem?.code, S.raceNo);
     if (!raceItem || !closeState(raceItem)) {
-      return alert("締切後または検証済み当日データではないため、仮想投票できません。");
+      return alert("締切後または検証済み当日データではないため、B投票できません。");
     }
     if (!cart.length) return alert("買い目を追加してください。");
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
-    if (total > S.coins) return alert("仮想メダル残高が不足しています。");
+    if (total > S.coins) return alert("Bメダル残高が不足しています。");
     openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
-      <div class="notice"><b>${cart.length}点 / ${fmt(total)}C</b></div>
+      <div class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
       <h3>このレースへの自信</h3>
       <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
@@ -901,7 +1131,7 @@
       <div class="field"><label>参加理由</label><select id="reason"><option>なんとなく</option><option>レースがあるから</option><option>自信がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
       <div class="field"><label>現金ならいくら使うつもりだった？</label><input id="intended" type="number" min="0" step="100" value="${total}"></div>
       <div class="field"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="なぜ買いたくなったか等"></textarea></div>
-      <button class="btn teal full" onclick="placeBet()">仮想で参加する</button>`);
+      <button class="btn teal full" onclick="placeBet()">Bメダルで投票する</button>`);
   };
 
   window.placeBet = () => {
@@ -909,11 +1139,12 @@
     const raceItem = race(venueItem?.code, S.raceNo);
     if (!raceItem || !closeState(raceItem)) {
       window.closeModal();
-      return alert("締切時刻を過ぎたため、仮想投票を取り消しました。");
+      return alert("締切時刻を過ぎたため、B投票を取り消しました。");
     }
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
-    if (!cart.length || total > S.coins) return alert("仮想メダル残高が不足しています。");
+    if (!cart.length || total > S.coins) return alert("Bメダル残高が不足しています。");
     const intended = Math.max(0, Math.floor((Number($("intended").value) || 0) / 100) * 100);
+    const event = eventInfo(venueItem);
     S.coins -= total;
     S.records.push({
       id: window.crypto?.randomUUID ? window.crypto.randomUUID() : `r-${Date.now()}`,
@@ -925,6 +1156,10 @@
       venue: venueItem.name,
       raceNo: raceItem.number,
       raceName: raceItem.name || "",
+      eventTitle: event.title,
+      eventGrade: event.grade,
+      eventGradeLabel: event.gradeLabel,
+      eventDayLabel: event.dayLabel,
       betMode: mode,
       entrySnapshot: raceItem.entries.map((entry) => ({
         boatNumber: entry.boatNumber,
@@ -1008,7 +1243,7 @@
       result = `<div class="notice"><b>実結果待ち</b><br>公式公開の日次競走成績が届くと自動精算します。直後の結果は公式画面で確認できます。</div>
         ${officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果を確認 ↗</a>` : ""}`;
     } else if (record.status === "refunded") {
-      result = `<div class="notice warn"><div class="result">舟券 不成立 / 仮想メダル返還</div>${fmt(record.payoutC)}Cを返還しました。</div>`;
+      result = `<div class="notice warn"><div class="result">舟券 不成立 / Bメダル返還</div>${fmt(record.payoutC)}Bを返還しました。</div>`;
     } else {
       const payouts = record.resultPayouts?.length
         ? record.resultPayouts.map((item) => {
@@ -1019,8 +1254,8 @@
           ? `3連単 ${esc(record.resultCombo)} ${fmt(record.resultPayout)}円`
           : "";
       result = `<div class="notice ${record.status === "hit" ? "good" : ""}">
-        <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "仮想的中" : "外れ"}</div>
-        ${payouts ? `公式払戻 ${payouts}<br>` : ""}仮想払戻 ${fmt(record.payoutC)}C${record.refundC ? `（うち不成立返還 ${fmt(record.refundC)}C）` : ""}</div>`;
+        <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "B的中" : "外れ"}</div>
+        ${payouts ? `公式払戻 ${payouts}<br>` : ""}B払戻 ${fmt(record.payoutC)}B${record.refundC ? `（うち不成立返還 ${fmt(record.refundC)}B）` : ""}</div>`;
     }
     const badge = record.saved
       ? "現金を守った"
@@ -1032,18 +1267,25 @@
     const currentRace = record.raceDate === DATA.date
       ? race(record.venueCode, record.raceNo)
       : null;
+    const currentVenue = record.raceDate === DATA.date ? venue(record.venueCode) : null;
+    const currentEvent = currentVenue ? eventInfo(currentVenue) : null;
+    const eventLine = [
+      record.eventGradeLabel || currentEvent?.gradeLabel,
+      record.eventTitle || currentEvent?.title,
+      record.eventDayLabel || currentEvent?.dayLabel,
+    ].filter(Boolean).join(" / ");
     const entrySnapshot = record.entrySnapshot?.length
       ? record.entrySnapshot
       : currentRace?.entries || [];
     return `<div class="card rec"><div class="venuehead"><div><b>${esc(record.venue)} ${record.raceNo}R</b>
-      <div class="tiny">${(record.lines || []).length}点 / ${fmt(record.stake)}C / 現金予定 ${fmt(record.intendedYen)}円</div></div>
+      <div class="tiny">${eventLine ? `${esc(eventLine)}<br>` : ""}${(record.lines || []).length}点 / ${fmt(record.stake)}B / 現金予定 ${fmt(record.intendedYen)}円</div></div>
       <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
       ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}
       ${record.settled && officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果と払戻を照合 ↗</a>` : ""}
       <div class="recgrid"><span>自信</span><b>${record.conf}/10</b><span>購入前衝動</span><b>${record.urge}/10</b>
       <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>守った現金</span><b>${fmt(record.saved)}円</b></div>
       ${canReviewAfter(record) ? `<button class="btn secondary full" onclick="reviewAfter('${record.id}')">レース後の行動を記録</button>` : ""}
-      ${record.saved ? `<div class="reward">🛟 ${fmt(record.saved)}円を現金では使わずに済みました。</div>` : ""}</div>`;
+      ${record.saved ? `<div class="reward"><span class="manga-label">CASH SAVED</span> ${fmt(record.saved)}円を現金では使わずに済みました。</div>` : ""}</div>`;
   }
 
   window.setRecFilter = (filter) => {
@@ -1068,7 +1310,7 @@
 
   function aiText() {
     if (!S.records.length) {
-      return "仮想参加を記録すると、低自信×高衝動、取り返したい参加、金額増加、短時間連投を分析します。";
+      return "B投票を記録すると、低自信×高衝動、取り返したい参加、金額増加、短時間連投を分析します。";
     }
     const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
     const stats = C.behaviorStats(S.records);
@@ -1086,7 +1328,7 @@
       ["低自信×高衝動", `${low}件`],
       ["追い上げ傾向", `${stats.chase}件`],
       ["実結果反映", `${settled}件`],
-    ].map(([label, value]) => `<div class="card"><div class="eyebrow">${label}</div><div class="metric">${value}</div></div>`).join("");
+    ].map(([label, value]) => `<div class="stat-card"><div class="eyebrow">${label}</div><div class="metric">${value}</div></div>`).join("");
     const items = [
       ["取り返したい参加", `${stats.declaredChase}件`],
       ["短時間の金額増加", `${stats.escalation}件（30分以内に予定額が増加）`],
@@ -1094,7 +1336,7 @@
       ["短時間連投", `${stats.rapid}件（30分以内に3レース参加）`],
       ["衝動の変化", stats.urgeDrop == null
         ? "レース後データ待ち"
-        : `仮想参加後、平均 ${stats.urgeDrop >= 0 ? "−" : "＋"}${Math.abs(stats.urgeDrop).toFixed(1)}`],
+        : `B投票後、平均 ${stats.urgeDrop >= 0 ? "−" : "＋"}${Math.abs(stats.urgeDrop).toFixed(1)}`],
       ["多い参加理由", stats.topReason ? `${stats.topReason[0]}：${stats.topReason[1]}件` : "データ待ち"],
       ["守れた場", stats.topVenue ? `${stats.topVenue[0]}：${fmt(stats.topVenue[1])}円` : "データ待ち"],
     ];
@@ -1104,11 +1346,11 @@
     $("xpValue").textContent = `${fmt(S.xp)} XP`;
     $("xpBar").style.width = `${Math.min(100, (S.xp % 500) / 5)}%`;
     const rewards = [
-      [100, "青緑の帆", "⛵"], [300, "灯台バッジ", "🗼"],
-      [600, "夜航海背景", "🌙"], [1000, "金の錨", "⚓"],
+      [100, "青緑の帆", "帆"], [300, "灯台バッジ", "灯"],
+      [600, "夜航海背景", "夜"], [1000, "金の錨", "錨"],
     ];
-    $("rewards").innerHTML = rewards.map(([xp, name, icon]) =>
-      `<div class="rewarditem ${S.xp < xp ? "lock" : ""}"><div style="font-size:28px">${icon}</div><b>${name}</b><div class="tiny">${S.xp >= xp ? "解放済み" : `${xp} XPで解放`}</div></div>`
+    $("rewards").innerHTML = rewards.map(([xp, name, symbol]) =>
+      `<div class="rewarditem ${S.xp < xp ? "lock" : ""}"><div class="reward-symbol">${symbol}</div><b>${name}</b><div class="tiny">${S.xp >= xp ? "解放済み" : `${xp} XPで解放`}</div></div>`
     ).join("");
   }
 
@@ -1147,6 +1389,7 @@
     $("syncStats").innerHTML = `<b>${esc(statusText())}</b><br>
       番組表: ${stats.scheduleVenues || 0}場 / ${stats.scheduleRaces || 0}R / ${stats.scheduleEntries || 0}艇<br>
       成績: ${stats.performanceRaces || 0}R / 実着順行 ${stats.resultRows || 0} / 3連単 ${stats.sanrenshoPayouts || 0} / 全舟券払戻 ${stats.totalPayoutEntries || stats.sanrenshoPayouts || 0}<br>
+      大会情報: B見出し ${stats.scheduleVenues || 0}場 / グレード照合 ${stats.gradedVenues || 0}場 / schema ${DATA.schemaVersion || "-"}<br>
       検証警告: ${warningCount}件`;
   }
 
@@ -1156,7 +1399,7 @@
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v31-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v33-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
@@ -1171,7 +1414,10 @@
   };
 
   function renderAll() {
+    if (!document.body.dataset.screen) document.body.dataset.screen = "home";
     $("onboard").classList.toggle("show", !S.accepted);
+    renderOnboard();
+    $("topCoins").textContent = `${fmt(S.coins)} B`;
     renderHome();
     renderVenues();
     renderRace();

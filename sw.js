@@ -1,11 +1,13 @@
-const CACHE = "mamoboat-v31";
+const CACHE = "mamoboat-v33";
 const SHELL = [
   "./",
   "./index.html",
+  "./styles.css",
   "./core.js",
   "./app.js",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./mamoru-hero.webp",
 ];
 
 self.addEventListener("install", (event) => {

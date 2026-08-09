@@ -1,17 +1,201 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b2f4a"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><title>まもボート v3.1</title>
-<style>
-:root{--navy:#0b2f4a;--teal:#148f89;--bg:#f3f7f9;--line:#d7e4e9;--ink:#112a38;--muted:#687b86;--good:#edf8f3;--warn:#fff7e8;--bad:#fff0f0}*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif}button,input,select,textarea{font:inherit}.app{max-width:880px;margin:auto;padding-bottom:98px}.top{position:sticky;top:0;z-index:30;background:#f3f7f9f3;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px 14px}.brand{display:flex;gap:11px;align-items:center}.logo{width:49px;height:49px;border-radius:16px;background:linear-gradient(135deg,var(--navy),var(--teal));display:grid;place-items:center;color:white;font-size:27px}.brand h1{margin:0;font-size:21px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.badge{font-size:10px;background:#dff4f1;color:#08716b;border-radius:99px;padding:3px 7px}main{padding:14px}.screen{display:none}.screen.active{display:block}.grid{display:grid;gap:9px}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:repeat(3,1fr)}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px #0b2f4a0d}.eyebrow{font-size:12px;font-weight:850;color:var(--teal)}.metric{font-size:26px;font-weight:900;margin-top:4px}.tiny{font-size:11px;color:var(--muted);line-height:1.5}.muted{font-size:13px;color:var(--muted);line-height:1.55}.title{display:flex;justify-content:space-between;align-items:end;gap:8px;margin:18px 2px 9px}.title h2{margin:0;font-size:20px}.title span{font-size:11px;color:var(--muted)}.notice{background:#eef5f8;border:1px solid #d3e3e9;border-radius:14px;padding:11px 12px;font-size:13px;line-height:1.55}.notice.good{background:var(--good);border-color:#cbe7da}.notice.warn{background:var(--warn);border-color:#ead6a4}.notice.bad{background:var(--bad);border-color:#eccaca}.btn{border:0;border-radius:13px;min-height:46px;padding:10px 13px;font-weight:850}.primary{background:var(--navy);color:white}.teal{background:var(--teal);color:white}.secondary{background:#eef4f6;color:var(--navy);border:1px solid var(--line)}.danger{background:#fff0f0;color:#914242;border:1px solid #efcccc}.full{width:100%}.row{display:flex;gap:7px;flex-wrap:wrap}.row>*{flex:1 1 125px}.link{display:block;text-decoration:none;text-align:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:#f8fbfc;color:var(--navy);font-size:12px;font-weight:850}.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(880px,100%);z-index:40;background:white;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);padding:7px 3px max(10px,env(safe-area-inset-bottom))}.nav{border:0;background:transparent;border-radius:12px;padding:6px 2px;color:#74848e;font-size:11px;font-weight:800}.nav b{display:block;font-size:20px}.nav.active{background:#e8f7f5;color:var(--navy)}.venues{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.venue{display:grid;gap:8px}.venuehead{display:flex;justify-content:space-between;gap:8px}.venuename{font-size:20px;font-weight:900}.status{font-size:10px;border-radius:99px;padding:4px 7px;height:max-content;font-weight:900}.status.on{background:#dff4e9;color:#1a6f4d}.status.off{background:#edf1f3;color:#687b86}.filters{display:flex;gap:7px;overflow:auto;padding:2px 0 8px}.filter{white-space:nowrap;border:1px solid var(--line);border-radius:99px;background:white;padding:8px 13px;font-weight:800;color:#62747f}.filter.active{background:var(--navy);color:white}.racechips{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.racechip{border:1px solid var(--line);background:white;border-radius:10px;padding:8px 0;font-weight:900;color:var(--navy)}.racechip.active{background:#e7f7f4;border-color:#9bd3cc}.racename{font-size:22px;font-weight:900}.boats{display:grid;gap:7px;margin-top:10px}.boat{display:grid;grid-template-columns:42px 1fr 66px;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px}.num{height:38px;border-radius:9px;display:grid;place-items:center;font-weight:900}.b1{background:white;border:1px solid #cbd7db}.b2{background:#30363b;color:white}.b3{background:#d84d4d;color:white}.b4{background:#4b70d0;color:white}.b5{background:#e5c23b}.b6{background:#48a169;color:white}.bet-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#eaf1f4;border-radius:13px;padding:5px}.bet-tab{border:0;border-radius:9px;background:transparent;padding:9px;font-weight:850;color:#62747f}.bet-tab.active{background:white;color:var(--navy)}.betgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.pick{border:2px solid transparent;border-radius:11px;padding:10px 0;font-weight:900}.pick.sel{border-color:var(--teal);outline:3px solid #148f8924}.pick.dim{opacity:.25}.rank{margin:11px 0}.rank h3{font-size:13px;margin:0 0 5px}.field{display:grid;gap:5px;margin:10px 0}.field label{font-size:12px;font-weight:850}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px;background:white}.field textarea{min-height:68px}.slider{width:100%}.big{font-size:27px;font-weight:900;text-align:center;color:var(--navy)}.cart{display:grid;gap:7px}.cartrow{display:grid;grid-template-columns:64px 1fr 78px 66px 32px;gap:5px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:7px}.cartrow input{width:100%;min-height:36px;border:1px solid var(--line);border-radius:8px;text-align:center}.xbtn{border:0;border-radius:8px;height:32px}.rec{display:grid;gap:8px}.recgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px}.result{font-size:16px;font-weight:900}.reward{font-weight:900;color:#187154}.rewardgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.rewarditem{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}.rewarditem.lock{opacity:.45}.progress{height:10px;background:#e7eef2;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--navy))}.modalbg{position:fixed;inset:0;z-index:60;background:#071e2c88;display:none;align-items:flex-end;padding:14px}.modalbg.show{display:flex}.modal{max-width:620px;width:100%;margin:auto;background:white;border-radius:22px;padding:18px;max-height:88vh;overflow:auto}.onboard{position:fixed;inset:0;z-index:80;background:#edf6f8;padding:20px;overflow:auto;display:none}.onboard.show{display:block}.oncard{max-width:620px;margin:5vh auto;background:white;border:1px solid var(--line);border-radius:24px;padding:22px}.check{display:flex;gap:10px;padding:11px 0}.check input{width:22px;height:22px}@media(max-width:500px){.venues{grid-template-columns:1fr}.metric{font-size:23px}.card{padding:12px}.cartrow{grid-template-columns:55px 1fr 68px 58px 30px}.three{grid-template-columns:1fr 1fr}}
-.betreceipt{border:1px solid #b8d5dc;background:#f7fbfc;border-radius:14px;padding:10px 11px}.betreceipt summary{cursor:pointer;font-weight:900;color:var(--navy);list-style-position:inside}.betreceipt summary span{color:var(--muted);font-size:11px;margin-left:5px}.betreceipt[open] summary{margin-bottom:8px}.betlines{display:grid;gap:6px;max-height:240px;overflow:auto}.betline{display:grid;grid-template-columns:50px 1fr auto;gap:7px;align-items:center;background:white;border:1px solid var(--line);border-radius:10px;padding:8px}.bettype{font-size:10px;font-weight:900;color:var(--teal)}.betcombo{font-size:18px;letter-spacing:.04em}.betnames{grid-column:1/-1;color:var(--muted);font-size:10px;line-height:1.5}.racechip.closed{background:#e3e8eb;border-color:#cbd3d8;color:#89969e}.racechip.closed.active{background:#d8e0e4;border-color:#7e909a;outline:2px solid #7e909a}.boat[href]{color:inherit;text-decoration:none;transition:background .15s}.boat[href]:active{background:#e8f4f6}.racerlinkhint{font-size:9px;color:var(--teal);font-weight:900}.bettypebar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:none}.bettypebar::-webkit-scrollbar{display:none}.bettypebtn{flex:0 0 auto;border:1px solid var(--line);border-radius:12px;background:white;color:var(--navy);padding:10px 13px;font-weight:900}.bettypebtn.active{background:var(--navy);border-color:var(--navy);color:white}.betguide{margin:0 0 9px}.tickettype{font-size:10px;color:var(--teal)}.cartrow{grid-template-columns:52px 66px 1fr 62px 32px}.cartrow input{min-width:0}@media(max-width:500px){.cartrow{grid-template-columns:48px 58px 1fr 54px 30px;padding:6px;gap:4px}.bettypebtn{padding:9px 11px}}
-.brandmeta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.brandmeta h1{margin:0}.unofficial{font-size:9px;font-weight:900;letter-spacing:.04em;background:#fff1d8;color:#7b571b;border:1px solid #ead29f;border-radius:99px;padding:3px 7px}.safetybar{display:flex;gap:9px;align-items:flex-start;background:#0b2f4a;color:white;border-radius:15px;padding:11px 12px;margin-bottom:10px;font-size:12px;line-height:1.5}.safetybar span{flex:0 0 auto;background:#fff1d8;color:#67470f;border-radius:99px;padding:3px 7px;font-size:9px;font-weight:900}.race-mini-clock{margin-top:7px;color:var(--teal);font-size:12px;font-weight:900}.raceboard{border-top:5px solid var(--navy);box-shadow:0 10px 30px #0b2f4a14}.raceheadline{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.raceheadline>div:first-child{min-width:0}.raceclock{flex:0 0 128px;border-radius:13px;padding:9px 10px;text-align:center;background:#edf1f3;color:#536773}.raceclock span{display:block;font-size:10px;font-weight:900}.raceclock b{display:block;margin-top:2px;font-size:12px}.raceclock.selling{background:#def5e9;color:#126443;border:1px solid #bee4d1}.raceclock.closed{background:#e5e9ec;color:#687983;border:1px solid #d3dade}.raceclock.confirmed{background:#dff4f1;color:#086b65;border:1px solid #b9ded9}.raceclock.waiting{background:#fff4dc;color:#795615;border:1px solid #ead19d}.officialmenu{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.officiallink{display:flex;justify-content:space-between;align-items:center;gap:6px;text-decoration:none;border:1px solid #bfd2db;border-radius:12px;padding:10px;background:#f7fbfc;color:var(--navy);font-size:11px}.officiallink span{color:var(--muted)}.officiallink b{font-size:11px;text-align:right}.source-note{margin-top:8px;padding-left:9px;border-left:3px solid var(--teal);font-size:10px;line-height:1.5;color:var(--muted)}.inline-official{display:inline-block;margin:7px 0 3px;color:var(--navy);font-size:12px;font-weight:900}.data-source{display:inline-block;margin-left:7px;border-radius:99px;background:white;color:#27715d;padding:2px 6px;font-size:9px;font-weight:900}.resultboard details{border-top:1px solid #cbe7da;padding-top:6px}.betdesk{border-top:4px solid var(--teal)}.racechip.confirmed{position:relative}.racechip.confirmed:after{content:"";position:absolute;right:4px;top:4px;width:6px;height:6px;border-radius:50%;background:var(--teal)}@media(max-width:500px){.raceheadline{display:grid}.raceclock{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left}.raceclock b{margin:0}.officialmenu{grid-template-columns:1fr}.safetybar{display:block}.safetybar span{display:inline-block;margin-bottom:5px}}
-</style></head><body><div class="app"><header class="top"><div class="brand"><div class="logo">⛵</div><div><div class="brandmeta"><h1>まもボート</h1><span class="badge">PERSONAL v3.1</span><span class="unofficial">非公式</span></div><p>本物のレース × 仮想メダル。現金を使わないための個人用投票席。</p></div></div></header><main>
-<section id="home" class="screen active"><div class="safetybar"><span>非公式・個人用</span><b>換金・購入・入出金なし。自動取得は公式公開の日次データだけに限定しています。</b></div><div id="dataStatus" class="notice">実データを読み込み中…</div><div class="grid two" style="margin-top:10px"><div class="card"><div class="eyebrow">仮想メダル残高</div><div id="coins" class="metric"></div></div><div class="card"><div class="eyebrow">今日守った現金</div><div id="savedToday" class="metric"></div></div><div class="card"><div class="eyebrow">今週守った現金</div><div id="savedWeek" class="metric"></div></div><div class="card"><div class="eyebrow">今月守った現金</div><div id="savedMonth" class="metric"></div></div></div><div id="settledNotice" style="margin-top:10px"></div><div class="title"><h2>次の締切</h2><span>実開催のみ</span></div><div id="nextRaces" class="grid"></div><div class="title"><h2>今日の開催</h2><span id="activeCount"></span></div><div id="homeVenues" class="venues"></div><div class="title"><h2>AI行動メモ</h2><span>予想AIではありません</span></div><div class="card"><div id="aiMemo" class="notice"></div></div></section>
-<section id="venues" class="screen"><div class="title"><h2>全国24場</h2><span id="dataDate"></span></div><div class="filters"><button class="filter active" data-filter="active" onclick="setFilter('active')">本日開催</button><button class="filter" data-filter="all" onclick="setFilter('all')">全24場</button><button class="filter" data-filter="off" onclick="setFilter('off')">本日なし</button></div><div id="venueList" class="venues"></div></section>
-<section id="race" class="screen"><div id="raceView"></div></section>
-<section id="records" class="screen"><div class="title"><h2>記録</h2><span id="recordCount"></span></div><div class="filters"><button class="filter active" data-rec="all" onclick="setRecFilter('all')">すべて</button><button class="filter" data-rec="pending" onclick="setRecFilter('pending')">結果待ち</button><button class="filter" data-rec="saved" onclick="setRecFilter('saved')">守った</button><button class="filter" data-rec="hit" onclick="setRecFilter('hit')">仮想的中</button></div><div id="recordList" class="grid"></div></section>
-<section id="analysis" class="screen"><div class="title"><h2>行動分析</h2><span>診断ではありません</span></div><div id="analysisCards" class="grid two"></div><div class="title"><h2>今の傾向</h2></div><div id="analysisList" class="grid"></div><div class="title"><h2>ご褒美</h2><span>換金不可</span></div><div class="card"><div class="eyebrow">航海EXP</div><div id="xpValue" class="metric"></div><div class="progress"><i id="xpBar"></i></div><div id="rewards" class="rewardgrid" style="margin-top:10px"></div><button class="btn secondary full" style="margin-top:10px" onclick="copyAnalysis()">AI分析用サマリーをコピー</button></div></section>
-<section id="settings" class="screen"><div class="title"><h2>設定・データ</h2></div><div class="card"><div class="notice"><b>非公式の個人用アプリです。</b><br>BOAT RACE公式のサービスではなく、公式ロゴ・公式画面・投票機能は使用していません。仮想メダルは換金・購入・譲渡できません。</div><div id="syncStats" class="notice" style="margin-top:9px">同期状態を確認中…</div><button class="btn secondary full" style="margin-top:9px" onclick="reloadData()">実データを再読込・未精算を確認</button><button class="btn secondary full" style="margin-top:8px" onclick="exportData()">記録をJSONで書き出す</button><button class="btn danger full" style="margin-top:8px" onclick="resetData()">記録を初期化</button></div><div class="title"><h2>安全なデータ取得</h2></div><div class="card"><div class="notice good"><b>自動取得</b><br>公式がダウンロード用に公開している番組表・競走成績LZHだけを、GitHub Actionsから毎時・直列で取得します。</div><div class="notice" style="margin-top:8px"><b>オッズ・直後結果</b><br>自動巡回や画面コピーはしません。利用者がボタンを押した時だけ公式サイトを別画面で開きます。</div><a class="link" style="margin-top:8px" href="https://www.boatrace.jp/owpc/pc/extra/data/download.html" target="_blank" rel="noopener noreferrer">公式データダウンロード案内 ↗</a><p class="tiny">公式データの公開・更新には遅れが生じる場合があります。最終確認は必ず公式サイトで行ってください。</p></div><div class="title"><h2>ホーム画面に追加</h2></div><div class="card"><p class="muted">Safariの共有ボタン →「ホーム画面に追加」でアプリのように起動できます。</p></div></section>
-</main><nav class="bottom"><button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b>ホーム</button><button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b>24場</button><button id="nav-race" class="nav" onclick="go('race')"><b>◉</b>レース</button><button id="nav-records" class="nav" onclick="go('records')"><b>▤</b>記録</button><button id="nav-analysis" class="nav" onclick="go('analysis')"><b>◔</b>分析</button><button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b>設定</button></nav></div>
-<div id="onboard" class="onboard"><div class="oncard"><div class="logo">⛵</div><div class="brandmeta"><h1>まもボート</h1><span class="unofficial">非公式・個人用</span></div><p class="muted">本物のボートレースに、価値のない仮想メダルで参加する第二の投票席です。BOAT RACE公式のサービスではなく、換金・購入・入出金・譲渡はできません。</p><label class="check"><input id="age" type="checkbox" onchange="checkStart()"><b>私は20歳以上です</b></label><label class="check"><input id="value" type="checkbox" onchange="checkStart()"><b>仮想メダルに金銭的価値がないことを理解しました</b></label><button id="startBtn" class="btn primary full" disabled onclick="startApp()">利用開始</button></div></div><div id="modalBg" class="modalbg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
-<script src="core.js"></script>
-<script src="app.js"></script>
-</body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#05233e">
+  <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>まもボート v3.3</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
+        <span class="brand-mark">B</span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.3</small></span>
+      </button>
+      <div class="wallet" aria-label="Bメダル残高"><span>B BALANCE</span><strong id="topCoins">-- B</strong></div>
+    </header>
+
+    <main>
+      <section id="home" class="screen active">
+        <div class="home-masthead">
+          <img class="masthead-character" src="mamoru-hero.webp" alt="Bメダルを持つ、まもボートのオリジナル航海ナビゲーター">
+          <div class="masthead-brand">
+            <strong>まもボート</strong>
+            <small>MAMO BOAT</small>
+            <div><span>PERSONAL</span><b>非公式・個人用</b></div>
+          </div>
+          <div class="masthead-wallet" aria-label="Bメダル残高">
+            <span><i class="mini-medal">B</i>Bメダル残高 <i class="info-dot">i</i></span>
+            <strong id="homeCoins">-- B</strong>
+          </div>
+          <div class="masthead-callout"><span>今日の</span><strong>舞台を<em>選べ。</em></strong></div>
+        </div>
+
+        <div class="home-titlebar">
+          <h1>本日の<span>開催</span></h1>
+          <div class="home-date"><strong id="homeDateText">----</strong><span id="homeSyncLabel">公式公開データを確認中</span></div>
+        </div>
+
+        <nav class="home-command" aria-label="開催メニュー">
+          <button class="active" data-home-command="venues" onclick="showVenueCommand()"><b>▦</b><span>開催一覧</span></button>
+          <button data-home-command="deadline" onclick="scrollToDeadlines()"><b>◴</b><span>締切順</span></button>
+          <button data-home-command="favorite" onclick="showFavorites()"><b>☆</b><span>お気に入り</span></button>
+          <a href="https://race.boatcast.jp/" target="_blank" rel="noopener noreferrer"><b>▣</b><span>レース映像</span></a>
+        </nav>
+
+        <details class="home-sync-details">
+          <summary>公式データの取得状況</summary>
+          <div id="dataStatus" class="sync-strip">実データを読み込み中…</div>
+        </details>
+        <div id="settledNotice"></div>
+
+        <div class="filter-rail home-filters" aria-label="開催場の絞り込み">
+          <button class="filter active" data-home-filter="all" onclick="setHomeFilter('all')">すべて</button>
+          <button class="filter" data-home-filter="grade" onclick="setHomeFilter('grade')">グレード⌄</button>
+          <button class="filter" data-home-filter="night" onclick="setHomeFilter('night')">☾ ナイター</button>
+          <button class="filter" data-home-filter="selling" onclick="setHomeFilter('selling')">▱ 発売中</button>
+        </div>
+        <div class="route-guide home-route" aria-label="利用の流れ">
+          <span>場を選ぶ</span><i>→</i><span>1〜12R</span><i>→</i><span>出走表</span><i>→</i><span>Bメダル投票</span>
+        </div>
+        <span id="activeCount" hidden></span>
+        <div id="homeVenues" class="venue-grid home-venue-grid"></div>
+
+        <div id="deadlineSection" class="section-head">
+          <div><span class="section-number">02</span><h2>次の締切</h2></div>
+          <span class="section-meta">JST・予定時刻</span>
+        </div>
+        <div id="nextRaces" class="deadline-rail"></div>
+
+        <div class="section-head">
+          <div><span class="section-number">03</span><h2>今日の防衛記録</h2></div>
+          <button class="text-action" onclick="go('analysis')">作戦会議へ →</button>
+        </div>
+        <div class="stat-grid three-stats">
+          <div class="stat-card"><span>残りBメダル</span><strong id="coins"></strong></div>
+          <div class="stat-card coral"><span>今日守った現金</span><strong id="savedToday"></strong></div>
+          <div class="stat-card"><span>今月守った現金</span><strong id="savedMonth"></strong></div>
+        </div>
+        <div class="tactical-note"><span class="manga-label">MAMORU'S NOTE</span><p id="aiMemo"></p></div>
+        <span id="savedWeek" hidden></span>
+      </section>
+
+      <section id="venues" class="screen">
+        <div class="page-intro compact-intro">
+          <div><span class="kicker">ALL 24 VENUES</span><h1>全国24場</h1><p>開催中の場を選ぶと、1〜12Rの実番組表へ進みます。</p></div>
+          <img src="mamoru-hero.webp" alt="" aria-hidden="true">
+        </div>
+        <div class="section-head small"><div><span class="section-number">24</span><h2>開催場を選択</h2></div><span id="dataDate" class="section-meta"></span></div>
+        <div class="filter-rail">
+          <button class="filter active" data-filter="active" onclick="setFilter('active')">本日開催</button>
+          <button class="filter" data-filter="all" onclick="setFilter('all')">全24場</button>
+          <button class="filter" data-filter="off" onclick="setFilter('off')">本日なし</button>
+        </div>
+        <div id="venueList" class="venue-grid all-venues"></div>
+      </section>
+
+      <section id="race" class="screen"><div id="raceView"></div></section>
+
+      <section id="records" class="screen">
+        <div class="page-intro record-intro">
+          <div><span class="kicker">BATTLE LOG</span><h1>戦績ログ</h1><p>買い目・実結果・B払戻・守った現金を、ひとつの流れで確認。</p></div>
+          <img src="mamoru-hero.webp" alt="" aria-hidden="true">
+        </div>
+        <div class="section-head small"><div><span class="section-number">LOG</span><h2>参加記録</h2></div><span id="recordCount" class="section-meta"></span></div>
+        <div class="filter-rail">
+          <button class="filter active" data-rec="all" onclick="setRecFilter('all')">すべて</button>
+          <button class="filter" data-rec="pending" onclick="setRecFilter('pending')">結果待ち</button>
+          <button class="filter" data-rec="saved" onclick="setRecFilter('saved')">現金を守った</button>
+          <button class="filter" data-rec="hit" onclick="setRecFilter('hit')">B的中</button>
+        </div>
+        <div id="recordList" class="record-list"></div>
+      </section>
+
+      <section id="analysis" class="screen">
+        <div class="page-intro analysis-intro">
+          <div><span class="kicker">TACTICAL ROOM</span><h1>作戦会議</h1><p>予想ではなく、自分の衝動と追い上げ傾向を読むための画面です。</p></div>
+          <img src="mamoru-hero.webp" alt="" aria-hidden="true">
+        </div>
+        <div class="section-head small"><div><span class="section-number">A</span><h2>現在の戦況</h2></div><span class="section-meta">診断ではありません</span></div>
+        <div id="analysisCards" class="stat-grid"></div>
+        <div class="section-head small"><div><span class="section-number">B</span><h2>行動パターン</h2></div></div>
+        <div id="analysisList" class="analysis-list"></div>
+        <div class="section-head small"><div><span class="section-number">C</span><h2>航海EXP</h2></div><span class="section-meta">換金不可</span></div>
+        <div class="panel xp-panel">
+          <div class="xp-head"><div><span>航海EXP</span><strong id="xpValue"></strong></div><button class="text-action" onclick="copyAnalysis()">分析用データをコピー</button></div>
+          <div class="progress"><i id="xpBar"></i></div>
+          <div id="rewards" class="reward-grid"></div>
+        </div>
+      </section>
+
+      <section id="settings" class="screen">
+        <div class="page-intro settings-intro">
+          <div><span class="kicker">SYSTEM DECK</span><h1>設定・データ</h1><p>同期状態、端末内の記録、安全な取得方針を確認できます。</p></div>
+          <span class="settings-gear" aria-hidden="true">⚙</span>
+        </div>
+        <div class="panel settings-panel">
+          <div class="safety-title"><span>PRIVATE / UNOFFICIAL</span><h2>現金の移動は一切ありません</h2></div>
+          <p>BOAT RACE公式のサービスではありません。Bメダルは換金・購入・入出金・譲渡できません。</p>
+          <div id="syncStats" class="sync-detail">同期状態を確認中…</div>
+          <div class="action-stack">
+            <button class="btn secondary full" onclick="reloadData()">実データを再読込・未精算を確認</button>
+            <button class="btn secondary full" onclick="exportData()">記録をJSONで書き出す</button>
+            <button class="btn danger full" onclick="resetData()">記録を初期化</button>
+          </div>
+        </div>
+        <div class="section-head small"><div><span class="section-number">SAFE</span><h2>安全なデータ取得</h2></div></div>
+        <div class="panel policy-grid">
+          <div><b>毎時</b><h3>公式公開LZH</h3><p>番組表・競走成績だけを1並列で取得。変化がない時は更新しません。</p></div>
+          <div><b>週1回</b><h3>公式グレード日程</h3><p>SG・PG1・GⅠ〜GⅢの日程3ページだけを低頻度でキャッシュします。</p></div>
+          <div><b>押した時だけ</b><h3>公式画面</h3><p>オッズ・結果・選手情報・映像は、利用者が押した場合だけ別画面で開きます。</p></div>
+        </div>
+        <a class="official-wide" href="https://www.boatrace.jp/owpc/pc/extra/data/download.html" target="_blank" rel="noopener noreferrer">公式データダウンロード案内 <span>↗</span></a>
+        <p class="footnote">公式データの公開・更新には遅れが生じる場合があります。最終確認は公式サイトで行ってください。</p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="メインメニュー">
+      <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
+      <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
+      <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
+      <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
+      <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>◒</b><span>分析</span></button>
+      <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
+    </nav>
+  </div>
+
+  <div id="onboard" class="onboard">
+    <div class="onboard-shell">
+      <div class="onboard-top"><span class="brand-mark">B</span><span>まもボート / FIRST VOYAGE</span></div>
+      <div class="onboard-panel active" data-onboard="0">
+        <div class="onboard-copy"><span class="kicker">WELCOME ABOARD</span><h1>勝負欲は、<br><em>Bで受け止める。</em></h1><p>実レースの緊張感はそのまま。現金だけを使わない、あなた専用の投票席です。</p></div>
+        <img src="mamoru-hero.webp" alt="航海ナビゲーターのマモル">
+        <button class="btn primary onboard-next" onclick="onboardNext()">タップして進む <span>→</span></button>
+      </div>
+      <div class="onboard-panel" data-onboard="1">
+        <div class="onboard-copy"><span class="kicker">HOW IT WORKS</span><h1>実レースから、<br><em>行動分析まで。</em></h1></div>
+        <div class="onboard-route">
+          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>Bメダルで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>守った現金を記録</span></div>
+        </div>
+        <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button class="btn primary" onclick="onboardNext()">次へ →</button></div>
+      </div>
+      <div class="onboard-panel" data-onboard="2">
+        <div class="onboard-copy"><span class="kicker">FINAL CHECK</span><h1>これは現金ではなく、<br><em>Bメダルです。</em></h1><p>公式サービスではなく、メダルに金銭的価値はありません。記録はこの端末内だけに保存されます。</p></div>
+        <label class="check"><input id="age" type="checkbox" onchange="checkStart()"><span><b>私は20歳以上です</b><small>成人向けの自己管理ツールとして利用します</small></span></label>
+        <label class="check"><input id="value" type="checkbox" onchange="checkStart()"><span><b>Bメダルに金銭的価値がないことを理解しました</b><small>換金・購入・入出金・譲渡はできません</small></span></label>
+        <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button id="startBtn" class="btn coral-btn" disabled onclick="startApp()">航海を始める</button></div>
+      </div>
+      <div class="onboard-dots"><i class="active"></i><i></i><i></i></div>
+    </div>
+  </div>
+
+  <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
