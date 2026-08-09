@@ -9,22 +9,65 @@
     String(index + 1).padStart(2, "0")
   );
 
+  const BET_TYPES = {
+    win: { label: "単勝", picks: 1, ordered: true },
+    place: { label: "複勝", picks: 1, ordered: true },
+    exacta: { label: "2連単", picks: 2, ordered: true },
+    quinella: { label: "2連複", picks: 2, ordered: false },
+    wide: { label: "拡連複", picks: 2, ordered: false },
+    trifecta: { label: "3連単", picks: 3, ordered: true },
+    trio: { label: "3連複", picks: 3, ordered: false },
+  };
+
+  const BET_TYPE_ALIASES = {
+    "単勝": "win",
+    "複勝": "place",
+    "2連単": "exacta",
+    "２連単": "exacta",
+    "2連複": "quinella",
+    "２連複": "quinella",
+    "拡連複": "wide",
+    "3連単": "trifecta",
+    "３連単": "trifecta",
+    "3連複": "trio",
+    "３連複": "trio",
+  };
+
+  function normalizeBetType(value) {
+    const key = String(value || "trifecta");
+    return BET_TYPES[key] ? key : BET_TYPE_ALIASES[key] || "trifecta";
+  }
+
   function normalizeCombo(value) {
     return String(value || "")
       .replace(/\s/g, "")
       .replace(/[―ー−]/g, "-");
   }
 
-  function payoutList(result) {
+  function canonicalCombo(value, betType = "trifecta") {
+    const type = normalizeBetType(betType);
+    const parts = (Array.isArray(value) ? value : normalizeCombo(value).split("-"))
+      .map(Number)
+      .filter((boat) => Number.isInteger(boat) && boat >= 1 && boat <= 6);
+    if (!BET_TYPES[type].ordered) parts.sort((a, b) => a - b);
+    return parts.join("-");
+  }
+
+  function payoutList(result, betType = "trifecta") {
     if (!result) return [];
-    const raw = Array.isArray(result.sanrensho)
-      ? result.sanrensho
-      : result.sanrensho
-        ? [result.sanrensho]
+    const type = normalizeBetType(betType);
+    const typePayouts = result.payouts && result.payouts[type];
+    const fallback = type === "trifecta" ? result.sanrensho : null;
+    const source = typePayouts == null ? fallback : typePayouts;
+    const raw = Array.isArray(source)
+      ? source
+      : source
+        ? [source]
         : [];
     return raw
       .map((item) => ({
-        combination: normalizeCombo(item.combination),
+        betType: type,
+        combination: canonicalCombo(item.combination, type),
         payout: Number(item.payout) || 0,
         popularity: item.popularity == null ? null : Number(item.popularity),
       }))
@@ -63,6 +106,7 @@
       record.status = "refunded";
       record.payoutStatus = "notEstablished";
       record.payoutC = refund;
+      record.refundC = refund;
       record.resultCombo = "不成立";
       record.resultPayout = null;
       record.resultPayouts = [];
@@ -75,35 +119,66 @@
       return { changed: false, payoutAdded: 0, hit: false, refunded: false };
     }
 
-    const payouts = payoutList(race.result);
-    if (!payouts.length) {
+    const lines = record.lines || [];
+    const lineTypes = [...new Set(lines.map(
+      (line) => normalizeBetType(line.betType)
+    ))];
+    const notEstablishedTypes = new Set(
+      (race.result.notEstablishedTypes || []).map(normalizeBetType)
+    );
+    const payoutsByType = new Map(lineTypes.map(
+      (type) => [type, payoutList(race.result, type)]
+    ));
+    if (lineTypes.some(
+      (type) => !notEstablishedTypes.has(type) && !payoutsByType.get(type).length
+    )) {
       return { changed: false, payoutAdded: 0, hit: false, refunded: false };
     }
 
-    const winning = new Map(payouts.map((item) => [item.combination, item]));
     let payoutC = 0;
-    for (const line of record.lines || []) {
-      const payout = winning.get(normalizeCombo((line.combo || []).join("-")));
-      if (payout) payoutC += ((Number(line.stake) || 0) / 100) * payout.payout;
+    let refundedC = 0;
+    for (const line of lines) {
+      const type = normalizeBetType(line.betType);
+      const stake = Number(line.stake) || 0;
+      if (notEstablishedTypes.has(type)) {
+        payoutC += stake;
+        refundedC += stake;
+        continue;
+      }
+      const winning = new Map(
+        payoutsByType.get(type).map((item) => [item.combination, item])
+      );
+      const payout = winning.get(canonicalCombo(line.combo || [], type));
+      if (payout) payoutC += (stake / 100) * payout.payout;
     }
 
-    record.status = payoutC > 0 ? "hit" : "miss";
-    record.payoutStatus = "paid";
+    record.status = payoutC > refundedC
+      ? "hit"
+      : refundedC > 0 && refundedC === recordStake(record)
+        ? "refunded"
+        : "miss";
+    record.payoutStatus = record.status === "refunded" ? "notEstablished" : "paid";
     record.payoutC = Math.round(payoutC);
-    record.resultCombo = payouts[0].combination;
-    record.resultPayout = payouts[0].payout;
-    record.resultPayouts = payouts.map((item) => ({
-      combo: item.combination,
-      payout: item.payout,
-      popularity: item.popularity,
-    }));
+    record.refundC = Math.round(refundedC);
+    record.resultCombo = (race.result.finish || []).slice(0, 3)
+      .map((item) => item.boatNumber).join("-") || "確定";
+    const relevantPayouts = lineTypes.flatMap((type) =>
+      payoutsByType.get(type).map((item) => ({
+        betType: type,
+        combo: item.combination,
+        payout: item.payout,
+        popularity: item.popularity,
+      }))
+    );
+    record.resultPayout = relevantPayouts[0]?.payout || null;
+    record.resultPayouts = relevantPayouts;
     record.settled = true;
     record.settledAt = new Date().toISOString();
     return {
       changed: true,
       payoutAdded: record.payoutC,
       hit: record.status === "hit",
-      refunded: false,
+      refunded: record.status === "refunded",
     };
   }
 
@@ -234,7 +309,10 @@
   }
 
   return {
+    BET_TYPES,
+    normalizeBetType,
     normalizeCombo,
+    canonicalCombo,
     payoutList,
     findRace,
     settleRecord,

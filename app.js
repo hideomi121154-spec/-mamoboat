@@ -17,6 +17,26 @@
     ["17", "宮島"], ["18", "徳山"], ["19", "下関"], ["20", "若松"],
     ["21", "芦屋"], ["22", "福岡"], ["23", "唐津"], ["24", "大村"],
   ];
+  const BET_ORDER = [
+    "trifecta", "trio", "exacta", "quinella", "wide", "win", "place",
+  ];
+  const PAYOUT_DISPLAY_ORDER = [
+    "win", "place", "exacta", "quinella", "wide", "trifecta", "trio",
+  ];
+  const MODE_LABELS = {
+    normal: "通常",
+    box: "BOX",
+    form: "フォーメーション",
+  };
+  const BET_GUIDES = {
+    trifecta: "1〜3着を着順どおり当てる",
+    trio: "1〜3着の3艇を順不同で当てる",
+    exacta: "1・2着を着順どおり当てる",
+    quinella: "1・2着の2艇を順不同で当てる",
+    wide: "選んだ2艇が両方とも3着以内なら的中",
+    win: "1着の艇を当てる",
+    place: "選んだ艇が2着以内なら的中",
+  };
 
   const $ = (id) => document.getElementById(id);
   const fmt = (value) => Number(value || 0).toLocaleString("ja-JP");
@@ -36,7 +56,7 @@
 
   function unavailableDataset(message = "公式データを取得できませんでした") {
     return {
-      schemaVersion: 7,
+      schemaVersion: 8,
       date: C.jstDate(),
       generatedAt: null,
       source: { type: "unavailable" },
@@ -55,6 +75,7 @@
   let liveLoaded = false;
   let dataError = "";
   let lastLoadAt = 0;
+  let betType = "trifecta";
   let mode = "normal";
   let normal = [null, null, null];
   let box = new Set();
@@ -102,6 +123,7 @@
       const lines = Array.isArray(record.lines)
         ? record.lines.map((line) => ({
           combo: Array.isArray(line.combo) ? line.combo.map(Number) : [],
+          betType: C.normalizeBetType(line.betType),
           stake: Number(line.stake) || 100,
           odds: line.odds ?? "",
           mode: ["normal", "box", "form"].includes(line.mode) ? line.mode : null,
@@ -142,6 +164,7 @@
         status,
         settled: record.settled === true || ["hit", "miss", "refunded"].includes(status),
         payoutC: Number(record.payoutC ?? record.payout ?? 0) || 0,
+        refundC: Number(record.refundC || 0) || 0,
         resultPayouts: Array.isArray(record.resultPayouts) ? record.resultPayouts : [],
         cashReviewed: reviewed,
         saved: Number(record.saved || 0) || 0,
@@ -247,6 +270,10 @@
 
   function officialUrl(code, number, date = DATA.date) {
     return `https://www.boatrace.jp/owpc/pc/race/racelist?hd=${date.replaceAll("-", "")}&jcd=${code}&rno=${number}`;
+  }
+
+  function racerUrl(racerNumber) {
+    return `https://www.boatrace.jp/owpc/pc/data/racersearch/profile?toban=${encodeURIComponent(racerNumber)}`;
   }
 
   function openModal(html) {
@@ -435,14 +462,18 @@
       return;
     }
     S.raceNo = raceItem.number;
-    const chips = venueItem.races.map((item) =>
-      `<button class="racechip ${item.number === raceItem.number ? "active" : ""}" onclick="selectRace(${item.number})">${item.number}R</button>`
-    ).join("");
-    const entries = `<div class="boats">${raceItem.entries.map((entry) => `<div class="boat">
+    const now = Date.now();
+    const chips = venueItem.races.map((item) => {
+      const closed = !!item.closeTime && now >= new Date(item.closeTime).getTime();
+      return `<button class="racechip ${closed ? "closed" : ""} ${item.number === raceItem.number ? "active" : ""}"
+        title="${closed ? "締切済み・結果閲覧" : `締切 ${timeText(item.closeTime)}`}"
+        onclick="selectRace(${item.number})">${item.number}R</button>`;
+    }).join("");
+    const entries = `<div class="boats">${raceItem.entries.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く">
       <div class="num b${entry.boatNumber}">${entry.boatNumber}</div>
-      <div><b>${esc(entry.name)}</b><div class="tiny">${entry.racerNumber} ${esc(entry.branch || "")}${entry.motorNumber ? ` / M${entry.motorNumber}` : ""}</div></div>
-      <span class="tiny">${esc(entry.class || "")}</span>
-    </div>`).join("")}</div>`;
+      <div><b>${esc(entry.name)}</b><div class="tiny">${entry.racerNumber} ${esc(entry.branch || "")}${entry.age ? ` / ${entry.age}歳` : ""}${entry.weight ? ` / ${entry.weight}kg` : ""}</div></div>
+      <div><b class="tiny">${esc(entry.class || "")}</b><div class="tiny">${entry.motorNumber ? `M${entry.motorNumber}` : ""}${entry.boatPart ? ` / B${entry.boatPart}` : ""}</div><div class="racerlinkhint">公式情報 ↗</div></div>
+    </a>`).join("")}</div>`;
     const open = closeState(raceItem);
     $("raceView").innerHTML = `<div class="title"><h2>${esc(venueItem.name)}</h2><span>${DATA.date}</span></div>
       <div class="racechips">${chips}</div>
@@ -456,7 +487,7 @@
           <a class="link" href="${esc(venueItem.boatcast)}" target="_blank" rel="noopener">▶ LIVE / リプレイ</a>
         </div>
       </div>
-      <div class="title"><h2>仮想メダルで参加</h2><span>3連単</span></div>
+      <div class="title"><h2>仮想メダルで参加</h2><span>公式7舟券種</span></div>
       <div class="card">${open
         ? builderShell()
         : isFresh()
@@ -467,61 +498,101 @@
 
   function resultHtml(raceItem) {
     if (!raceItem.result) return "";
-    if (raceItem.result.payoutStatus === "notEstablished") {
-      return '<div class="notice warn" style="margin-top:9px"><b>3連単 不成立</b><br>このレースの仮想投票額は自動返還されます。</div>';
-    }
     const finish = (raceItem.result.finish || []).slice(0, 3)
       .map((item) => item.boatNumber).join("-");
-    const payouts = C.payoutList(raceItem.result);
-    if (!payouts.length) {
-      return `<div class="notice" style="margin-top:9px"><b>実着順 ${finish || "集計中"}</b><br>3連単払戻の確定待ちです。</div>`;
+    const payouts = PAYOUT_DISPLAY_ORDER.flatMap((type) =>
+      C.payoutList(raceItem.result, type)
+    );
+    const notEstablished = (raceItem.result.notEstablishedTypes || []).map(
+      (type) => C.BET_TYPES[C.normalizeBetType(type)].label
+    );
+    if (raceItem.result.payoutStatus === "notEstablished" && !payouts.length) {
+      return '<div class="notice warn" style="margin-top:9px"><b>舟券 不成立</b><br>このレースの仮想投票額は自動返還されます。</div>';
     }
-    return `<div class="notice good" style="margin-top:9px"><b>実着順 ${finish || "確定"}</b>${payouts.map(
-      (item) => `<br>3連単 ${item.combination} / 払戻 ${fmt(item.payout)}円${item.popularity ? ` / ${item.popularity}番人気` : ""}`
-    ).join("")}</div>`;
+    if (!payouts.length) {
+      return `<div class="notice" style="margin-top:9px"><b>実着順 ${finish || "集計中"}</b><br>公式払戻の確定待ちです。</div>`;
+    }
+    return `<div class="notice good" style="margin-top:9px"><b>実着順 ${finish || "確定"}</b>
+      <details style="margin-top:6px"><summary><b>公式払戻（7舟券種）</b></summary>${payouts.map(
+        (item) => `<br>${C.BET_TYPES[item.betType].label} ${item.combination} / ${fmt(item.payout)}円${item.popularity ? ` / ${item.popularity}番人気` : ""}`
+      ).join("")}${notEstablished.length ? `<br>不成立・返還：${notEstablished.map(esc).join("・")}` : ""}</details></div>`;
   }
 
   function builderShell() {
-    return `<div class="bet-tabs">
-      <button id="bt-normal" class="bet-tab active" onclick="setMode('normal')">通常</button>
-      <button id="bt-box" class="bet-tab" onclick="setMode('box')">BOX</button>
-      <button id="bt-form" class="bet-tab" onclick="setMode('form')">フォーメーション</button>
-    </div><div id="builder"></div>
+    return `<div class="bettypebar">${BET_ORDER.map((type) =>
+      `<button id="type-${type}" class="bettypebtn" onclick="setBetType('${type}')">${C.BET_TYPES[type].label}</button>`
+    ).join("")}</div>
+    <div id="betGuide" class="notice betguide"></div>
+    <div id="modeTabs" class="bet-tabs"></div><div id="builder"></div>
     <div class="title" style="margin-top:14px"><h2 style="font-size:16px">買い目</h2><span id="cartCount">0点</span></div>
     <div id="cart" class="cart"></div><div id="cartSum" class="notice">買い目を作成してください。</div>
     <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">仮想投票を確認</button>`;
   }
 
-  function resetBuilder() {
-    mode = "normal";
-    normal = [null, null, null];
+  function allowedModes(type = betType) {
+    if (C.BET_TYPES[type].picks === 1) return ["normal"];
+    if (type === "wide") return ["normal", "box"];
+    return ["normal", "box", "form"];
+  }
+
+  function resetSelections() {
+    const picks = C.BET_TYPES[betType].picks;
+    normal = Array(picks).fill(null);
     box = new Set();
-    form = [new Set(), new Set(), new Set()];
+    form = Array.from({ length: picks }, () => new Set());
+  }
+
+  function resetBuilder() {
+    betType = "trifecta";
+    mode = "normal";
+    resetSelections();
     cart = [];
   }
 
-  window.setMode = (nextMode) => {
-    mode = nextMode;
-    ["normal", "box", "form"].forEach(
-      (item) => $(`bt-${item}`)?.classList.toggle("active", item === nextMode)
-    );
+  window.setBetType = (nextType) => {
+    if (!C.BET_TYPES[nextType]) return;
+    betType = nextType;
+    mode = "normal";
+    resetSelections();
     renderBuilder();
   };
 
+  window.setMode = (nextMode) => {
+    if (!allowedModes().includes(nextMode)) return;
+    mode = nextMode;
+    resetSelections();
+    renderBuilder();
+  };
+
+  function positionLabel(index, spec) {
+    if (spec.picks === 1) return betType === "place" ? "2着以内" : "1着";
+    return spec.ordered ? `${index + 1}着` : `${index + 1}艇目（順不同）`;
+  }
+
   function renderBuilder() {
     if (!$("builder")) return;
+    const spec = C.BET_TYPES[betType];
+    BET_ORDER.forEach(
+      (type) => $(`type-${type}`)?.classList.toggle("active", type === betType)
+    );
+    $("betGuide").innerHTML = `<b>${spec.label}</b>：${BET_GUIDES[betType]}。1点100Cから、100C単位。`;
+    const modes = allowedModes();
+    $("modeTabs").style.gridTemplateColumns = `repeat(${modes.length},1fr)`;
+    $("modeTabs").innerHTML = modes.map((item) =>
+      `<button id="bt-${item}" class="bet-tab ${item === mode ? "active" : ""}" onclick="setMode('${item}')">${MODE_LABELS[item]}</button>`
+    ).join("");
     let html = "";
     if (mode === "normal") {
-      html = [0, 1, 2].map((index) => `<div class="rank"><h3>${index + 1}着</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
+      html = Array.from({ length: spec.picks }, (_, index) => `<div class="rank"><h3>${positionLabel(index, spec)}</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="n-${index}-${boat}" class="pick b${boat}" onclick="pickNormal(${index},${boat})">${boat}</button>`
       ).join("")}</div></div>`).join("")
         + '<button class="btn secondary full" onclick="addNormal()">買い目を追加</button>';
     } else if (mode === "box") {
-      html = `<div class="rank"><h3>BOX（3艇以上）</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
+      html = `<div class="rank"><h3>BOX（${spec.picks}艇以上）</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="b-${boat}" class="pick b${boat}" onclick="pickBox(${boat})">${boat}</button>`
       ).join("")}</div></div><button class="btn secondary full" onclick="addBox()">BOXを追加</button>`;
     } else {
-      html = [0, 1, 2].map((index) => `<div class="rank"><h3>${index + 1}着候補</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
+      html = Array.from({ length: spec.picks }, (_, index) => `<div class="rank"><h3>${spec.ordered ? `${index + 1}着候補` : `${index + 1}艇目候補`}</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="f-${index}-${boat}" class="pick b${boat}" onclick="pickForm(${index},${boat})">${boat}</button>`
       ).join("")}</div></div>`).join("")
         + '<button class="btn secondary full" onclick="addForm()">フォーメーションを追加</button>';
@@ -549,11 +620,14 @@
   };
 
   function addCombos(combos) {
-    const seen = new Set(cart.map((line) => line.combo.join("-")));
+    const seen = new Set(cart.map(
+      (line) => `${C.normalizeBetType(line.betType)}:${C.canonicalCombo(line.combo, line.betType)}`
+    ));
     combos.forEach((combo) => {
-      const key = combo.join("-");
+      const canonical = C.canonicalCombo(combo, betType).split("-").map(Number);
+      const key = `${betType}:${canonical.join("-")}`;
       if (!seen.has(key)) {
-        cart.push({ combo, stake: 100, odds: "", mode });
+        cart.push({ combo: canonical, betType, stake: 100, odds: "", mode });
         seen.add(key);
       }
     });
@@ -561,33 +635,51 @@
   }
 
   window.addNormal = () => {
-    if (!normal.every(Boolean)) return alert("1〜3着を選択してください。");
+    if (!normal.every(Boolean)) return alert(`${C.BET_TYPES[betType].picks}艇を選択してください。`);
     addCombos([[...normal]]);
   };
-  window.addBox = () => {
-    const boats = [...box];
-    if (boats.length < 3) return alert("3艇以上選択してください。");
-    const combos = [];
-    boats.forEach((first) => boats.forEach((second) => boats.forEach((third) => {
-      if (first !== second && first !== third && second !== third) {
-        combos.push([first, second, third]);
+
+  function selections(items, count, ordered) {
+    const output = [];
+    const walk = (selected, remaining) => {
+      if (selected.length === count) {
+        output.push(selected);
+        return;
       }
-    })));
-    addCombos(combos);
+      remaining.forEach((boat, index) => {
+        walk([...selected, boat], ordered
+          ? remaining.filter((item) => item !== boat)
+          : remaining.slice(index + 1));
+      });
+    };
+    walk([], items);
+    return output;
+  }
+
+  window.addBox = () => {
+    const spec = C.BET_TYPES[betType];
+    const boats = [...box];
+    if (boats.length < spec.picks) return alert(`${spec.picks}艇以上選択してください。`);
+    addCombos(selections(boats, spec.picks, spec.ordered));
   };
   window.addForm = () => {
-    if (form.some((items) => !items.size)) return alert("各着候補を選択してください。");
+    if (form.some((items) => !items.size)) return alert("各候補を選択してください。");
     const combos = [];
-    form[0].forEach((first) => form[1].forEach((second) => form[2].forEach((third) => {
-      if (first !== second && first !== third && second !== third) {
-        combos.push([first, second, third]);
+    const walk = (index, selected) => {
+      if (index === form.length) {
+        combos.push(selected);
+        return;
       }
-    })));
+      form[index].forEach((boat) => {
+        if (!selected.includes(boat)) walk(index + 1, [...selected, boat]);
+      });
+    };
+    walk(0, []);
     addCombos(combos);
   };
 
   function refreshBuilder() {
-    for (let index = 0; index < 3; index += 1) {
+    for (let index = 0; index < C.BET_TYPES[betType].picks; index += 1) {
       for (let boat = 1; boat <= 6; boat += 1) {
         const normalButton = $(`n-${index}-${boat}`);
         if (normalButton) {
@@ -619,8 +711,8 @@
   function renderCart() {
     if (!$("cart")) return;
     $("cart").innerHTML = cart.length
-      ? cart.map((line, index) => `<div class="cartrow"><b>${line.combo.join("-")}</b>
-          <span class="tiny">${line.odds ? `予想 ${esc(line.odds)}倍` : "オッズ任意"}</span>
+      ? cart.map((line, index) => `<div class="cartrow"><b class="tickettype">${C.BET_TYPES[C.normalizeBetType(line.betType)].label}</b>
+          <b>${line.combo.join("-")}</b>
           <input value="${line.stake}" inputmode="numeric" aria-label="投票メダル" onchange="changeLine(${index},'stake',this.value)">
           <input value="${esc(line.odds)}" inputmode="decimal" aria-label="予想オッズ" placeholder="倍率" onchange="changeLine(${index},'odds',this.value)">
           <button class="xbtn" aria-label="削除" onclick="removeLine(${index})">×</button></div>`).join("")
@@ -636,15 +728,12 @@
       : "買い目を作成してください。";
   }
 
-  const betModeText = (value) => ({
-    normal: "通常",
-    box: "BOX",
-    form: "フォーメーション",
-  }[value] || "");
-
   function betReceipt(lines, entries, betMode, title = "購入した買い目") {
     const validLines = (lines || []).filter(
-      (line) => Array.isArray(line.combo) && line.combo.length === 3
+      (line) => {
+        const type = C.normalizeBetType(line.betType);
+        return Array.isArray(line.combo) && line.combo.length === C.BET_TYPES[type].picks;
+      }
     );
     if (!validLines.length) {
       return '<div class="notice warn">この記録には買い目データがありません。</div>';
@@ -652,17 +741,23 @@
     const names = new Map((entries || []).map(
       (entry) => [Number(entry.boatNumber), String(entry.name || "")]
     ));
-    const modeLabel = betModeText(betMode);
-    const meta = ["3連単", modeLabel, `${validLines.length}点`].filter(Boolean).join(" / ");
+    const labels = [...new Set(validLines.map(
+      (line) => C.BET_TYPES[C.normalizeBetType(line.betType)].label
+    ))];
+    const meta = [labels.join("・"), `${validLines.length}点`].filter(Boolean).join(" / ");
     return `<details class="betreceipt" open><summary>${esc(title)}<span>${esc(meta)}</span></summary>
       <div class="betlines">${validLines.map((line) => {
+        const type = C.normalizeBetType(line.betType);
+        const ordered = C.BET_TYPES[type].ordered;
+        const separator = ordered ? " → " : " - ";
         const combo = line.combo.map(Number);
         const racerNames = combo.map(
           (boat) => names.get(boat) ? `${boat}号艇 ${names.get(boat)}` : ""
         ).filter(Boolean);
-        return `<div class="betline"><span class="bettype">3連単</span>
-          <b class="betcombo">${combo.join(" → ")}</b><b>${fmt(line.stake)}C</b>
-          ${racerNames.length === 3 ? `<div class="betnames">${racerNames.map(esc).join(" → ")}</div>` : ""}
+        const lineMode = MODE_LABELS[line.mode || betMode] || "";
+        return `<div class="betline"><span class="bettype">${C.BET_TYPES[type].label}</span>
+          <b class="betcombo">${combo.join(separator)}</b><b>${fmt(line.stake)}C</b>
+          ${racerNames.length === combo.length ? `<div class="betnames">${lineMode ? `${lineMode} / ` : ""}${racerNames.map(esc).join(separator)}</div>` : ""}
           ${Number(line.odds) > 0 ? `<div class="betnames">参加時の予想オッズ ${esc(line.odds)}倍</div>` : ""}</div>`;
       }).join("")}</div></details>`;
   }
@@ -718,6 +813,7 @@
       })),
       lines: cart.map((line) => ({
         combo: [...line.combo],
+        betType: C.normalizeBetType(line.betType),
         stake: line.stake,
         odds: line.odds,
         mode: line.mode || mode,
@@ -735,6 +831,7 @@
       resultCombo: null,
       resultPayout: null,
       resultPayouts: [],
+      refundC: 0,
       cashReviewed: false,
       cashBought: null,
       afterUrge: null,
@@ -787,16 +884,19 @@
     if (!record.settled) {
       result = '<div class="notice">実結果待ち。公式成績の同期後に自動精算します。</div>';
     } else if (record.status === "refunded") {
-      result = `<div class="notice warn"><div class="result">3連単 不成立 / 仮想メダル返還</div>${fmt(record.payoutC)}Cを返還しました。</div>`;
+      result = `<div class="notice warn"><div class="result">舟券 不成立 / 仮想メダル返還</div>${fmt(record.payoutC)}Cを返還しました。</div>`;
     } else {
       const payouts = record.resultPayouts?.length
-        ? record.resultPayouts.map((item) => `${esc(item.combo)} ${fmt(item.payout)}円`).join(" / ")
+        ? record.resultPayouts.map((item) => {
+          const type = C.normalizeBetType(item.betType);
+          return `${C.BET_TYPES[type].label} ${esc(item.combo)} ${fmt(item.payout)}円`;
+        }).join(" / ")
         : record.resultPayout
-          ? `${esc(record.resultCombo)} ${fmt(record.resultPayout)}円`
+          ? `3連単 ${esc(record.resultCombo)} ${fmt(record.resultPayout)}円`
           : "";
       result = `<div class="notice ${record.status === "hit" ? "good" : ""}">
         <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "仮想的中" : "外れ"}</div>
-        ${payouts ? `3連単 ${payouts}<br>仮想払戻 ${fmt(record.payoutC)}C` : ""}</div>`;
+        ${payouts ? `公式払戻 ${payouts}<br>` : ""}仮想払戻 ${fmt(record.payoutC)}C${record.refundC ? `（うち不成立返還 ${fmt(record.refundC)}C）` : ""}</div>`;
     }
     const badge = record.saved
       ? "現金を守った"
@@ -921,7 +1021,7 @@
     const warningCount = DATA.quality?.warnings?.length || 0;
     $("syncStats").innerHTML = `<b>${esc(statusText())}</b><br>
       番組表: ${stats.scheduleVenues || 0}場 / ${stats.scheduleRaces || 0}R / ${stats.scheduleEntries || 0}艇<br>
-      成績: ${stats.performanceRaces || 0}R / 実着順行 ${stats.resultRows || 0} / 3連単払戻 ${stats.sanrenshoPayouts || 0}<br>
+      成績: ${stats.performanceRaces || 0}R / 実着順行 ${stats.resultRows || 0} / 3連単 ${stats.sanrenshoPayouts || 0} / 全舟券払戻 ${stats.totalPayoutEntries || stats.sanrenshoPayouts || 0}<br>
       検証警告: ${warningCount}件`;
   }
 
@@ -931,7 +1031,7 @@
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v28-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v30-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
