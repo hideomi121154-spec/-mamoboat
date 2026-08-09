@@ -545,6 +545,131 @@
     window.closeModal();
   };
 
+  function initRealBetFloat() {
+    const float = $("realBetFloat");
+    const button = $("realBetFloatButton");
+    if (!float || !button) return;
+
+    const positionKey = "mamoboat_real_bet_float_v1";
+    let drag = null;
+    let suppressClick = false;
+    let current = { x: null, y: null };
+
+    const bounds = () => {
+      const width = float.offsetWidth || 46;
+      const height = float.offsetHeight || 116;
+      const shellRect = document.querySelector(".app-shell")?.getBoundingClientRect();
+      const minX = Math.max(6, (shellRect?.left || 0) + 6);
+      const minY = 74;
+      return {
+        minX,
+        minY,
+        maxX: Math.max(minX, Math.min(
+          window.innerWidth - width - 6,
+          (shellRect?.right || window.innerWidth) - width - 6
+        )),
+        maxY: Math.max(minY, window.innerHeight - height - 86),
+      };
+    };
+
+    const setPosition = (x, y) => {
+      const limit = bounds();
+      current = {
+        x: Math.min(limit.maxX, Math.max(limit.minX, Number(x) || 0)),
+        y: Math.min(limit.maxY, Math.max(limit.minY, Number(y) || 0)),
+      };
+      float.style.left = `${Math.round(current.x)}px`;
+      float.style.top = `${Math.round(current.y)}px`;
+      float.style.right = "auto";
+    };
+
+    const savePosition = () => {
+      const limit = bounds();
+      const xRange = Math.max(1, limit.maxX - limit.minX);
+      const yRange = Math.max(1, limit.maxY - limit.minY);
+      try {
+        localStorage.setItem(positionKey, JSON.stringify({
+          xRatio: (current.x - limit.minX) / xRange,
+          yRatio: (current.y - limit.minY) / yRange,
+        }));
+      } catch (error) {
+        // 保存できない環境でも、その場での移動は継続する。
+      }
+    };
+
+    const restorePosition = () => {
+      const limit = bounds();
+      try {
+        const stored = JSON.parse(localStorage.getItem(positionKey) || "null");
+        if (Number.isFinite(stored?.xRatio) && Number.isFinite(stored?.yRatio)) {
+          setPosition(
+            limit.minX + Math.min(1, Math.max(0, stored.xRatio)) * (limit.maxX - limit.minX),
+            limit.minY + Math.min(1, Math.max(0, stored.yRatio)) * (limit.maxY - limit.minY)
+          );
+          return;
+        }
+      } catch (error) {
+        // 壊れた保存値は使わず、右中央の初期位置へ戻す。
+      }
+      setPosition(limit.maxX, limit.minY + (limit.maxY - limit.minY) * .46);
+    };
+
+    button.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      const rect = float.getBoundingClientRect();
+      drag = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: rect.left,
+        originY: rect.top,
+        moved: false,
+      };
+      suppressClick = false;
+      float.classList.add("dragging");
+      button.setPointerCapture?.(event.pointerId);
+    });
+
+    button.addEventListener("pointermove", (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+      drag.moved = true;
+      setPosition(drag.originX + dx, drag.originY + dy);
+      event.preventDefault();
+    });
+
+    const finishDrag = (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      suppressClick = drag.moved;
+      if (drag.moved) savePosition();
+      float.classList.remove("dragging");
+      try {
+        if (button.hasPointerCapture?.(event.pointerId)) {
+          button.releasePointerCapture(event.pointerId);
+        }
+      } catch (error) {
+        // iOSが操作終了時に自動解放していても、そのまま終了する。
+      }
+      drag = null;
+      if (suppressClick) setTimeout(() => { suppressClick = false; }, 100);
+    };
+
+    button.addEventListener("pointerup", finishDrag);
+    button.addEventListener("pointercancel", finishDrag);
+    button.addEventListener("click", (event) => {
+      if (suppressClick) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      window.openRealBetConfirm();
+    });
+    window.addEventListener("resize", () => requestAnimationFrame(restorePosition));
+    requestAnimationFrame(restorePosition);
+  }
+
   window.closeModal = () => $("modalBg").classList.remove("show");
   window.bgClose = (event) => {
     if (event.target.id === "modalBg") window.closeModal();
@@ -1763,7 +1888,7 @@
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v371-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v372-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
@@ -1790,6 +1915,7 @@
     renderSettings();
   }
 
+  initRealBetFloat();
   renderAll();
   loadOfficialData();
   setInterval(() => {

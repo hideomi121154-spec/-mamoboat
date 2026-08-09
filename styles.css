@@ -965,95 +965,56 @@ html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
   .cart-odds b { font-size: 9px; }
 }
 
-/* v3.7.1 — 公式投票は操作領域に重ねず、アプリ外側の専用レールへ */
-body { padding-right: 36px; }
+/* v3.7.2 — 全幅を維持し、公式投票ボタンだけを画面内で移動可能に */
+body { padding-right: 0; }
 .app-shell { max-width: 720px; margin-left: auto; margin-right: auto; }
 .bottom-nav {
-  left: 0;
-  width: calc(100% - 36px);
-  transform: none;
+  left: 50%;
+  width: min(720px, 100%);
+  transform: translateX(-50%);
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
-.real-bet-rail {
+.real-bet-float {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 44vh;
+  right: max(8px, env(safe-area-inset-right));
   z-index: 55;
-  display: flex;
-  width: 36px;
-  align-items: center;
-  justify-content: center;
-  background: var(--navy);
-  border-left: 1px solid rgba(255,255,255,.22);
-  box-shadow: -3px 0 10px rgba(7,27,43,.13);
+  width: 46px;
+  min-height: 116px;
 }
-.real-bet-rail button {
+.real-bet-float button {
   display: flex;
-  width: 36px;
-  min-height: 154px;
+  width: 46px;
+  min-height: 116px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  border: 0;
-  border-top: 2px solid rgba(255,255,255,.9);
-  border-bottom: 2px solid rgba(255,255,255,.9);
-  padding: 10px 4px;
+  gap: 5px;
+  border: 2px solid white;
+  border-radius: 9px;
+  padding: 6px 4px 9px;
   background: var(--coral);
   color: white;
-  box-shadow: 0 5px 15px rgba(0,0,0,.24);
+  box-shadow: 0 6px 18px rgba(7,27,43,.35);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.real-bet-rail button:active { background: #d9534e; }
-.real-bet-rail span { display: none; }
-.real-bet-rail strong {
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  font-size: 12px;
+.real-bet-float button:active { cursor: grabbing; }
+.real-bet-float.dragging { opacity: .88; transform: scale(1.04); }
+.real-bet-grip {
+  color: rgba(255,255,255,.82);
+  font-size: 17px;
   font-weight: 1000;
-  letter-spacing: .12em;
   line-height: 1;
 }
-.real-bet-rail b { font-size: 15px; line-height: 1; }
-
-@media (min-width: 860px) {
-  body { padding-right: 0; }
-  .bottom-nav {
-    left: 50%;
-    width: min(720px, 100%);
-    transform: translateX(-50%);
-  }
-  .real-bet-rail {
-    top: 50%;
-    right: auto;
-    bottom: auto;
-    left: calc(50% + 365px);
-    width: 64px;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    transform: translateY(-50%);
-  }
-  .real-bet-rail button {
-    width: 64px;
-    min-height: 132px;
-    gap: 7px;
-    border: 2px solid white;
-    border-left: 0;
-    border-radius: 0 9px 9px 0;
-    padding: 10px 6px;
-  }
-  .real-bet-rail span {
-    display: block;
-    font-size: 7px;
-    font-weight: 900;
-    line-height: 1.35;
-  }
-  .real-bet-rail strong {
-    writing-mode: horizontal-tb;
-    text-orientation: mixed;
-    font-size: 13px;
-    letter-spacing: 0;
-    line-height: 1.25;
-  }
+.real-bet-float strong {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+  line-height: 1;
 }
+.real-bet-float b { font-size: 14px; line-height: 1; }

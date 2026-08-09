@@ -8,14 +8,14 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
-  <title>まもボート v3.7.1</title>
+  <title>まもボート v3.7.2</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.7.1</small></span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PERSONAL v3.7.2</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と追加メニューを開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -173,6 +173,12 @@
       </section>
     </main>
 
+    <aside id="realBetFloat" class="real-bet-float" aria-label="移動できる公式投票への外部導線">
+      <button id="realBetFloatButton" type="button" title="ドラッグで移動・タップで公式投票">
+        <span class="real-bet-grip" aria-hidden="true">⠿</span><strong>公式投票</strong><b aria-hidden="true">↗</b>
+      </button>
+    </aside>
+
     <nav class="bottom-nav" aria-label="メインメニュー">
       <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
       <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
@@ -182,12 +188,6 @@
       <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
     </nav>
   </div>
-
-  <aside class="real-bet-rail" aria-label="公式投票への外部導線">
-    <button type="button" onclick="openRealBetConfirm()">
-      <span>現金を使う前に確認</span><strong>公式投票</strong><b>↗</b>
-    </button>
-  </aside>
 
   <div id="onboard" class="onboard">
     <div class="onboard-shell">
