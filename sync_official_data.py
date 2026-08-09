@@ -21,81 +21,125 @@ VENUES = [
     ("21","芦屋"),("22","福岡"),("23","唐津"),("24","大村"),
 ]
 NAME_TO_CODE = {name: code for code, name in VENUES}
-FW = str.maketrans("０１２３４５６７８９", "0123456789")
+CODE_TO_NAME = dict(VENUES)
 
+FW = str.maketrans(
+    "０１２３４５６７８９Ｒ：",
+    "0123456789R:"
+)
 
-def hw(s):
+def hw(s: str) -> str:
     return str(s).translate(FW)
 
-
-def num_or_none(s, typ=int):
+def number(s, typ=int):
     try:
-        t = hw(s).strip()
-        return typ(t) if t else None
+        s = hw(s).strip()
+        return typ(s) if s else None
     except Exception:
         return None
 
-
-def iso(v):
-    if not v:
+def iso(dt):
+    if not dt:
         return None
-    if getattr(v, "tzinfo", None) is None:
-        v = v.replace(tzinfo=JST)
-    return v.isoformat()
+    if getattr(dt, "tzinfo", None) is None:
+        dt = dt.replace(tzinfo=JST)
+    return dt.isoformat()
 
-
-def detect_venue(lines, idx, current=None):
-    """現在行と周辺行から場名を検出。"""
-    start = max(0, idx - 8)
-    end = min(len(lines), idx + 9)
-    targets = [lines[idx]] + lines[start:end]
-    for line in targets:
-        normalized = line.replace("　", "").replace(" ", "")
+def detect_file_venue(lines):
+    # Bファイルは基本的に会場単位のテキスト。
+    # ヘッダ部分を中心に会場名を一度だけ特定する。
+    for line in lines[:120]:
+        compact = line.replace("　", "").replace(" ", "")
         for name, code in NAME_TO_CODE.items():
-            if name in normalized:
+            if name in compact:
                 return code
-    return current
 
+    # 念のため全体も探索
+    for line in lines:
+        compact = line.replace("　", "").replace(" ", "")
+        for name, code in NAME_TO_CODE.items():
+            if name in compact:
+                return code
+    return None
 
-def parse_entry_fixed(line):
-    """
-    BOAT RACE公式番組表の固定幅行から最低限必要な出走情報を取得。
-    旧来から使われている配置:
-    艇番[0], 登番[2:6], 氏名[6:10], 年齢[10:12], 支部[12:14],
-    体重[14:16], 級別[16:18], モーター[41:43], ボート[50:52]
-    """
-    if not re.match(r"^[1-6]\s*\d{4}", hw(line)):
+def race_header(line, target):
+    s = hw(line)
+    m = re.search(r"^\s*([0-9]{1,2})R\b?(.*)$", s)
+    if not m:
         return None
 
+    race_no = int(m.group(1))
+    if not 1 <= race_no <= 12:
+        return None
+
+    rest = m.group(2)
+    # 「H1800m」や「電話投票締切予定」より前をレース名として扱う
+    race_name = re.split(
+        r"[HＨ]\s*[0-9０-９]+|電話投票締切予定",
+        line,
+        maxsplit=1
+    )[0]
+    race_name = re.sub(
+        r"^\s*[0-9０-９]{1,2}[ＲR]\s*",
+        "",
+        race_name
+    )
+    race_name = re.sub(r"\s+", "", race_name.replace("　", " ")).strip()
+
+    close_time = None
+    cm = re.search(
+        r"電話投票締切予定\s*([0-9０-９]{1,2})[：:]\s*([0-9０-９]{2})",
+        line
+    )
+    if cm:
+        close_time = datetime(
+            target.year, target.month, target.day,
+            int(hw(cm.group(1))), int(hw(cm.group(2))),
+            tzinfo=JST
+        )
+
+    return race_no, race_name, close_time
+
+def parse_entry(line):
+    # 行頭空白やBOMがあっても艇番＋登録番号を検出する
+    row = line.lstrip("\ufeff \t")
+    ascii_row = hw(row)
+
+    m = re.match(r"^([1-6])\s*(\d{4})", ascii_row)
+    if not m:
+        return None
+
+    boat_no = int(m.group(1))
+    racer_no = int(m.group(2))
+
+    # 公式Bファイルの固定幅。
+    # 古くから利用されているBファイルパーサーの位置に合わせる。
+    # 艇[0] 登番[2:6] 氏名[6:10] 年齢[10:12] 支部[12:14]
+    # 体重[14:16] 級別[16:18] モーター[41:43] ボート[50:52]
     try:
-        boat = int(hw(line[0:1]))
-        racer = int(hw(line[2:6]))
+        name = row[6:10].strip().replace("　", " ")
+        age = number(row[10:12])
+        branch = row[12:14].strip().replace("　", " ") or None
+        weight = number(row[14:16], float)
+        racer_class = row[16:18].strip().replace("　", "") or None
+        motor = number(row[41:43])
+        boat_part = number(row[50:52])
     except Exception:
-        # 空白位置が少し違う場合の保険
-        m = re.match(r"^([1-6])\s*(\d{4})", hw(line))
-        if not m:
-            return None
-        boat = int(m.group(1))
-        racer = int(m.group(2))
+        name = ""
+        age = branch = weight = racer_class = motor = boat_part = None
 
-    # 公式固定幅を優先
-    name = line[6:10].strip().replace("　", " ")
-    age = num_or_none(line[10:12])
-    branch = line[12:14].strip().replace("　", " ") or None
-    weight = num_or_none(line[14:16], float)
-    racer_class = line[16:18].strip().replace("　", "") or None
-    motor = num_or_none(line[41:43])
-    boat_part = num_or_none(line[50:52])
-
-    # 名前が取れなかった時だけ、登番直後から年齢までをゆるく拾う
+    # 固定幅で氏名が空なら登録番号の後ろから補助抽出
     if not name:
-        m = re.match(r"^[1-6]\s*\d{4}\s*([^\d]{2,12}?)\s*\d{2}", line)
-        if m:
-            name = m.group(1).strip().replace("　", " ")
+        mm = re.match(
+            r"^[1-6]\s*\d{4}\s*([^\d]{2,12}?)\s*[0-9０-９]{2}",
+            row
+        )
+        if mm:
+            name = mm.group(1).strip().replace("　", " ")
 
     return {
-        "boatNumber": boat,
-        "racerNumber": racer,
+        "boatNumber": boat_no,
+        "racerNumber": racer_no,
         "name": name,
         "class": racer_class,
         "branch": branch,
@@ -105,144 +149,139 @@ def parse_entry_fixed(line):
         "boatPart": boat_part,
     }
 
-
-def parse_header(line, target):
-    """レース番号・レース名・締切を番組表ヘッダから取得。"""
-    m = re.search(r"^\s*([0-9０-９]{1,2})[ＲRｒr]\s*(.*)$", line)
-    if not m:
-        return None
-
-    race_no = int(hw(m.group(1)))
-    rest = m.group(2)
-
-    # レース名: H/Ｈ または電話投票締切予定より前
-    name_part = re.split(r"[ＨH]\s*[0-9０-９]+|電話投票締切予定", rest, maxsplit=1)[0]
-    race_name = re.sub(r"\s+", "", name_part.replace("　", " ")).strip()
-
-    close_time = None
-    cm = re.search(
-        r"電話投票締切予定\s*([0-9０-９]{1,2})[：:]\s*([0-9０-９]{2})",
-        line,
-    )
-    if cm:
-        hour = int(hw(cm.group(1)))
-        minute = int(hw(cm.group(2)))
-        close_time = datetime(
-            target.year, target.month, target.day, hour, minute, tzinfo=JST
-        )
-
-    return race_no, race_name, close_time
-
-
-def parse_schedule_multivenue(files, target):
+def collect_entries_after_header(lines, header_index):
     """
-    1日分のBファイル内に複数会場が入っていても解析する。
-    boatrace-lzhのclose-time parserも補助的に利用する。
+    レース見出し後から最初の選手行を探し、
+    そこから1〜6号艇を最大6人まとめて取得する。
+
+    Bファイルには見出しと出走行の間に複数の項目見出し行があるため、
+    「今のrace状態で全行を走査」せず、レース単位でブロックを切る。
     """
+    found = []
+    started = False
+
+    # 次のレースヘッダまで十分収まる範囲
+    for j in range(header_index + 1, min(len(lines), header_index + 28)):
+        line = lines[j]
+
+        # 次R見出しに到達したら終了
+        if race_header(line, date(2000,1,1)):
+            break
+
+        entry = parse_entry(line)
+        if entry:
+            started = True
+            if entry["boatNumber"] not in {x["boatNumber"] for x in found}:
+                found.append(entry)
+            if len(found) == 6:
+                break
+        elif started:
+            # 出走行が始まった後は空行などを許容しつつ少しだけ継続
+            # 6艇未満でも次ヘッダまで探索
+            pass
+
+    return sorted(found, key=lambda x: x["boatNumber"])
+
+def parse_schedule(files, target):
     races = {}
     entries = defaultdict(list)
+    debug = []
 
-    # ライブラリの締切抽出は multi-venue 対応なので先に利用
-    close_rows = []
+    # ライブラリ側の締切時刻抽出を補助的に使用
     try:
         sp = ScheduleParser()
         close_rows = sp.parse_schedule_with_close_times(files, target)
     except Exception as ex:
-        print("close-time parser warning:", ex)
+        close_rows = []
+        debug.append(f"close parser warning: {ex}")
 
     for r in close_rows:
         races[(r.venue_code, r.race_number)] = {
             "number": r.race_number,
             "name": r.race_name or "",
-            "closeTime": r.close_time,
+            "closeTime": r.close_time
         }
 
     for filename, content in files.items():
-        if not content:
-            continue
         lines = content.splitlines()
-        current_venue = None
-        current_race = None
+        venue_code = detect_file_venue(lines)
+
+        if not venue_code:
+            debug.append(f"{filename}: venue not detected")
+            continue
+
+        found_races = 0
+        found_entries = 0
 
         for i, line in enumerate(lines):
-            # 「番組表」付近、場名入りヘッダ、ボートレース○○等を拾う
-            if (
-                "番組表" in line
-                or "ボートレース" in line
-                or "［番組］" in line
-                or "[番組]" in line
-            ):
-                current_venue = detect_venue(lines, i, current_venue)
-
-            hdr = parse_header(line, target)
-            if hdr:
-                current_venue = detect_venue(lines, i, current_venue)
-                if current_venue:
-                    race_no, race_name, close_time = hdr
-                    current_race = race_no
-                    key = (current_venue, race_no)
-                    base = races.get(key, {})
-                    races[key] = {
-                        "number": race_no,
-                        "name": base.get("name") or race_name,
-                        "closeTime": base.get("closeTime") or close_time,
-                    }
-                else:
-                    current_race = None
+            hdr = race_header(line, target)
+            if not hdr:
                 continue
 
-            if current_venue and current_race:
-                e = parse_entry_fixed(line)
-                if e:
-                    key = (current_venue, current_race)
-                    # 同じ艇番を二重登録しない
-                    if not any(x["boatNumber"] == e["boatNumber"] for x in entries[key]):
-                        entries[key].append(e)
+            race_no, race_name, close_time = hdr
+            key = (venue_code, race_no)
+            base = races.get(key, {})
 
-    # close parserで見つかったレースに選手を結合
-    for key in list(races):
-        entries[key].sort(key=lambda x: x["boatNumber"])
+            races[key] = {
+                "number": race_no,
+                "name": base.get("name") or race_name,
+                "closeTime": base.get("closeTime") or close_time,
+            }
 
-    return races, entries
+            es = collect_entries_after_header(lines, i)
+            if es:
+                entries[key] = es
 
+            found_races += 1
+            found_entries += len(es)
 
-def build(target: date, cache: Path):
-    # 1日1個の公式番組表LZH + 1日1個の公式競走成績LZH
-    dl = LzhDownloader(cache_dir=cache, max_workers=1, request_delay=0.5)
+        debug.append(
+            f"{filename}: {venue_code} {CODE_TO_NAME[venue_code]} "
+            f"{found_races} races / {found_entries} entries"
+        )
 
-    sf = dl.download(target, "schedule")
-    if not sf:
-        raise RuntimeError(f"番組表取得失敗: {target}")
+    return races, entries, debug
 
-    races, entries = parse_schedule_multivenue(sf, target)
+def build_payload(target, cache_dir):
+    dl = LzhDownloader(
+        cache_dir=cache_dir,
+        max_workers=1,
+        request_delay=0.5
+    )
+
+    schedule_files = dl.download(target, "schedule")
+    if not schedule_files:
+        raise RuntimeError(f"番組表を取得できませんでした: {target}")
+
+    races, entries, parse_debug = parse_schedule(schedule_files, target)
 
     perf_entries = defaultdict(list)
     payouts = defaultdict(list)
     perf_ok = False
-    perf_race_count = 0
-    perf_entry_count = 0
-    perf_payout_count = 0
+    perf_debug = None
 
     try:
-        pf = dl.download(target, "performance")
-        if pf:
+        performance_files = dl.download(target, "performance")
+        if performance_files:
             pp = PerformanceParser()
-            perf = pp.parse(pf)
+            perf = pp.parse(performance_files)
             perf_ok = True
-            perf_race_count = len(perf.races)
-            perf_entry_count = len(perf.entries)
-            perf_payout_count = len(perf.payouts)
             for e in perf.entries:
                 perf_entries[(e.venue_code, e.race_number)].append(e)
             for p in perf.payouts:
                 payouts[(p.venue_code, p.race_number)].append(p)
+            perf_debug = (
+                f"{len(perf.races)} races / "
+                f"{len(perf.entries)} entries / "
+                f"{len(perf.payouts)} payouts"
+            )
     except Exception as ex:
-        print(f"performance pending: {ex}")
+        perf_debug = f"performance pending: {ex}"
 
-    active = {code for code, _ in races.keys()}
+    active_codes = {code for code, _ in races.keys()}
 
     payload = {
-        "schemaVersion": 4,
+        "schemaVersion": 5,
         "date": target.isoformat(),
         "generatedAt": datetime.now(JST).isoformat(),
         "source": {
@@ -254,43 +293,52 @@ def build(target: date, cache: Path):
         "venues": [],
         "quality": {
             "warnings": [],
-            "scheduleFiles": list(sf.keys()),
-            "performanceRaces": perf_race_count,
-            "performanceEntries": perf_entry_count,
-            "performancePayouts": perf_payout_count,
+            "debug": parse_debug,
+            "performanceDebug": perf_debug,
+            "scheduleFiles": list(schedule_files.keys()),
         },
     }
 
-    for code, name in VENUES:
-        vr = []
+    for code, venue_name in VENUES:
+        vraces = []
+
         keys = sorted(
-            [k for k in races if k[0] == code],
-            key=lambda k: k[1],
+            [k for k in races.keys() if k[0] == code],
+            key=lambda x: x[1]
         )
 
         for key in keys:
-            n = key[1]
+            race_no = key[1]
             rr = races[key]
             es = entries.get(key, [])
 
             if len(es) != 6:
                 payload["quality"]["warnings"].append(
-                    f"{code}-{n}R entries={len(es)}"
+                    f"{code}-{race_no}R entries={len(es)}"
                 )
 
             result = None
-            fin = [e for e in perf_entries[key] if e.result_position]
-            fin.sort(key=lambda x: (x.result_position, x.boat_number))
-            sans = [p for p in payouts[key] if p.ticket_type == "sanrensho"]
+            finish = [
+                e for e in perf_entries.get(key, [])
+                if e.result_position
+            ]
+            finish.sort(
+                key=lambda x: (x.result_position, x.boat_number)
+            )
 
-            if fin or sans:
+            sanrensho = [
+                p for p in payouts.get(key, [])
+                if p.ticket_type == "sanrensho"
+            ]
+
+            if finish or sanrensho:
                 result = {
                     "finish": [
                         {
                             "position": e.result_position,
                             "boatNumber": e.boat_number,
                         }
-                        for e in fin
+                        for e in finish
                     ],
                     "sanrensho": [
                         {
@@ -298,44 +346,39 @@ def build(target: date, cache: Path):
                             "payout": p.payout,
                             "popularity": p.popularity,
                         }
-                        for p in sans
+                        for p in sanrensho
                     ],
                 }
 
-            vr.append(
-                {
-                    "number": n,
-                    "name": rr.get("name", ""),
-                    "closeTime": iso(rr.get("closeTime")),
-                    "entries": es,
-                    "result": result,
-                }
-            )
+            vraces.append({
+                "number": race_no,
+                "name": rr.get("name", ""),
+                "closeTime": iso(rr.get("closeTime")),
+                "entries": es,
+                "result": result,
+            })
 
-        if code in active and len(vr) != 12:
+        if code in active_codes and len(vraces) != 12:
             payload["quality"]["warnings"].append(
-                f"{code} race_count={len(vr)}"
+                f"{code} race_count={len(vraces)}"
             )
 
-        payload["venues"].append(
-            {
-                "code": code,
-                "name": name,
-                "active": code in active,
-                "races": vr,
-                "boatcast": f"https://race.boatcast.jp/?jo={code}",
-            }
-        )
+        payload["venues"].append({
+            "code": code,
+            "name": venue_name,
+            "active": code in active_codes,
+            "races": vraces,
+            "boatcast": f"https://race.boatcast.jp/?jo={code}",
+        })
 
     return payload
 
-
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--date")
-    ap.add_argument("--output", default="data/today.json")
-    ap.add_argument("--cache-dir", default=".cache/boatrace_lzh")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date")
+    parser.add_argument("--output", default="data/today.json")
+    parser.add_argument("--cache-dir", default=".cache/boatrace_lzh")
+    args = parser.parse_args()
 
     target = (
         date.fromisoformat(args.date)
@@ -343,23 +386,23 @@ def main():
         else datetime.now(JST).date()
     )
 
-    payload = build(target, Path(args.cache_dir))
+    payload = build_payload(target, Path(args.cache_dir))
 
-    out = Path(args.output)
-    out.parent.mkdir(parents=True, exist_ok=True)
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(payload, ensure_ascii=False, indent=2)
 
-    # 日付別アーカイブ
-    dated = out.parent / f"{target.isoformat()}.json"
+    # 日付別データも保存
+    dated = output.parent / f"{target.isoformat()}.json"
     dated.write_text(text, encoding="utf-8")
 
-    # 今日の実行だけtoday.jsonを更新
-    if target == datetime.now(JST).date() or out.name != "today.json":
-        out.write_text(text, encoding="utf-8")
+    # 今日のデータならtoday.jsonを更新
+    if target == datetime.now(JST).date():
+        output.write_text(text, encoding="utf-8")
 
     active = sum(v["active"] for v in payload["venues"])
     race_count = sum(len(v["races"]) for v in payload["venues"])
-    entrants = sum(
+    entry_count = sum(
         len(r["entries"])
         for v in payload["venues"]
         for r in v["races"]
@@ -368,18 +411,12 @@ def main():
 
     print(
         f"{target}: {active} venues / {race_count} races / "
-        f"{entrants} entries / warnings={warnings}"
+        f"{entry_count} entries / warnings={warnings}"
     )
-    print(
-        "performance:",
-        payload["quality"]["performanceRaces"],
-        "races /",
-        payload["quality"]["performanceEntries"],
-        "entries /",
-        payload["quality"]["performancePayouts"],
-        "payouts",
-    )
-
+    print("---- schedule files ----")
+    for line in payload["quality"]["debug"]:
+        print(line)
+    print("performance:", payload["quality"]["performanceDebug"])
 
 if __name__ == "__main__":
     main()
