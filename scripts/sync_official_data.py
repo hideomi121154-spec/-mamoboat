@@ -26,6 +26,19 @@ VENUES = [
 NAME_TO_CODE = {name: code for code, name in VENUES}
 CODE_TO_NAME = dict(VENUES)
 
+PAYOUT_TYPES = (
+    "win", "place", "exacta", "quinella", "wide", "trifecta", "trio",
+)
+PAYOUT_LABEL_TO_TYPE = {
+    "単勝": "win",
+    "複勝": "place",
+    "2連単": "exacta",
+    "2連複": "quinella",
+    "拡連複": "wide",
+    "3連単": "trifecta",
+    "3連複": "trio",
+}
+
 CONTROL_RE = re.compile(r"^\s*([0-9]{2})([BK])(BGN|END)\s*$")
 RESULT_STATUS_RE = re.compile(
     r"^(?:0[1-6]|[FLSK][0-9]?|転|転覆|落|落水|沈|沈没|失|失格|"
@@ -401,6 +414,52 @@ def parse_sanrensho_line(line: str):
     }
 
 
+def parse_payout_line(line: str, continuation_type: str | None = None):
+    """競走詳細の7舟券種の払戻行を解析する。"""
+    text = normalized(line)
+    labeled = re.match(
+        r"^\s*(単勝|複勝|2連単|2連複|拡連複|3連単|3連複)\s+(.*)$",
+        text,
+    )
+    if labeled:
+        bet_type = PAYOUT_LABEL_TO_TYPE[labeled.group(1)]
+        remainder = labeled.group(2).strip()
+    elif continuation_type == "wide":
+        bet_type = "wide"
+        remainder = text.strip()
+    else:
+        return None
+
+    if re.match(r"^不成立(?:\s|$)", remainder):
+        return bet_type, [], True
+
+    payouts: list[dict[str, Any]] = []
+    if bet_type in {"win", "place"}:
+        for match in re.finditer(r"(?:^|\s)([1-6])\s+([0-9][0-9,]*)", remainder):
+            payouts.append({
+                "combination": match.group(1),
+                "payout": int(match.group(2).replace(",", "")),
+                "popularity": None,
+            })
+        if bet_type == "win" and payouts:
+            payouts = payouts[:1]
+    else:
+        parts = 3 if bet_type in {"trifecta", "trio"} else 2
+        combo_pattern = r"[1-6](?:\s*-\s*[1-6]){" + str(parts - 1) + r"}"
+        match = re.match(
+            rf"^({combo_pattern})\s+([0-9][0-9,]*)(?:\s+人気\s+([0-9]+))?",
+            remainder,
+        )
+        if match:
+            payouts.append({
+                "combination": re.sub(r"\s+", "", match.group(1)),
+                "payout": int(match.group(2).replace(",", "")),
+                "popularity": int(match.group(3)) if match.group(3) else None,
+            })
+
+    return (bet_type, payouts, False) if payouts else None
+
+
 def parse_summary_sanrensho(line: str):
     text = normalized(line)
     match = re.match(
@@ -432,6 +491,7 @@ def parse_performance(files: Mapping[str, str | bytes]):
     venue_race_counts: dict[str, int] = defaultdict(int)
     venue_row_counts: dict[str, int] = defaultdict(int)
     venue_payout_counts: dict[str, int] = defaultdict(int)
+    venue_all_payout_counts: dict[str, int] = defaultdict(int)
 
     for filename, raw_content in files.items():
         lines = ensure_text(raw_content).splitlines()
@@ -443,13 +503,16 @@ def parse_performance(files: Mapping[str, str | bytes]):
         file_races = 0
         file_rows = 0
         file_payouts = 0
+        file_all_payouts = 0
         file_fallbacks = 0
+        current_payout_type: str | None = None
 
         for index, line in enumerate(lines):
             marker = control_marker(line, "K")
             if marker:
                 code, phase = marker
                 current_key = None
+                current_payout_type = None
                 if code not in CODE_TO_NAME:
                     warnings.append(f"{filename}:{index + 1} unknown K venue code={code}")
                     current_venue = None
@@ -507,17 +570,21 @@ def parse_performance(files: Mapping[str, str | bytes]):
                     continue
                 race_no, race_name = header
                 current_key = (current_venue, race_no)
+                current_payout_type = None
                 if current_key in results:
                     warnings.append(
                         f"{filename}:{index + 1} duplicate result "
                         f"{current_venue}-{race_no}R"
                     )
                     continue
+                payouts = {bet_type: [] for bet_type in PAYOUT_TYPES}
                 results[current_key] = {
                     "name": race_name,
                     "finish": [],
                     "statuses": [],
-                    "sanrensho": [],
+                    "payouts": payouts,
+                    "sanrensho": payouts["trifecta"],
+                    "notEstablishedTypes": [],
                     "payoutStatus": "pending",
                 }
                 venue_race_counts[current_venue] += 1
@@ -536,12 +603,20 @@ def parse_performance(files: Mapping[str, str | bytes]):
                 file_rows += 1
                 continue
 
-            payout = parse_sanrensho_line(line)
-            if payout:
-                results[current_key]["sanrensho"].append(payout)
+            payout_line = parse_payout_line(line, current_payout_type)
+            if payout_line:
+                bet_type, payouts, not_established = payout_line
+                current_payout_type = bet_type
+                if not_established:
+                    results[current_key]["notEstablishedTypes"].append(bet_type)
+                    continue
+                results[current_key]["payouts"][bet_type].extend(payouts)
                 results[current_key]["payoutStatus"] = "paid"
-                venue_payout_counts[current_key[0]] += 1
-                file_payouts += 1
+                venue_all_payout_counts[current_key[0]] += len(payouts)
+                file_all_payouts += len(payouts)
+                if bet_type == "trifecta":
+                    venue_payout_counts[current_key[0]] += len(payouts)
+                    file_payouts += len(payouts)
                 continue
 
             if re.match(r"^\s*3連単\s+不成立", normalized(line)):
@@ -556,6 +631,7 @@ def parse_performance(files: Mapping[str, str | bytes]):
         debug.append(
             f"{filename}: {file_begins} venue blocks / {file_races} races / "
             f"{file_rows} result rows / {file_payouts} sanrensho / "
+            f"{file_all_payouts} all payouts / "
             f"fallbacks={file_fallbacks}"
         )
 
@@ -565,8 +641,8 @@ def parse_performance(files: Mapping[str, str | bytes]):
         if not race_result:
             continue
         if summary.get("notEstablished"):
-            if race_result["payoutStatus"] == "pending":
-                race_result["payoutStatus"] = "notEstablished"
+            if "trifecta" not in race_result["notEstablishedTypes"]:
+                race_result["notEstablishedTypes"].append("trifecta")
             continue
         if not race_result["sanrensho"]:
             race_result["sanrensho"].append({
@@ -578,6 +654,13 @@ def parse_performance(files: Mapping[str, str | bytes]):
             venue_payout_counts[key[0]] += 1
 
     for race_result in results.values():
+        has_payouts = any(race_result["payouts"].values())
+        if race_result["notEstablishedTypes"]:
+            race_result["payoutStatus"] = "partial" if has_payouts else "notEstablished"
+        elif has_payouts:
+            race_result["payoutStatus"] = "paid"
+        else:
+            race_result["payoutStatus"] = "pending"
         race_result["finish"].sort(
             key=lambda item: (item["position"], item["boatNumber"])
         )
@@ -587,7 +670,8 @@ def parse_performance(files: Mapping[str, str | bytes]):
             debug.append(
                 f"{code} {name}: {venue_race_counts[code]} result races / "
                 f"{venue_row_counts[code]} rows / "
-                f"{venue_payout_counts[code]} sanrensho"
+                f"{venue_payout_counts[code]} sanrensho / "
+                f"{venue_all_payout_counts[code]} all payouts"
             )
 
     return results, debug, warnings
@@ -668,6 +752,14 @@ def build_payload_from_files(
     payout_count = sum(
         len(item["sanrensho"]) for item in performance_results.values()
     )
+    payouts_by_type = {
+        bet_type: sum(
+            len(item.get("payouts", {}).get(bet_type, []))
+            for item in performance_results.values()
+        )
+        for bet_type in PAYOUT_TYPES
+    }
+    all_payout_count = sum(payouts_by_type.values())
 
     warnings = [
         *schedule_warnings,
@@ -679,7 +771,7 @@ def build_payload_from_files(
 
     active_codes = {code for code, _ in races}
     payload: dict[str, Any] = {
-        "schemaVersion": 7,
+        "schemaVersion": 8,
         "date": target.isoformat(),
         "generatedAt": datetime.now(JST).isoformat(),
         "source": {
@@ -695,7 +787,8 @@ def build_payload_from_files(
             "debug": schedule_debug,
             "performanceDebug": (
                 f"{len(performance_results)} races / "
-                f"{result_row_count} entries / {payout_count} payouts"
+                f"{result_row_count} entries / {payout_count} trifecta / "
+                f"{all_payout_count} all payouts"
                 if performance_results
                 else "performance pending"
             ),
@@ -711,6 +804,8 @@ def build_payload_from_files(
                 "completedResultRaces": completed_result_count,
                 "resultRows": result_row_count,
                 "sanrenshoPayouts": payout_count,
+                "totalPayoutEntries": all_payout_count,
+                "payoutsByType": payouts_by_type,
             },
         },
     }
@@ -758,13 +853,19 @@ def build_payload_from_files(
                         "name": scheduled.get("name") or item.get("name"),
                     })
 
-                sanrensho = [dict(item) for item in performance["sanrensho"]]
+                payouts = {
+                    bet_type: [dict(item) for item in performance.get("payouts", {}).get(bet_type, [])]
+                    for bet_type in PAYOUT_TYPES
+                }
+                sanrensho = payouts["trifecta"]
                 result = {
                     "finish": finish,
                     "sanrensho": sanrensho,
+                    "payouts": payouts,
                     "statuses": statuses,
                     "payoutStatus": performance["payoutStatus"],
-                    "settleable": len(finish) >= 3 and bool(sanrensho),
+                    "notEstablishedTypes": performance.get("notEstablishedTypes", []),
+                    "settleable": bool(any(payouts.values()) or performance.get("notEstablishedTypes")),
                 }
 
             venue_races.append({
@@ -883,11 +984,8 @@ def main():
     )
     args = parser.parse_args()
 
-    target = (
-        date.fromisoformat(args.date)
-        if args.date
-        else datetime.now(JST).date()
-    )
+    raw_date = (args.date or "").strip()
+    target = date.fromisoformat(raw_date) if raw_date else datetime.now(JST).date()
     payload = build_payload(
         target,
         Path(args.cache_dir),
