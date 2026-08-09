@@ -1,0 +1,42 @@
+name: Sync BOAT RACE data
+on:
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "YYYY-MM-DD (blank = JST today)"
+        required: false
+        type: string
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+          python -m pip install -r requirements.txt
+      - name: Sync official daily archives
+        env:
+          TARGET_DATE: ${{ inputs.target_date }}
+        run: |
+          if [ -n "$TARGET_DATE" ]; then
+            python scripts/sync_official_data.py --date "$TARGET_DATE"
+          else
+            python scripts/sync_official_data.py
+          fi
+      - name: Commit JSON
+        run: |
+          git config user.name "mamoboat-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/*.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Update BOAT RACE data"
+            git push
+          fi
+# 個人検証中は手動実行。
+# 自動cronは利用条件を整理した後に有効化する。
