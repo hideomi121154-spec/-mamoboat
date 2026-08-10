@@ -2065,7 +2065,7 @@ def refresh_official_results(
     previous: Mapping[str, Any] | None = None,
     *,
     grace_minutes: int = 5,
-    max_races: int = 12,
+    max_races: int = 16,
     time_budget_seconds: int = 180,
 ):
     """
@@ -2111,9 +2111,25 @@ def refresh_official_results(
                 race,
             ))
 
-    # 新しく終わったレースを優先。混雑時も直近結果の反映を遅らせない。
-    candidates.sort(key=lambda item: item[0], reverse=True)
-    candidates = candidates[:max(1, max_races)]
+    # 直近結果を優先しつつ、古い未確定レースも毎回少しずつ必ず拾う。
+    # 「最新12件だけ」だと開催場が多い日に古い結果が永久に候補外へ残るため、
+    # 最大16件のうち12件を新しい順、残りを古い順のバックログ枠にする。
+    limit = max(1, max_races)
+    recent_limit = min(12, limit)
+    newest = sorted(candidates, key=lambda item: item[0], reverse=True)[:recent_limit]
+    selected_keys = {(item[1], int(item[3].get("number") or 0)) for item in newest}
+    backlog_slots = max(0, limit - len(newest))
+    oldest = []
+    if backlog_slots:
+        for item in sorted(candidates, key=lambda item: item[0]):
+            key = (item[1], int(item[3].get("number") or 0))
+            if key in selected_keys:
+                continue
+            oldest.append(item)
+            selected_keys.add(key)
+            if len(oldest) >= backlog_slots:
+                break
+    candidates = newest + oldest
     stats["candidateRaces"] = len(candidates)
     started = time.monotonic()
     consecutive_errors = 0
@@ -2334,8 +2350,8 @@ def main():
     parser.add_argument(
         "--result-max-races",
         type=int,
-        default=12,
-        help="1回に確認する終了済み未確定レース数の上限（既定12）",
+        default=16,
+        help="1回に確認する終了済み未確定レース数の上限（既定16）",
     )
     args = parser.parse_args()
 
