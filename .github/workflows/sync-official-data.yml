@@ -8,7 +8,12 @@ on:
         required: false
         type: string
   schedule:
+    # 既存の番組表・日次成績・参考オッズ同期（15分周期）
     - cron: "*/15 0-14,21-23 * * *"
+    # 終了済み未確定レースの結果画面だけを軽く確認（10分周期）
+    # 毎時00分を避け、GitHub Actions混雑の影響を少し減らす。
+    - cron: "7,17,27,37,47,57 0-14,21-23 * * *"
+    # 前日成績の最終確認（JST 00:35 / 05:35）
     - cron: "35 15,20 * * *"
 
 permissions:
@@ -33,7 +38,13 @@ jobs:
           cache: pip
 
       - name: Install dependencies
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
+          if [ "$SCHEDULE" = "7,17,27,37,47,57 0-14,21-23 * * *" ]; then
+            echo "Fast-results mode uses Python standard library only"
+            exit 0
+          fi
           sudo apt-get update
           sudo apt-get install -y p7zip-full
           python -m pip install -r requirements.txt
@@ -41,22 +52,34 @@ jobs:
       - name: Validate parser syntax
         run: python -m py_compile scripts/sync_official_data.py
 
-      - name: Sync official daily archives
+      - name: Sync official data
         env:
           TARGET_DATE: ${{ inputs.target_date }}
           SCHEDULE: ${{ github.event.schedule }}
         run: |
+          FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
+
+          if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
+            # 既存JSONを土台に、締切5分後の未確定レースだけ公式結果画面を確認。
+            python scripts/sync_official_data.py --fast-results-only --result-grace-minutes 5 --result-max-races 12
+            exit 0
+          fi
+
           GRADE_ARGS=()
           if [ "$(TZ=Asia/Tokyo date +%u-%H)" = "1-09" ]; then
             GRADE_ARGS+=(--refresh-grade-cache)
           fi
+
           if [ -n "$TARGET_DATE" ]; then
+            # 手動実行では、その場で結果画面チェックも含める。
             python scripts/sync_official_data.py --date "$TARGET_DATE" "${GRADE_ARGS[@]}"
           elif [ "$SCHEDULE" = "35 15,20 * * *" ]; then
             YESTERDAY_JST="$(TZ=Asia/Tokyo date -d yesterday +%F)"
-            python scripts/sync_official_data.py --date "$YESTERDAY_JST" "${GRADE_ARGS[@]}"
+            python scripts/sync_official_data.py --date "$YESTERDAY_JST" --skip-fast-results "${GRADE_ARGS[@]}"
           else
-            python scripts/sync_official_data.py "${GRADE_ARGS[@]}"
+            # 通常15分同期ではLZH・オッズを担当。結果は10分の軽量ジョブに任せる。
+            # 直前に取得済みのWeb結果はsync_official_data.py側で維持する。
+            python scripts/sync_official_data.py --skip-fast-results "${GRADE_ARGS[@]}"
           fi
 
       - name: Commit validated JSON
