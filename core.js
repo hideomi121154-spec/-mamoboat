@@ -92,6 +92,25 @@
     );
   }
 
+  function resultRefundBoats(result) {
+    const explicit = (result && result.refundBoats || [])
+      .map(Number)
+      .filter((boat) => Number.isInteger(boat) && boat >= 1 && boat <= 6);
+    if (explicit.length) return new Set(explicit);
+
+    // 旧JSONとの互換用。F/L/欠場など明確に返還となる状態だけ補助判定する。
+    const derived = (result && result.statuses || [])
+      .filter((item) => {
+        const status = String(item && item.status || "").trim();
+        return /^F\d?$/.test(status)
+          || /^L\d?$/.test(status)
+          || ["欠", "欠場", "返", "返還", "除", "除外"].includes(status);
+      })
+      .map((item) => Number(item.boatNumber))
+      .filter((boat) => Number.isInteger(boat) && boat >= 1 && boat <= 6);
+    return new Set(derived);
+  }
+
   function settleRecord(record, dataset) {
     if (!record || record.settled || !dataset || record.raceDate !== dataset.date) {
       return { changed: false, payoutAdded: 0, hit: false, refunded: false };
@@ -126,6 +145,7 @@
     const notEstablishedTypes = new Set(
       (race.result.notEstablishedTypes || []).map(normalizeBetType)
     );
+    const refundBoats = resultRefundBoats(race.result);
     const payoutsByType = new Map(lineTypes.map(
       (type) => [type, payoutList(race.result, type)]
     ));
@@ -140,7 +160,8 @@
     for (const line of lines) {
       const type = normalizeBetType(line.betType);
       const stake = Number(line.stake) || 0;
-      if (notEstablishedTypes.has(type)) {
+      const combo = (line.combo || []).map(Number);
+      if (notEstablishedTypes.has(type) || combo.some((boat) => refundBoats.has(boat))) {
         payoutC += stake;
         refundedC += stake;
         continue;
@@ -148,7 +169,7 @@
       const winning = new Map(
         payoutsByType.get(type).map((item) => [item.combination, item])
       );
-      const payout = winning.get(canonicalCombo(line.combo || [], type));
+      const payout = winning.get(canonicalCombo(combo, type));
       if (payout) payoutC += (stake / 100) * payout.payout;
     }
 

@@ -2047,7 +2047,8 @@
       const official = officialResultUrl(record.venueCode, record.raceNo, record.raceDate);
       openModal(`<div class="instant-result"><span class="kicker">RESULT CHECK</span><h2>最新結果を確認しました</h2>
         <div class="notice warn">このレースの確定結果はまだ配信待ちです。最新確認：${esc(generated)}</div>
-        <p>結果は約15分ごとに自動確認され、届きしだいBメダルを精算します。</p>
+        <p>終了済みレースの公式結果を約10分周期で確認しています。公式確定後5〜15分程度を目安に反映し、届きしだいBメダルを精算します。</p>
+        <p class="tiny">「もう一度更新」はGitHub Pages上の最新データを読み直します。GitHub Actionsをその場で起動するボタンではありません。</p>
         <a class="btn real-cash-link full" href="${official}" target="_blank" rel="noopener noreferrer">このレースの公式結果を見る ↗</a>
         <button class="btn secondary full" type="button" onclick="closeModal();refreshResultNow('${record.id}')">もう一度更新</button>
         <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button></div>`);
@@ -2176,7 +2177,7 @@
       : "";
     let result;
     if (!record.settled) {
-      result = `<div class="notice"><b>実結果待ち</b><br>確定結果が届くと自動精算します。急ぐ場合は下の更新ボタンで再確認できます。</div>
+      result = `<div class="notice"><b>実結果待ち</b><br>公式確定後5〜15分程度を目安に自動反映します。急ぐ場合は下の更新ボタンで最新データを再確認できます。</div>
         <div class="pending-result-actions"><button class="btn primary" type="button" onclick="refreshResultNow('${record.id}',this)">結果を今すぐ再確認</button>
         ${officialResult ? `<a class="btn secondary" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果を見る ↗</a>` : ""}</div>`;
     } else if (record.status === "refunded") {
