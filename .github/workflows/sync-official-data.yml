@@ -61,7 +61,7 @@ jobs:
 
           if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
             # 既存JSONを土台に、締切5分後の未確定レースだけ公式結果画面を確認。
-            python scripts/sync_official_data.py --fast-results-only --result-grace-minutes 5 --result-max-races 12
+            python scripts/sync_official_data.py --fast-results-only --result-grace-minutes 5 --result-max-races 16
             exit 0
           fi
 
@@ -71,8 +71,11 @@ jobs:
           fi
 
           if [ -n "$TARGET_DATE" ]; then
-            # 手動実行では、その場で結果画面チェックも含める。
+            # 日付指定の手動実行では、その場で結果画面チェックも含める。
             python scripts/sync_official_data.py --date "$TARGET_DATE" "${GRADE_ARGS[@]}"
+          elif [ -z "$SCHEDULE" ]; then
+            # 日付空欄の手動実行もJST当日として、結果画面チェックまで実行する。
+            python scripts/sync_official_data.py "${GRADE_ARGS[@]}"
           elif [ "$SCHEDULE" = "35 15,20 * * *" ]; then
             YESTERDAY_JST="$(TZ=Asia/Tokyo date -d yesterday +%F)"
             python scripts/sync_official_data.py --date "$YESTERDAY_JST" --skip-fast-results "${GRADE_ARGS[@]}"
