@@ -65,6 +65,26 @@ TIME_ZONE_CLASSES = {
     "is-midnight": "midnight",
 }
 
+ODDS_PAGE_TYPES = {
+    "odds3t": ("trifecta",),
+    "odds3f": ("trio",),
+    "odds2tf": ("exacta", "quinella"),
+    "oddsk": ("wide",),
+    "oddstf": ("win", "place"),
+}
+ODDS_EXPECTED_COUNTS = {
+    "trifecta": 120,
+    "trio": 20,
+    "exacta": 30,
+    "quinella": 15,
+    "wide": 15,
+    "win": 6,
+    "place": 6,
+}
+ODDS_VALUE_RE = re.compile(
+    r"^(?:[0-9]+(?:\.[0-9]+)?)(?:-(?:[0-9]+(?:\.[0-9]+)?))?$"
+)
+
 
 def normalized(value: Any) -> str:
     return unicodedata.normalize("NFKC", str(value))
@@ -193,6 +213,228 @@ class OfficialGradeScheduleParser(HTMLParser):
             "title": title,
             "timeZone": time_zone,
         }
+
+
+class OfficialOddsHTMLParser(HTMLParser):
+    """公式オッズ画面の表を、結合セルを保ったまま読み取る。"""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tables: list[list[list[dict[str, Any]]]] = []
+        self.document_text: list[str] = []
+        self._table: list[list[dict[str, Any]]] | None = None
+        self._row: list[dict[str, Any]] | None = None
+        self._cell: dict[str, Any] | None = None
+
+    def handle_starttag(self, tag: str, attrs):
+        attributes = dict(attrs)
+        if tag == "table" and self._table is None:
+            self._table = []
+        elif tag == "tr" and self._table is not None:
+            self._row = []
+        elif tag in {"td", "th"} and self._row is not None:
+            self._cell = {
+                "classes": set((attributes.get("class") or "").split()),
+                "rowspan": max(1, number(attributes.get("rowspan")) or 1),
+                "colspan": max(1, number(attributes.get("colspan")) or 1),
+                "text": [],
+            }
+            self._row.append(self._cell)
+
+    def handle_data(self, data: str):
+        self.document_text.append(data)
+        if self._cell is not None:
+            self._cell["text"].append(data)
+
+    def handle_endtag(self, tag: str):
+        if tag in {"td", "th"}:
+            self._cell = None
+        elif tag == "tr" and self._table is not None and self._row is not None:
+            self._table.append(self._row)
+            self._row = None
+            self._cell = None
+        elif tag == "table" and self._table is not None:
+            self.tables.append(self._table)
+            self._table = None
+            self._row = None
+            self._cell = None
+
+
+def _odds_cell_text(cell: dict[str, Any] | None) -> str:
+    if not cell:
+        return ""
+    return compact_text("".join(cell.get("text", [])))
+
+
+def _expand_odds_table(rows: list[list[dict[str, Any]]]):
+    """rowspan/colspanを展開して、公式表を通常の二次元表へ直す。"""
+    grid: list[list[dict[str, Any] | None]] = []
+    for row_index, cells in enumerate(rows):
+        while len(grid) <= row_index:
+            grid.append([])
+        column = 0
+        for cell in cells:
+            while column < len(grid[row_index]) and grid[row_index][column] is not None:
+                column += 1
+            rowspan = int(cell.get("rowspan") or 1)
+            colspan = int(cell.get("colspan") or 1)
+            for row_offset in range(rowspan):
+                target_row = row_index + row_offset
+                while len(grid) <= target_row:
+                    grid.append([])
+                needed = column + colspan
+                if len(grid[target_row]) < needed:
+                    grid[target_row].extend([None] * (needed - len(grid[target_row])))
+                for column_offset in range(colspan):
+                    grid[target_row][column + column_offset] = cell
+            column += colspan
+    width = max((len(row) for row in grid), default=0)
+    for row in grid:
+        row.extend([None] * (width - len(row)))
+    return grid
+
+
+def _official_odds_value(cell: dict[str, Any] | None) -> str | None:
+    if not cell or "oddsPoint" not in cell.get("classes", set()):
+        return None
+    value = normalized(_odds_cell_text(cell)).replace(" ", "")
+    return value if ODDS_VALUE_RE.fullmatch(value) else None
+
+
+def _parse_grouped_odds(
+    rows: list[list[dict[str, Any]]],
+    width: int,
+    parts: int,
+    *,
+    ordered: bool,
+):
+    grid = _expand_odds_table(rows)
+    if len(grid) < 2 or len(grid[0]) < width * 6:
+        return {}
+    values: dict[str, str] = {}
+    for group in range(6):
+        first = number(_odds_cell_text(grid[0][group * width]))
+        if first not in range(1, 7):
+            continue
+        for row in grid[1:]:
+            if group * width + width > len(row):
+                continue
+            if parts == 3:
+                second = number(_odds_cell_text(row[group * width]))
+                third = number(_odds_cell_text(row[group * width + 1]))
+                odds = _official_odds_value(row[group * width + 2])
+                combo = [first, second, third]
+            else:
+                second = number(_odds_cell_text(row[group * width]))
+                odds = _official_odds_value(row[group * width + 1])
+                combo = [first, second]
+            if odds is None or any(item not in range(1, 7) for item in combo):
+                continue
+            if len(set(combo)) != len(combo):
+                continue
+            if not ordered:
+                combo = sorted(combo)
+            values["-".join(map(str, combo))] = odds
+    return values
+
+
+def _parse_single_boat_odds(rows: list[list[dict[str, Any]]]):
+    grid = _expand_odds_table(rows)
+    values: dict[str, str] = {}
+    for row in grid[1:]:
+        if len(row) < 3:
+            continue
+        boat = number(_odds_cell_text(row[0]))
+        odds = _official_odds_value(row[2])
+        if boat in range(1, 7) and odds is not None:
+            values[str(boat)] = odds
+    return values
+
+
+def parse_official_odds_html(
+    content: str | bytes,
+    page: str,
+    target: date,
+    fetched_at: datetime | None = None,
+):
+    """公式5画面を7舟券種の買い目→倍率へ正規化する。"""
+    if page not in ODDS_PAGE_TYPES:
+        raise ValueError(f"unknown odds page: {page}")
+    parser = OfficialOddsHTMLParser()
+    parser.feed(ensure_text(content))
+    odds_tables = [
+        table for table in parser.tables
+        if any(
+            "oddsPoint" in cell.get("classes", set())
+            for row in table for cell in row
+        )
+    ]
+    document = compact_text(" ".join(parser.document_text))
+    update_match = re.search(
+        r"オッズ更新時間\s*([0-9]{1,2}):([0-9]{2})",
+        document,
+    )
+    fetched_at = fetched_at or datetime.now(JST)
+    updated_at = None
+    if update_match:
+        updated_at = datetime(
+            target.year,
+            target.month,
+            target.day,
+            int(update_match.group(1)),
+            int(update_match.group(2)),
+            tzinfo=JST,
+        )
+
+    parsed: dict[str, dict[str, Any]] = {}
+    if page == "odds3t" and odds_tables:
+        parsed["trifecta"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 3, 3, ordered=True
+            )
+        }
+    elif page == "odds3f" and odds_tables:
+        parsed["trio"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 3, 3, ordered=False
+            )
+        }
+    elif page == "odds2tf" and len(odds_tables) >= 2:
+        parsed["exacta"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 2, 2, ordered=True
+            )
+        }
+        parsed["quinella"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[1], 2, 2, ordered=False
+            )
+        }
+    elif page == "oddsk" and odds_tables:
+        parsed["wide"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 2, 2, ordered=False
+            )
+        }
+    elif page == "oddstf" and len(odds_tables) >= 2:
+        parsed["win"] = {"values": _parse_single_boat_odds(odds_tables[0])}
+        parsed["place"] = {"values": _parse_single_boat_odds(odds_tables[1])}
+
+    output: dict[str, dict[str, Any]] = {}
+    for bet_type, item in parsed.items():
+        values = item.get("values") or {}
+        if not values:
+            continue
+        output[bet_type] = {
+            "updatedAt": iso(updated_at or fetched_at),
+            "timeSource": "official" if updated_at else "fetched",
+            "fetchedAt": iso(fetched_at),
+            "values": values,
+            "entries": len(values),
+            "expectedEntries": ODDS_EXPECTED_COUNTS[bet_type],
+            "complete": len(values) == ODDS_EXPECTED_COUNTS[bet_type],
+        }
+    return output
 
 
 def parse_grade_date_range(value: str, year: int):
@@ -1077,7 +1319,7 @@ def build_payload_from_files(
 
     active_codes = {code for code, _ in races}
     payload: dict[str, Any] = {
-        "schemaVersion": 9,
+        "schemaVersion": 10,
         "date": target.isoformat(),
         "generatedAt": datetime.now(JST).isoformat(),
         "source": {
@@ -1088,6 +1330,8 @@ def build_payload_from_files(
             "performanceComplete": performance_complete,
             "gradeSchedule": "BOAT RACE グレードスケジュール週次キャッシュ",
             "gradeScheduleLoaded": bool(grade_events),
+            "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
+            "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
         },
         "venues": [],
         "quality": {
@@ -1283,6 +1527,207 @@ def build_payload(
     return payload
 
 
+def _payload_race_index(payload: Mapping[str, Any]):
+    return {
+        (str(venue.get("code") or "").zfill(2), int(race.get("number") or 0)): race
+        for venue in payload.get("venues", [])
+        for race in venue.get("races", [])
+        if race.get("number")
+    }
+
+
+def merge_cached_odds(
+    payload: dict[str, Any],
+    previous: Mapping[str, Any] | None,
+):
+    """同じ開催日の直前倍率を維持し、更新失敗時にも表示を残す。"""
+    if not previous or previous.get("date") != payload.get("date"):
+        return 0
+    previous_races = _payload_race_index(previous)
+    merged = 0
+    for key, race in _payload_race_index(payload).items():
+        cached = previous_races.get(key, {}).get("odds")
+        if isinstance(cached, dict) and isinstance(cached.get("types"), dict):
+            race["odds"] = cached
+            merged += 1
+    return merged
+
+
+def odds_refresh_due(
+    odds: Mapping[str, Any] | None,
+    now: datetime,
+    min_interval_minutes: int = 10,
+):
+    """手動再実行などによる短時間の重複取得を防ぐ。"""
+    if not isinstance(odds, Mapping) or not odds.get("lastFetchedAt"):
+        return True
+    try:
+        fetched_at = datetime.fromisoformat(str(odds["lastFetchedAt"]))
+        if fetched_at.tzinfo is None:
+            fetched_at = fetched_at.replace(tzinfo=JST)
+    except (TypeError, ValueError):
+        return True
+    return (now - fetched_at).total_seconds() >= max(1, min_interval_minutes) * 60
+
+
+def official_odds_page_url(target: date, venue_code: str, race_no: int, page: str):
+    return (
+        f"https://www.boatrace.jp/owpc/pc/race/{page}"
+        f"?hd={target.strftime('%Y%m%d')}&jcd={venue_code}&rno={race_no}"
+    )
+
+
+def fetch_official_odds_page(
+    target: date,
+    venue_code: str,
+    race_no: int,
+    page: str,
+):
+    """公式画面を1ページだけ取得する。並列化はしない。"""
+    url = official_odds_page_url(target, venue_code, race_no, page)
+    request = Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; mamoboat-personal/3.9.1; "
+                "+scheduled-odds-snapshot)"
+            ),
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "ja-JP,ja;q=0.9",
+            "Cache-Control": "no-cache",
+        },
+    )
+    fetched_at = datetime.now(JST)
+    with urlopen(request, timeout=25) as response:
+        content = response.read()
+    return parse_official_odds_html(content, page, target, fetched_at), url
+
+
+def refresh_official_odds(
+    payload: dict[str, Any],
+    target: date,
+    previous: Mapping[str, Any] | None = None,
+    *,
+    window_minutes: int = 45,
+    max_races: int = 16,
+    time_budget_seconds: int = 360,
+    min_refresh_interval_minutes: int = 10,
+):
+    """
+    締切が近い各場の次レースを、GitHub Actionsの15分周期で更新する。
+
+    5画面を直列取得して7舟券種へ展開する。短時間の重複実行を抑止し、
+    連続障害時は早期終了する。失敗した画面は直前値を維持する。
+    """
+    cached_count = merge_cached_odds(payload, previous)
+    now = datetime.now(JST)
+    stats = {
+        "cachedRaces": cached_count,
+        "candidateRaces": 0,
+        "fetchedRaces": 0,
+        "skippedRecent": 0,
+        "requests": 0,
+        "entries": 0,
+        "errors": [],
+    }
+    if target != now.date():
+        return stats
+
+    candidates: list[tuple[datetime, str, str, dict[str, Any]]] = []
+    for venue in payload.get("venues", []):
+        if not venue.get("active"):
+            continue
+        for race in venue.get("races", []):
+            try:
+                close_at = datetime.fromisoformat(str(race.get("closeTime")))
+            except (TypeError, ValueError):
+                continue
+            seconds = (close_at - now).total_seconds()
+            if 0 < seconds <= max(5, window_minutes) * 60:
+                candidates.append(
+                    (close_at, str(venue.get("code")).zfill(2), str(venue.get("name")), race)
+                )
+                break
+
+    candidates.sort(key=lambda item: item[0])
+    candidates = candidates[:max_races]
+    stats["candidateRaces"] = len(candidates)
+    started = time.monotonic()
+    consecutive_errors = 0
+
+    for close_at, venue_code, venue_name, race in candidates:
+        if time.monotonic() - started >= time_budget_seconds:
+            stats["errors"].append("odds time budget reached")
+            break
+        odds = race.setdefault("odds", {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {},
+        })
+        odds.setdefault("types", {})
+        odds["policy"] = "scheduled-15-minute-refresh"
+        odds["refreshIntervalMinutes"] = 15
+        if not odds_refresh_due(odds, now, min_refresh_interval_minutes):
+            stats["skippedRecent"] += 1
+            continue
+        race_fetched = False
+        for page in ODDS_PAGE_TYPES:
+            if time.monotonic() - started >= time_budget_seconds:
+                break
+            try:
+                parsed, url = fetch_official_odds_page(
+                    target, venue_code, int(race["number"]), page
+                )
+                stats["requests"] += 1
+                if not parsed:
+                    raise RuntimeError("倍率データなし")
+                odds["types"].update(parsed)
+                odds["officialUrl"] = url
+                race_fetched = True
+                consecutive_errors = 0
+            except Exception as error:
+                stats["requests"] += 1
+                consecutive_errors += 1
+                stats["errors"].append(
+                    f"{venue_code} {venue_name} {race.get('number')}R "
+                    f"{page}: {error}"
+                )
+                if consecutive_errors >= 3:
+                    break
+            time.sleep(0.7)
+        if race_fetched:
+            odds["lastFetchedAt"] = datetime.now(JST).isoformat()
+            stats["fetchedRaces"] += 1
+        if consecutive_errors >= 3:
+            stats["errors"].append("odds circuit breaker opened")
+            break
+
+    odds_races = 0
+    odds_entries = 0
+    for race in _payload_race_index(payload).values():
+        types = race.get("odds", {}).get("types", {})
+        if types:
+            odds_races += 1
+            odds_entries += sum(
+                len(item.get("values", {}))
+                for item in types.values() if isinstance(item, dict)
+            )
+    stats["storedRaces"] = odds_races
+    stats["entries"] = odds_entries
+    payload["quality"]["stats"]["oddsRaces"] = odds_races
+    payload["quality"]["stats"]["oddsEntries"] = odds_entries
+    payload["quality"]["oddsDebug"] = (
+        f"cached={cached_count} candidates={stats['candidateRaces']} "
+        f"fetched={stats['fetchedRaces']} recent={stats['skippedRecent']} "
+        f"requests={stats['requests']} "
+        f"stored={odds_races} entries={odds_entries}"
+    )
+    if stats["errors"]:
+        payload["quality"]["warnings"].extend(stats["errors"])
+    return stats
+
+
 def atomic_write_text(path: Path, text: str):
     path.parent.mkdir(parents=True, exist_ok=True)
     temp_name = None
@@ -1435,6 +1880,17 @@ def main():
         action="store_true",
         help="競走成績が未取得なら失敗させる（夜間確認用）",
     )
+    parser.add_argument(
+        "--skip-odds",
+        action="store_true",
+        help="締切前の参考オッズ取得を省略する（解析テスト用）",
+    )
+    parser.add_argument(
+        "--odds-window-minutes",
+        type=int,
+        default=45,
+        help="参考オッズを15分周期で取得する締切前の時間幅（既定45分）",
+    )
     args = parser.parse_args()
 
     raw_date = (args.date or "").strip()
@@ -1474,6 +1930,20 @@ def main():
     # 失敗時は直前のtoday.jsonを維持する。
     output = Path(args.output)
     dated = output.parent / f"{target.isoformat()}.json"
+    previous_payload = None
+    try:
+        previous_payload = json.loads(dated.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        pass
+    if args.skip_odds:
+        merge_cached_odds(payload, previous_payload)
+    else:
+        refresh_official_odds(
+            payload,
+            target,
+            previous_payload,
+            window_minutes=max(5, args.odds_window_minutes),
+        )
     reuse_generated_at_when_unchanged(payload, dated)
     text = json.dumps(payload, ensure_ascii=False, indent=2)
     atomic_write_text(dated, text)
@@ -1501,6 +1971,8 @@ def main():
     print(payload["quality"]["performanceDebug"])
     for message in payload["quality"]["performanceDetails"]:
         print(message)
+    print("---- delayed odds ----")
+    print(payload["quality"].get("oddsDebug", "odds fetch skipped"))
     if payload["quality"]["warnings"]:
         print("---- warnings ----")
         for message in payload["quality"]["warnings"]:
