@@ -1,4 +1,4 @@
-const CACHE = "mamoboat-v390";
+const CACHE = "mamoboat-v391";
 const SHELL = [
   "./",
   "./index.html",

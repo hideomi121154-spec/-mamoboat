@@ -2,7 +2,7 @@
   "use strict";
 
   const C = window.MamoCore;
-  const APP_VERSION = "3.9.0";
+  const APP_VERSION = "3.9.1";
   const KEY = "mamoboat_v39_personal";
   const LEGACY_KEYS = [
     "mamoboat_v38_personal",
@@ -885,9 +885,9 @@
       <span class="kicker">OFFICIAL CASH BETTING</span>
       <h2>公式投票へ移動しますか？</h2>
       <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>まもボートのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
-      <p>いま現金を使わずに済ませたい場合は、下の「Bメダル投票に戻る」を選んでください。</p>
+      <p>いま現金を使わずに済ませたい場合は、下の「AIR BETに戻る」を選んでください。</p>
       <div class="real-bet-actions">
-        <button class="btn primary full" type="button" onclick="recordRealBetAvoided()">Bメダル投票に戻る</button>
+        <button class="btn primary full" type="button" onclick="recordRealBetAvoided()">AIR BETに戻る</button>
         <a class="btn real-cash-link full" href="${REAL_BET_URL}" target="_blank" rel="noopener noreferrer" onclick="recordRealBetExit()">公式TELEBOATログインへ ↗</a>
       </div>
       <small>公式サイトでの登録・ログイン・投票・入出金は、まもボートには保存されません。</small>
@@ -1445,7 +1445,7 @@
     const event = eventInfo(venueItem);
     const officialEvent = event.officialUrl
       || `https://www.boatrace.jp/owpc/pc/race/raceindex?hd=${String(DATA.date || "").replaceAll("-", "")}&jcd=${venueItem.code}`;
-    $("raceView").innerHTML = `<div class="race-path"><span>開催場</span><b>›</b><button class="race-path-venue" type="button" onclick="openVenueSwitcher()">${esc(venueItem.name)}⌄</button><b>›</b><span>${raceItem.number}R</span><b>›</b><span>出走表</span><b>›</b><span>B投票</span></div>
+    $("raceView").innerHTML = `<div class="race-path"><span>開催場</span><b>›</b><button class="race-path-venue" type="button" onclick="openVenueSwitcher()">${esc(venueItem.name)}⌄</button><b>›</b><span>${raceItem.number}R</span><b>›</b><span>出走表</span><b>›</b><span>AIR BET</span></div>
       <div class="event-banner">
         ${gradeBadge(venueItem)}
         <h1>${esc(event.title)}</h1>
@@ -1465,9 +1465,9 @@
           <a class="officiallink" href="${officialResultUrl(venueItem.code, raceItem.number)}" target="_blank" rel="noopener noreferrer"><span>レース結果</span><b>公式で確認 ↗</b></a>
           <a class="officiallink" href="${esc(venueItem.boatcast)}" target="_blank" rel="noopener noreferrer"><span>映像</span><b>LIVE・リプレイ ↗</b></a>
         </div>
-        <div class="source-note">参考オッズは締切前に低頻度で取得したスナップショットです。時刻と注意事項を確認し、最終情報は公式サイトで確認してください。</div>
+        <div class="source-note">参考オッズは締切45分前から約15分周期で取得するスナップショットです。時刻を確認し、最終情報は公式サイトで確認してください。</div>
       </div>
-      <div class="section-head small"><div><span class="section-number">B</span><h2>Bメダルで投票</h2></div><span class="section-meta">公式7舟券種</span></div>
+      <div class="section-head small"><div><span class="section-number">B</span><h2>AIR BET</h2><small>Bメダル仮想投票</small></div><span class="section-meta">公式7舟券種</span></div>
       <div class="panel betdesk">${open
         ? builderShell()
         : isFresh()
@@ -1535,7 +1535,7 @@
     <div id="addedNotice" class="added-notice" aria-live="polite"></div>
     <div class="title cart-title" style="margin-top:14px"><div><h2 style="font-size:16px">購入する買い目</h2><small>別の組み合わせ・舟券種も続けて追加できます</small></div><span id="cartCount">0点</span></div>
     <div id="cart" class="cart"></div><div id="cartTools" class="cart-tools"></div><div id="cartSum" class="notice">買い目を作成してください。</div>
-    <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">B投票を確認</button>`;
+    <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">AIR BETを確認</button>`;
   }
 
   function allowedModes(type = betType) {
@@ -1591,8 +1591,8 @@
     const oddsCount = Object.keys(oddsSnapshot?.values || {}).length;
     const oddsTimeLabel = oddsSnapshot?.timeSource === "fetched" ? "取得" : "更新";
     $("betGuide").innerHTML = `<div><b>${spec.label}</b>：${BET_GUIDES[betType]}。1点100Bから、100B単位。</div>
-      ${oddsCount ? `<div class="odds-snapshot available"><div><span>参考オッズ</span><strong>${timeText(oddsSnapshot.updatedAt || oddsSnapshot.fetchedAt)} ${oddsTimeLabel}</strong></div><p>${esc(spec.label)} ${oddsCount}通りを取得済み。買い目を追加すると倍率を自動表示します。</p></div>`
-        : `<div class="odds-snapshot pending"><div><span>参考オッズ</span><strong>準備中</strong></div><p>締切前に低頻度で取得します。まだ届いていない場合は公式画面で確認できます。</p></div>`}
+      ${oddsCount ? `<div class="odds-snapshot available"><div><span>参考オッズ</span><strong>${timeText(oddsSnapshot.updatedAt || oddsSnapshot.fetchedAt)} ${oddsTimeLabel}</strong></div><p>${esc(spec.label)} ${oddsCount}通りを取得済み。締切45分前から約15分周期で更新します。</p></div>`
+        : `<div class="odds-snapshot pending"><div><span>参考オッズ</span><strong>準備中</strong></div><p>締切45分前から約15分周期で取得します。まだ届いていない場合は公式画面で確認できます。</p></div>`}
       <div class="odds-caution">表示倍率はリアルタイム・確定値ではありません。更新後に変動する場合があります。</div>
       <a class="inline-official odds-now" href="${oddsUrl}" target="_blank" rel="noopener noreferrer">公式${officialOddsLabel(betType)}オッズで最終確認 ↗</a>`;
     const oddsMain = $("officialOddsMain");
@@ -1868,7 +1868,7 @@
       <input id="urge" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('uv').textContent=this.value"><div id="uv" class="big">5</div>
       <div class="field"><label>参加理由</label><select id="reason"><option>なんとなく</option><option>レースがあるから</option><option>自信がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
       <div class="field"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="なぜ買いたくなったか等"></textarea></div>
-      <button class="btn teal full" onclick="placeBet()">Bメダルで投票する</button>`);
+      <button class="btn teal full" onclick="placeBet()">AIR BETを確定する</button>`);
   };
 
   window.placeBet = () => {

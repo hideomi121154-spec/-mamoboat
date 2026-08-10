@@ -8,14 +8,14 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
-  <title>まもボート v3.9.0</title>
+  <title>まもボート v3.9.1</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PILOT v3.9.0</small></span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PILOT v3.9.1</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -62,7 +62,7 @@
           <button class="filter" data-home-filter="selling" onclick="setHomeFilter('selling')">▱ 発売中</button>
         </div>
         <div class="route-guide home-route" aria-label="利用の流れ">
-          <span>場を選ぶ</span><i>→</i><span>1〜12R</span><i>→</i><span>出走表</span><i>→</i><span>Bメダル投票</span>
+          <span>場を選ぶ</span><i>→</i><span>1〜12R</span><i>→</i><span>出走表</span><i>→</i><span>AIR BET</span>
         </div>
         <span id="activeCount" hidden></span>
         <div id="homeVenues" class="venue-grid home-venue-grid"></div>
@@ -213,7 +213,7 @@
       <div class="onboard-panel" data-onboard="1">
         <div class="onboard-copy"><span class="kicker">HOW IT WORKS</span><h1>実レースから、<br><em>行動分析まで。</em></h1></div>
         <div class="onboard-route">
-          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>Bメダルで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>置換額を自動記録</span></div>
+          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>AIR BETで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>置換額を自動記録</span></div>
         </div>
         <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button class="btn primary" onclick="onboardNext()">次へ →</button></div>
       </div>
