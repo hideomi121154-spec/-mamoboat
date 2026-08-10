@@ -1,7 +1,7 @@
 {
   "schemaVersion": 10,
   "date": "2026-08-10",
-  "generatedAt": "2026-08-10T11:30:09.809647+09:00",
+  "generatedAt": "2026-08-10T12:56:49.894446+09:00",
   "source": {
     "type": "official-lzh",
     "schedule": "BOAT RACE 番組表ダウンロード",
@@ -13,7 +13,7 @@
     "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
     "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
     "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
-    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・直列取得"
+    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得"
   },
   "venues": [
     {
@@ -639,7 +639,158 @@
               "boatPart": 33
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 4,
+                "racerNumber": 4086,
+                "name": "寺本重宣"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 3911,
+                "name": "鈴木猛"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 5007,
+                "name": "近藤雄一郎"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 3202,
+                "name": "三品隆浩"
+              },
+              {
+                "position": 5,
+                "boatNumber": 6,
+                "racerNumber": 4954,
+                "name": "内山峻輔"
+              },
+              {
+                "position": 6,
+                "boatNumber": 3,
+                "racerNumber": 4366,
+                "name": "前沢丈史"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "4-1-5",
+                "payout": 6790,
+                "popularity": 28
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "4",
+                  "payout": 210,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "4",
+                  "payout": 260,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "4-1",
+                  "payout": 1760,
+                  "popularity": 8
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 260,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 430,
+                  "popularity": 5
+                },
+                {
+                  "combination": "4-5",
+                  "payout": 1080,
+                  "popularity": 12
+                },
+                {
+                  "combination": "1-5",
+                  "payout": 850,
+                  "popularity": 9
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "4-1-5",
+                  "payout": 6790,
+                  "popularity": 28
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-4-5",
+                  "payout": 1900,
+                  "popularity": 8
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3911,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3202,
+                "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4366,
+                "status": "06"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4086,
+                "status": "01"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5007,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4954,
+                "status": "05"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:48.722219+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=03&rno=2"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -930,6 +1081,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=03&rno=2",
             "lastFetchedAt": "2026-08-10T11:30:29.106720+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:49.017929+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=03&rno=2"
           }
         },
         {
@@ -1152,7 +1308,298 @@
               "boatPart": 16
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:59.958531+09:00",
+                "values": {
+                  "1-2-3": "18.2",
+                  "1-2-4": "22.6",
+                  "1-2-5": "65.8",
+                  "1-2-6": "91.8",
+                  "1-3-2": "28.2",
+                  "1-3-4": "34.2",
+                  "1-3-5": "64.3",
+                  "1-3-6": "102.1",
+                  "1-4-2": "31.4",
+                  "1-4-3": "43.9",
+                  "1-4-5": "80.2",
+                  "1-4-6": "131.2",
+                  "1-5-2": "150.3",
+                  "1-5-3": "151.0",
+                  "1-5-4": "180.0",
+                  "1-5-6": "286.7",
+                  "1-6-2": "236.3",
+                  "1-6-3": "312.7",
+                  "1-6-4": "309.6",
+                  "1-6-5": "476.3",
+                  "2-1-3": "18.8",
+                  "2-1-4": "17.8",
+                  "2-1-5": "86.7",
+                  "2-1-6": "99.8",
+                  "2-3-1": "25.4",
+                  "2-3-4": "18.5",
+                  "2-3-5": "67.0",
+                  "2-3-6": "102.5",
+                  "2-4-1": "27.6",
+                  "2-4-3": "22.5",
+                  "2-4-5": "78.9",
+                  "2-4-6": "88.4",
+                  "2-5-1": "205.0",
+                  "2-5-3": "162.9",
+                  "2-5-4": "133.4",
+                  "2-5-6": "202.3",
+                  "2-6-1": "325.9",
+                  "2-6-3": "347.9",
+                  "2-6-4": "266.9",
+                  "2-6-5": "595.4",
+                  "3-1-2": "33.7",
+                  "3-1-4": "33.8",
+                  "3-1-5": "67.9",
+                  "3-1-6": "103.2",
+                  "3-2-1": "39.5",
+                  "3-2-4": "24.3",
+                  "3-2-5": "74.6",
+                  "3-2-6": "130.6",
+                  "3-4-1": "43.6",
+                  "3-4-2": "26.6",
+                  "3-4-5": "76.0",
+                  "3-4-6": "117.2",
+                  "3-5-1": "132.3",
+                  "3-5-2": "107.5",
+                  "3-5-4": "130.6",
+                  "3-5-6": "245.7",
+                  "3-6-1": "300.6",
+                  "3-6-2": "418.4",
+                  "3-6-4": "289.3",
+                  "3-6-5": "448.7",
+                  "4-1-2": "36.3",
+                  "4-1-3": "50.7",
+                  "4-1-5": "105.3",
+                  "4-1-6": "113.8",
+                  "4-2-1": "38.6",
+                  "4-2-3": "31.7",
+                  "4-2-5": "95.2",
+                  "4-2-6": "99.5",
+                  "4-3-1": "58.6",
+                  "4-3-2": "35.4",
+                  "4-3-5": "95.8",
+                  "4-3-6": "136.4",
+                  "4-5-1": "133.4",
+                  "4-5-2": "121.4",
+                  "4-5-3": "149.5",
+                  "4-5-6": "136.4",
+                  "4-6-1": "284.0",
+                  "4-6-2": "216.5",
+                  "4-6-3": "424.1",
+                  "4-6-5": "382.2",
+                  "5-1-2": "181.0",
+                  "5-1-3": "271.6",
+                  "5-1-4": "269.2",
+                  "5-1-6": "412.8",
+                  "5-2-1": "373.0",
+                  "5-2-3": "278.9",
+                  "5-2-4": "213.5",
+                  "5-2-6": "476.3",
+                  "5-3-1": "292.1",
+                  "5-3-2": "292.1",
+                  "5-3-4": "351.8",
+                  "5-3-6": "631.9",
+                  "5-4-1": "347.9",
+                  "5-4-2": "387.0",
+                  "5-4-3": "377.6",
+                  "5-4-6": "491.4",
+                  "5-6-1": "595.4",
+                  "5-6-2": "507.6",
+                  "5-6-3": "814.8",
+                  "5-6-4": "688.0",
+                  "6-1-2": "524.8",
+                  "6-1-3": "562.9",
+                  "6-1-4": "860.1",
+                  "6-1-5": "1290",
+                  "6-2-1": "720.0",
+                  "6-2-3": "755.2",
+                  "6-2-4": "631.9",
+                  "6-2-5": "1067",
+                  "6-3-1": "755.2",
+                  "6-3-2": "737.2",
+                  "6-3-4": "836.8",
+                  "6-3-5": "1238",
+                  "6-4-1": "1346",
+                  "6-4-2": "607.1",
+                  "6-4-3": "1190",
+                  "6-4-5": "1238",
+                  "6-5-1": "1629",
+                  "6-5-2": "1407",
+                  "6-5-3": "1190",
+                  "6-5-4": "1190"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:00.998919+09:00",
+                "values": {
+                  "1-2-3": "4.3",
+                  "1-2-4": "4.6",
+                  "1-2-5": "30.3",
+                  "1-2-6": "20.5",
+                  "1-3-4": "9.5",
+                  "1-3-5": "35.4",
+                  "1-3-6": "49.0",
+                  "1-4-5": "37.5",
+                  "1-4-6": "42.5",
+                  "1-5-6": "106.2",
+                  "2-3-4": "3.2",
+                  "2-3-5": "21.9",
+                  "2-3-6": "24.5",
+                  "2-4-5": "27.7",
+                  "2-4-6": "25.5",
+                  "2-5-6": "63.7",
+                  "3-4-5": "31.8",
+                  "3-4-6": "25.5",
+                  "3-5-6": "33.5",
+                  "4-5-6": "106.2"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:01.964542+09:00",
+                "values": {
+                  "1-2": "9.2",
+                  "1-3": "24.0",
+                  "1-4": "13.6",
+                  "1-5": "33.4",
+                  "1-6": "75.2",
+                  "2-1": "5.3",
+                  "2-3": "5.9",
+                  "2-4": "10.5",
+                  "2-5": "50.1",
+                  "2-6": "120.4",
+                  "3-1": "17.7",
+                  "3-2": "7.3",
+                  "3-4": "14.6",
+                  "3-5": "50.1",
+                  "3-6": "40.1",
+                  "4-1": "28.6",
+                  "4-2": "13.0",
+                  "4-3": "15.4",
+                  "4-5": "40.1",
+                  "4-6": "150.5",
+                  "5-1": "86.0",
+                  "5-2": "86.0",
+                  "5-3": "150.5",
+                  "5-4": "100.3",
+                  "5-6": "200.7",
+                  "6-1": "150.5",
+                  "6-2": "301.1",
+                  "6-3": "100.3",
+                  "6-4": "200.7",
+                  "6-5": "150.5"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:01.964542+09:00",
+                "values": {
+                  "1-2": "5.4",
+                  "1-3": "9.2",
+                  "1-4": "6.4",
+                  "1-5": "30.5",
+                  "1-6": "53.4",
+                  "2-3": "4.5",
+                  "2-4": "3.8",
+                  "2-5": "11.8",
+                  "2-6": "23.7",
+                  "3-4": "7.3",
+                  "3-5": "53.4",
+                  "3-6": "106.8",
+                  "4-5": "42.7",
+                  "4-6": "35.6",
+                  "5-6": "71.2"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:02.928577+09:00",
+                "values": {
+                  "1-2": "3.0-4.6",
+                  "1-3": "0.0-0.0",
+                  "1-4": "2.4-3.6",
+                  "1-5": "12.6-20.6",
+                  "1-6": "10.3-20.8",
+                  "2-3": "1.5-2.3",
+                  "2-4": "1.7-2.1",
+                  "2-5": "4.7-8.2",
+                  "2-6": "4.2-8.2",
+                  "3-4": "1.9-3.2",
+                  "3-5": "4.0-7.1",
+                  "3-6": "19.7-40.8",
+                  "4-5": "11.6-17.2",
+                  "4-6": "1.6-2.4",
+                  "5-6": "0.0-0.0"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:03.912178+09:00",
+                "values": {
+                  "1": "0.0",
+                  "2": "2.1",
+                  "3": "1.6",
+                  "4": "8.0",
+                  "5": "12.0",
+                  "6": "24.0"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:03.912178+09:00",
+                "values": {
+                  "1": "1.1-3.0",
+                  "2": "2.2-7.5",
+                  "3": "2.2-7.5",
+                  "4": "1.0-1.5",
+                  "5": "0.0-0.0",
+                  "6": "4.1-15.0"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=03&rno=5",
+            "lastFetchedAt": "2026-08-10T12:57:04.969845+09:00"
+          }
         },
         {
           "number": 6,
@@ -1774,7 +2221,158 @@
               "boatPart": 21
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 4,
+                "racerNumber": 5157,
+                "name": "市川健太"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 4012,
+                "name": "中村有裕"
+              },
+              {
+                "position": 3,
+                "boatNumber": 1,
+                "racerNumber": 3391,
+                "name": "鈴木茂正"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 5322,
+                "name": "根岸真優"
+              },
+              {
+                "position": 5,
+                "boatNumber": 6,
+                "racerNumber": 4569,
+                "name": "中澤宏奈"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5266,
+                "name": "石田勇斗"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "4-2-1",
+                "payout": 3950,
+                "popularity": 14
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "4",
+                  "payout": 530,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "4",
+                  "payout": 140,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "4-2",
+                  "payout": 1090,
+                  "popularity": 4
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "2-4",
+                  "payout": 350,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "2-4",
+                  "payout": 130,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-4",
+                  "payout": 420,
+                  "popularity": 7
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 190,
+                  "popularity": 3
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "4-2-1",
+                  "payout": 3950,
+                  "popularity": 14
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 450,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3391,
+                "status": "03"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4012,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5322,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5157,
+                "status": "01"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5266,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4569,
+                "status": "05"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:47.631538+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=05&rno=1"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -2065,6 +2663,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=05&rno=1",
             "lastFetchedAt": "2026-08-10T11:30:14.652368+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:47.921929+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=05&rno=1"
           }
         },
         {
@@ -2287,7 +2890,298 @@
               "boatPart": 41
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:09.871286+09:00",
+                "values": {
+                  "1-2-3": "10.5",
+                  "1-2-4": "17.3",
+                  "1-2-5": "106.0",
+                  "1-2-6": "41.6",
+                  "1-3-2": "13.5",
+                  "1-3-4": "27.7",
+                  "1-3-5": "112.8",
+                  "1-3-6": "48.4",
+                  "1-4-2": "32.9",
+                  "1-4-3": "42.5",
+                  "1-4-5": "269.9",
+                  "1-4-6": "54.2",
+                  "1-5-2": "261.8",
+                  "1-5-3": "176.9",
+                  "1-5-4": "443.8",
+                  "1-5-6": "331.4",
+                  "1-6-2": "212.8",
+                  "1-6-3": "187.0",
+                  "1-6-4": "207.8",
+                  "1-6-5": "436.4",
+                  "2-1-3": "14.2",
+                  "2-1-4": "19.4",
+                  "2-1-5": "114.8",
+                  "2-1-6": "68.1",
+                  "2-3-1": "17.3",
+                  "2-3-4": "19.2",
+                  "2-3-5": "91.5",
+                  "2-3-6": "61.7",
+                  "2-4-1": "39.2",
+                  "2-4-3": "35.4",
+                  "2-4-5": "300.9",
+                  "2-4-6": "135.6",
+                  "2-5-1": "308.0",
+                  "2-5-3": "311.7",
+                  "2-5-4": "494.0",
+                  "2-5-6": "476.1",
+                  "2-6-1": "251.7",
+                  "2-6-3": "216.4",
+                  "2-6-4": "290.9",
+                  "2-6-5": "707.7",
+                  "3-1-2": "19.9",
+                  "3-1-4": "33.6",
+                  "3-1-5": "102.6",
+                  "3-1-6": "69.6",
+                  "3-2-1": "18.6",
+                  "3-2-4": "19.1",
+                  "3-2-5": "97.3",
+                  "3-2-6": "61.7",
+                  "3-4-1": "50.2",
+                  "3-4-2": "37.1",
+                  "3-4-5": "189.7",
+                  "3-4-6": "85.8",
+                  "3-5-1": "242.4",
+                  "3-5-2": "180.5",
+                  "3-5-4": "297.5",
+                  "3-5-6": "353.8",
+                  "3-6-1": "206.1",
+                  "3-6-2": "176.9",
+                  "3-6-4": "187.0",
+                  "3-6-5": "569.2",
+                  "4-1-2": "100.7",
+                  "4-1-3": "116.8",
+                  "4-1-5": "233.7",
+                  "4-1-6": "214.6",
+                  "4-2-1": "86.1",
+                  "4-2-3": "54.7",
+                  "4-2-5": "196.8",
+                  "4-2-6": "157.7",
+                  "4-3-1": "113.8",
+                  "4-3-2": "65.6",
+                  "4-3-5": "267.1",
+                  "4-3-6": "220.0",
+                  "4-5-1": "335.7",
+                  "4-5-2": "349.1",
+                  "4-5-3": "503.5",
+                  "4-5-6": "396.7",
+                  "4-6-1": "294.2",
+                  "4-6-2": "281.5",
+                  "4-6-3": "363.6",
+                  "4-6-5": "476.1",
+                  "5-1-2": "409.1",
+                  "5-1-3": "476.1",
+                  "5-1-4": "513.4",
+                  "5-1-6": "671.4",
+                  "5-2-1": "484.9",
+                  "5-2-3": "368.8",
+                  "5-2-4": "595.1",
+                  "5-2-6": "374.0",
+                  "5-3-1": "484.9",
+                  "5-3-2": "523.7",
+                  "5-3-4": "654.6",
+                  "5-3-6": "727.3",
+                  "5-4-1": "569.2",
+                  "5-4-2": "654.6",
+                  "5-4-3": "503.5",
+                  "5-4-6": "581.9",
+                  "5-6-1": "1047",
+                  "5-6-2": "1007",
+                  "5-6-3": "1047",
+                  "5-6-4": "902.9",
+                  "6-1-2": "331.4",
+                  "6-1-3": "396.7",
+                  "6-1-4": "476.1",
+                  "6-1-5": "770.1",
+                  "6-2-1": "368.8",
+                  "6-2-3": "294.2",
+                  "6-2-4": "451.4",
+                  "6-2-5": "689.0",
+                  "6-3-1": "484.9",
+                  "6-3-2": "319.3",
+                  "6-3-4": "451.4",
+                  "6-3-5": "818.2",
+                  "6-4-1": "534.3",
+                  "6-4-2": "396.7",
+                  "6-4-3": "545.5",
+                  "6-4-5": "872.8",
+                  "6-5-1": "1091",
+                  "6-5-2": "935.1",
+                  "6-5-3": "969.8",
+                  "6-5-4": "1138"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:10.840867+09:00",
+                "values": {
+                  "1-2-3": "2.0",
+                  "1-2-4": "10.6",
+                  "1-2-5": "53.1",
+                  "1-2-6": "25.9",
+                  "1-3-4": "7.5",
+                  "1-3-5": "42.4",
+                  "1-3-6": "19.6",
+                  "1-4-5": "66.3",
+                  "1-4-6": "53.1",
+                  "1-5-6": "177.0",
+                  "2-3-4": "4.9",
+                  "2-3-5": "24.1",
+                  "2-3-6": "15.8",
+                  "2-4-5": "44.2",
+                  "2-4-6": "33.1",
+                  "2-5-6": "212.4",
+                  "3-4-5": "39.3",
+                  "3-4-6": "27.2",
+                  "3-5-6": "132.7",
+                  "4-5-6": "354.0"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:11.786945+09:00",
+                "values": {
+                  "1-2": "7.0",
+                  "1-3": "8.0",
+                  "1-4": "27.6",
+                  "1-5": "85.1",
+                  "1-6": "46.4",
+                  "2-1": "10.2",
+                  "2-3": "6.5",
+                  "2-4": "16.2",
+                  "2-5": "32.9",
+                  "2-6": "40.8",
+                  "3-1": "8.8",
+                  "3-2": "8.5",
+                  "3-4": "14.3",
+                  "3-5": "73.0",
+                  "3-6": "26.2",
+                  "4-1": "21.7",
+                  "4-2": "20.0",
+                  "4-3": "23.2",
+                  "4-5": "56.7",
+                  "4-6": "56.7",
+                  "5-1": "170.3",
+                  "5-2": "46.4",
+                  "5-3": "92.9",
+                  "5-4": "92.9",
+                  "5-6": "102.2",
+                  "6-1": "113.5",
+                  "6-2": "92.9",
+                  "6-3": "68.1",
+                  "6-4": "113.5",
+                  "6-5": "340.7"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:11.786945+09:00",
+                "values": {
+                  "1-2": "4.3",
+                  "1-3": "5.5",
+                  "1-4": "19.7",
+                  "1-5": "59.2",
+                  "1-6": "177.7",
+                  "2-3": "5.2",
+                  "2-4": "3.1",
+                  "2-5": "25.3",
+                  "2-6": "25.3",
+                  "3-4": "8.8",
+                  "3-5": "29.6",
+                  "3-6": "44.4",
+                  "4-5": "17.7",
+                  "4-6": "29.6",
+                  "5-6": "177.7"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:12.782706+09:00",
+                "values": {
+                  "1-2": "2.0-2.8",
+                  "1-3": "2.0-2.8",
+                  "1-4": "2.5-3.2",
+                  "1-5": "20.2-22.3",
+                  "1-6": "8.2-9.4",
+                  "2-3": "1.2-1.3",
+                  "2-4": "3.0-4.8",
+                  "2-5": "7.0-9.2",
+                  "2-6": "6.7-9.2",
+                  "3-4": "1.4-1.9",
+                  "3-5": "11.1-14.8",
+                  "3-6": "4.5-6.0",
+                  "4-5": "9.7-11.5",
+                  "4-6": "9.4-11.5",
+                  "5-6": "21.8-22.3"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:13.719737+09:00",
+                "values": {
+                  "1": "1.1",
+                  "2": "3.6",
+                  "3": "22.1",
+                  "4": "22.1",
+                  "5": "22.1",
+                  "6": "44.2"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:13.719737+09:00",
+                "values": {
+                  "1": "1.2-1.5",
+                  "2": "1.3-1.8",
+                  "3": "2.6-3.5",
+                  "4": "1.3-1.6",
+                  "5": "11.6-16.1",
+                  "6": "11.6-16.1"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=05&rno=4",
+            "lastFetchedAt": "2026-08-10T12:57:14.669219+09:00"
+          }
         },
         {
           "number": 5,
@@ -2991,7 +3885,163 @@
               "boatPart": 75
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3999,
+                "name": "大瀧明日香"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 3528,
+                "name": "笠野友紀恵"
+              },
+              {
+                "position": 3,
+                "boatNumber": 3,
+                "racerNumber": 5347,
+                "name": "井澤聖奈"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 3302,
+                "name": "谷川里江"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 4901,
+                "name": "出口舞有子"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5472,
+                "name": "中川海虹"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-2-3",
+                "payout": 3860,
+                "popularity": 13
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 170,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 130,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-2",
+                  "payout": 280,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 400,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 220,
+                  "popularity": 3
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 750,
+                  "popularity": 9
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 1260,
+                  "popularity": 12
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 3860,
+                  "popularity": 13
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 1600,
+                  "popularity": 4
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3999,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3528,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5347,
+                "status": "03"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4901,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5472,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3302,
+                "status": "04"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:43.257137+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=08&rno=1"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:43.539026+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=08&rno=1"
+          }
         },
         {
           "number": 2,
@@ -3581,7 +4631,158 @@
               "boatPart": 63
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4837,
+                "name": "酒井陽祐"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 4604,
+                "name": "岩瀬裕亮"
+              },
+              {
+                "position": 3,
+                "boatNumber": 4,
+                "racerNumber": 4665,
+                "name": "加藤啓太"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 4293,
+                "name": "鈴木智啓"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 5074,
+                "name": "大澤誠也"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 4142,
+                "name": "平野和明"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-2-4",
+                "payout": 1180,
+                "popularity": 4
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 200,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 150,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-2",
+                  "payout": 280,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 170,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 120,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-4",
+                  "payout": 260,
+                  "popularity": 5
+                },
+                {
+                  "combination": "2-4",
+                  "payout": 190,
+                  "popularity": 3
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 1180,
+                  "popularity": 4
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 340,
+                  "popularity": 2
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4837,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4604,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4293,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4665,
+                "status": "03"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5074,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4142,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:55.253112+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=08&rno=3"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -3872,6 +5073,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=08&rno=3",
             "lastFetchedAt": "2026-08-10T11:30:19.742561+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:55.507885+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=08&rno=3"
           }
         },
         {
@@ -4094,7 +5300,298 @@
               "boatPart": 37
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:54.966902+09:00",
+                "values": {
+                  "1-2-3": "26.5",
+                  "1-2-4": "12.7",
+                  "1-2-5": "50.9",
+                  "1-2-6": "32.9",
+                  "1-3-2": "35.0",
+                  "1-3-4": "18.0",
+                  "1-3-5": "78.1",
+                  "1-3-6": "41.8",
+                  "1-4-2": "9.9",
+                  "1-4-3": "11.3",
+                  "1-4-5": "23.6",
+                  "1-4-6": "8.3",
+                  "1-5-2": "149.7",
+                  "1-5-3": "154.9",
+                  "1-5-4": "71.3",
+                  "1-5-6": "148.9",
+                  "1-6-2": "49.8",
+                  "1-6-3": "59.0",
+                  "1-6-4": "26.6",
+                  "1-6-5": "165.5",
+                  "2-1-3": "140.3",
+                  "2-1-4": "82.7",
+                  "2-1-5": "235.2",
+                  "2-1-6": "201.6",
+                  "2-3-1": "252.9",
+                  "2-3-4": "252.9",
+                  "2-3-5": "412.5",
+                  "2-3-6": "470.4",
+                  "2-4-1": "125.8",
+                  "2-4-3": "308.2",
+                  "2-4-5": "357.5",
+                  "2-4-6": "216.2",
+                  "2-5-1": "462.3",
+                  "2-5-3": "582.9",
+                  "2-5-4": "547.2",
+                  "2-5-6": "412.5",
+                  "2-6-1": "372.4",
+                  "2-6-3": "425.6",
+                  "2-6-4": "311.7",
+                  "2-6-5": "432.4",
+                  "3-1-2": "154.1",
+                  "3-1-4": "96.8",
+                  "3-1-5": "223.4",
+                  "3-1-6": "165.5",
+                  "3-2-1": "311.7",
+                  "3-2-4": "190.1",
+                  "3-2-5": "547.2",
+                  "3-2-6": "525.7",
+                  "3-4-1": "117.6",
+                  "3-4-2": "285.2",
+                  "3-4-5": "357.5",
+                  "3-4-6": "183.6",
+                  "3-5-1": "536.2",
+                  "3-5-2": "343.7",
+                  "3-5-4": "582.9",
+                  "3-5-6": "525.7",
+                  "3-6-1": "352.8",
+                  "3-6-2": "470.4",
+                  "3-6-4": "268.1",
+                  "3-6-5": "595.8",
+                  "4-1-2": "24.8",
+                  "4-1-3": "27.9",
+                  "4-1-5": "33.3",
+                  "4-1-6": "15.8",
+                  "4-2-1": "80.5",
+                  "4-2-3": "178.7",
+                  "4-2-5": "161.5",
+                  "4-2-6": "132.0",
+                  "4-3-1": "128.9",
+                  "4-3-2": "218.0",
+                  "4-3-5": "285.2",
+                  "4-3-6": "148.9",
+                  "4-5-1": "59.0",
+                  "4-5-2": "130.1",
+                  "4-5-3": "211.1",
+                  "4-5-6": "57.9",
+                  "4-6-1": "38.6",
+                  "4-6-2": "95.7",
+                  "4-6-3": "81.5",
+                  "4-6-5": "75.5",
+                  "5-1-2": "311.7",
+                  "5-1-3": "454.4",
+                  "5-1-4": "223.4",
+                  "5-1-6": "383.0",
+                  "5-2-1": "454.4",
+                  "5-2-3": "454.4",
+                  "5-2-4": "724.7",
+                  "5-2-6": "470.4",
+                  "5-3-1": "595.8",
+                  "5-3-2": "670.3",
+                  "5-3-4": "1072",
+                  "5-3-6": "957.6",
+                  "5-4-1": "233.1",
+                  "5-4-2": "525.7",
+                  "5-4-3": "788.6",
+                  "5-4-6": "262.8",
+                  "5-6-1": "705.6",
+                  "5-6-2": "623.5",
+                  "5-6-3": "1218",
+                  "5-6-4": "335.1",
+                  "6-1-2": "352.8",
+                  "6-1-3": "304.7",
+                  "6-1-4": "130.1",
+                  "6-1-5": "812.5",
+                  "6-2-1": "670.3",
+                  "6-2-3": "837.9",
+                  "6-2-4": "558.6",
+                  "6-2-5": "766.1",
+                  "6-3-1": "570.5",
+                  "6-3-2": "766.1",
+                  "6-3-4": "462.3",
+                  "6-3-5": "1276",
+                  "6-4-1": "122.4",
+                  "6-4-2": "276.4",
+                  "6-4-3": "446.9",
+                  "6-4-5": "319.2",
+                  "6-5-1": "1340",
+                  "6-5-2": "744.8",
+                  "6-5-3": "1340",
+                  "6-5-4": "406.2"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:55.959230+09:00",
+                "values": {
+                  "1-2-3": "4.3",
+                  "1-2-4": "3.6",
+                  "1-2-5": "59.2",
+                  "1-2-6": "17.1",
+                  "1-3-4": "5.7",
+                  "1-3-5": "19.7",
+                  "1-3-6": "28.3",
+                  "1-4-5": "14.8",
+                  "1-4-6": "4.0",
+                  "1-5-6": "46.5",
+                  "2-3-4": "54.3",
+                  "2-3-5": "65.1",
+                  "2-3-6": "0.0",
+                  "2-4-5": "40.7",
+                  "2-4-6": "25.0",
+                  "2-5-6": "217.2",
+                  "3-4-5": "651.7",
+                  "3-4-6": "46.5",
+                  "3-5-6": "217.2",
+                  "4-5-6": "34.3"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:56.942343+09:00",
+                "values": {
+                  "1-2": "9.0",
+                  "1-3": "7.9",
+                  "1-4": "2.8",
+                  "1-5": "34.1",
+                  "1-6": "14.1",
+                  "2-1": "30.5",
+                  "2-3": "193.2",
+                  "2-4": "34.1",
+                  "2-5": "57.9",
+                  "2-6": "193.2",
+                  "3-1": "38.6",
+                  "3-2": "96.6",
+                  "3-4": "48.3",
+                  "3-5": "82.8",
+                  "3-6": "96.6",
+                  "4-1": "5.4",
+                  "4-2": "21.4",
+                  "4-3": "36.2",
+                  "4-5": "15.2",
+                  "4-6": "12.8",
+                  "5-1": "115.9",
+                  "5-2": "193.2",
+                  "5-3": "0.0",
+                  "5-4": "193.2",
+                  "5-6": "193.2",
+                  "6-1": "57.9",
+                  "6-2": "144.9",
+                  "6-3": "72.4",
+                  "6-4": "115.9",
+                  "6-5": "289.8"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:56.942343+09:00",
+                "values": {
+                  "1-2": "7.6",
+                  "1-3": "8.8",
+                  "1-4": "1.5",
+                  "1-5": "53.2",
+                  "1-6": "9.2",
+                  "2-3": "213.0",
+                  "2-4": "23.6",
+                  "2-5": "213.0",
+                  "2-6": "53.2",
+                  "3-4": "42.6",
+                  "3-5": "106.5",
+                  "3-6": "53.2",
+                  "4-5": "15.2",
+                  "4-6": "8.5",
+                  "5-6": "106.5"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:57.979737+09:00",
+                "values": {
+                  "1-2": "2.3-4.4",
+                  "1-3": "0.0-0.0",
+                  "1-4": "1.7-2.5",
+                  "1-5": "12.2-41.2",
+                  "1-6": "4.2-7.1",
+                  "2-3": "1.2-3.9",
+                  "2-4": "1.2-2.1",
+                  "2-5": "0.0-0.0",
+                  "2-6": "20.7-41.2",
+                  "3-4": "1.2-2.2",
+                  "3-5": "0.0-0.0",
+                  "3-6": "10.7-20.8",
+                  "4-5": "23.7-33.3",
+                  "4-6": "4.0-5.0",
+                  "5-6": "26.0-41.2"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:58.991834+09:00",
+                "values": {
+                  "1": "1.5",
+                  "2": "3.0",
+                  "3": "30.3",
+                  "4": "7.5",
+                  "5": "6.0",
+                  "6": "60.7"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:58.991834+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "0.0-0.0",
+                  "3": "0.0-0.0",
+                  "4": "1.0-10.8",
+                  "5": "0.0-0.0",
+                  "6": "0.0-0.0"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=08&rno=6",
+            "lastFetchedAt": "2026-08-10T12:56:59.958352+09:00"
+          }
         },
         {
           "number": 7,
@@ -4634,7 +6131,163 @@
               "boatPart": 67
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4794,
+                "name": "和田拓也"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 3814,
+                "name": "金子貴志"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 5033,
+                "name": "藤原孝斗"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 5209,
+                "name": "小野京平"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 3568,
+                "name": "木村光宏"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 4429,
+                "name": "豊田泰洋"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-2",
+                "payout": 1160,
+                "popularity": 4
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 210,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 500,
+                  "popularity": 3
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 390,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 170,
+                  "popularity": 2
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 160,
+                  "popularity": 1
+                },
+                {
+                  "combination": "2-4",
+                  "payout": 300,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-2",
+                  "payout": 1160,
+                  "popularity": 4
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 410,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4794,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5033,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5209,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3814,
+                "status": "02"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 3568,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4429,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:42.188214+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=09&rno=1"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:42.456798+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=09&rno=1"
+          }
         },
         {
           "number": 2,
@@ -4933,7 +6586,158 @@
               "boatPart": 68
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3692,
+                "name": "竹腰正樹"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 3505,
+                "name": "山田竜一"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 4656,
+                "name": "大崎翔"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 5259,
+                "name": "野田昇吾"
+              },
+              {
+                "position": 5,
+                "boatNumber": 3,
+                "racerNumber": 5101,
+                "name": "表健太"
+              },
+              {
+                "position": 6,
+                "boatNumber": 4,
+                "racerNumber": 4693,
+                "name": "松下誉士"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-2-5",
+                "payout": 550,
+                "popularity": 1
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 140,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-2",
+                  "payout": 330,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 180,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 120,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-5",
+                  "payout": 130,
+                  "popularity": 2
+                },
+                {
+                  "combination": "2-5",
+                  "payout": 130,
+                  "popularity": 3
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-2-5",
+                  "payout": 550,
+                  "popularity": 1
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-5",
+                  "payout": 270,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3692,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3505,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5101,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4693,
+                "status": "06"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4656,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5259,
+                "status": "04"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:53.056379+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=09&rno=3"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -5224,6 +7028,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=09&rno=3",
             "lastFetchedAt": "2026-08-10T11:00:09.585518+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:53.360259+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=09&rno=3"
           }
         },
         {
@@ -5737,7 +7546,298 @@
               "boatPart": 66
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:04.970059+09:00",
+                "values": {
+                  "1-2-3": "22.8",
+                  "1-2-4": "14.2",
+                  "1-2-5": "21.6",
+                  "1-2-6": "143.5",
+                  "1-3-2": "29.7",
+                  "1-3-4": "13.6",
+                  "1-3-5": "14.5",
+                  "1-3-6": "181.9",
+                  "1-4-2": "14.0",
+                  "1-4-3": "11.2",
+                  "1-4-5": "5.7",
+                  "1-4-6": "97.3",
+                  "1-5-2": "21.9",
+                  "1-5-3": "15.7",
+                  "1-5-4": "9.2",
+                  "1-5-6": "190.6",
+                  "1-6-2": "545.9",
+                  "1-6-3": "632.7",
+                  "1-6-4": "449.0",
+                  "1-6-5": "818.8",
+                  "2-1-3": "123.1",
+                  "2-1-4": "99.0",
+                  "2-1-5": "113.1",
+                  "2-1-6": "545.9",
+                  "2-3-1": "228.2",
+                  "2-3-4": "343.7",
+                  "2-3-5": "371.2",
+                  "2-3-6": "752.4",
+                  "2-4-1": "203.2",
+                  "2-4-3": "449.0",
+                  "2-4-5": "267.7",
+                  "2-4-6": "898.1",
+                  "2-5-1": "212.5",
+                  "2-5-3": "556.8",
+                  "2-5-4": "392.1",
+                  "2-5-6": "870.0",
+                  "2-6-1": "870.0",
+                  "2-6-3": "818.8",
+                  "2-6-4": "773.3",
+                  "2-6-5": "870.0",
+                  "3-1-2": "196.0",
+                  "3-1-4": "103.5",
+                  "3-1-5": "112.7",
+                  "3-1-6": "605.2",
+                  "3-2-1": "312.8",
+                  "3-2-4": "246.3",
+                  "3-2-5": "449.0",
+                  "3-2-6": "818.8",
+                  "3-4-1": "166.7",
+                  "3-4-2": "371.2",
+                  "3-4-5": "226.3",
+                  "3-4-6": "1210",
+                  "3-5-1": "246.3",
+                  "3-5-2": "352.4",
+                  "3-5-4": "320.0",
+                  "3-5-6": "1988",
+                  "3-6-1": "1070",
+                  "3-6-2": "1031",
+                  "3-6-4": "1265",
+                  "3-6-5": "1856",
+                  "4-1-2": "58.9",
+                  "4-1-3": "52.7",
+                  "4-1-5": "21.0",
+                  "4-1-6": "299.3",
+                  "4-2-1": "139.9",
+                  "4-2-3": "331.4",
+                  "4-2-5": "160.0",
+                  "4-2-6": "580.0",
+                  "4-3-1": "193.3",
+                  "4-3-2": "506.2",
+                  "4-3-5": "222.7",
+                  "4-3-6": "1070",
+                  "4-5-1": "32.6",
+                  "4-5-2": "111.3",
+                  "4-5-3": "122.6",
+                  "4-5-6": "220.9",
+                  "4-6-1": "1031",
+                  "4-6-2": "1070",
+                  "4-6-3": "1265",
+                  "4-6-5": "870.0",
+                  "5-1-2": "99.0",
+                  "5-1-3": "105.0",
+                  "5-1-4": "41.2",
+                  "5-1-6": "535.4",
+                  "5-2-1": "184.3",
+                  "5-2-3": "556.8",
+                  "5-2-4": "376.2",
+                  "5-2-6": "773.3",
+                  "5-3-1": "327.5",
+                  "5-3-2": "592.3",
+                  "5-3-4": "284.0",
+                  "5-3-6": "1856",
+                  "5-4-1": "57.1",
+                  "5-4-2": "235.9",
+                  "5-4-3": "226.3",
+                  "5-4-6": "464.0",
+                  "5-6-1": "1392",
+                  "5-6-2": "1740",
+                  "5-6-3": "2320",
+                  "5-6-4": "1265",
+                  "6-1-2": "1160",
+                  "6-1-3": "1031",
+                  "6-1-4": "1856",
+                  "6-1-5": "2531",
+                  "6-2-1": "1160",
+                  "6-2-3": "1740",
+                  "6-2-4": "1740",
+                  "6-2-5": "1856",
+                  "6-3-1": "1856",
+                  "6-3-2": "1988",
+                  "6-3-4": "2320",
+                  "6-3-5": "1988",
+                  "6-4-1": "1856",
+                  "6-4-2": "1325",
+                  "6-4-3": "3480",
+                  "6-4-5": "1546",
+                  "6-5-1": "3480",
+                  "6-5-2": "3093",
+                  "6-5-3": "4640",
+                  "6-5-4": "1392"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:06.018074+09:00",
+                "values": {
+                  "1-2-3": "9.9",
+                  "1-2-4": "6.7",
+                  "1-2-5": "12.3",
+                  "1-2-6": "88.5",
+                  "1-3-4": "4.5",
+                  "1-3-5": "8.7",
+                  "1-3-6": "162.2",
+                  "1-4-5": "2.1",
+                  "1-4-6": "42.3",
+                  "1-5-6": "48.6",
+                  "2-3-4": "38.9",
+                  "2-3-5": "139.0",
+                  "2-3-6": "243.3",
+                  "2-4-5": "30.4",
+                  "2-4-6": "486.7",
+                  "2-5-6": "243.3",
+                  "3-4-5": "23.1",
+                  "3-4-6": "324.5",
+                  "3-5-6": "194.7",
+                  "4-5-6": "69.5"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:07.017982+09:00",
+                "values": {
+                  "1-2": "7.9",
+                  "1-3": "5.8",
+                  "1-4": "3.6",
+                  "1-5": "3.3",
+                  "1-6": "42.9",
+                  "2-1": "27.8",
+                  "2-3": "128.8",
+                  "2-4": "49.0",
+                  "2-5": "79.2",
+                  "2-6": "1030",
+                  "3-1": "57.2",
+                  "3-2": "93.6",
+                  "3-4": "85.8",
+                  "3-5": "73.6",
+                  "3-6": "343.5",
+                  "4-1": "10.6",
+                  "4-2": "49.0",
+                  "4-3": "93.6",
+                  "4-5": "21.0",
+                  "4-6": "147.2",
+                  "5-1": "14.3",
+                  "5-2": "85.8",
+                  "5-3": "128.8",
+                  "5-4": "36.8",
+                  "5-6": "0.0",
+                  "6-1": "515.2",
+                  "6-2": "1030",
+                  "6-3": "515.2",
+                  "6-4": "343.5",
+                  "6-5": "0.0"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:07.017982+09:00",
+                "values": {
+                  "1-2": "5.4",
+                  "1-3": "6.1",
+                  "1-4": "2.6",
+                  "1-5": "3.8",
+                  "1-6": "59.7",
+                  "2-3": "11.9",
+                  "2-4": "29.8",
+                  "2-5": "35.8",
+                  "2-6": "0.0",
+                  "3-4": "35.8",
+                  "3-5": "25.6",
+                  "3-6": "0.0",
+                  "4-5": "10.5",
+                  "4-6": "59.7",
+                  "5-6": "89.6"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:07.958002+09:00",
+                "values": {
+                  "1-2": "2.3-3.1",
+                  "1-3": "2.5-3.5",
+                  "1-4": "1.1-1.3",
+                  "1-5": "1.6-2.6",
+                  "1-6": "17.0-21.8",
+                  "2-3": "10.1-12.0",
+                  "2-4": "6.3-9.7",
+                  "2-5": "5.7-7.0",
+                  "2-6": "21.5-23.2",
+                  "3-4": "3.1-4.7",
+                  "3-5": "4.8-6.2",
+                  "3-6": "43.0-45.7",
+                  "4-5": "1.2-1.7",
+                  "4-6": "33.2-45.5",
+                  "5-6": "13.0-15.3"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:08.912333+09:00",
+                "values": {
+                  "1": "1.0",
+                  "2": "9.7",
+                  "3": "0.0",
+                  "4": "0.0",
+                  "5": "0.0",
+                  "6": "19.5"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:08.912333+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "1.3-12.3",
+                  "3": "0.0-0.0",
+                  "4": "2.2-24.7",
+                  "5": "2.2-24.7",
+                  "6": "2.2-24.7"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=09&rno=6",
+            "lastFetchedAt": "2026-08-10T12:57:09.871108+09:00"
+          }
         },
         {
           "number": 7,
@@ -6301,7 +8401,163 @@
               "boatPart": 57
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4965,
+                "name": "福岡泉水"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 5273,
+                "name": "山下拓巳"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 4633,
+                "name": "森智也"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 4105,
+                "name": "松下直也"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 5470,
+                "name": "坂口諒宗"
+              },
+              {
+                "position": 6,
+                "boatNumber": 2,
+                "racerNumber": 3828,
+                "name": "明石正之"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-3-5",
+                "payout": 1860,
+                "popularity": 6
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 130,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 160,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 340,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-3",
+                  "payout": 760,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 600,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 180,
+                  "popularity": 2
+                },
+                {
+                  "combination": "1-5",
+                  "payout": 380,
+                  "popularity": 5
+                },
+                {
+                  "combination": "3-5",
+                  "payout": 210,
+                  "popularity": 3
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-3-5",
+                  "payout": 1860,
+                  "popularity": 6
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-5",
+                  "payout": 700,
+                  "popularity": 5
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4965,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3828,
+                "status": "06"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5273,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5470,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4633,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4105,
+                "status": "04"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:44.339356+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=13&rno=1"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:44.648668+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=13&rno=1"
+          }
         },
         {
           "number": 2,
@@ -6891,7 +9147,163 @@
               "boatPart": 39
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 6,
+                "racerNumber": 5126,
+                "name": "山下大輝"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 4381,
+                "name": "田路朋史"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 4735,
+                "name": "角山雄哉"
+              },
+              {
+                "position": 4,
+                "boatNumber": 4,
+                "racerNumber": 5456,
+                "name": "今村天次朗"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 5324,
+                "name": "畑田希咲"
+              },
+              {
+                "position": 6,
+                "boatNumber": 1,
+                "racerNumber": 5386,
+                "name": "米玉利大悟"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "6-3-2",
+                "payout": 1090,
+                "popularity": 2
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "6",
+                  "payout": 320,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "6",
+                  "payout": 110,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "6-3",
+                  "payout": 500,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "3-6",
+                  "payout": 330,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "3-6",
+                  "payout": 110,
+                  "popularity": 1
+                },
+                {
+                  "combination": "2-6",
+                  "payout": 110,
+                  "popularity": 2
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 140,
+                  "popularity": 3
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "6-3-2",
+                  "payout": 1090,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "2-3-6",
+                  "payout": 210,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 5386,
+                "status": "06"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4735,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4381,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5456,
+                "status": "04"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5324,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5126,
+                "status": "01"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:54.160552+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=13&rno=3"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:54.452783+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=13&rno=3"
+          }
         },
         {
           "number": 4,
@@ -7478,7 +9890,298 @@
               "boatPart": 25
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:29.436225+09:00",
+                "values": {
+                  "1-2-3": "23.4",
+                  "1-2-4": "47.5",
+                  "1-2-5": "145.2",
+                  "1-2-6": "130.9",
+                  "1-3-2": "21.7",
+                  "1-3-4": "4.3",
+                  "1-3-5": "44.1",
+                  "1-3-6": "31.4",
+                  "1-4-2": "21.5",
+                  "1-4-3": "3.6",
+                  "1-4-5": "82.3",
+                  "1-4-6": "37.6",
+                  "1-5-2": "124.7",
+                  "1-5-3": "82.3",
+                  "1-5-4": "173.6",
+                  "1-5-6": "399.3",
+                  "1-6-2": "133.1",
+                  "1-6-3": "76.7",
+                  "1-6-4": "124.7",
+                  "1-6-5": "726.0",
+                  "2-1-3": "114.0",
+                  "2-1-4": "215.8",
+                  "2-1-5": "156.5",
+                  "2-1-6": "249.5",
+                  "2-3-1": "153.5",
+                  "2-3-4": "275.3",
+                  "2-3-5": "210.1",
+                  "2-3-6": "347.2",
+                  "2-4-1": "249.5",
+                  "2-4-3": "443.6",
+                  "2-4-5": "443.6",
+                  "2-4-6": "257.6",
+                  "2-5-1": "194.7",
+                  "2-5-3": "570.4",
+                  "2-5-4": "249.5",
+                  "2-5-6": "798.6",
+                  "2-6-1": "570.4",
+                  "2-6-3": "726.0",
+                  "2-6-4": "266.2",
+                  "2-6-5": "798.6",
+                  "3-1-2": "73.2",
+                  "3-1-4": "28.6",
+                  "3-1-5": "147.8",
+                  "3-1-6": "142.6",
+                  "3-2-1": "135.3",
+                  "3-2-4": "102.3",
+                  "3-2-5": "242.0",
+                  "3-2-6": "194.7",
+                  "3-4-1": "36.6",
+                  "3-4-2": "147.8",
+                  "3-4-5": "249.5",
+                  "3-4-6": "177.4",
+                  "3-5-1": "199.6",
+                  "3-5-2": "142.6",
+                  "3-5-4": "234.8",
+                  "3-5-6": "570.4",
+                  "3-6-1": "228.1",
+                  "3-6-2": "380.2",
+                  "3-6-4": "347.2",
+                  "3-6-5": "726.0",
+                  "4-1-2": "54.6",
+                  "4-1-3": "15.8",
+                  "4-1-5": "190.1",
+                  "4-1-6": "64.4",
+                  "4-2-1": "173.6",
+                  "4-2-3": "190.1",
+                  "4-2-5": "266.2",
+                  "4-2-6": "228.1",
+                  "4-3-1": "29.5",
+                  "4-3-2": "181.5",
+                  "4-3-5": "228.1",
+                  "4-3-6": "199.6",
+                  "4-5-1": "153.5",
+                  "4-5-2": "469.7",
+                  "4-5-3": "307.1",
+                  "4-5-6": "443.6",
+                  "4-6-1": "257.6",
+                  "4-6-2": "532.4",
+                  "4-6-3": "399.3",
+                  "4-6-5": "532.4",
+                  "5-1-2": "173.6",
+                  "5-1-3": "307.1",
+                  "5-1-4": "347.2",
+                  "5-1-6": "570.4",
+                  "5-2-1": "199.6",
+                  "5-2-3": "319.4",
+                  "5-2-4": "532.4",
+                  "5-2-6": "665.5",
+                  "5-3-1": "332.7",
+                  "5-3-2": "532.4",
+                  "5-3-4": "347.2",
+                  "5-3-6": "420.3",
+                  "5-4-1": "266.2",
+                  "5-4-2": "614.3",
+                  "5-4-3": "570.4",
+                  "5-4-6": "420.3",
+                  "5-6-1": "726.0",
+                  "5-6-2": "998.2",
+                  "5-6-3": "998.2",
+                  "5-6-4": "726.0",
+                  "6-1-2": "420.3",
+                  "6-1-3": "347.2",
+                  "6-1-4": "570.4",
+                  "6-1-5": "1140",
+                  "6-2-1": "1597",
+                  "6-2-3": "532.4",
+                  "6-2-4": "887.3",
+                  "6-2-5": "887.3",
+                  "6-3-1": "998.2",
+                  "6-3-2": "1140",
+                  "6-3-4": "798.6",
+                  "6-3-5": "614.3",
+                  "6-4-1": "726.0",
+                  "6-4-2": "469.7",
+                  "6-4-3": "614.3",
+                  "6-4-5": "726.0",
+                  "6-5-1": "570.4",
+                  "6-5-2": "1140",
+                  "6-5-3": "998.2",
+                  "6-5-4": "614.3"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:30.395820+09:00",
+                "values": {
+                  "1-2-3": "9.5",
+                  "1-2-4": "12.2",
+                  "1-2-5": "85.7",
+                  "1-2-6": "85.7",
+                  "1-3-4": "1.1",
+                  "1-3-5": "42.8",
+                  "1-3-6": "42.8",
+                  "1-4-5": "25.7",
+                  "1-4-6": "21.4",
+                  "1-5-6": "257.2",
+                  "2-3-4": "36.7",
+                  "2-3-5": "85.7",
+                  "2-3-6": "257.2",
+                  "2-4-5": "23.3",
+                  "2-4-6": "128.6",
+                  "2-5-6": "0.0",
+                  "3-4-5": "257.2",
+                  "3-4-6": "51.4",
+                  "3-5-6": "257.2",
+                  "4-5-6": "257.2"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:31.398841+09:00",
+                "values": {
+                  "1-2": "17.0",
+                  "1-3": "2.1",
+                  "1-4": "4.6",
+                  "1-5": "24.3",
+                  "1-6": "21.2",
+                  "2-1": "15.4",
+                  "2-3": "170.2",
+                  "2-4": "24.3",
+                  "2-5": "85.1",
+                  "2-6": "0.0",
+                  "3-1": "17.0",
+                  "3-2": "0.0",
+                  "3-4": "17.0",
+                  "3-5": "0.0",
+                  "3-6": "170.2",
+                  "4-1": "10.6",
+                  "4-2": "21.2",
+                  "4-3": "24.3",
+                  "4-5": "85.1",
+                  "4-6": "85.1",
+                  "5-1": "85.1",
+                  "5-2": "170.2",
+                  "5-3": "0.0",
+                  "5-4": "170.2",
+                  "5-6": "0.0",
+                  "6-1": "170.2",
+                  "6-2": "170.2",
+                  "6-3": "85.1",
+                  "6-4": "0.0",
+                  "6-5": "0.0"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:31.398841+09:00",
+                "values": {
+                  "1-2": "17.2",
+                  "1-3": "1.6",
+                  "1-4": "3.8",
+                  "1-5": "23.0",
+                  "1-6": "34.5",
+                  "2-3": "23.0",
+                  "2-4": "17.2",
+                  "2-5": "0.0",
+                  "2-6": "69.0",
+                  "3-4": "11.5",
+                  "3-5": "34.5",
+                  "3-6": "69.0",
+                  "4-5": "17.2",
+                  "4-6": "69.0",
+                  "5-6": "69.0"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:32.380841+09:00",
+                "values": {
+                  "1-2": "2.1-2.8",
+                  "1-3": "2.2-4.0",
+                  "1-4": "1.3-1.4",
+                  "1-5": "7.7-10.0",
+                  "1-6": "7.5-13.8",
+                  "2-3": "1.8-2.8",
+                  "2-4": "2.1-2.8",
+                  "2-5": "4.6-5.2",
+                  "2-6": "9.0-13.1",
+                  "3-4": "3.7-7.5",
+                  "3-5": "8.5-15.0",
+                  "3-6": "0.0-0.0",
+                  "4-5": "7.7-9.7",
+                  "4-6": "4.1-7.5",
+                  "5-6": "9.7-15.0"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:33.316268+09:00",
+                "values": {
+                  "1": "1.0",
+                  "2": "0.0",
+                  "3": "0.0",
+                  "4": "0.0",
+                  "5": "0.0",
+                  "6": "7.5"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:33.316268+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "0.0-0.0",
+                  "3": "0.0-0.0",
+                  "4": "0.0-0.0",
+                  "5": "0.0-0.0",
+                  "6": "1.0-2.6"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=13&rno=7",
+            "lastFetchedAt": "2026-08-10T12:57:34.245235+09:00"
+          }
         },
         {
           "number": 8,
@@ -8169,7 +10872,163 @@
               "boatPart": 51
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 3,
+                "racerNumber": 4596,
+                "name": "葛原大陽"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 3584,
+                "name": "佐々木英樹"
+              },
+              {
+                "position": 3,
+                "boatNumber": 6,
+                "racerNumber": 5016,
+                "name": "宮田龍馬"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 4343,
+                "name": "村岡賢"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 3458,
+                "name": "東健介"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5423,
+                "name": "高橋嗣穏"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "3-1-6",
+                "payout": 1200,
+                "popularity": 2
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "3",
+                  "payout": 170,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "3",
+                  "payout": 200,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 190,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "3-1",
+                  "payout": 910,
+                  "popularity": 5
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 320,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 130,
+                  "popularity": 1
+                },
+                {
+                  "combination": "3-6",
+                  "payout": 180,
+                  "popularity": 3
+                },
+                {
+                  "combination": "1-6",
+                  "payout": 170,
+                  "popularity": 2
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "3-1-6",
+                  "payout": 1200,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-6",
+                  "payout": 260,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3584,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4343,
+                "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4596,
+                "status": "01"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3458,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5423,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5016,
+                "status": "03"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:39.001548+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=14&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:39.242860+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=14&rno=2"
+          }
         },
         {
           "number": 3,
@@ -8243,7 +11102,158 @@
               "boatPart": 70
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3853,
+                "name": "岩崎正哉"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 4839,
+                "name": "四宮与寛"
+              },
+              {
+                "position": 3,
+                "boatNumber": 6,
+                "racerNumber": 3282,
+                "name": "池本輝明"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 3477,
+                "name": "近藤稔也"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 4374,
+                "name": "永田義紘"
+              },
+              {
+                "position": 6,
+                "boatNumber": 2,
+                "racerNumber": 4865,
+                "name": "立具敬司"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-6",
+                "payout": 2130,
+                "popularity": 9
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 150,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 320,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 170,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 130,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-6",
+                  "payout": 850,
+                  "popularity": 12
+                },
+                {
+                  "combination": "4-6",
+                  "payout": 520,
+                  "popularity": 8
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-6",
+                  "payout": 2130,
+                  "popularity": 9
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-4-6",
+                  "payout": 760,
+                  "popularity": 4
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3853,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4865,
+                "status": "06"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3477,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4839,
+                "status": "02"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4374,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3282,
+                "status": "03"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:49.818228+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=14&rno=3"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -8534,6 +11544,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=14&rno=3",
             "lastFetchedAt": "2026-08-10T09:25:03.209046+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:50.098469+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=14&rno=3"
           }
         },
         {
@@ -9785,7 +12800,298 @@
               "boatPart": 67
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:14.669394+09:00",
+                "values": {
+                  "1-2-3": "13.0",
+                  "1-2-4": "22.5",
+                  "1-2-5": "22.6",
+                  "1-2-6": "69.9",
+                  "1-3-2": "11.7",
+                  "1-3-4": "14.5",
+                  "1-3-5": "10.8",
+                  "1-3-6": "40.1",
+                  "1-4-2": "31.2",
+                  "1-4-3": "26.3",
+                  "1-4-5": "32.8",
+                  "1-4-6": "52.3",
+                  "1-5-2": "36.7",
+                  "1-5-3": "23.9",
+                  "1-5-4": "43.8",
+                  "1-5-6": "75.4",
+                  "1-6-2": "138.8",
+                  "1-6-3": "150.5",
+                  "1-6-4": "112.7",
+                  "1-6-5": "167.3",
+                  "2-1-3": "58.5",
+                  "2-1-4": "78.7",
+                  "2-1-5": "92.9",
+                  "2-1-6": "159.8",
+                  "2-3-1": "102.1",
+                  "2-3-4": "222.0",
+                  "2-3-5": "179.8",
+                  "2-3-6": "386.7",
+                  "2-4-1": "165.7",
+                  "2-4-3": "330.0",
+                  "2-4-5": "315.5",
+                  "2-4-6": "352.6",
+                  "2-5-1": "181.6",
+                  "2-5-3": "278.8",
+                  "2-5-4": "312.7",
+                  "2-5-6": "562.0",
+                  "2-6-1": "378.6",
+                  "2-6-3": "765.3",
+                  "2-6-4": "513.8",
+                  "2-6-5": "946.5",
+                  "3-1-2": "46.5",
+                  "3-1-4": "36.0",
+                  "3-1-5": "27.1",
+                  "3-1-6": "81.9",
+                  "3-2-1": "98.0",
+                  "3-2-4": "120.7",
+                  "3-2-5": "117.1",
+                  "3-2-6": "243.0",
+                  "3-4-1": "70.5",
+                  "3-4-2": "136.7",
+                  "3-4-5": "75.7",
+                  "3-4-6": "158.4",
+                  "3-5-1": "56.1",
+                  "3-5-2": "103.6",
+                  "3-5-4": "88.5",
+                  "3-5-6": "138.3",
+                  "3-6-1": "179.8",
+                  "3-6-2": "307.4",
+                  "3-6-4": "233.5",
+                  "3-6-5": "262.5",
+                  "4-1-2": "78.0",
+                  "4-1-3": "65.8",
+                  "4-1-5": "55.8",
+                  "4-1-6": "105.4",
+                  "4-2-1": "163.5",
+                  "4-2-3": "226.2",
+                  "4-2-5": "157.7",
+                  "4-2-6": "209.1",
+                  "4-3-1": "107.6",
+                  "4-3-2": "196.5",
+                  "4-3-5": "100.4",
+                  "4-3-6": "203.2",
+                  "4-5-1": "59.2",
+                  "4-5-2": "120.7",
+                  "4-5-3": "113.8",
+                  "4-5-6": "102.4",
+                  "4-6-1": "200.9",
+                  "4-6-2": "249.7",
+                  "4-6-3": "342.5",
+                  "4-6-5": "260.6",
+                  "5-1-2": "121.9",
+                  "5-1-3": "75.8",
+                  "5-1-4": "129.3",
+                  "5-1-6": "163.5",
+                  "5-2-1": "255.1",
+                  "5-2-3": "318.3",
+                  "5-2-4": "352.6",
+                  "5-2-6": "631.0",
+                  "5-3-1": "104.8",
+                  "5-3-2": "226.2",
+                  "5-3-4": "166.5",
+                  "5-3-6": "327.0",
+                  "5-4-1": "136.7",
+                  "5-4-2": "253.3",
+                  "5-4-3": "189.3",
+                  "5-4-6": "160.5",
+                  "5-6-1": "418.2",
+                  "5-6-2": "609.6",
+                  "5-6-3": "513.8",
+                  "5-6-4": "433.3",
+                  "6-1-2": "599.5",
+                  "6-1-3": "521.3",
+                  "6-1-4": "599.5",
+                  "6-1-5": "1160",
+                  "6-2-1": "817.5",
+                  "6-2-3": "1090",
+                  "6-2-4": "691.7",
+                  "6-2-5": "1563",
+                  "6-3-1": "734.0",
+                  "6-3-2": "899.2",
+                  "6-3-4": "570.9",
+                  "6-3-5": "1199",
+                  "6-4-1": "654.0",
+                  "6-4-2": "609.6",
+                  "6-4-3": "536.8",
+                  "6-4-5": "1284",
+                  "6-5-1": "1057",
+                  "6-5-2": "1498",
+                  "6-5-3": "922.3",
+                  "6-5-4": "1090"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:15.637780+09:00",
+                "values": {
+                  "1-2-3": "6.1",
+                  "1-2-4": "14.8",
+                  "1-2-5": "11.0",
+                  "1-2-6": "28.7",
+                  "1-3-4": "6.3",
+                  "1-3-5": "3.1",
+                  "1-3-6": "22.5",
+                  "1-4-5": "13.5",
+                  "1-4-6": "31.6",
+                  "1-5-6": "27.9",
+                  "2-3-4": "27.9",
+                  "2-3-5": "18.9",
+                  "2-3-6": "63.2",
+                  "2-4-5": "45.1",
+                  "2-4-6": "63.2",
+                  "2-5-6": "86.2",
+                  "3-4-5": "19.7",
+                  "3-4-6": "37.9",
+                  "3-5-6": "15.8",
+                  "4-5-6": "36.4"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:16.671161+09:00",
+                "values": {
+                  "1-2": "5.6",
+                  "1-3": "4.2",
+                  "1-4": "10.0",
+                  "1-5": "10.0",
+                  "1-6": "35.1",
+                  "2-1": "24.8",
+                  "2-3": "48.5",
+                  "2-4": "84.9",
+                  "2-5": "63.7",
+                  "2-6": "203.8",
+                  "3-1": "10.7",
+                  "3-2": "30.8",
+                  "3-4": "27.5",
+                  "3-5": "15.9",
+                  "3-6": "20.3",
+                  "4-1": "24.8",
+                  "4-2": "53.6",
+                  "4-3": "29.9",
+                  "4-5": "29.1",
+                  "4-6": "32.8",
+                  "5-1": "32.8",
+                  "5-2": "56.6",
+                  "5-3": "33.9",
+                  "5-4": "37.7",
+                  "5-6": "67.9",
+                  "6-1": "145.6",
+                  "6-2": "254.8",
+                  "6-3": "59.9",
+                  "6-4": "50.9",
+                  "6-5": "203.8"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:16.671161+09:00",
+                "values": {
+                  "1-2": "4.7",
+                  "1-3": "4.3",
+                  "1-4": "5.3",
+                  "1-5": "7.3",
+                  "1-6": "31.8",
+                  "2-3": "15.9",
+                  "2-4": "31.8",
+                  "2-5": "31.8",
+                  "2-6": "31.8",
+                  "3-4": "8.6",
+                  "3-5": "11.2",
+                  "3-6": "21.2",
+                  "4-5": "13.6",
+                  "4-6": "23.9",
+                  "5-6": "63.7"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:17.619748+09:00",
+                "values": {
+                  "1-2": "1.7-1.9",
+                  "1-3": "2.8-3.5",
+                  "1-4": "1.9-2.1",
+                  "1-5": "2.4-2.9",
+                  "1-6": "7.6-8.4",
+                  "2-3": "3.5-4.3",
+                  "2-4": "8.0-11.1",
+                  "2-5": "3.4-4.3",
+                  "2-6": "12.2-14.5",
+                  "3-4": "3.9-4.7",
+                  "3-5": "1.9-2.2",
+                  "3-6": "12.8-14.0",
+                  "4-5": "3.2-4.0",
+                  "4-6": "12.6-14.5",
+                  "5-6": "12.8-14.0"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:18.708355+09:00",
+                "values": {
+                  "1": "1.6",
+                  "2": "8.2",
+                  "3": "2.7",
+                  "4": "8.2",
+                  "5": "0.0",
+                  "6": "8.2"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:18.708355+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "4.8-12.3",
+                  "3": "1.5-3.4",
+                  "4": "2.6-6.5",
+                  "5": "1.8-4.5",
+                  "6": "2.6-6.5"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=14&rno=10",
+            "lastFetchedAt": "2026-08-10T12:57:19.647309+09:00"
+          }
         },
         {
           "number": 11,
@@ -11164,7 +14470,158 @@
               "boatPart": 47
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 5,
+                "racerNumber": 4410,
+                "name": "井上大輔"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 4909,
+                "name": "薮内瑞希"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 5181,
+                "name": "森智哉"
+              },
+              {
+                "position": 4,
+                "boatNumber": 4,
+                "racerNumber": 4173,
+                "name": "岡谷健吾"
+              },
+              {
+                "position": 5,
+                "boatNumber": 3,
+                "racerNumber": 3746,
+                "name": "岡瀬正人"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5109,
+                "name": "川崎智稔"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "5-1-2",
+                "payout": 32990,
+                "popularity": 88
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "5",
+                  "payout": 4750,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "5",
+                  "payout": 310,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 150,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "5-1",
+                  "payout": 5510,
+                  "popularity": 18
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-5",
+                  "payout": 1570,
+                  "popularity": 8
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-5",
+                  "payout": 370,
+                  "popularity": 7
+                },
+                {
+                  "combination": "2-5",
+                  "payout": 590,
+                  "popularity": 9
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 920,
+                  "popularity": 13
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "5-1-2",
+                  "payout": 32990,
+                  "popularity": 88
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-5",
+                  "payout": 1920,
+                  "popularity": 8
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4909,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5181,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3746,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4173,
+                "status": "04"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4410,
+                "status": "01"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5109,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:46.526971+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=16&rno=2"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -11455,6 +14912,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=16&rno=2",
             "lastFetchedAt": "2026-08-10T11:00:04.916936+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:46.831220+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=16&rno=2"
           }
         },
         {
@@ -11968,7 +15430,298 @@
               "boatPart": 31
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:49.906110+09:00",
+                "values": {
+                  "1-2-3": "13.8",
+                  "1-2-4": "16.1",
+                  "1-2-5": "20.8",
+                  "1-2-6": "12.7",
+                  "1-3-2": "21.0",
+                  "1-3-4": "27.4",
+                  "1-3-5": "37.0",
+                  "1-3-6": "17.9",
+                  "1-4-2": "22.4",
+                  "1-4-3": "33.1",
+                  "1-4-5": "32.2",
+                  "1-4-6": "20.1",
+                  "1-5-2": "35.8",
+                  "1-5-3": "60.3",
+                  "1-5-4": "43.7",
+                  "1-5-6": "30.9",
+                  "1-6-2": "24.0",
+                  "1-6-3": "33.3",
+                  "1-6-4": "34.0",
+                  "1-6-5": "38.2",
+                  "2-1-3": "62.5",
+                  "2-1-4": "65.5",
+                  "2-1-5": "73.7",
+                  "2-1-6": "64.5",
+                  "2-3-1": "179.3",
+                  "2-3-4": "335.6",
+                  "2-3-5": "435.3",
+                  "2-3-6": "387.6",
+                  "2-4-1": "167.3",
+                  "2-4-3": "339.4",
+                  "2-4-5": "316.2",
+                  "2-4-6": "267.0",
+                  "2-5-1": "158.1",
+                  "2-5-3": "417.2",
+                  "2-5-4": "366.3",
+                  "2-5-6": "301.9",
+                  "2-6-1": "164.6",
+                  "2-6-3": "429.1",
+                  "2-6-4": "359.7",
+                  "2-6-5": "377.8",
+                  "3-1-2": "127.0",
+                  "3-1-4": "111.4",
+                  "3-1-5": "156.8",
+                  "3-1-6": "114.6",
+                  "3-2-1": "174.6",
+                  "3-2-4": "275.6",
+                  "3-2-5": "438.5",
+                  "3-2-6": "400.5",
+                  "3-4-1": "294.5",
+                  "3-4-2": "300.4",
+                  "3-4-5": "572.2",
+                  "3-4-6": "392.6",
+                  "3-5-1": "308.1",
+                  "3-5-2": "330.1",
+                  "3-5-4": "465.7",
+                  "3-5-6": "462.1",
+                  "3-6-1": "240.3",
+                  "3-6-2": "441.7",
+                  "3-6-4": "405.9",
+                  "3-6-5": "572.2",
+                  "4-1-2": "67.2",
+                  "4-1-3": "127.5",
+                  "4-1-5": "70.9",
+                  "4-1-6": "57.0",
+                  "4-2-1": "161.5",
+                  "4-2-3": "387.6",
+                  "4-2-5": "234.6",
+                  "4-2-6": "217.6",
+                  "4-3-1": "349.3",
+                  "4-3-2": "600.8",
+                  "4-3-5": "594.8",
+                  "4-3-6": "445.0",
+                  "4-5-1": "97.5",
+                  "4-5-2": "146.5",
+                  "4-5-3": "295.9",
+                  "4-5-6": "84.7",
+                  "4-6-1": "90.7",
+                  "4-6-2": "162.8",
+                  "4-6-3": "273.0",
+                  "4-6-5": "107.6",
+                  "5-1-2": "95.8",
+                  "5-1-3": "218.4",
+                  "5-1-4": "127.5",
+                  "5-1-6": "78.0",
+                  "5-2-1": "167.8",
+                  "5-2-3": "531.6",
+                  "5-2-4": "351.3",
+                  "5-2-6": "247.2",
+                  "5-3-1": "385.1",
+                  "5-3-2": "653.0",
+                  "5-3-4": "846.2",
+                  "5-3-6": "594.8",
+                  "5-4-1": "146.5",
+                  "5-4-2": "201.6",
+                  "5-4-3": "480.6",
+                  "5-4-6": "152.1",
+                  "5-6-1": "99.1",
+                  "5-6-2": "184.2",
+                  "5-6-3": "364.1",
+                  "5-6-4": "190.1",
+                  "6-1-2": "87.9",
+                  "6-1-3": "114.2",
+                  "6-1-4": "163.7",
+                  "6-1-5": "129.7",
+                  "6-2-1": "183.1",
+                  "6-2-3": "462.1",
+                  "6-2-4": "403.2",
+                  "6-2-5": "341.3",
+                  "6-3-1": "286.1",
+                  "6-3-2": "509.1",
+                  "6-3-4": "660.2",
+                  "6-3-5": "639.1",
+                  "6-4-1": "220.8",
+                  "6-4-2": "385.1",
+                  "6-4-3": "600.8",
+                  "6-4-5": "283.4",
+                  "6-5-1": "167.3",
+                  "6-5-2": "268.2",
+                  "6-5-3": "500.6",
+                  "6-5-4": "241.2"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:51.096710+09:00",
+                "values": {
+                  "1-2-3": "6.7",
+                  "1-2-4": "13.8",
+                  "1-2-5": "10.4",
+                  "1-2-6": "4.3",
+                  "1-3-4": "18.9",
+                  "1-3-5": "7.6",
+                  "1-3-6": "4.5",
+                  "1-4-5": "16.0",
+                  "1-4-6": "10.1",
+                  "1-5-6": "15.1",
+                  "2-3-4": "60.0",
+                  "2-3-5": "80.1",
+                  "2-3-6": "46.5",
+                  "2-4-5": "62.7",
+                  "2-4-6": "68.6",
+                  "2-5-6": "60.0",
+                  "3-4-5": "96.1",
+                  "3-4-6": "72.1",
+                  "3-5-6": "84.8",
+                  "4-5-6": "37.9"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:52.089739+09:00",
+                "values": {
+                  "1-2": "4.8",
+                  "1-3": "5.8",
+                  "1-4": "11.8",
+                  "1-5": "8.1",
+                  "1-6": "8.6",
+                  "2-1": "17.6",
+                  "2-3": "47.7",
+                  "2-4": "75.4",
+                  "2-5": "79.6",
+                  "2-6": "59.7",
+                  "3-1": "22.3",
+                  "3-2": "38.7",
+                  "3-4": "46.2",
+                  "3-5": "47.7",
+                  "3-6": "79.6",
+                  "4-1": "21.0",
+                  "4-2": "44.7",
+                  "4-3": "51.1",
+                  "4-5": "21.7",
+                  "4-6": "27.0",
+                  "5-1": "29.2",
+                  "5-2": "75.4",
+                  "5-3": "95.5",
+                  "5-4": "33.3",
+                  "5-6": "40.9",
+                  "6-1": "23.4",
+                  "6-2": "84.3",
+                  "6-3": "75.4",
+                  "6-4": "55.1",
+                  "6-5": "62.3"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:52.089739+09:00",
+                "values": {
+                  "1-2": "2.2",
+                  "1-3": "6.9",
+                  "1-4": "8.3",
+                  "1-5": "9.8",
+                  "1-6": "5.8",
+                  "2-3": "34.8",
+                  "2-4": "27.3",
+                  "2-5": "17.4",
+                  "2-6": "27.3",
+                  "3-4": "38.3",
+                  "3-5": "22.5",
+                  "3-6": "54.7",
+                  "4-5": "29.4",
+                  "4-6": "31.9",
+                  "5-6": "31.9"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:53.030552+09:00",
+                "values": {
+                  "1-2": "2.5-2.6",
+                  "1-3": "2.0-2.2",
+                  "1-4": "1.9-2.0",
+                  "1-5": "2.6-2.6",
+                  "1-6": "2.1-2.2",
+                  "2-3": "2.9-3.5",
+                  "2-4": "5.3-6.4",
+                  "2-5": "4.5-5.3",
+                  "2-6": "8.4-9.8",
+                  "3-4": "3.5-4.6",
+                  "3-5": "13.5-16.4",
+                  "3-6": "6.8-8.5",
+                  "4-5": "13.3-16.1",
+                  "4-6": "3.1-3.9",
+                  "5-6": "7.0-8.5"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:53.990524+09:00",
+                "values": {
+                  "1": "1.2",
+                  "2": "7.1",
+                  "3": "4.1",
+                  "4": "12.5",
+                  "5": "25.1",
+                  "6": "25.1"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:55:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:56:53.990524+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "2.1-7.7",
+                  "3": "2.1-7.7",
+                  "4": "1.2-4.0",
+                  "5": "5.6-22.5",
+                  "6": "5.6-22.5"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=16&rno=5",
+            "lastFetchedAt": "2026-08-10T12:56:54.966721+09:00"
+          }
         },
         {
           "number": 6,
@@ -12591,7 +16344,163 @@
               "boatPart": 62
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4974,
+                "name": "安井瑞紀"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 4117,
+                "name": "廣中智紗衣"
+              },
+              {
+                "position": 3,
+                "boatNumber": 4,
+                "racerNumber": 4478,
+                "name": "櫻本あゆみ"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 3611,
+                "name": "岩崎芳美"
+              },
+              {
+                "position": 5,
+                "boatNumber": 6,
+                "racerNumber": 4313,
+                "name": "西村美智子"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5189,
+                "name": "藤原早菜"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-2-4",
+                "payout": 1290,
+                "popularity": 2
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 160,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 140,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-2",
+                  "payout": 380,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 270,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 170,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-4",
+                  "payout": 220,
+                  "popularity": 3
+                },
+                {
+                  "combination": "2-4",
+                  "payout": 300,
+                  "popularity": 7
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 1290,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 520,
+                  "popularity": 2
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4974,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4117,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3611,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4478,
+                "status": "03"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5189,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4313,
+                "status": "05"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:45.448997+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=18&rno=1"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:45.726698+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=18&rno=1"
+          }
         },
         {
           "number": 2,
@@ -13694,7 +17603,298 @@
               "boatPart": 40
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:19.647484+09:00",
+                "values": {
+                  "1-2-3": "16.5",
+                  "1-2-4": "12.7",
+                  "1-2-5": "12.8",
+                  "1-2-6": "16.8",
+                  "1-3-2": "24.4",
+                  "1-3-4": "26.6",
+                  "1-3-5": "22.2",
+                  "1-3-6": "33.0",
+                  "1-4-2": "20.3",
+                  "1-4-3": "37.1",
+                  "1-4-5": "20.9",
+                  "1-4-6": "28.2",
+                  "1-5-2": "23.9",
+                  "1-5-3": "38.4",
+                  "1-5-4": "35.8",
+                  "1-5-6": "25.6",
+                  "1-6-2": "51.0",
+                  "1-6-3": "84.1",
+                  "1-6-4": "69.0",
+                  "1-6-5": "49.2",
+                  "2-1-3": "57.4",
+                  "2-1-4": "39.0",
+                  "2-1-5": "44.9",
+                  "2-1-6": "55.8",
+                  "2-3-1": "125.0",
+                  "2-3-4": "211.0",
+                  "2-3-5": "219.7",
+                  "2-3-6": "208.8",
+                  "2-4-1": "104.1",
+                  "2-4-3": "251.4",
+                  "2-4-5": "187.7",
+                  "2-4-6": "194.8",
+                  "2-5-1": "120.9",
+                  "2-5-3": "313.0",
+                  "2-5-4": "249.1",
+                  "2-5-6": "207.5",
+                  "2-6-1": "188.4",
+                  "2-6-3": "428.6",
+                  "2-6-4": "393.4",
+                  "2-6-5": "333.2",
+                  "3-1-2": "85.7",
+                  "3-1-4": "93.9",
+                  "3-1-5": "67.9",
+                  "3-1-6": "109.0",
+                  "3-2-1": "154.0",
+                  "3-2-4": "161.0",
+                  "3-2-5": "233.7",
+                  "3-2-6": "276.3",
+                  "3-4-1": "166.6",
+                  "3-4-2": "203.0",
+                  "3-4-5": "205.1",
+                  "3-4-6": "257.9",
+                  "3-5-1": "140.7",
+                  "3-5-2": "246.5",
+                  "3-5-4": "250.5",
+                  "3-5-6": "273.6",
+                  "3-6-1": "278.5",
+                  "3-6-2": "465.8",
+                  "3-6-4": "433.9",
+                  "3-6-5": "478.6",
+                  "4-1-2": "72.5",
+                  "4-1-3": "148.8",
+                  "4-1-5": "57.1",
+                  "4-1-6": "84.8",
+                  "4-2-1": "110.6",
+                  "4-2-3": "314.4",
+                  "4-2-5": "187.2",
+                  "4-2-6": "202.1",
+                  "4-3-1": "280.2",
+                  "4-3-2": "410.9",
+                  "4-3-5": "389.0",
+                  "4-3-6": "410.9",
+                  "4-5-1": "84.9",
+                  "4-5-2": "164.6",
+                  "4-5-3": "273.1",
+                  "4-5-6": "131.4",
+                  "4-6-1": "179.2",
+                  "4-6-2": "271.5",
+                  "4-6-3": "527.6",
+                  "4-6-5": "243.5",
+                  "5-1-2": "94.6",
+                  "5-1-3": "132.9",
+                  "5-1-4": "107.6",
+                  "5-1-6": "99.2",
+                  "5-2-1": "163.3",
+                  "5-2-3": "384.7",
+                  "5-2-4": "337.2",
+                  "5-2-6": "257.9",
+                  "5-3-1": "229.8",
+                  "5-3-2": "478.6",
+                  "5-3-4": "535.7",
+                  "5-3-6": "502.8",
+                  "5-4-1": "136.0",
+                  "5-4-2": "334.0",
+                  "5-4-3": "438.0",
+                  "5-4-6": "265.3",
+                  "5-6-1": "168.2",
+                  "5-6-2": "368.5",
+                  "5-6-3": "566.2",
+                  "5-6-4": "351.7",
+                  "6-1-2": "183.2",
+                  "6-1-3": "330.0",
+                  "6-1-4": "299.5",
+                  "6-1-5": "225.0",
+                  "6-2-1": "263.8",
+                  "6-2-3": "616.3",
+                  "6-2-4": "624.6",
+                  "6-2-5": "672.9",
+                  "6-3-1": "465.8",
+                  "6-3-2": "729.3",
+                  "6-3-4": "974.1",
+                  "6-3-5": "967.3",
+                  "6-4-1": "392.3",
+                  "6-4-2": "748.9",
+                  "6-4-3": "1024",
+                  "6-4-5": "696.4",
+                  "6-5-1": "251.8",
+                  "6-5-2": "682.8",
+                  "6-5-3": "757.0",
+                  "6-5-4": "641.9"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:20.707409+09:00",
+                "values": {
+                  "1-2-3": "3.5",
+                  "1-2-4": "7.6",
+                  "1-2-5": "8.7",
+                  "1-2-6": "11.0",
+                  "1-3-4": "14.6",
+                  "1-3-5": "11.7",
+                  "1-3-6": "17.8",
+                  "1-4-5": "10.3",
+                  "1-4-6": "16.1",
+                  "1-5-6": "10.1",
+                  "2-3-4": "34.6",
+                  "2-3-5": "41.3",
+                  "2-3-6": "54.1",
+                  "2-4-5": "30.7",
+                  "2-4-6": "37.2",
+                  "2-5-6": "38.2",
+                  "3-4-5": "49.6",
+                  "3-4-6": "57.3",
+                  "3-5-6": "50.5",
+                  "4-5-6": "27.3"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:21.645535+09:00",
+                "values": {
+                  "1-2": "3.2",
+                  "1-3": "6.2",
+                  "1-4": "6.9",
+                  "1-5": "7.5",
+                  "1-6": "14.0",
+                  "2-1": "14.3",
+                  "2-3": "49.3",
+                  "2-4": "41.6",
+                  "2-5": "77.8",
+                  "2-6": "85.4",
+                  "3-1": "26.7",
+                  "3-2": "58.3",
+                  "3-4": "50.0",
+                  "3-5": "53.8",
+                  "3-6": "67.3",
+                  "4-1": "21.0",
+                  "4-2": "50.0",
+                  "4-3": "71.4",
+                  "4-5": "41.1",
+                  "4-6": "64.8",
+                  "5-1": "25.9",
+                  "5-2": "87.5",
+                  "5-3": "102.9",
+                  "5-4": "54.7",
+                  "5-6": "53.8",
+                  "6-1": "51.4",
+                  "6-2": "120.7",
+                  "6-3": "112.9",
+                  "6-4": "159.1",
+                  "6-5": "97.2"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:21.645535+09:00",
+                "values": {
+                  "1-2": "2.5",
+                  "1-3": "8.5",
+                  "1-4": "3.7",
+                  "1-5": "7.2",
+                  "1-6": "15.2",
+                  "2-3": "18.2",
+                  "2-4": "22.6",
+                  "2-5": "38.6",
+                  "2-6": "41.0",
+                  "3-4": "22.6",
+                  "3-5": "22.6",
+                  "3-6": "32.8",
+                  "4-5": "31.2",
+                  "4-6": "36.5",
+                  "5-6": "34.5"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:22.685867+09:00",
+                "values": {
+                  "1-2": "1.6-1.7",
+                  "1-3": "1.8-1.9",
+                  "1-4": "2.4-2.6",
+                  "1-5": "2.2-2.4",
+                  "1-6": "2.1-2.2",
+                  "2-3": "4.9-6.5",
+                  "2-4": "3.8-4.8",
+                  "2-5": "5.3-6.9",
+                  "2-6": "5.7-7.5",
+                  "3-4": "4.8-5.9",
+                  "3-5": "6.6-8.3",
+                  "3-6": "5.9-7.5",
+                  "4-5": "7.8-9.3",
+                  "4-6": "7.7-9.3",
+                  "5-6": "8.6-10.6"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:23.629405+09:00",
+                "values": {
+                  "1": "1.2",
+                  "2": "3.7",
+                  "3": "17.0",
+                  "4": "14.1",
+                  "5": "18.9",
+                  "6": "9.4"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:23.629405+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "2.6-4.9",
+                  "3": "3.9-7.7",
+                  "4": "1.1-1.9",
+                  "5": "2.6-4.9",
+                  "6": "4.8-9.4"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=18&rno=6",
+            "lastFetchedAt": "2026-08-10T12:57:24.597743+09:00"
+          }
         },
         {
           "number": 7,
@@ -15602,7 +19802,163 @@
               "boatPart": 25
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 3,
+                "racerNumber": 3876,
+                "name": "中辻崇人"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 4463,
+                "name": "三苫晃幸"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 4193,
+                "name": "郷原章平"
+              },
+              {
+                "position": 4,
+                "boatNumber": 4,
+                "racerNumber": 5276,
+                "name": "大島隆乃介"
+              },
+              {
+                "position": 5,
+                "boatNumber": 2,
+                "racerNumber": 5286,
+                "name": "坂井滉哉"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5370,
+                "name": "日隈茜"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "3-1-5",
+                "payout": 800,
+                "popularity": 2
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "3",
+                  "payout": 250,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "3",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "3-1",
+                  "payout": 500,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 130,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 100,
+                  "popularity": 1
+                },
+                {
+                  "combination": "3-5",
+                  "payout": 160,
+                  "popularity": 3
+                },
+                {
+                  "combination": "1-5",
+                  "payout": 200,
+                  "popularity": 4
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "3-1-5",
+                  "payout": 800,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-5",
+                  "payout": 290,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4463,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5286,
+                "status": "05"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3876,
+                "status": "01"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5276,
+                "status": "04"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4193,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5370,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:41.122974+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=21&rno=3"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:41.387950+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=21&rno=3"
+          }
         },
         {
           "number": 4,
@@ -15676,7 +20032,158 @@
               "boatPart": 56
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4288,
+                "name": "永田啓二"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 4736,
+                "name": "高倉和士"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 5212,
+                "name": "西川拓利"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 5277,
+                "name": "井上未都"
+              },
+              {
+                "position": 5,
+                "boatNumber": 3,
+                "racerNumber": 4363,
+                "name": "大野芳顕"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5210,
+                "name": "藤井公人"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-2",
+                "payout": 620,
+                "popularity": 2
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 110,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 200,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 200,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 120,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 180,
+                  "popularity": 3
+                },
+                {
+                  "combination": "2-4",
+                  "payout": 230,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-2",
+                  "payout": 620,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 240,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4288,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5212,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4363,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4736,
+                "status": "02"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5277,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5210,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:51.961559+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=21&rno=4"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -15967,6 +20474,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=21&rno=4",
             "lastFetchedAt": "2026-08-10T09:25:13.420691+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:52.256103+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=21&rno=4"
           }
         },
         {
@@ -17369,7 +21881,298 @@
               "boatPart": 52
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:34.245419+09:00",
+                "values": {
+                  "1-2-3": "24.7",
+                  "1-2-4": "13.9",
+                  "1-2-5": "20.9",
+                  "1-2-6": "9.3",
+                  "1-3-2": "39.2",
+                  "1-3-4": "41.4",
+                  "1-3-5": "67.3",
+                  "1-3-6": "35.2",
+                  "1-4-2": "23.2",
+                  "1-4-3": "91.3",
+                  "1-4-5": "83.1",
+                  "1-4-6": "20.5",
+                  "1-5-2": "47.8",
+                  "1-5-3": "83.8",
+                  "1-5-4": "70.0",
+                  "1-5-6": "71.5",
+                  "1-6-2": "11.7",
+                  "1-6-3": "33.6",
+                  "1-6-4": "28.8",
+                  "1-6-5": "49.1",
+                  "2-1-3": "37.7",
+                  "2-1-4": "55.0",
+                  "2-1-5": "64.3",
+                  "2-1-6": "23.0",
+                  "2-3-1": "98.3",
+                  "2-3-4": "186.0",
+                  "2-3-5": "189.4",
+                  "2-3-6": "155.0",
+                  "2-4-1": "157.4",
+                  "2-4-3": "300.9",
+                  "2-4-5": "269.2",
+                  "2-4-6": "140.1",
+                  "2-5-1": "114.9",
+                  "2-5-3": "227.3",
+                  "2-5-4": "249.5",
+                  "2-5-6": "237.9",
+                  "2-6-1": "61.2",
+                  "2-6-3": "208.8",
+                  "2-6-4": "189.4",
+                  "2-6-5": "243.6",
+                  "3-1-2": "83.8",
+                  "3-1-4": "110.0",
+                  "3-1-5": "105.4",
+                  "3-1-6": "113.6",
+                  "3-2-1": "204.6",
+                  "3-2-4": "101.3",
+                  "3-2-5": "132.8",
+                  "3-2-6": "182.7",
+                  "3-4-1": "284.2",
+                  "3-4-2": "112.4",
+                  "3-4-5": "352.8",
+                  "3-4-6": "193.0",
+                  "3-5-1": "222.4",
+                  "3-5-2": "123.2",
+                  "3-5-4": "232.5",
+                  "3-5-6": "511.6",
+                  "3-6-1": "393.5",
+                  "3-6-2": "319.7",
+                  "3-6-4": "352.8",
+                  "3-6-5": "444.8",
+                  "4-1-2": "132.8",
+                  "4-1-3": "112.4",
+                  "4-1-5": "111.2",
+                  "4-1-6": "87.4",
+                  "4-2-1": "162.4",
+                  "4-2-3": "159.8",
+                  "4-2-5": "136.4",
+                  "4-2-6": "124.7",
+                  "4-3-1": "165.0",
+                  "4-3-2": "237.9",
+                  "4-3-5": "200.6",
+                  "4-3-6": "319.7",
+                  "4-5-1": "108.8",
+                  "4-5-2": "140.1",
+                  "4-5-3": "365.4",
+                  "4-5-6": "189.4",
+                  "4-6-1": "114.9",
+                  "4-6-2": "112.4",
+                  "4-6-3": "538.5",
+                  "4-6-5": "249.5",
+                  "5-1-2": "204.6",
+                  "5-1-3": "200.6",
+                  "5-1-4": "237.9",
+                  "5-1-6": "200.6",
+                  "5-2-1": "276.5",
+                  "5-2-3": "227.3",
+                  "5-2-4": "208.8",
+                  "5-2-6": "170.5",
+                  "5-3-1": "292.3",
+                  "5-3-2": "310.0",
+                  "5-3-4": "352.8",
+                  "5-3-6": "682.1",
+                  "5-4-1": "243.6",
+                  "5-4-2": "292.3",
+                  "5-4-3": "639.5",
+                  "5-4-6": "255.8",
+                  "5-6-1": "330.0",
+                  "5-6-2": "365.4",
+                  "5-6-3": "682.1",
+                  "5-6-4": "682.1",
+                  "6-1-2": "44.1",
+                  "6-1-3": "136.4",
+                  "6-1-4": "157.4",
+                  "6-1-5": "173.4",
+                  "6-2-1": "73.6",
+                  "6-2-3": "155.0",
+                  "6-2-4": "262.3",
+                  "6-2-5": "208.8",
+                  "6-3-1": "341.0",
+                  "6-3-2": "341.0",
+                  "6-3-4": "852.6",
+                  "6-3-5": "787.0",
+                  "6-4-1": "157.4",
+                  "6-4-2": "142.1",
+                  "6-4-3": "852.6",
+                  "6-4-5": "341.0",
+                  "6-5-1": "237.9",
+                  "6-5-2": "319.7",
+                  "6-5-3": "852.6",
+                  "6-5-4": "568.4"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:35.197077+09:00",
+                "values": {
+                  "1-2-3": "9.6",
+                  "1-2-4": "9.6",
+                  "1-2-5": "9.0",
+                  "1-2-6": "4.2",
+                  "1-3-4": "45.0",
+                  "1-3-5": "12.2",
+                  "1-3-6": "13.5",
+                  "1-4-5": "12.2",
+                  "1-4-6": "7.9",
+                  "1-5-6": "6.1",
+                  "2-3-4": "67.5",
+                  "2-3-5": "67.5",
+                  "2-3-6": "67.5",
+                  "2-4-5": "45.0",
+                  "2-4-6": "27.0",
+                  "2-5-6": "27.0",
+                  "3-4-5": "67.5",
+                  "3-4-6": "45.0",
+                  "3-5-6": "33.7",
+                  "4-5-6": "45.0"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:36.164908+09:00",
+                "values": {
+                  "1-2": "6.7",
+                  "1-3": "20.2",
+                  "1-4": "11.5",
+                  "1-5": "11.5",
+                  "1-6": "4.9",
+                  "2-1": "10.5",
+                  "2-3": "121.5",
+                  "2-4": "121.5",
+                  "2-5": "48.6",
+                  "2-6": "27.0",
+                  "3-1": "14.2",
+                  "3-2": "121.5",
+                  "3-4": "81.0",
+                  "3-5": "81.0",
+                  "3-6": "81.0",
+                  "4-1": "27.0",
+                  "4-2": "48.6",
+                  "4-3": "48.6",
+                  "4-5": "30.3",
+                  "4-6": "34.7",
+                  "5-1": "22.0",
+                  "5-2": "48.6",
+                  "5-3": "48.6",
+                  "5-4": "34.7",
+                  "5-6": "48.6",
+                  "6-1": "9.3",
+                  "6-2": "27.0",
+                  "6-3": "81.0",
+                  "6-4": "34.7",
+                  "6-5": "60.7"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:36.164908+09:00",
+                "values": {
+                  "1-2": "5.2",
+                  "1-3": "10.5",
+                  "1-4": "6.0",
+                  "1-5": "6.0",
+                  "1-6": "3.8",
+                  "2-3": "21.0",
+                  "2-4": "21.0",
+                  "2-5": "42.0",
+                  "2-6": "10.5",
+                  "3-4": "0.0",
+                  "3-5": "42.0",
+                  "3-6": "0.0",
+                  "4-5": "21.0",
+                  "4-6": "14.0",
+                  "5-6": "10.5"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:37.093819+09:00",
+                "values": {
+                  "1-2": "1.2-1.9",
+                  "1-3": "2.7-3.3",
+                  "1-4": "2.8-4.0",
+                  "1-5": "3.5-4.2",
+                  "1-6": "1.2-1.4",
+                  "2-3": "3.4-6.5",
+                  "2-4": "0.0-0.0",
+                  "2-5": "9.5-18.3",
+                  "2-6": "2.7-6.5",
+                  "3-4": "11.0-18.0",
+                  "3-5": "11.2-12.2",
+                  "3-6": "4.7-6.5",
+                  "4-5": "5.8-9.5",
+                  "4-6": "9.0-18.0",
+                  "5-6": "4.8-6.3"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:38.046875+09:00",
+                "values": {
+                  "1": "1.8",
+                  "2": "0.0",
+                  "3": "0.0",
+                  "4": "1.8",
+                  "5": "0.0",
+                  "6": "3.7"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:38.046875+09:00",
+                "values": {
+                  "1": "1.0-1.0",
+                  "2": "0.0-0.0",
+                  "3": "0.0-0.0",
+                  "4": "2.6-14.2",
+                  "5": "0.0-0.0",
+                  "6": "1.0-2.8"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=21&rno=11",
+            "lastFetchedAt": "2026-08-10T12:57:38.999931+09:00"
+          }
         },
         {
           "number": 12,
@@ -17772,7 +22575,163 @@
               "boatPart": 28
             }
           ],
-          "result": null
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3508,
+                "name": "久富政弘"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 4552,
+                "name": "杉山勝匡"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 4445,
+                "name": "宮地元輝"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 5214,
+                "name": "田中宏典"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 3617,
+                "name": "竹田広樹"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5462,
+                "name": "山浦槙"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-3-2",
+                "payout": 2730,
+                "popularity": 11
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 140,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 150,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 560,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-3",
+                  "payout": 1470,
+                  "popularity": 5
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 1410,
+                  "popularity": 5
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 270,
+                  "popularity": 5
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 130,
+                  "popularity": 1
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 150,
+                  "popularity": 2
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-3-2",
+                  "payout": 2730,
+                  "popularity": 11
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 250,
+                  "popularity": 2
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3508,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4445,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4552,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3617,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5214,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5462,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:40.043148+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=23&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:40.322655+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=23&rno=2"
+          }
         },
         {
           "number": 3,
@@ -17846,7 +22805,158 @@
               "boatPart": 32
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 3,
+                "racerNumber": 4531,
+                "name": "武富智亮"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 5142,
+                "name": "常住蓮"
+              },
+              {
+                "position": 3,
+                "boatNumber": 4,
+                "racerNumber": 5268,
+                "name": "山本幸也"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 4499,
+                "name": "滝川真由子"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 5307,
+                "name": "富永夏哉人"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 3825,
+                "name": "宮嵜隆太郎"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "3-1-4",
+                "payout": 3260,
+                "popularity": 10
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "3",
+                  "payout": 600,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "3",
+                  "payout": 160,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "3-1",
+                  "payout": 630,
+                  "popularity": 3
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 120,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 110,
+                  "popularity": 1
+                },
+                {
+                  "combination": "3-4",
+                  "payout": 380,
+                  "popularity": 6
+                },
+                {
+                  "combination": "1-4",
+                  "payout": 330,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "3-1-4",
+                  "payout": 3260,
+                  "popularity": 10
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-4",
+                  "payout": 430,
+                  "popularity": 3
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 5142,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4499,
+                "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4531,
+                "status": "01"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5268,
+                "status": "03"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5307,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3825,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-10T12:57:50.898782+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=23&rno=3"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -18137,6 +23247,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=23&rno=3",
             "lastFetchedAt": "2026-08-10T09:25:08.452925+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-10T12:57:51.161276+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260810&jcd=23&rno=3"
           }
         },
         {
@@ -19388,7 +24503,298 @@
               "boatPart": 9
             }
           ],
-          "result": null
+          "result": null,
+          "odds": {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {
+              "trifecta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:24.597915+09:00",
+                "values": {
+                  "1-2-3": "30.5",
+                  "1-2-4": "20.4",
+                  "1-2-5": "60.2",
+                  "1-2-6": "104.6",
+                  "1-3-2": "37.3",
+                  "1-3-4": "13.6",
+                  "1-3-5": "57.2",
+                  "1-3-6": "93.8",
+                  "1-4-2": "10.7",
+                  "1-4-3": "5.5",
+                  "1-4-5": "17.3",
+                  "1-4-6": "61.9",
+                  "1-5-2": "95.8",
+                  "1-5-3": "65.0",
+                  "1-5-4": "68.9",
+                  "1-5-6": "303.4",
+                  "1-6-2": "91.9",
+                  "1-6-3": "233.4",
+                  "1-6-4": "227.6",
+                  "1-6-5": "350.1",
+                  "2-1-3": "57.6",
+                  "2-1-4": "82.0",
+                  "2-1-5": "159.7",
+                  "2-1-6": "239.5",
+                  "2-3-1": "118.2",
+                  "2-3-4": "128.2",
+                  "2-3-5": "284.5",
+                  "2-3-6": "284.5",
+                  "2-4-1": "67.9",
+                  "2-4-3": "162.5",
+                  "2-4-5": "303.4",
+                  "2-4-6": "111.0",
+                  "2-5-1": "239.5",
+                  "2-5-3": "505.7",
+                  "2-5-4": "303.4",
+                  "2-5-6": "350.1",
+                  "2-6-1": "350.1",
+                  "2-6-3": "433.5",
+                  "2-6-4": "395.8",
+                  "2-6-5": "569.0",
+                  "3-1-2": "100.0",
+                  "3-1-4": "41.3",
+                  "3-1-5": "85.0",
+                  "3-1-6": "193.7",
+                  "3-2-1": "165.5",
+                  "3-2-4": "49.4",
+                  "3-2-5": "182.0",
+                  "3-2-6": "293.6",
+                  "3-4-1": "56.9",
+                  "3-4-2": "144.5",
+                  "3-4-5": "182.0",
+                  "3-4-6": "313.9",
+                  "3-5-1": "175.0",
+                  "3-5-2": "149.2",
+                  "3-5-4": "275.8",
+                  "3-5-6": "569.0",
+                  "3-6-1": "505.7",
+                  "3-6-2": "606.9",
+                  "3-6-4": "433.5",
+                  "3-6-5": "1011",
+                  "4-1-2": "14.2",
+                  "4-1-3": "13.1",
+                  "4-1-5": "17.3",
+                  "4-1-6": "84.2",
+                  "4-2-1": "79.1",
+                  "4-2-3": "108.3",
+                  "4-2-5": "159.7",
+                  "4-2-6": "197.9",
+                  "4-3-1": "35.9",
+                  "4-3-2": "135.8",
+                  "4-3-5": "116.7",
+                  "4-3-6": "189.6",
+                  "4-5-1": "67.4",
+                  "4-5-2": "216.7",
+                  "4-5-3": "154.3",
+                  "4-5-6": "239.5",
+                  "4-6-1": "246.0",
+                  "4-6-2": "303.4",
+                  "4-6-3": "325.1",
+                  "4-6-5": "433.5",
+                  "5-1-2": "206.9",
+                  "5-1-3": "185.8",
+                  "5-1-4": "227.6",
+                  "5-1-6": "379.3",
+                  "5-2-1": "303.4",
+                  "5-2-3": "455.2",
+                  "5-2-4": "535.5",
+                  "5-2-6": "455.2",
+                  "5-3-1": "267.7",
+                  "5-3-2": "364.1",
+                  "5-3-4": "364.1",
+                  "5-3-6": "569.0",
+                  "5-4-1": "211.7",
+                  "5-4-2": "650.3",
+                  "5-4-3": "350.1",
+                  "5-4-6": "535.5",
+                  "5-6-1": "700.3",
+                  "5-6-2": "1011",
+                  "5-6-3": "1138",
+                  "5-6-4": "2276",
+                  "6-1-2": "535.5",
+                  "6-1-3": "364.1",
+                  "6-1-4": "535.5",
+                  "6-1-5": "1138",
+                  "6-2-1": "758.6",
+                  "6-2-3": "505.7",
+                  "6-2-4": "1300",
+                  "6-2-5": "650.3",
+                  "6-3-1": "1011",
+                  "6-3-2": "505.7",
+                  "6-3-4": "479.1",
+                  "6-3-5": "1517",
+                  "6-4-1": "479.1",
+                  "6-4-2": "535.5",
+                  "6-4-3": "1138",
+                  "6-4-5": "1300",
+                  "6-5-1": "650.3",
+                  "6-5-2": "1820",
+                  "6-5-3": "1138",
+                  "6-5-4": "2276"
+                },
+                "entries": 120,
+                "expectedEntries": 120,
+                "complete": true
+              },
+              "trio": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:25.534892+09:00",
+                "values": {
+                  "1-2-3": "8.7",
+                  "1-2-4": "4.6",
+                  "1-2-5": "26.2",
+                  "1-2-6": "78.7",
+                  "1-3-4": "3.2",
+                  "1-3-5": "17.5",
+                  "1-3-6": "19.6",
+                  "1-4-5": "6.8",
+                  "1-4-6": "14.3",
+                  "1-5-6": "52.5",
+                  "2-3-4": "13.1",
+                  "2-3-5": "39.3",
+                  "2-3-6": "78.7",
+                  "2-4-5": "19.6",
+                  "2-4-6": "39.3",
+                  "2-5-6": "78.7",
+                  "3-4-5": "26.2",
+                  "3-4-6": "157.5",
+                  "3-5-6": "157.5",
+                  "4-5-6": "19.6"
+                },
+                "entries": 20,
+                "expectedEntries": 20,
+                "complete": true
+              },
+              "exacta": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:26.506866+09:00",
+                "values": {
+                  "1-2": "6.7",
+                  "1-3": "12.0",
+                  "1-4": "2.1",
+                  "1-5": "28.0",
+                  "1-6": "84.0",
+                  "2-1": "18.6",
+                  "2-3": "28.0",
+                  "2-4": "168.0",
+                  "2-5": "168.0",
+                  "2-6": "0.0",
+                  "3-1": "28.0",
+                  "3-2": "28.0",
+                  "3-4": "84.0",
+                  "3-5": "0.0",
+                  "3-6": "42.0",
+                  "4-1": "4.5",
+                  "4-2": "42.0",
+                  "4-3": "28.0",
+                  "4-5": "168.0",
+                  "4-6": "168.0",
+                  "5-1": "84.0",
+                  "5-2": "84.0",
+                  "5-3": "168.0",
+                  "5-4": "84.0",
+                  "5-6": "168.0",
+                  "6-1": "168.0",
+                  "6-2": "0.0",
+                  "6-3": "56.0",
+                  "6-4": "168.0",
+                  "6-5": "0.0"
+                },
+                "entries": 30,
+                "expectedEntries": 30,
+                "complete": true
+              },
+              "quinella": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:26.506866+09:00",
+                "values": {
+                  "1-2": "12.9",
+                  "1-3": "9.0",
+                  "1-4": "1.1",
+                  "1-5": "18.1",
+                  "1-6": "0.0",
+                  "2-3": "22.6",
+                  "2-4": "30.2",
+                  "2-5": "90.7",
+                  "2-6": "0.0",
+                  "3-4": "30.2",
+                  "3-5": "90.7",
+                  "3-6": "0.0",
+                  "4-5": "22.6",
+                  "4-6": "90.7",
+                  "5-6": "90.7"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "wide": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:27.484676+09:00",
+                "values": {
+                  "1-2": "2.7-4.0",
+                  "1-3": "1.1-2.1",
+                  "1-4": "1.0-1.3",
+                  "1-5": "3.4-5.2",
+                  "1-6": "14.0-18.0",
+                  "2-3": "2.6-4.7",
+                  "2-4": "8.7-22.1",
+                  "2-5": "13.5-14.7",
+                  "2-6": "14.0-22.1",
+                  "3-4": "2.0-11.0",
+                  "3-5": "6.0-11.2",
+                  "3-6": "0.0-0.0",
+                  "4-5": "4.7-11.2",
+                  "4-6": "0.0-0.0",
+                  "5-6": "14.2-21.7"
+                },
+                "entries": 15,
+                "expectedEntries": 15,
+                "complete": true
+              },
+              "win": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:28.455077+09:00",
+                "values": {
+                  "1": "1.2",
+                  "2": "0.0",
+                  "3": "3.7",
+                  "4": "3.7",
+                  "5": "0.0",
+                  "6": "0.0"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              },
+              "place": {
+                "updatedAt": "2026-08-10T12:57:00+09:00",
+                "timeSource": "official",
+                "fetchedAt": "2026-08-10T12:57:28.455077+09:00",
+                "values": {
+                  "1": "1.0-2.6",
+                  "2": "0.0-0.0",
+                  "3": "2.2-10.5",
+                  "4": "1.0-1.1",
+                  "5": "0.0-0.0",
+                  "6": "0.0-0.0"
+                },
+                "entries": 6,
+                "expectedEntries": 6,
+                "complete": true
+              }
+            },
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260810&jcd=23&rno=10",
+            "lastFetchedAt": "2026-08-10T12:57:29.436027+09:00"
+          }
         },
         {
           "number": 11,
@@ -20527,7 +25933,7 @@
       "scheduleEntries": 936,
       "performanceRaces": 0,
       "matchedResultRaces": 0,
-      "completedResultRaces": 14,
+      "completedResultRaces": 30,
       "resultRows": 0,
       "sanrenshoPayouts": 0,
       "totalPayoutEntries": 0,
@@ -20541,13 +25947,13 @@
         "trio": 0
       },
       "gradedVenues": 1,
-      "oddsRaces": 22,
-      "oddsEntries": 4664,
+      "oddsRaces": 32,
+      "oddsEntries": 6784,
       "lzhCompletedResultRaces": 0,
-      "webResultRaces": 14,
-      "cachedWebResultRaces": 0
+      "webResultRaces": 30,
+      "cachedWebResultRaces": 14
     },
-    "oddsDebug": "cached=13 candidates=10 fetched=10 recent=0 requests=50 stored=22 entries=4664",
-    "fastResultDebug": "cached=0 candidates=16 fetched=14 pending=2 requests=16 storedWeb=14 total=14"
+    "oddsDebug": "cached=22 candidates=10 fetched=10 recent=0 requests=50 stored=32 entries=6784",
+    "fastResultDebug": "cached=14 candidates=16 fetched=16 pending=0 requests=16 selection=venue-round-robin storedWeb=30 total=30"
   }
 }
