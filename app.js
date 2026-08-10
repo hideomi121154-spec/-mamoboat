@@ -3,6 +3,8 @@
 
   const C = window.MamoCore;
   const APP_VERSION = "3.9.1";
+  const WALLET_VERSION = 3;
+  const LEGACY_BONUS_TYPES = new Set(["login_bonus", "defense_bonus"]);
   const KEY = "mamoboat_v39_personal";
   const LEGACY_KEYS = [
     "mamoboat_v38_personal",
@@ -223,9 +225,8 @@
       accepted: false,
       coins: 100000,
       coinWeek: weekKey(),
-      walletVersion: 2,
+      walletVersion: WALLET_VERSION,
       walletCreatedAt: createdAt,
-      lastLoginBonusDate: C.jstDate(),
       ledger: [{
         id: "initial-grant",
         uniqueKey: "initial-grant",
@@ -276,9 +277,29 @@
         label: "v3.9開始残高",
       }];
     if (!source?.ledger && !raw.length) state.coins = 100000;
-    state.walletVersion = 2;
+    const removedBonusTotal = state.ledger
+      .filter((item) => LEGACY_BONUS_TYPES.has(item.type))
+      .reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
+    if (removedBonusTotal > 0) {
+      let removedSoFar = 0;
+      state.ledger = state.ledger.flatMap((item) => {
+        if (LEGACY_BONUS_TYPES.has(item.type)) {
+          removedSoFar += Math.max(0, Number(item.amount) || 0);
+          return [];
+        }
+        const balanceAfter = Number(item.balanceAfter);
+        return [{
+          ...item,
+          balanceAfter: Number.isFinite(balanceAfter)
+            ? Math.max(0, balanceAfter - removedSoFar)
+            : item.balanceAfter,
+        }];
+      });
+      state.coins = Math.max(0, state.coins - removedBonusTotal);
+    }
+    state.walletVersion = WALLET_VERSION;
     state.walletCreatedAt ||= state.ledger[0]?.at || new Date().toISOString();
-    state.lastLoginBonusDate ||= C.jstDate();
+    delete state.lastLoginBonusDate;
     if (!["all", "selling", "grade", "night", "favorite"].includes(state.homeFilter)) {
       state.homeFilter = "all";
     }
@@ -419,51 +440,6 @@
       raceNo: details.raceNo || null,
     });
     return true;
-  }
-
-  function awardDefenseBonus(record, kind, requestedAmount, label) {
-    const day = record.raceDate || C.jstDate(record.time);
-    const used = S.ledger
-      .filter((item) => item.type === "defense_bonus" && item.day === day)
-      .reduce((sum, item) => sum + Math.max(0, Number(item.amount) || 0), 0);
-    const amount = Math.min(requestedAmount, Math.max(0, 2000 - used));
-    if (!amount) return false;
-    return postLedger("defense_bonus", amount, `defense:${kind}:${record.id}`, {
-      label,
-      day,
-      recordId: record.id,
-      venueCode: record.venueCode,
-      raceNo: record.raceNo,
-    });
-  }
-
-  function awardLoginBonus() {
-    const today = C.jstDate();
-    if (S.lastLoginBonusDate === today) return;
-    if (postLedger("login_bonus", 100, `login:${today}`, { label: "乗船ボーナス" })) {
-      S.lastLoginBonusDate = today;
-      save();
-    }
-  }
-
-  function processObservedBonuses() {
-    let changed = false;
-    const now = Date.now();
-    for (const record of S.records) {
-      if (record.walletVersionAtBet !== 2 || !record.closeTime) continue;
-      const close = new Date(record.closeTime).getTime();
-      const end = close + 15 * 60 * 1000;
-      if (!Number.isFinite(close) || now < end) continue;
-      const chased = S.records.some((other) => {
-        if (other.id === record.id || !other.time) return false;
-        const time = new Date(other.time).getTime();
-        return time > close && time <= end;
-      });
-      if (!chased) {
-        changed = awardDefenseBonus(record, "cooldown-15", 300, "15分クールダウンボーナス") || changed;
-      }
-    }
-    if (changed) save();
   }
 
   const venue = (code) => DATA.venues.find((item) => item.code === code);
@@ -691,7 +667,6 @@
         raceNo: record.raceNo,
       });
     }
-    awardDefenseBonus(record, "virtual-complete", 300, "仮想投票完了ボーナス");
     record.resultEventAt = new Date().toISOString();
     trackEvent("result_settled", settlementPayload(record, source), {
       raceDate: record.raceDate,
@@ -868,7 +843,7 @@
       <span class="kicker">B MEDAL BALANCE</span>
       <h2>Bメダル残高</h2>
       <div class="topup-balance"><span>現在の残高</span><strong>${fmt(S.coins)}B</strong></div>
-      <p>Bは購入・換金・任意追加できません。公式払戻と、アプリが記録した防衛行動だけで増えます。</p>
+      <p>Bは購入・換金・任意追加できません。AIR BETで減り、的中時は公式確定払戻と同額のBが加算されます。返還時は対象Bだけ戻り、外れた場合は戻りません。</p>
       <div class="notice warn topup-policy"><b>自動復活はありません。</b><br>日替わり・週替わり・再読み込みで残高はリセットされません。</div>
       <h3>最近のB履歴</h3><div class="wallet-ledger">${rows || '<p class="muted">履歴はまだありません。</p>'}</div>
       <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button>
@@ -1892,7 +1867,7 @@
     })) return alert("Bメダル残高が不足しています。");
     const record = {
       id: recordId,
-      walletVersionAtBet: 2,
+      walletVersionAtBet: WALLET_VERSION,
       raceDate: DATA.date,
       coinWeek: S.coinWeek,
       time: new Date().toISOString(),
@@ -2606,7 +2581,7 @@ B的中: ${stats.virtualHits}件
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v380-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v391-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
@@ -2625,7 +2600,6 @@ B的中: ${stats.virtualHits}件
   };
 
   function renderAll() {
-    processObservedBonuses();
     if (!document.body.dataset.screen) document.body.dataset.screen = "home";
     $("onboard").classList.toggle("show", !S.accepted);
     renderOnboard();
@@ -2639,7 +2613,6 @@ B的中: ${stats.virtualHits}件
   }
 
   initRealBetFloat();
-  awardLoginBonus();
   trackEvent("app_opened", {
     returning_user: S.accepted === true,
     local_records: S.records.length,
@@ -2650,7 +2623,6 @@ B的中: ${stats.virtualHits}件
   setInterval(() => {
     if (!document.hidden) {
       updateTimeDisplays();
-      processObservedBonuses();
     }
   }, 10 * 1000);
   setInterval(() => {
