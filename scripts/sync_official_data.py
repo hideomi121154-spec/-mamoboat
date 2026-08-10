@@ -1579,7 +1579,7 @@ def build_payload_from_files(
             "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
             "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
             "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
-            "fastResultPolicy": "締切5分後から10分周期・未確定のみ・直列取得",
+            "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
         },
         "venues": [],
         "quality": {
@@ -1991,7 +1991,13 @@ def merge_cached_results(
         current = race.get("result")
         if isinstance(current, Mapping) and current.get("settleable") is True:
             continue
-        cached = previous_races.get(key, {}).get("result")
+
+        cached_race = previous_races.get(key, {})
+        cached_check = cached_race.get("resultCheck")
+        if isinstance(cached_check, Mapping) and not isinstance(race.get("resultCheck"), Mapping):
+            race["resultCheck"] = dict(cached_check)
+
+        cached = cached_race.get("result")
         if not isinstance(cached, Mapping):
             continue
         if cached.get("settleable") is not True:
@@ -2055,7 +2061,7 @@ def _refresh_result_quality(payload: dict[str, Any], cached_web_results: int = 0
     stats["cachedWebResultRaces"] = cached_web_results
     source = payload.setdefault("source", {})
     source["fastResults"] = "BOAT RACE 公式レース結果画面の終了レース限定チェック"
-    source["fastResultPolicy"] = "締切5分後から10分周期・未確定のみ・直列取得"
+    source["fastResultPolicy"] = "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得"
     return completed, web_results
 
 
@@ -2111,25 +2117,32 @@ def refresh_official_results(
                 race,
             ))
 
-    # 直近結果を優先しつつ、古い未確定レースも毎回少しずつ必ず拾う。
-    # 「最新12件だけ」だと開催場が多い日に古い結果が永久に候補外へ残るため、
-    # 最大16件のうち12件を新しい順、残りを古い順のバックログ枠にする。
+    # 開催場が多い日でも特定場の「中間レース」が候補外に残らないよう、
+    # 各場の古い未確定レースから1件ずつラウンドロビンで選ぶ。
+    # 通常は各場で10分の間に増える終了レースは1件程度なので、
+    # 1巡目で各場を公平に確認し、残り枠で各場の2件目以降を順番に処理する。
     limit = max(1, max_races)
-    recent_limit = min(12, limit)
-    newest = sorted(candidates, key=lambda item: item[0], reverse=True)[:recent_limit]
-    selected_keys = {(item[1], int(item[3].get("number") or 0)) for item in newest}
-    backlog_slots = max(0, limit - len(newest))
-    oldest = []
-    if backlog_slots:
-        for item in sorted(candidates, key=lambda item: item[0]):
-            key = (item[1], int(item[3].get("number") or 0))
-            if key in selected_keys:
-                continue
-            oldest.append(item)
-            selected_keys.add(key)
-            if len(oldest) >= backlog_slots:
+    by_venue: dict[str, list[tuple[datetime, str, str, dict[str, Any]]]] = defaultdict(list)
+    for item in sorted(candidates, key=lambda entry: entry[0]):
+        by_venue[item[1]].append(item)
+
+    selected: list[tuple[datetime, str, str, dict[str, Any]]] = []
+    depth = 0
+    while len(selected) < limit:
+        round_items = [
+            items[depth]
+            for items in by_venue.values()
+            if depth < len(items)
+        ]
+        if not round_items:
+            break
+        round_items.sort(key=lambda item: item[0])
+        for item in round_items:
+            selected.append(item)
+            if len(selected) >= limit:
                 break
-    candidates = newest + oldest
+        depth += 1
+    candidates = selected
     stats["candidateRaces"] = len(candidates)
     started = time.monotonic()
     consecutive_errors = 0
@@ -2138,11 +2151,25 @@ def refresh_official_results(
         if time.monotonic() - started >= time_budget_seconds:
             stats["errors"].append("result time budget reached")
             break
+        race_no = int(race.get("number") or 0)
+        expected_url = official_result_page_url(target, venue_code, race_no)
         try:
             result, url = fetch_official_result_page(
-                target, venue_code, int(race.get("number") or 0)
+                target, venue_code, race_no
             )
             stats["requests"] += 1
+            check_state = "confirmed" if result is not None else "waiting"
+            previous_check = race.get("resultCheck")
+            if (
+                not isinstance(previous_check, Mapping)
+                or previous_check.get("state") != check_state
+                or previous_check.get("officialUrl") != url
+            ):
+                race["resultCheck"] = {
+                    "state": check_state,
+                    "checkedAt": datetime.now(JST).isoformat(),
+                    "officialUrl": url,
+                }
             if result is None:
                 stats["pendingRaces"] += 1
             else:
@@ -2152,6 +2179,17 @@ def refresh_official_results(
         except Exception as error:
             stats["requests"] += 1
             consecutive_errors += 1
+            previous_check = race.get("resultCheck")
+            if (
+                not isinstance(previous_check, Mapping)
+                or previous_check.get("state") != "error"
+                or previous_check.get("officialUrl") != expected_url
+            ):
+                race["resultCheck"] = {
+                    "state": "error",
+                    "checkedAt": datetime.now(JST).isoformat(),
+                    "officialUrl": expected_url,
+                }
             stats["errors"].append(
                 f"{venue_code} {venue_name} {race.get('number')}R: {error}"
             )
@@ -2164,7 +2202,8 @@ def refresh_official_results(
     payload.setdefault("quality", {})["fastResultDebug"] = (
         f"cached={cached_count} candidates={stats['candidateRaces']} "
         f"fetched={stats['fetchedRaces']} pending={stats['pendingRaces']} "
-        f"requests={stats['requests']} storedWeb={web_results} total={completed}"
+        f"requests={stats['requests']} selection=venue-round-robin "
+        f"storedWeb={web_results} total={completed}"
     )
     return stats
 
