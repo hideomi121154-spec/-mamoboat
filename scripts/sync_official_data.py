@@ -45,7 +45,7 @@ PAYOUT_LABEL_TO_TYPE = {
 CONTROL_RE = re.compile(r"^\s*([0-9]{2})([BK])(BGN|END)\s*$")
 RESULT_STATUS_RE = re.compile(
     r"^(?:0[1-6]|[FLSK][0-9]?|転|転覆|落|落水|沈|沈没|失|失格|"
-    r"妨|妨害|欠|欠場|不|不完走|返|返還|除|除外)$"
+    r"妨|妨害|欠|欠場|不|不完走|エ|エンスト|返|返還|除|除外)$"
 )
 
 GRADE_PAGE_URL = "https://www.boatrace.jp/owpc/pc/race/gradesch"
@@ -436,6 +436,252 @@ def parse_official_odds_html(
         }
     return output
 
+
+
+def _result_table_grid(rows: list[list[dict[str, Any]]]):
+    return [
+        [compact_text(_odds_cell_text(cell)) for cell in row]
+        for row in _expand_odds_table(rows)
+    ]
+
+
+def _normalize_result_status(value: str) -> tuple[str | None, int | None]:
+    status = normalized(value).strip().replace("着", "")
+    if re.fullmatch(r"[1-6]", status):
+        position = int(status)
+        return f"{position:02d}", position
+    aliases = {
+        "F": "F", "L": "L", "S": "S", "K": "K",
+        "転覆": "転", "転": "転",
+        "落水": "落", "落": "落",
+        "沈没": "沈", "沈": "沈",
+        "失格": "失", "失": "失",
+        "妨害": "妨", "妨": "妨",
+        "欠場": "欠", "欠": "欠",
+        "不完走": "不", "不": "不",
+        "エンスト": "エ", "エ": "エ",
+        "返還": "返", "返": "返",
+        "除外": "除", "除": "除",
+    }
+    if status in aliases:
+        return aliases[status], None
+    if re.fullmatch(r"[FLSK][0-9]?", status):
+        return status, None
+    return None, None
+
+
+def _parse_result_finish_table(tables: list[list[list[dict[str, Any]]]]):
+    statuses: list[dict[str, Any]] = []
+    finish: list[dict[str, Any]] = []
+    for table in tables:
+        grid = _result_table_grid(table)
+        header_index = None
+        for index, row in enumerate(grid):
+            joined = "|".join(row)
+            if "着" in joined and "枠" in joined and "ボートレーサー" in joined:
+                header_index = index
+                break
+        if header_index is None:
+            continue
+
+        for row in grid[header_index + 1:]:
+            if len(row) < 3:
+                continue
+            status, position = _normalize_result_status(row[0])
+            boat_number = number(row[1])
+            racer_match = re.search(r"(\d{4})\s*(.*)", normalized(row[2]))
+            if status is None or boat_number not in range(1, 7) or not racer_match:
+                continue
+            racer_number = int(racer_match.group(1))
+            name = re.sub(r"\s+", "", racer_match.group(2)).strip() or None
+            item = {
+                "position": position,
+                "status": status,
+                "boatNumber": int(boat_number),
+                "racerNumber": racer_number,
+                "name": name,
+            }
+            statuses.append(item)
+            if position is not None:
+                finish.append(item)
+        if statuses:
+            break
+
+    # rowspan展開等で同じ行が重複しても艇番ごとに1件へ正規化する。
+    by_boat = {item["boatNumber"]: item for item in statuses}
+    statuses = [by_boat[key] for key in sorted(by_boat)]
+    finish = sorted(
+        (item for item in statuses if item["position"] is not None),
+        key=lambda item: (item["position"], item["boatNumber"]),
+    )
+    return statuses, finish
+
+
+def _parse_result_payout_table(tables: list[list[list[dict[str, Any]]]]):
+    payouts = {bet_type: [] for bet_type in PAYOUT_TYPES}
+    not_established: list[str] = []
+    seen: set[tuple[str, str, int]] = set()
+
+    for table in tables:
+        grid = _result_table_grid(table)
+        header_index = None
+        for index, row in enumerate(grid):
+            joined = "|".join(row)
+            if "勝式" in joined and "組番" in joined and "払戻金" in joined:
+                header_index = index
+                break
+        if header_index is None:
+            continue
+
+        current_type: str | None = None
+        for row in grid[header_index + 1:]:
+            if len(row) < 3:
+                continue
+            label = normalized(row[0]).strip()
+            if label in PAYOUT_LABEL_TO_TYPE:
+                current_type = PAYOUT_LABEL_TO_TYPE[label]
+            elif not current_type:
+                continue
+
+            combination_text = normalized(row[1]).strip()
+            payout_text = normalized(row[2]).strip()
+            popularity_text = normalized(row[3]).strip() if len(row) > 3 else ""
+
+            if "不成立" in combination_text:
+                if current_type not in not_established:
+                    not_established.append(current_type)
+                continue
+
+            expected_parts = 3 if current_type in {"trifecta", "trio"} else 2
+            if current_type in {"win", "place"}:
+                expected_parts = 1
+            boats = re.findall(r"[1-6]", combination_text)
+            if len(boats) != expected_parts:
+                continue
+            combination = "-".join(boats)
+            payout_match = re.search(r"([0-9][0-9,]*)", payout_text)
+            if not payout_match:
+                continue
+            payout_value = int(payout_match.group(1).replace(",", ""))
+            popularity_match = re.search(r"\d+", popularity_text)
+            popularity = int(popularity_match.group(0)) if popularity_match else None
+            key = (current_type, combination, payout_value)
+            if key in seen:
+                continue
+            seen.add(key)
+            payouts[current_type].append({
+                "combination": combination,
+                "payout": payout_value,
+                "popularity": popularity,
+            })
+        break
+
+    return payouts, not_established
+
+
+def _parse_result_refund_boats(document_text: str):
+    """公式結果画面の「返還」欄から返還対象の艇番だけを抽出する。"""
+    text = compact_text(document_text)
+    # 公式画面は「返還 6」「返還 1 4」のように表示する。
+    # 次の項目見出しまでを狭く切り、ページ内の他の艇番を拾わない。
+    match = re.search(
+        r"返還\s*([1-6](?:\s+[1-6]){0,5})(?=\s*(?:備考|決まり手|スタート情報|$))",
+        text,
+    )
+    if not match:
+        return []
+    return sorted({int(item) for item in re.findall(r"[1-6]", match.group(1))})
+
+
+def _refund_boats_from_statuses(statuses: list[Mapping[str, Any]]):
+    """Kファイルなど返還欄がない結果では、明確な返還状態だけ補助判定する。"""
+    refund = []
+    for item in statuses or []:
+        status = normalized(item.get("status") or "").strip()
+        if status.startswith(("F", "L")) or status in {"欠", "欠場", "返", "返還", "除", "除外"}:
+            boat = number(item.get("boatNumber"))
+            if boat in range(1, 7):
+                refund.append(int(boat))
+    return sorted(set(refund))
+
+
+def parse_official_result_html(
+    content: str | bytes,
+    target: date,
+    fetched_at: datetime | None = None,
+):
+    """
+    公式の1レース結果画面から、着順・艇別状態・7舟券種払戻を抽出する。
+
+    結果画面がまだ未確定の場合はNoneを返し、日次Kファイルや次回確認を待つ。
+    """
+    parser = OfficialOddsHTMLParser()
+    parser.feed(ensure_text(content))
+    document_text = compact_text(" ".join(parser.document_text))
+    fetched_at = fetched_at or datetime.now(JST)
+
+    if "レース中止" in document_text:
+        return {
+            "finish": [],
+            "sanrensho": [],
+            "payouts": {bet_type: [] for bet_type in PAYOUT_TYPES},
+            "statuses": [],
+            "refundBoats": [],
+            "payoutStatus": "notEstablished",
+            "notEstablishedTypes": list(PAYOUT_TYPES),
+            "settleable": True,
+            "source": "official-web-result",
+            "fetchedAt": fetched_at.isoformat(),
+        }
+
+    statuses, finish = _parse_result_finish_table(parser.tables)
+    payouts, not_established = _parse_result_payout_table(parser.tables)
+    refund_boats = _parse_result_refund_boats(document_text)
+    if not refund_boats:
+        refund_boats = _refund_boats_from_statuses(statuses)
+    resolved_types = {
+        bet_type for bet_type in PAYOUT_TYPES
+        if payouts[bet_type] or bet_type in not_established
+    }
+    # 中途半端な表示を精算へ使わない。7舟券種すべてが確定してから採用する。
+    if len(resolved_types) != len(PAYOUT_TYPES):
+        return None
+    if not statuses and not not_established:
+        return None
+
+    has_payouts = any(payouts.values())
+    payout_status = (
+        "partial" if has_payouts and not_established
+        else "notEstablished" if not_established
+        else "paid"
+    )
+    return {
+        "finish": [
+            {
+                "position": item["position"],
+                "boatNumber": item["boatNumber"],
+                "racerNumber": item["racerNumber"],
+                "name": item.get("name"),
+            }
+            for item in finish
+        ],
+        "sanrensho": [dict(item) for item in payouts["trifecta"]],
+        "payouts": payouts,
+        "statuses": [
+            {
+                "boatNumber": item["boatNumber"],
+                "racerNumber": item["racerNumber"],
+                "status": item["status"],
+            }
+            for item in statuses
+        ],
+        "refundBoats": refund_boats,
+        "payoutStatus": payout_status,
+        "notEstablishedTypes": not_established,
+        "settleable": True,
+        "source": "official-web-result",
+        "fetchedAt": fetched_at.isoformat(),
+    }
 
 def parse_grade_date_range(value: str, year: int):
     match = re.fullmatch(
@@ -1332,6 +1578,8 @@ def build_payload_from_files(
             "gradeScheduleLoaded": bool(grade_events),
             "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
             "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
+            "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
+            "fastResultPolicy": "締切5分後から10分周期・未確定のみ・直列取得",
         },
         "venues": [],
         "quality": {
@@ -1419,6 +1667,7 @@ def build_payload_from_files(
                     "sanrensho": sanrensho,
                     "payouts": payouts,
                     "statuses": statuses,
+                    "refundBoats": _refund_boats_from_statuses(statuses),
                     "payoutStatus": performance["payoutStatus"],
                     "notEstablishedTypes": performance.get("notEstablishedTypes", []),
                     "settleable": bool(any(payouts.values()) or performance.get("notEstablishedTypes")),
@@ -1728,6 +1977,181 @@ def refresh_official_odds(
     return stats
 
 
+
+def merge_cached_results(
+    payload: dict[str, Any],
+    previous: Mapping[str, Any] | None,
+):
+    """日次Kファイルがまだ未更新でも、直前に取得済みの公式結果を維持する。"""
+    if not previous or previous.get("date") != payload.get("date"):
+        return 0
+    previous_races = _payload_race_index(previous)
+    merged = 0
+    for key, race in _payload_race_index(payload).items():
+        current = race.get("result")
+        if isinstance(current, Mapping) and current.get("settleable") is True:
+            continue
+        cached = previous_races.get(key, {}).get("result")
+        if not isinstance(cached, Mapping):
+            continue
+        if cached.get("settleable") is not True:
+            continue
+        race["result"] = dict(cached)
+        merged += 1
+    return merged
+
+
+def official_result_page_url(target: date, venue_code: str, race_no: int):
+    return (
+        "https://www.boatrace.jp/owpc/pc/race/raceresult"
+        f"?hd={target.strftime('%Y%m%d')}&jcd={venue_code}&rno={race_no}"
+    )
+
+
+def fetch_official_result_page(
+    target: date,
+    venue_code: str,
+    race_no: int,
+):
+    """終了済みの1レースだけ公式結果画面を取得する。"""
+    url = official_result_page_url(target, venue_code, race_no)
+    request = Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; mamoboat-personal/3.9.1; "
+                "+scheduled-result-check)"
+            ),
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "ja-JP,ja;q=0.9",
+            "Cache-Control": "no-cache",
+        },
+    )
+    fetched_at = datetime.now(JST)
+    with urlopen(request, timeout=25) as response:
+        content = response.read()
+    result = parse_official_result_html(content, target, fetched_at)
+    if result is not None:
+        result["officialUrl"] = url
+    return result, url
+
+
+def _refresh_result_quality(payload: dict[str, Any], cached_web_results: int = 0):
+    all_races = list(_payload_race_index(payload).values())
+    completed = sum(
+        1 for race in all_races
+        if isinstance(race.get("result"), Mapping)
+        and race["result"].get("settleable") is True
+    )
+    web_results = sum(
+        1 for race in all_races
+        if isinstance(race.get("result"), Mapping)
+        and race["result"].get("source") == "official-web-result"
+    )
+    stats = payload.setdefault("quality", {}).setdefault("stats", {})
+    stats.setdefault("lzhCompletedResultRaces", int(stats.get("completedResultRaces") or 0))
+    stats["completedResultRaces"] = completed
+    stats["webResultRaces"] = web_results
+    stats["cachedWebResultRaces"] = cached_web_results
+    source = payload.setdefault("source", {})
+    source["fastResults"] = "BOAT RACE 公式レース結果画面の終了レース限定チェック"
+    source["fastResultPolicy"] = "締切5分後から10分周期・未確定のみ・直列取得"
+    return completed, web_results
+
+
+def refresh_official_results(
+    payload: dict[str, Any],
+    target: date,
+    previous: Mapping[str, Any] | None = None,
+    *,
+    grace_minutes: int = 5,
+    max_races: int = 12,
+    time_budget_seconds: int = 180,
+):
+    """
+    終了した未確定レースだけを公式結果画面で低頻度確認する。
+
+    1レース1ページ、直列取得、最大件数・時間上限つき。
+    日次Kファイルが後から来た場合はKファイル側のresultを優先する。
+    """
+    cached_count = merge_cached_results(payload, previous)
+    now = datetime.now(JST)
+    stats = {
+        "cachedRaces": cached_count,
+        "candidateRaces": 0,
+        "requests": 0,
+        "fetchedRaces": 0,
+        "pendingRaces": 0,
+        "errors": [],
+    }
+    _refresh_result_quality(payload, cached_count)
+    if target != now.date():
+        return stats
+
+    candidates: list[tuple[datetime, str, str, dict[str, Any]]] = []
+    for venue in payload.get("venues", []):
+        if not venue.get("active"):
+            continue
+        for race in venue.get("races", []):
+            result = race.get("result")
+            if isinstance(result, Mapping) and result.get("settleable") is True:
+                continue
+            try:
+                close_at = datetime.fromisoformat(str(race.get("closeTime")))
+                if close_at.tzinfo is None:
+                    close_at = close_at.replace(tzinfo=JST)
+            except (TypeError, ValueError):
+                continue
+            if now < close_at + timedelta(minutes=max(1, grace_minutes)):
+                continue
+            candidates.append((
+                close_at,
+                str(venue.get("code") or "").zfill(2),
+                str(venue.get("name") or ""),
+                race,
+            ))
+
+    # 新しく終わったレースを優先。混雑時も直近結果の反映を遅らせない。
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    candidates = candidates[:max(1, max_races)]
+    stats["candidateRaces"] = len(candidates)
+    started = time.monotonic()
+    consecutive_errors = 0
+
+    for close_at, venue_code, venue_name, race in candidates:
+        if time.monotonic() - started >= time_budget_seconds:
+            stats["errors"].append("result time budget reached")
+            break
+        try:
+            result, url = fetch_official_result_page(
+                target, venue_code, int(race.get("number") or 0)
+            )
+            stats["requests"] += 1
+            if result is None:
+                stats["pendingRaces"] += 1
+            else:
+                race["result"] = result
+                stats["fetchedRaces"] += 1
+            consecutive_errors = 0
+        except Exception as error:
+            stats["requests"] += 1
+            consecutive_errors += 1
+            stats["errors"].append(
+                f"{venue_code} {venue_name} {race.get('number')}R: {error}"
+            )
+            if consecutive_errors >= 3:
+                stats["errors"].append("result circuit breaker opened")
+                break
+        time.sleep(0.8)
+
+    completed, web_results = _refresh_result_quality(payload, cached_count)
+    payload.setdefault("quality", {})["fastResultDebug"] = (
+        f"cached={cached_count} candidates={stats['candidateRaces']} "
+        f"fetched={stats['fetchedRaces']} pending={stats['pendingRaces']} "
+        f"requests={stats['requests']} storedWeb={web_results} total={completed}"
+    )
+    return stats
+
 def atomic_write_text(path: Path, text: str):
     path.parent.mkdir(parents=True, exist_ok=True)
     temp_name = None
@@ -1805,7 +2229,7 @@ def build_result_archive(payload: dict[str, Any]) -> dict[str, Any]:
         "schemaVersion": 1,
         "date": payload.get("date"),
         "generatedAt": payload.get("generatedAt"),
-        "source": {"type": "official-lzh-result-archive"},
+        "source": {"type": "official-result-archive", "inputs": ["official-lzh", "official-web-result"]},
         "venues": venues,
         "stats": {
             "venues": len(venues),
@@ -1891,10 +2315,82 @@ def main():
         default=45,
         help="参考オッズを15分周期で取得する締切前の時間幅（既定45分）",
     )
+    parser.add_argument(
+        "--fast-results-only",
+        action="store_true",
+        help="既存JSONを読み、終了済み未確定レースの公式結果だけ確認する",
+    )
+    parser.add_argument(
+        "--skip-fast-results",
+        action="store_true",
+        help="通常同期時の公式結果画面チェックを省略する",
+    )
+    parser.add_argument(
+        "--result-grace-minutes",
+        type=int,
+        default=5,
+        help="締切後、結果画面の確認を始めるまでの待機分（既定5分）",
+    )
+    parser.add_argument(
+        "--result-max-races",
+        type=int,
+        default=12,
+        help="1回に確認する終了済み未確定レース数の上限（既定12）",
+    )
     args = parser.parse_args()
 
     raw_date = (args.date or "").strip()
     target = date.fromisoformat(raw_date) if raw_date else datetime.now(JST).date()
+    output = Path(args.output)
+    dated = output.parent / f"{target.isoformat()}.json"
+
+    if args.fast_results_only:
+        source_path = output if target == datetime.now(JST).date() else dated
+        try:
+            payload = json.loads(source_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            print(f"fast results skipped: base JSON not available: {source_path}")
+            return
+        if payload.get("date") != target.isoformat():
+            print(
+                f"fast results skipped: JSON date={payload.get('date')} "
+                f"target={target.isoformat()}"
+            )
+            return
+        before = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        stats = refresh_official_results(
+            payload,
+            target,
+            None,
+            grace_minutes=max(1, args.result_grace_minutes),
+            max_races=max(1, args.result_max_races),
+        )
+        if stats["fetchedRaces"] <= 0:
+            print(
+                "---- fast results ----\n"
+                f"candidates={stats['candidateRaces']} requests={stats['requests']} "
+                f"fetched=0 pending={stats['pendingRaces']} "
+                f"errors={len(stats['errors'])}"
+            )
+            for message in stats["errors"]:
+                print(message)
+            return
+        payload["generatedAt"] = datetime.now(JST).isoformat()
+        text_out = json.dumps(payload, ensure_ascii=False, indent=2)
+        atomic_write_text(dated, text_out)
+        if target == datetime.now(JST).date():
+            atomic_write_text(output, text_out)
+        write_result_archive(payload, output.parent)
+        print(
+            "---- fast results ----\n"
+            f"candidates={stats['candidateRaces']} requests={stats['requests']} "
+            f"fetched={stats['fetchedRaces']} pending={stats['pendingRaces']} "
+            f"errors={len(stats['errors'])}"
+        )
+        for message in stats["errors"]:
+            print(message)
+        return
+
     grade_cache = Path(args.grade_cache) if args.grade_cache else Path(
         f"data/grade_schedule_{target.year}.json"
     )
@@ -1928,8 +2424,6 @@ def main():
 
     # 検証済みJSONだけを原子的に置換する。
     # 失敗時は直前のtoday.jsonを維持する。
-    output = Path(args.output)
-    dated = output.parent / f"{target.isoformat()}.json"
     previous_payload = None
     try:
         previous_payload = json.loads(dated.read_text(encoding="utf-8"))
@@ -1943,6 +2437,19 @@ def main():
             target,
             previous_payload,
             window_minutes=max(5, args.odds_window_minutes),
+        )
+
+    if args.skip_fast_results:
+        cached_results = merge_cached_results(payload, previous_payload)
+        _refresh_result_quality(payload, cached_results)
+        result_stats = None
+    else:
+        result_stats = refresh_official_results(
+            payload,
+            target,
+            previous_payload,
+            grace_minutes=max(1, args.result_grace_minutes),
+            max_races=max(1, args.result_max_races),
         )
     reuse_generated_at_when_unchanged(payload, dated)
     text = json.dumps(payload, ensure_ascii=False, indent=2)
@@ -1973,6 +2480,11 @@ def main():
         print(message)
     print("---- delayed odds ----")
     print(payload["quality"].get("oddsDebug", "odds fetch skipped"))
+    print("---- fast results ----")
+    print(payload["quality"].get("fastResultDebug", "result fetch skipped"))
+    if result_stats and result_stats.get("errors"):
+        for message in result_stats["errors"]:
+            print(message)
     if payload["quality"]["warnings"]:
         print("---- warnings ----")
         for message in payload["quality"]["warnings"]:
