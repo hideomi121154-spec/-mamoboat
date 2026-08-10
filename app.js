@@ -2035,7 +2035,54 @@
       button.textContent = "最新結果を確認中…";
     }
     try {
-      const dataset = await fetchDataset(record.raceDate, true);
+      const dataset = await fetchDataset(record.raceDate, true);      
+      try {
+        const edgeResponse = await fetch(
+          "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-result",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              date: record.raceDate,
+              venueCode: record.venueCode,
+              raceNo: record.raceNo,
+            }),
+          }
+        );
+
+        if (edgeResponse.ok) {
+          const edgePayload = await edgeResponse.json();
+
+          if (
+            edgePayload?.ok &&
+            edgePayload.status === "settled" &&
+            edgePayload.result
+          ) {
+            const checkedRace = findDatasetRace(
+              dataset,
+              record.venueCode,
+              record.raceNo
+            );
+
+            if (checkedRace) {
+              checkedRace.result = edgePayload.result;
+              checkedRace.resultCheck = {
+                state: "confirmed",
+                checkedAt: edgePayload.checkedAt || new Date().toISOString(),
+                source: "supabase-edge",
+              };
+            }
+          } else if (edgePayload?.ok && edgePayload.status === "pending") {
+            record.resultCheck = {
+              state: "waiting",
+              checkedAt: edgePayload.checkedAt || new Date().toISOString(),
+              source: "supabase-edge",
+            };
+          }
+        }
+      } catch (edgeError) {
+        console.warn("Supabase結果確認に失敗しました", edgeError);
+      }
       if (dataset.date === C.jstDate()) {
         DATA = dataset;
         liveLoaded = true;
