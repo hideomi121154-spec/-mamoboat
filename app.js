@@ -1616,18 +1616,58 @@
     else form[index].add(boat);
     refreshBuilder();
   };
-
-  function addCombos(combos) {
+ async function addCombos(combos) {
     const seen = new Set(cart.map(
       (line) => `${C.normalizeBetType(line.betType)}:${C.canonicalCombo(line.combo, line.betType)}`
     ));
     let added = 0;
     const raceItem = race(S.venue, S.raceNo);
+       let liveOdds = null;
+
+    try {
+      const oddsResponse = await fetch(
+        "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-odds",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: DATA.date,
+            venueCode: S.venue,
+            raceNo: S.raceNo,
+            betType,
+          }),
+        }
+      );
+
+      if (oddsResponse.ok) {
+        const oddsPayload = await oddsResponse.json();
+
+        if (
+          oddsPayload?.ok &&
+          oddsPayload.status === "available" &&
+          oddsPayload.odds?.values
+        ) {
+          liveOdds = oddsPayload.odds;
+        }
+      }
+    } catch (error) {
+      console.warn("リアルタイム倍率の取得に失敗しました", error);
+    }
     combos.forEach((combo) => {
       const canonical = C.canonicalCombo(combo, betType).split("-").map(Number);
       const key = `${betType}:${canonical.join("-")}`;
       if (!seen.has(key)) {
-        const reference = referenceOdds(raceItem, betType, canonical);
+        const liveKey = canonical.join("-");
+const liveValue = liveOdds?.values?.[liveKey];
+const reference = liveValue != null
+  ? {
+      value: String(liveValue),
+      updatedAt: liveOdds.updatedAt || liveOdds.fetchedAt || new Date().toISOString(),
+      timeSource: "fetched",
+    }
+  : referenceOdds(raceItem, betType, canonical);
         cart.push({
           combo: canonical,
           betType,
