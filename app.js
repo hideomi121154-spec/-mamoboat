@@ -2066,6 +2066,169 @@ const reference = liveValue != null
       tone: "",
     };
   }
+  let autoResultCheckRunning = false;
+  const autoResultCheckedAt = new Map();
+
+  async function autoRefreshPendingResults() {
+    if (document.hidden || autoResultCheckRunning) return;
+
+    const now = Date.now();
+    const grouped = new Map();
+
+    S.records.forEach((record) => {
+      if (
+        record.settled ||
+        !record.raceDate ||
+        !record.closeTime
+      ) return;
+
+      const closeAt = new Date(record.closeTime).getTime();
+
+      // 締切2分後から自動確認開始
+      if (
+        !Number.isFinite(closeAt) ||
+        now < closeAt + 2 * 60 * 1000
+      ) return;
+
+      const key =
+        `${record.raceDate}:${record.venueCode}:${record.raceNo}`;
+
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(record);
+    });
+
+    // 同じレースは1回だけ確認。1周期最大3レース。
+    const targets = [...grouped.entries()]
+      .filter(
+        ([key]) =>
+          now - (autoResultCheckedAt.get(key) || 0) >= 60 * 1000
+      )
+      .slice(0, 3);
+
+    if (!targets.length) return;
+
+    autoResultCheckRunning = true;
+    let needsSave = false;
+    let settlementChanged = false;
+
+    try {
+      for (const [key, records] of targets) {
+        autoResultCheckedAt.set(key, Date.now());
+
+        const sample = records[0];
+
+        try {
+          const edgeResponse = await fetch(
+            "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-result",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                date: sample.raceDate,
+                venueCode: sample.venueCode,
+                raceNo: sample.raceNo,
+              }),
+            }
+          );
+
+          if (!edgeResponse.ok) {
+            throw new Error(
+              `result edge ${edgeResponse.status}`
+            );
+          }
+
+          const edgePayload = await edgeResponse.json();
+
+          if (
+            edgePayload?.ok &&
+            edgePayload.status === "settled" &&
+            edgePayload.result
+          ) {
+            const dataset =
+              sample.raceDate === DATA.date
+                ? DATA
+                : await fetchDataset(sample.raceDate, true);
+
+            const checkedRace = findDatasetRace(
+              dataset,
+              sample.venueCode,
+              sample.raceNo
+            );
+
+            if (!checkedRace) continue;
+
+            checkedRace.result = edgePayload.result;
+            checkedRace.resultCheck = {
+              state: "confirmed",
+              checkedAt:
+                edgePayload.checkedAt ||
+                new Date().toISOString(),
+              source: "supabase-edge-auto",
+            };
+
+            records.forEach((record) => {
+              record.resultCheck = {
+                ...checkedRace.resultCheck,
+              };
+
+              const result = C.settleRecord(record, dataset);
+
+              if (result.changed) {
+                recordSettlement(
+                  record,
+                  "auto-edge-refresh"
+                );
+                settlementChanged = true;
+              }
+            });
+
+            needsSave = true;
+          } else if (
+            edgePayload?.ok &&
+            edgePayload.status === "pending"
+          ) {
+            records.forEach((record) => {
+              record.resultCheck = {
+                state: "waiting",
+                checkedAt:
+                  edgePayload.checkedAt ||
+                  new Date().toISOString(),
+                source: "supabase-edge-auto",
+              };
+            });
+
+            needsSave = true;
+          }
+        } catch (error) {
+          console.warn(
+            "自動結果確認に失敗しました",
+            error
+          );
+
+          records.forEach((record) => {
+            record.resultCheck = {
+              state: "error",
+              checkedAt: new Date().toISOString(),
+              source: "supabase-edge-auto",
+            };
+          });
+
+          needsSave = true;
+        }
+      }
+    } finally {
+      autoResultCheckRunning = false;
+    }
+
+    if (needsSave) save();
+
+    // 実際に精算が起きた時だけ画面を更新
+    if (settlementChanged) {
+      renderAll();
+    }
+  }
 
   window.refreshResultNow = async (id, button) => {
     const record = S.records.find((item) => item.id === id);
@@ -2748,20 +2911,32 @@ B的中: ${stats.virtualHits}件
     collector_configured: collectorReady(),
   });
   renderAll();
-  loadOfficialData();
+  loadOfficialData().finally(() => autoRefreshPendingResults());
   setInterval(() => {
     if (!document.hidden) {
       updateTimeDisplays();
     }
   }, 10 * 1000);
-  setInterval(() => {
-    if (!document.hidden && Date.now() - lastLoadAt >= 5 * 60 * 1000) {
+ setInterval(() => {
+  if (!document.hidden) {
+    autoRefreshPendingResults();
+  }
+
+  if (!document.hidden && Date.now() - lastLoadAt >= 5 * 60 * 1000) {
+    loadOfficialData();
+  }
+}, 60 * 1000);
+ document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    autoRefreshPendingResults();
+
+    if (Date.now() - lastLoadAt > 5 * 60 * 1000) {
       loadOfficialData();
     }
-  }, 60 * 1000);
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && Date.now() - lastLoadAt > 5 * 60 * 1000) loadOfficialData();
-    if (document.hidden) flushPilotEvents();
+  } else {
+    flushPilotEvents();
+  }
+});
   });
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
