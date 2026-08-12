@@ -1092,9 +1092,32 @@ body { padding-right: 0; }
 @media (min-width: 1100px) {
   .app-shell {
     max-width: 1280px;
+    padding-left: 92px;
+    padding-bottom: 32px;
   }
 
   .venue-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: max(8px, calc((100vw - 1280px) / 2 + 8px));
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    width: 76px;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(5, 35, 62, .18);
+  }
+
+  .bottom-nav .nav {
+    min-height: 58px;
+    border-radius: 7px;
   }
 }
