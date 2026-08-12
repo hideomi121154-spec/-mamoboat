@@ -2937,7 +2937,7 @@ B的中: ${stats.virtualHits}件
     flushPilotEvents();
   }
 });
-  });
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
   }
