@@ -1958,6 +1958,37 @@ const reference = liveValue != null
       rewardEvaluatedAt: null,
     };
     S.records.push(record);
+    if (record.closeTime) {
+  const closeAt = new Date(record.closeTime).getTime();
+
+  if (Number.isFinite(closeAt)) {
+    const checkAfter = new Date(
+      closeAt + 2 * 60 * 1000
+    ).toISOString();
+
+    fetch(
+      "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-result",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: record.raceDate,
+          venueCode: record.venueCode,
+          raceNo: record.raceNo,
+          registerOnly: true,
+          checkAfter,
+        }),
+      }
+    ).catch((error) => {
+      console.warn(
+        "結果監視予約に失敗しました",
+        error
+      );
+    });
+  }
+}
     trackEvent("virtual_bet_placed", {
       record_id: record.id,
       line_count: record.lines.length,
