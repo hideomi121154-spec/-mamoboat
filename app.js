@@ -2345,9 +2345,9 @@ const reference = liveValue != null
       const pending = pendingResultMessage(record);
       openModal(`<div class="instant-result"><span class="kicker">RESULT CHECK</span><h2>最新データを確認しました</h2>
         <div class="notice ${pending.tone}"><b>${esc(pending.title)}</b><br>${esc(pending.detail)}<br><span class="tiny">MAMO BOATデータ時刻：${esc(generated)}</span></div>
-        <p class="tiny">このボタンはGitHub Pages上の最新データを読み直します。GitHub ActionsやBOAT RACE公式サイトへの取得処理を、その場で起動するボタンではありません。</p>
+        <p class="tiny">このボタンは公式結果を今すぐ確認します。公式払戻が確定していれば、B精算へ反映します。</p>
         <a class="btn real-cash-link full" href="${official}" target="_blank" rel="noopener noreferrer">このレースの公式結果を見る ↗</a>
-        <button class="btn secondary full" type="button" onclick="closeModal();refreshResultNow('${record.id}')">もう一度更新</button>
+        <button class="btn secondary full" type="button" onclick="closeModal();refreshResultNow('${record.id}')">もう一度公式結果を確認</button>
         <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button></div>`);
     } catch (error) {
       openModal(`<div class="instant-result"><h2>再確認できませんでした</h2><div class="notice warn">通信状態を確認し、少し時間をおいてもう一度お試しください。記録はそのまま残っています。</div><button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button></div>`);
