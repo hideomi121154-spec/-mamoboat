@@ -19,7 +19,15 @@ def b_entry(boat, racer, name="選手太郎", branch="愛知"):
 
 
 def b_block(code, venue_name, racer_base):
-    lines = [f"{code}BBGN", f"ボートレース{venue_name}"]
+    # 現行の番組表は、場名だけでなく開催日・何日目・大会名を必須とする。
+    # 本番のstrict検証を迂回せず、fixtureを公式Bファイルの見出しに合わせる。
+    lines = [
+        f"{code}BBGN",
+        f"ボートレース{venue_name}",
+        "第1日 2026年8月9日",
+        "*** 番組表 ***",
+        f"{venue_name.replace(' ', '')}テスト大会",
+    ]
     for race_no in range(1, 13):
         hour = 9 + (race_no // 3)
         minute = (race_no * 7) % 60
@@ -85,7 +93,7 @@ payload = sync.build_payload_from_files(
     {"K260809.TXT": performance_text},
 )
 
-assert payload["schemaVersion"] == 8
+assert payload["schemaVersion"] == 10
 assert len(payload["venues"]) == 24
 assert [venue["code"] for venue in payload["venues"]] == [
     f"{number:02d}" for number in range(1, 25)

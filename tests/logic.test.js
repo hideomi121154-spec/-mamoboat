@@ -236,4 +236,10 @@ const officialEntries = official.venues.reduce(
 );
 assert.equal(officialRaces, official.quality.stats.scheduleRaces);
 assert.equal(officialEntries, official.quality.stats.scheduleEntries);
+
+// 手動の「最新結果を確認」はキャッシュ読込だけで終わらず、Edge Functionへ
+// forceRefreshを明示する契約を維持する（通信自体は通常テストでは行わない）。
+const appSource = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
+assert.match(appSource, /window\.refreshResultNow\s*=\s*async/);
+assert.match(appSource, /forceRefresh:\s*true/);
 console.log("logic tests OK");
