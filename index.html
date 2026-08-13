@@ -7,15 +7,15 @@
   <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg">
-  <link rel="stylesheet" href="styles.css">
-  <title>まもボート v3.9.1</title>
+  <link rel="stylesheet" href="styles.css?v=392">
+  <title>まもボート v3.9.2</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PILOT v3.9.1</small></span>
+        <span class="brand-copy"><strong>まもボート</strong><small>PILOT v3.9.2</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -230,6 +230,6 @@
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
   <script src="core.js"></script>
   <script src="pilot-config.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=392"></script>
 </body>
 </html>

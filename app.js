@@ -2,7 +2,7 @@
   "use strict";
 
   const C = window.MamoCore;
-  const APP_VERSION = "3.9.1";
+  const APP_VERSION = "3.9.2";
   const WALLET_VERSION = 3;
   const LEGACY_BONUS_TYPES = new Set(["login_bonus", "defense_bonus"]);
   const KEY = "mamoboat_v39_personal";
@@ -909,6 +909,10 @@
       const width = float.offsetWidth || 46;
       const height = float.offsetHeight || 116;
       const shellRect = document.querySelector(".app-shell")?.getBoundingClientRect();
+      const navRect = document.querySelector(".bottom-nav")?.getBoundingClientRect();
+      const bottomNavClearance = navRect && navRect.bottom >= window.innerHeight - 2
+        ? window.innerHeight - navRect.top + 8
+        : 8;
       const minX = Math.max(6, (shellRect?.left || 0) + 6);
       const minY = 74;
       return {
@@ -918,7 +922,7 @@
           window.innerWidth - width - 6,
           (shellRect?.right || window.innerWidth) - width - 6
         )),
-        maxY: Math.max(minY, window.innerHeight - height - 86),
+        maxY: Math.max(minY, window.innerHeight - height - bottomNavClearance),
       };
     };
 
@@ -2269,7 +2273,8 @@ const reference = liveValue != null
       button.textContent = "最新結果を確認中…";
     }
     try {
-      const dataset = await fetchDataset(record.raceDate, true);      
+      const dataset = await fetchDataset(record.raceDate, true);
+      let liveResultCheckedAt = null;
       try {
         const edgeResponse = await fetch(
           "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-result",
@@ -2280,12 +2285,16 @@ const reference = liveValue != null
               date: record.raceDate,
               venueCode: record.venueCode,
               raceNo: record.raceNo,
+              forceRefresh: true,
             }),
           }
         );
 
         if (edgeResponse.ok) {
           const edgePayload = await edgeResponse.json();
+          if (edgePayload?.ok) {
+            liveResultCheckedAt = edgePayload.checkedAt || new Date().toISOString();
+          }
 
           if (
             edgePayload?.ok &&
@@ -2302,14 +2311,14 @@ const reference = liveValue != null
               checkedRace.result = edgePayload.result;
               checkedRace.resultCheck = {
                 state: "confirmed",
-                checkedAt: edgePayload.checkedAt || new Date().toISOString(),
+                checkedAt: liveResultCheckedAt,
                 source: "supabase-edge",
               };
             }
           } else if (edgePayload?.ok && edgePayload.status === "pending") {
             record.resultCheck = {
               state: "waiting",
-              checkedAt: edgePayload.checkedAt || new Date().toISOString(),
+              checkedAt: liveResultCheckedAt,
               source: "supabase-edge",
             };
           }
@@ -2335,16 +2344,19 @@ const reference = liveValue != null
           <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
         return;
       }
-      const generated = dataset.generatedAt ? timeText(dataset.generatedAt) : "時刻不明";
       const official = officialResultUrl(record.venueCode, record.raceNo, record.raceDate);
       const checkedRace = findDatasetRace(dataset, record.venueCode, record.raceNo);
-      if (checkedRace?.resultCheck) {
+      if (liveResultCheckedAt) {
+        save();
+      } else if (checkedRace?.resultCheck) {
         record.resultCheck = { ...checkedRace.resultCheck };
         save();
       }
+      const checkedAt = liveResultCheckedAt || record.resultCheck?.checkedAt;
+      const checkedAtLabel = checkedAt ? timeText(checkedAt) : "時刻不明";
       const pending = pendingResultMessage(record);
       openModal(`<div class="instant-result"><span class="kicker">RESULT CHECK</span><h2>最新データを確認しました</h2>
-        <div class="notice ${pending.tone}"><b>${esc(pending.title)}</b><br>${esc(pending.detail)}<br><span class="tiny">MAMO BOATデータ時刻：${esc(generated)}</span></div>
+        <div class="notice ${pending.tone}"><b>${esc(pending.title)}</b><br>${esc(pending.detail)}<br><span class="tiny">公式結果の確認時刻：${esc(checkedAtLabel)}</span></div>
         <p class="tiny">このボタンは公式結果を今すぐ確認します。公式払戻が確定していれば、B精算へ反映します。</p>
         <a class="btn real-cash-link full" href="${official}" target="_blank" rel="noopener noreferrer">このレースの公式結果を見る ↗</a>
         <button class="btn secondary full" type="button" onclick="closeModal();refreshResultNow('${record.id}')">もう一度公式結果を確認</button>
@@ -2904,7 +2916,7 @@ B的中: ${stats.virtualHits}件
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v391-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v392-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };

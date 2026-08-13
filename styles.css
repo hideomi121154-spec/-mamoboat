@@ -1036,9 +1036,14 @@ html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
   .cart-odds b { font-size: 9px; }
 }
 
-/* v3.8.0 — 全幅を維持し、公式投票ボタンだけを画面内で移動可能に */
+/* v3.9.2 — PC小ウィンドウ・iPadでも操作を隠さないレスポンシブUI */
 body { padding-right: 0; }
-.app-shell { max-width: 720px; margin-left: auto; margin-right: auto; }
+.app-shell {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
 .bottom-nav {
   left: 50%;
   width: min(720px, 100%);
@@ -1089,18 +1094,30 @@ body { padding-right: 0; }
   line-height: 1;
 }
 .real-bet-float b { font-size: 14px; line-height: 1; }
-@media (min-width: 1100px) {
- .home-masthead {
-  height: 320px;
+
+/* 低いウィンドウでもモーダル内を最後の操作までスクロールできる。 */
+.modal {
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
+
+@media (max-height: 680px) {
+  .modal-bg { align-items: stretch; padding: 8px; }
+  .modal {
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+}
+
+/* 744px = iPad mini縦向き相当。ここからPC同様の左ナビにする。 */
+@media (min-width: 744px) {
   .app-shell {
     max-width: 1280px;
     padding-left: 92px;
     padding-bottom: 32px;
-  }
-
-  .venue-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .bottom-nav {
@@ -1114,6 +1131,10 @@ body { padding-right: 0; }
     grid-template-columns: 1fr;
     gap: 5px;
     padding: 8px;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border: 1px solid var(--line);
     border-radius: 10px;
     box-shadow: 0 6px 20px rgba(5, 35, 62, .18);
@@ -1123,4 +1144,9 @@ body { padding-right: 0; }
     min-height: 58px;
     border-radius: 7px;
   }
+}
+
+@media (min-width: 1100px) {
+  .home-masthead { height: 320px; }
+  .venue-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
