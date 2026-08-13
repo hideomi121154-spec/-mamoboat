@@ -2093,7 +2093,7 @@ const reference = liveValue != null
     }
     return {
       title: "公式結果を確認中",
-      detail: "終了済みの未確定レースを約10分周期で自動確認しています。結果を取得できしだいB精算します。",
+   detail: "締切後の未精算レースは自動で公式結果を確認します。公式払戻が確定しだいB精算へ反映します。",
       tone: "",
     };
   }
@@ -2354,7 +2354,7 @@ const reference = liveValue != null
     } finally {
       if (button && document.body.contains(button)) {
         button.disabled = false;
-        button.textContent = "最新データを再確認";
+        button.textContent = "今すぐ公式結果を確認";
       }
     }
   };
@@ -2476,7 +2476,7 @@ const reference = liveValue != null
     if (!record.settled) {
       const pending = pendingResultMessage(record);
       result = `<div class="notice ${pending.tone}"><b>${esc(pending.title)}</b><br>${esc(pending.detail)}</div>
-        <div class="pending-result-actions"><button class="btn primary" type="button" onclick="refreshResultNow('${record.id}',this)">最新データを再確認</button>
+        <div class="pending-result-actions"><button class="btn primary" type="button" onclick="refreshResultNow('${record.id}',this)">今すぐ公式結果を確認</button>
         ${officialResult ? `<a class="btn secondary" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果を見る ↗</a>` : ""}</div>`;
     } else if (record.status === "refunded") {
       result = `<div class="notice warn"><div class="result">舟券 不成立 / Bメダル返還</div>${fmt(record.payoutC)}Bを返還しました。</div>`;
