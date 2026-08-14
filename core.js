@@ -111,7 +111,66 @@
     return new Set(derived);
   }
 
-  function settleRecord(record, dataset) {
+  function elapsedMinutes(startValue, endValue) {
+    const start = new Date(startValue || "").getTime();
+    const end = new Date(endValue || "").getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+    return Math.round(((end - start) / 60000) * 100) / 100;
+  }
+
+  function stampResultTiming(record, race, reflectedAt) {
+    const reflected = new Date(reflectedAt || "");
+    const reflectedIso = Number.isFinite(reflected.getTime())
+      ? reflected.toISOString()
+      : new Date().toISOString();
+    const closeTime = race.closeTime || record.closeTime || null;
+    const fetchedAt = race.result?.fetchedAt || null;
+    const closeToReflected = elapsedMinutes(closeTime, reflectedIso);
+    const closeToFetched = elapsedMinutes(closeTime, fetchedAt);
+    const fetchedMs = new Date(fetchedAt || "").getTime();
+    const reflectedMs = new Date(reflectedIso).getTime();
+
+    record.settledAt = reflectedIso;
+    record.resultReflectedAt = reflectedIso;
+    record.resultFetchedAt = fetchedAt;
+    record.resultLatencyMinutes = closeToReflected;
+    record.resultFetchLatencyMinutes = closeToFetched;
+    record.resultDeliverySeconds = Number.isFinite(fetchedMs) && reflectedMs >= fetchedMs
+      ? Math.round((reflectedMs - fetchedMs) / 1000)
+      : null;
+  }
+
+  function resultLatencyStats(records) {
+    const numericValues = (key) => (records || []).flatMap((record) => {
+      const raw = record?.[key];
+      if (raw == null || raw === "") return [];
+      const value = Number(raw);
+      return Number.isFinite(value) && value >= 0 ? [value] : [];
+    }).sort((a, b) => a - b);
+    const values = numericValues("resultLatencyMinutes");
+    const fetchedValues = numericValues("resultFetchLatencyMinutes");
+    const median = (items) => {
+      if (!items.length) return null;
+      const middle = Math.floor(items.length / 2);
+      return items.length % 2
+        ? items[middle]
+        : Math.round(((items[middle - 1] + items[middle]) / 2) * 100) / 100;
+    };
+    const average = (items) => items.length
+      ? Math.round((items.reduce((sum, value) => sum + value, 0) / items.length) * 100) / 100
+      : null;
+    return {
+      samples: values.length,
+      medianMinutes: median(values),
+      averageMinutes: average(values),
+      minMinutes: values[0] ?? null,
+      maxMinutes: values[values.length - 1] ?? null,
+      fetchedSamples: fetchedValues.length,
+      fetchedMedianMinutes: median(fetchedValues),
+    };
+  }
+
+  function settleRecord(record, dataset, reflectedAt = new Date().toISOString()) {
     if (!record || record.settled || !dataset || record.raceDate !== dataset.date) {
       return { changed: false, payoutAdded: 0, hit: false, refunded: false };
     }
@@ -130,7 +189,7 @@
       record.resultPayout = null;
       record.resultPayouts = [];
       record.settled = true;
-      record.settledAt = new Date().toISOString();
+      stampResultTiming(record, race, reflectedAt);
       return { changed: true, payoutAdded: refund, hit: false, refunded: true };
     }
 
@@ -194,7 +253,7 @@
     record.resultPayout = relevantPayouts[0]?.payout || null;
     record.resultPayouts = relevantPayouts;
     record.settled = true;
-    record.settledAt = new Date().toISOString();
+    stampResultTiming(record, race, reflectedAt);
     return {
       changed: true,
       payoutAdded: record.payoutC,
@@ -381,6 +440,7 @@
     payoutList,
     findRace,
     settleRecord,
+    resultLatencyStats,
     validateDataset,
     savedTotals,
     rewardOutcome,
