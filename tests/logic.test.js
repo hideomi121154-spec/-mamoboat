@@ -242,4 +242,124 @@ assert.equal(officialEntries, official.quality.stats.scheduleEntries);
 const appSource = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 assert.match(appSource, /window\.refreshResultNow\s*=\s*async/);
 assert.match(appSource, /forceRefresh:\s*true/);
+// 実レースで確認した中止・返還・欠場を精算回帰テストとして固定する。
+function liveExceptionDataset(date, venueCode, raceNo, result) {
+  return { date, venues: [{ code: venueCode, races: [{ number: raceNo, result }] }] };
+}
+
+// 2026-08-11 江戸川1R: レース中止は全買い目を返還する。
+const cancelledLiveResult = {
+  finish: [],
+  payouts: {},
+  refundBoats: [],
+  payoutStatus: "notEstablished",
+  notEstablishedTypes: ["win", "place", "exacta", "quinella", "wide", "trifecta", "trio"],
+  settleable: true,
+};
+const cancelledLiveRecord = {
+  raceDate: "2026-08-11",
+  venueCode: "03",
+  raceNo: 1,
+  settled: false,
+  stake: 700,
+  lines: [{ betType: "trifecta", combo: [1, 2, 3], stake: 700 }],
+};
+C.settleRecord(
+  cancelledLiveRecord,
+  liveExceptionDataset("2026-08-11", "03", 1, cancelledLiveResult)
+);
+assert.equal(cancelledLiveRecord.status, "refunded");
+assert.equal(cancelledLiveRecord.payoutC, 700);
+
+// 2026-08-12 江戸川5R: 3・4・5号艇返還、拡連複・3連複不成立。
+const partialLiveResult = {
+  finish: [
+    { position: 1, boatNumber: 1 },
+    { position: 2, boatNumber: 6 },
+    { position: 3, boatNumber: 2 },
+  ],
+  payouts: {
+    win: [{ combination: "1", payout: 100 }],
+    wide: [],
+    trifecta: [{ combination: "1-6-2", payout: 440 }],
+  },
+  refundBoats: [3, 4, 5],
+  payoutStatus: "partial",
+  notEstablishedTypes: ["wide", "trio"],
+  settleable: true,
+};
+const partialLiveRecord = {
+  raceDate: "2026-08-12",
+  venueCode: "03",
+  raceNo: 5,
+  settled: false,
+  stake: 400,
+  lines: [
+    { betType: "trifecta", combo: [1, 6, 2], stake: 100 },
+    { betType: "trifecta", combo: [3, 1, 6], stake: 100 },
+    { betType: "wide", combo: [1, 6], stake: 100 },
+    { betType: "win", combo: [2], stake: 100 },
+  ],
+};
+C.settleRecord(
+  partialLiveRecord,
+  liveExceptionDataset("2026-08-12", "03", 5, partialLiveResult)
+);
+assert.equal(partialLiveRecord.status, "hit");
+assert.equal(partialLiveRecord.refundC, 200);
+assert.equal(partialLiveRecord.payoutC, 640);
+
+// 2026-01-05 大村10R: 3号艇欠場は3号艇を含む買い目だけ返還する。
+const scratchedLiveResult = {
+  finish: [
+    { position: 1, boatNumber: 6 },
+    { position: 2, boatNumber: 2 },
+    { position: 3, boatNumber: 1 },
+  ],
+  payouts: {
+    win: [{ combination: "6", payout: 480 }],
+    trifecta: [{ combination: "6-2-1", payout: 5230 }],
+  },
+  statuses: [
+    { boatNumber: 1, status: "03" },
+    { boatNumber: 2, status: "02" },
+    { boatNumber: 3, status: "欠" },
+    { boatNumber: 4, status: "04" },
+    { boatNumber: 5, status: "05" },
+    { boatNumber: 6, status: "01" },
+  ],
+  refundBoats: [3],
+  payoutStatus: "paid",
+  notEstablishedTypes: [],
+  settleable: true,
+};
+const scratchedLiveRecord = {
+  raceDate: "2026-01-05",
+  venueCode: "24",
+  raceNo: 10,
+  settled: false,
+  stake: 400,
+  lines: [
+    { betType: "trifecta", combo: [6, 2, 1], stake: 100 },
+    { betType: "trifecta", combo: [3, 6, 2], stake: 100 },
+    { betType: "win", combo: [3], stake: 100 },
+    { betType: "win", combo: [6], stake: 100 },
+  ],
+};
+const scratchedLiveSettlement = C.settleRecord(
+  scratchedLiveRecord,
+  liveExceptionDataset("2026-01-05", "24", 10, scratchedLiveResult)
+);
+assert(scratchedLiveSettlement.changed);
+assert.equal(scratchedLiveRecord.status, "hit");
+assert.equal(scratchedLiveRecord.refundC, 200);
+assert.equal(scratchedLiveRecord.payoutC, 5910);
+assert.equal(
+  C.settleRecord(
+    scratchedLiveRecord,
+    liveExceptionDataset("2026-01-05", "24", 10, scratchedLiveResult)
+  ).changed,
+  false
+);
+
 console.log("logic tests OK");
