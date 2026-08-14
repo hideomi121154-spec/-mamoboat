@@ -215,6 +215,52 @@ assert.equal(behavior.escalation, 1);
 assert.equal(behavior.rapid, 1);
 assert.equal(behavior.urgeDrop, 14 / 3);
 
+const morningReport = C.editorialReport([
+  {
+    time: "2026-08-13T10:00:00+09:00",
+    intendedYen: 100,
+    saved: 100,
+    conf: 5,
+    urge: 7,
+    reason: "まあ100円だけ",
+    status: "miss",
+  },
+  {
+    time: "2026-08-13T10:12:00+09:00",
+    intendedYen: 500,
+    saved: 500,
+    conf: 4,
+    urge: 8,
+    reason: "なんとなく",
+    status: "pending",
+  },
+  {
+    time: "2026-08-12T11:00:00+09:00",
+    intendedYen: 100,
+    saved: 100,
+    conf: 6,
+    urge: 4,
+    reason: "推し選手",
+    status: "miss",
+  },
+], "morning", new Date("2026-08-14T08:00:00+09:00"));
+assert.equal(morningReport.available, true);
+assert.equal(morningReport.recordCount, 2);
+assert.equal(morningReport.issueKey, "morning:2026-08-13");
+assert.match(morningReport.headline, /予定額が動いた場面/);
+assert.equal(morningReport.facts[1].value, "600円");
+assert.match(morningReport.trend, /前の同期間/);
+assert(!/勝率|買い目|賭け金を推奨/.test(morningReport.headline));
+
+const emptyMonthlyReport = C.editorialReport(
+  [],
+  "monthly",
+  new Date("2026-08-14T08:00:00+09:00")
+);
+assert.equal(emptyMonthlyReport.available, false);
+assert.equal(emptyMonthlyReport.recordCount, 0);
+assert.match(emptyMonthlyReport.trend, /賭けなかった日とは推測しません/);
+
 assert.equal(C.normalizeCombo("1 - 3 − 5"), "1-3-5");
 assert.equal(C.canonicalCombo([3, 1, 2], "trio"), "1-2-3");
 assert.equal(C.canonicalCombo([3, 1], "quinella"), "1-3");
@@ -281,17 +327,30 @@ const manifestSource = fs.readFileSync(
 );
 const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
 const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
-assert.match(indexSource, /<title>MAMO BOAT v3\.9\.4<\/title>/);
-assert.match(indexSource, /styles\.css\?v=394/);
-assert.match(indexSource, /core\.js\?v=394/);
-assert.match(indexSource, /app\.js\?v=394/);
+assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
+assert.match(indexSource, /styles\.css\?v=401/);
+assert.match(indexSource, /core\.js\?v=401/);
+assert.match(indexSource, /app\.js\?v=401/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
+assert.match(indexSource, /MAMO編集部/);
+assert.match(indexSource, /加音 守/);
+assert.doesNotMatch(indexSource, /id="realBetFloat"/);
+assert.doesNotMatch(indexSource, /ダブルWIN・防衛スタンプ/);
 assert.match(indexSource, /<\/div>\s*<nav class="bottom-nav"/);
 assert.match(stylesSource, /@media \(max-width: 743px\)[\s\S]*?\.bottom-nav[\s\S]*?bottom: 0 !important/);
 assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v394-ios-bottom-nav-1/);
+assert.match(serviceWorkerSource, /mamoboat-v401-central-pilot-1/);
+
+const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
+assert.match(pilotConfigSource, /enabled:\s*true/);
+assert.match(pilotConfigSource, /transport:\s*"rpc"/);
+assert.match(pilotConfigSource, /\/rest\/v1\/rpc\/ingest_pilot_events/);
+assert.match(pilotConfigSource, /publishableKey:\s*"sb_publishable_/);
+assert.doesNotMatch(pilotConfigSource, /sb_secret_|service_role/);
+assert.match(appSource, /collectorClientKey/);
+assert.match(appSource, /if \(\/\^eyJ\/\.test\(clientKey\)\)/);
 // 実レースで確認した中止・返還・欠場を精算回帰テストとして固定する。
 function liveExceptionDataset(date, venueCode, raceNo, result) {
   return { date, venues: [{ code: venueCode, races: [{ number: raceNo, result }] }] };

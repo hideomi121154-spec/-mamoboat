@@ -432,6 +432,157 @@
     };
   }
 
+  function shiftDateKey(dateKey, days) {
+    const [year, month, day] = String(dateKey || "").split("-").map(Number);
+    if (![year, month, day].every(Number.isFinite)) return "";
+    const date = new Date(Date.UTC(year, month - 1, day + Number(days || 0)));
+    return date.toISOString().slice(0, 10);
+  }
+
+  function recordDateKey(record) {
+    if (record?.time && !Number.isNaN(new Date(record.time).getTime())) {
+      return jstDate(record.time);
+    }
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(record?.raceDate || ""))
+      ? record.raceDate
+      : "";
+  }
+
+  function dateRangeLabel(start, end) {
+    const label = (dateKey) => {
+      const [, month, day] = String(dateKey || "").split("-").map(Number);
+      return Number.isFinite(month) && Number.isFinite(day) ? `${month}月${day}日` : "";
+    };
+    return start === end ? `${label(start)}の記録` : `${label(start)}〜${label(end)}`;
+  }
+
+  function editorialReport(records, type = "morning", now = new Date()) {
+    const reportType = ["morning", "weekly", "monthly"].includes(type)
+      ? type
+      : "morning";
+    const today = jstDate(now);
+    const end = shiftDateKey(today, -1);
+    const span = reportType === "morning" ? 1 : reportType === "weekly" ? 7 : 30;
+    const start = shiftDateKey(end, -(span - 1));
+    const previousEnd = shiftDateKey(start, -1);
+    const previousStart = shiftDateKey(previousEnd, -(span - 1));
+    const inRange = (record, from, to) => {
+      const key = recordDateKey(record);
+      return key && key >= from && key <= to;
+    };
+    const current = (records || []).filter((record) => inRange(record, start, end));
+    const previous = (records || []).filter(
+      (record) => inRange(record, previousStart, previousEnd)
+    );
+    const stats = behaviorStats(current);
+    const total = current.reduce(
+      (sum, record) => sum + (Number(record.saved ?? record.intendedYen ?? record.stake) || 0),
+      0
+    );
+    const previousTotal = previous.reduce(
+      (sum, record) => sum + (Number(record.saved ?? record.intendedYen ?? record.stake) || 0),
+      0
+    );
+    const averageUrge = current.length
+      ? current.reduce((sum, record) => sum + (Number(record.urge) || 0), 0) / current.length
+      : null;
+    const lowAgreementHighUrge = current.filter(
+      (record) => Number(record.conf) <= 4 && Number(record.urge) >= 7
+    ).length;
+    const casualCount = current.filter(
+      (record) => ["まあ100円だけ", "なんとなく"].includes(record.reason)
+    ).length;
+    const fomoCount = current.filter(
+      (record) => Number(record.cashWouldHaveWonUrge) >= 7
+    ).length;
+    const kindLabel = reportType === "morning"
+      ? "MAMO朝刊"
+      : reportType === "weekly"
+        ? "MAMO週間"
+        : "MAMO月刊";
+
+    if (!current.length) {
+      return {
+        type: reportType,
+        issueKey: `${reportType}:${end}`,
+        kindLabel,
+        rangeLabel: dateRangeLabel(start, end),
+        available: false,
+        headline: "対象期間の記録はありません",
+        standfirst: "MAMO BOAT内で確認できる記録がないため、記事は作成していません。",
+        facts: [],
+        trend: "記録がない日を、賭けなかった日とは推測しません。",
+        question: "今は振り返らず、そのまま閉じられます。",
+        evidenceKeys: [],
+        recordCount: 0,
+      };
+    }
+
+    let headline = `${current.length}レースの記録が届きました`;
+    let question = "この記録は、その時の感覚と合っていますか？";
+    const evidenceKeys = ["record_count", "virtual_shift_planned"];
+    if (stats.declaredChase > 0) {
+      headline = `「取り返したい」を${stats.declaredChase}回記録`;
+      question = "「取り返したい」と感じた直前に、何がありましたか？";
+      evidenceKeys.push("declared_chase");
+    } else if (fomoCount > 0) {
+      headline = `B的中後の「現金なら」を${fomoCount}回記録`;
+      question = "B的中のあと、現金で参加したい気持ちはどう動きましたか？";
+      evidenceKeys.push("cash_fomo");
+    } else if (stats.escalation > 0) {
+      headline = `予定額が動いた場面を${stats.escalation}回確認`;
+      question = "予定額が変わった場面に、心当たりはありますか？";
+      evidenceKeys.push("stake_escalation");
+    } else if (stats.rapid > 0) {
+      headline = `30分以内の連続参加を${stats.rapid}回記録`;
+      question = "次のレースへ進んだきっかけを、覚えていますか？";
+      evidenceKeys.push("rapid_repeat");
+    } else if (casualCount > 0) {
+      headline = `「まあ100円・なんとなく」から${current.length}レース`;
+      question = "最初の一回と最後の一回で、気持ちは同じでしたか？";
+      evidenceKeys.push("casual_entry");
+    } else if (lowAgreementHighUrge > 0) {
+      headline = `納得度4以下・現金衝動7以上を${lowAgreementHighUrge}回記録`;
+      question = "納得度より、参加したい気持ちが強くなった理由はありますか？";
+      evidenceKeys.push("low_agreement_high_urge");
+    }
+
+    let trend = "比較できる前期間の記録はまだありません。";
+    if (previous.length) {
+      const recordDiff = current.length - previous.length;
+      const amountDiff = total - previousTotal;
+      const recordText = recordDiff === 0
+        ? "記録数は同じ"
+        : `記録数は${Math.abs(recordDiff)}件${recordDiff > 0 ? "多い" : "少ない"}`;
+      const amountText = amountDiff === 0
+        ? "予定額は同じ"
+        : `予定額は${Math.abs(amountDiff).toLocaleString("ja-JP")}円${amountDiff > 0 ? "多い" : "少ない"}`;
+      trend = `前の同期間と比べ、${recordText}・${amountText}記録です。`;
+      evidenceKeys.push("previous_period_comparison");
+    }
+
+    return {
+      type: reportType,
+      issueKey: `${reportType}:${end}`,
+      kindLabel,
+      rangeLabel: dateRangeLabel(start, end),
+      available: true,
+      headline,
+      standfirst: "勝敗の評価ではなく、記録された選択の過程だけをまとめました。",
+      facts: [
+        { label: "参加記録", value: `${current.length}件` },
+        { label: "仮想投票へ置き換えた予定額", value: `${total.toLocaleString("ja-JP")}円` },
+        { label: "平均の現金衝動", value: averageUrge == null ? "未記録" : `${averageUrge.toFixed(1)} / 10` },
+      ],
+      trend,
+      question,
+      evidenceKeys: [...new Set(evidenceKeys)],
+      recordCount: current.length,
+      periodStart: start,
+      periodEnd: end,
+    };
+  }
+
   return {
     BET_TYPES,
     normalizeBetType,
@@ -446,6 +597,7 @@
     rewardOutcome,
     rewardMetrics,
     behaviorStats,
+    editorialReport,
     jstDate,
   };
 });

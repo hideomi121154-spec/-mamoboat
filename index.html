@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#05233e">
   <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
-  <link rel="manifest" href="manifest.webmanifest?v=394">
+  <link rel="manifest" href="manifest.webmanifest?v=401">
   <link rel="icon" href="icon.svg">
-  <link rel="stylesheet" href="styles.css?v=394">
-  <title>MAMO BOAT v3.9.4</title>
+  <link rel="stylesheet" href="styles.css?v=401">
+  <title>MAMO BOAT v4.0.1</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>MAMO BOAT</strong><small>PILOT v3.9.4</small></span>
+        <span class="brand-copy"><strong>MAMO BOAT</strong><small>PRESS PILOT v4.0.1</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -23,7 +23,7 @@
     <main>
       <section id="home" class="screen active">
         <div class="home-masthead">
-          <img class="masthead-character" src="mamoru-hero.webp" alt="Bメダルを持つ、MAMO BOATのオリジナル航海ナビゲーター">
+          <img class="masthead-character" src="mamoru-hero.webp" alt="加音 守の幼馴染である、MAMO BOATのトップレーサー">
           <div class="masthead-brand">
             <strong>MAMO</strong>
             <small>BOAT</small>
@@ -74,15 +74,16 @@
         <div id="nextRaces" class="deadline-rail"></div>
 
         <div class="section-head">
-          <div><span class="section-number">03</span><h2>今日の防衛記録</h2></div>
-          <button class="text-action" onclick="go('analysis')">作戦会議へ →</button>
+          <div><span class="section-number">03</span><h2>今日の行動記録</h2></div>
+          <button class="text-action" onclick="go('analysis')">編集部へ →</button>
         </div>
         <div class="stat-grid three-stats">
           <div class="stat-card"><span>残りBメダル</span><strong id="coins"></strong></div>
           <div class="stat-card coral"><span>今日の仮想置換</span><strong id="savedToday"></strong></div>
           <div class="stat-card"><span>今月の仮想置換</span><strong id="savedMonth"></strong></div>
         </div>
-        <div class="tactical-note"><span class="manga-label">MAMORU'S NOTE</span><p id="aiMemo"></p></div>
+        <div class="tactical-note"><span class="manga-label">加音 守 / FIELD NOTE</span><p id="aiMemo"></p></div>
+        <div id="homePressTeaser" class="home-press-teaser"></div>
         <span id="savedWeek" hidden></span>
       </section>
 
@@ -132,19 +133,34 @@
 
       <section id="analysis" class="screen">
         <div class="page-intro analysis-intro">
-          <div><span class="kicker">TACTICAL ROOM</span><h1>作戦会議</h1><p>予想ではなく、自分の衝動と追い上げ傾向を読むための画面です。</p></div>
-          <img src="mamoru-hero.webp" alt="" aria-hidden="true">
+          <div><span class="kicker">MAMO BOAT PRESS</span><h1>MAMO編集部</h1><p>レースの勝敗ではなく、あなたが勝負を選んだ過程を取材します。</p></div>
+          <img src="mamoru-hero.webp" alt="守の幼馴染であるトップレーサー">
         </div>
-        <div class="section-head small"><div><span class="section-number">A</span><h2>現在の戦況</h2></div><span class="section-meta">診断ではありません</span></div>
+
+        <div class="section-head small"><div><span class="section-number">01</span><h2>編集部の3人</h2></div><span class="section-meta">予想はしません</span></div>
+        <div class="newsroom-cast">
+          <article class="cast-card mamoru"><span class="cast-avatar">守</span><div><small>競艇担当記者</small><h3>加音 守</h3><p>勝敗ではなく、あなたの勝負を取材する。</p></div></article>
+          <article class="cast-card rookie"><span class="cast-avatar">新</span><div><small>読者担当・新人記者</small><h3>新人記者</h3><p>ユーザーの疑問を代弁し、難しい数字を読み解く。</p></div></article>
+          <article class="cast-card racer"><span class="cast-avatar">艇</span><div><small>守の幼馴染</small><h3>トップレーサー</h3><p>結果は約束せず、準備と自己管理を体現する。</p></div></article>
+        </div>
+
+        <div class="section-head small"><div><span class="section-number">02</span><h2>あなた専用の新聞</h2></div><span id="pressPlanBadge" class="section-meta">FREE</span></div>
+        <div class="paper-tabs" role="tablist" aria-label="新聞の種類">
+          <button class="active" data-report-type="morning" type="button" onclick="setReportType('morning')">朝刊</button>
+          <button data-report-type="weekly" type="button" onclick="setReportType('weekly')">週間</button>
+          <button data-report-type="monthly" type="button" onclick="setReportType('monthly')">月刊</button>
+        </div>
+        <div id="pressPaper" class="press-paper" aria-live="polite"></div>
+
+        <div class="section-head small"><div><span class="section-number">03</span><h2>現在の記録</h2></div><span class="section-meta">診断ではありません</span></div>
         <div id="analysisCards" class="stat-grid"></div>
-        <div class="section-head small"><div><span class="section-number">B</span><h2>行動パターン</h2></div></div>
+        <div class="section-head small"><div><span class="section-number">04</span><h2>行動パターン</h2></div></div>
         <div id="analysisList" class="analysis-list"></div>
-        <div class="section-head small"><div><span class="section-number">C</span><h2>ダブルWIN・防衛スタンプ</h2></div><span class="section-meta">1日1レース</span></div>
-        <div class="panel reward-route-panel">
-          <div id="rewardRouteSummary" class="reward-route-summary"></div>
-          <div id="defenseStampRail" class="defense-stamp-rail" aria-label="防衛スタンプ"></div>
-          <div id="rewardWallet" class="reward-wallet"></div>
-          <button class="text-action reward-copy" onclick="copyAnalysis()">分析用データをコピー</button>
+
+        <div class="section-head small"><div><span class="section-number">05</span><h2>購読プラン</h2></div><span class="section-meta">PILOT・決済なし</span></div>
+        <div id="membershipPanel" class="panel membership-panel"></div>
+        <div class="analysis-tools">
+          <button class="text-action" onclick="copyAnalysis()">分析用データをコピー</button>
         </div>
       </section>
 
@@ -163,9 +179,19 @@
             <button class="btn danger full" onclick="resetData()">記録を初期化</button>
           </div>
         </div>
+        <div class="section-head small"><div><span class="section-number">PRESS</span><h2>新聞の発行設定</h2></div><span class="section-meta">任意購読</span></div>
+        <div class="panel press-settings-panel">
+          <p>現在のPILOT版では端末内に発行します。プッシュ通知はまだ送信しません。</p>
+          <label class="check"><input id="pressMorningEnabled" type="checkbox"><span><b>MAMO朝刊</b><small>前日に記録があるときだけ発行</small></span></label>
+          <label class="check"><input id="pressWeeklyEnabled" type="checkbox"><span><b>MAMO週間</b><small>直近7日を前の7日と比較</small></span></label>
+          <label class="check"><input id="pressMonthlyEnabled" type="checkbox"><span><b>MAMO月刊</b><small>直近30日の変化を確認</small></span></label>
+          <div class="field"><label for="pressDisplayMode">表示方法</label><select id="pressDisplayMode"><option value="editorial">編集部モード</option><option value="simple">シンプルモード</option></select></div>
+          <button class="btn primary full" type="button" onclick="savePressSettings()">発行設定を保存</button>
+          <div id="pressSettingsStatus" class="pilot-status"></div>
+        </div>
         <div class="section-head small"><div><span class="section-number">PILOT</span><h2>行動データ計測</h2></div><span class="section-meta">匿名・同意制</span></div>
         <div class="panel pilot-panel">
-          <p>仮想投票額、投票前後の衝動、実結果、追い上げ傾向、特典への反応を記録します。現金購入の自己申告、氏名、メール、決済情報は取得しません。</p>
+          <p>仮想投票額、投票前後の衝動、実結果、追い上げ傾向、新聞への反応を記録します。氏名、メール、決済情報は取得しません。</p>
           <div class="field"><label for="pilotParticipantId">テスター番号（氏名は入力しない）</label><input id="pilotParticipantId" type="text" maxlength="40" autocomplete="off" placeholder="例：P01"></div>
           <label class="check pilot-consent"><input id="pilotConsent" type="checkbox"><span><b>匿名の行動イベント送信に同意する</b><small>同意しない場合も端末内記録とJSON書き出しは利用できます</small></span></label>
           <div id="pilotStatus" class="pilot-status"></div>
@@ -186,12 +212,6 @@
       </section>
     </main>
 
-    <aside id="realBetFloat" class="real-bet-float" aria-label="移動できる公式投票への外部導線">
-      <button id="realBetFloatButton" type="button" title="ドラッグで移動・タップで公式投票">
-        <span class="real-bet-grip" aria-hidden="true">⠿</span><strong>公式投票</strong><b aria-hidden="true">↗</b>
-      </button>
-    </aside>
-
   </div>
 
   <nav class="bottom-nav" aria-label="メインメニュー">
@@ -199,7 +219,7 @@
     <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
     <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
     <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
-    <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>◒</b><span>分析</span></button>
+    <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>▤</b><span>編集部</span></button>
     <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
   </nav>
 
@@ -208,14 +228,16 @@
       <div class="onboard-top"><span class="brand-mark">B</span><span>MAMO BOAT / FIRST VOYAGE</span></div>
       <div class="onboard-panel active" data-onboard="0">
         <div class="onboard-copy"><span class="kicker">WELCOME ABOARD</span><h1>勝負の主導権を、<br><em>自分に！</em></h1><p>実レースの緊張感はそのまま。現金だけを使わない、あなた専用の投票席です。</p></div>
-        <img src="mamoru-hero.webp" alt="航海ナビゲーターのマモル">
+        <div class="onboard-racer-tag"><b>TOP RACER</b><span>加音 守の幼馴染</span></div>
+        <img src="mamoru-hero.webp" alt="加音 守の幼馴染であるトップレーサー">
         <button class="btn primary onboard-next" onclick="onboardNext()">タップして進む <span>→</span></button>
       </div>
       <div class="onboard-panel" data-onboard="1">
         <div class="onboard-copy"><span class="kicker">HOW IT WORKS</span><h1>実レースから、<br><em>行動分析まで。</em></h1></div>
         <div class="onboard-route">
-          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>AIR BETで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>置換額を自動記録</span></div>
+          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>AIR BETで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>加音 守の新聞で振り返る</span></div>
         </div>
+        <p class="onboard-editorial">AIが見るのはレースの勝敗ではなく、あなたが勝負を選んだ過程です。艇・買い目・賭け金は勧めません。</p>
         <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button class="btn primary" onclick="onboardNext()">次へ →</button></div>
       </div>
       <div class="onboard-panel" data-onboard="2">
@@ -229,8 +251,8 @@
   </div>
 
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
-  <script src="core.js?v=394"></script>
-  <script src="pilot-config.js?v=394"></script>
-  <script src="app.js?v=394"></script>
+  <script src="core.js?v=401"></script>
+  <script src="pilot-config.js?v=401"></script>
+  <script src="app.js?v=401"></script>
 </body>
 </html>

@@ -2,11 +2,12 @@
   "use strict";
 
   const C = window.MamoCore;
-  const APP_VERSION = "3.9.3";
+  const APP_VERSION = "4.0.1";
   const WALLET_VERSION = 3;
   const LEGACY_BONUS_TYPES = new Set(["login_bonus", "defense_bonus"]);
-  const KEY = "mamoboat_v39_personal";
+  const KEY = "mamoboat_v40_personal";
   const LEGACY_KEYS = [
+    "mamoboat_v39_personal",
     "mamoboat_v38_personal",
     "mamoboat_v27_personal",
     "mamoboat_v26_personal",
@@ -41,7 +42,6 @@
   const PAYOUT_DISPLAY_ORDER = [
     "win", "place", "exacta", "quinella", "wide", "trifecta", "trio",
   ];
-  const REAL_BET_URL = "https://www.boatrace.jp/owsp/sp/login";
   const MODE_LABELS = {
     normal: "通常",
     box: "BOX",
@@ -253,6 +253,16 @@
         lastSyncAt: null,
         lastError: "",
       },
+      pressroom: {
+        plan: "free",
+        reportType: "morning",
+        morningEnabled: false,
+        weeklyEnabled: false,
+        monthlyEnabled: false,
+        displayMode: "editorial",
+        feedback: [],
+        deepTheme: "",
+      },
       lastDataDate: null,
     };
   }
@@ -324,6 +334,24 @@
     pilot.lastSyncAt = pilot.lastSyncAt || null;
     pilot.lastError = String(pilot.lastError || "").slice(0, 300);
     state.pilot = pilot;
+    const pressroom = Object.assign(fresh().pressroom, state.pressroom || {});
+    pressroom.plan = ["free", "ume", "take", "matsu"].includes(pressroom.plan)
+      ? pressroom.plan
+      : "free";
+    pressroom.reportType = ["morning", "weekly", "monthly"].includes(pressroom.reportType)
+      ? pressroom.reportType
+      : "morning";
+    pressroom.morningEnabled = pressroom.morningEnabled === true;
+    pressroom.weeklyEnabled = pressroom.weeklyEnabled === true;
+    pressroom.monthlyEnabled = pressroom.monthlyEnabled === true;
+    pressroom.displayMode = ["editorial", "simple"].includes(pressroom.displayMode)
+      ? pressroom.displayMode
+      : "editorial";
+    pressroom.feedback = Array.isArray(pressroom.feedback)
+      ? pressroom.feedback.filter((item) => item && item.issueKey && item.value).slice(-300)
+      : [];
+    pressroom.deepTheme = String(pressroom.deepTheme || "").slice(0, 80);
+    state.pressroom = pressroom;
     state.records = raw.map((record, index) => {
       const stake = Number(record.stake ?? record.total ?? 0) || 0;
       const intended = Number(
@@ -375,6 +403,9 @@
         refundC: Number(record.refundC || 0) || 0,
         resultPayouts: Array.isArray(record.resultPayouts) ? record.resultPayouts : [],
         behaviorReviewed: record.behaviorReviewed === true || record.cashReviewed === true,
+        cashWouldHaveWonUrge: record.cashWouldHaveWonUrge == null
+          ? null
+          : Number(record.cashWouldHaveWonUrge),
         saved: stake || Number(record.saved || 0) || 0,
         rewardChallenge: record.rewardChallenge === true,
         rewardOutcome: record.rewardChallenge === true && (record.settled === true || ["hit", "miss", "refunded"].includes(status))
@@ -464,8 +495,15 @@
     return String(value).slice(0, 160);
   }
 
+  function collectorClientKey() {
+    return String(COLLECTOR.publishableKey || COLLECTOR.anonKey || "").trim();
+  }
+
   function collectorReady() {
-    return COLLECTOR.enabled === true && /^https:\/\//.test(String(COLLECTOR.endpoint || ""));
+    const clientKey = collectorClientKey();
+    return COLLECTOR.enabled === true
+      && /^https:\/\//.test(String(COLLECTOR.endpoint || ""))
+      && (/^sb_publishable_/.test(clientKey) || /^eyJ/.test(clientKey));
   }
 
   function schedulePilotFlush() {
@@ -508,23 +546,33 @@
       try {
         const headers = { "Content-Type": "application/json", Prefer: "return=minimal" };
         let endpoint = String(COLLECTOR.endpoint || "");
-        if (COLLECTOR.anonKey) {
-          headers.apikey = COLLECTOR.anonKey;
-          headers.Authorization = `Bearer ${COLLECTOR.anonKey}`;
-          headers.Prefer = "resolution=ignore-duplicates,return=minimal";
-          const url = new URL(endpoint);
-          if (!url.searchParams.has("on_conflict")) {
-            url.searchParams.set("on_conflict", "event_id");
+        const clientKey = collectorClientKey();
+        if (clientKey) {
+          headers.apikey = clientKey;
+          // Opaque publishable keys go only in apikey. A Bearer header is kept
+          // solely for backward compatibility with a legacy JWT anon key.
+          if (/^eyJ/.test(clientKey)) {
+            headers.Authorization = `Bearer ${clientKey}`;
           }
-          endpoint = url.toString();
+          if (COLLECTOR.transport !== "rpc") {
+            headers.Prefer = "resolution=ignore-duplicates,return=minimal";
+            const url = new URL(endpoint);
+            if (!url.searchParams.has("on_conflict")) {
+              url.searchParams.set("on_conflict", "event_id");
+            }
+            endpoint = url.toString();
+          }
         }
         const rows = pending.map(({ sent_at, ...row }) => row);
+        const requestBody = COLLECTOR.transport === "rpc"
+          ? { p_events: rows }
+          : rows;
         const controller = new AbortController();
         timeoutId = setTimeout(() => controller.abort(), 15000);
         const response = await fetch(endpoint, {
           method: "POST",
           headers,
-          body: JSON.stringify(rows),
+          body: JSON.stringify(requestBody),
           signal: controller.signal,
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -860,180 +908,6 @@
     </div>`);
   };
 
-  window.openRealBetConfirm = () => {
-    trackEvent("official_bet_prompt_opened", {}, {
-      raceDate: DATA.date,
-      venueCode: S.venue,
-      raceNo: S.raceNo,
-    });
-    openModal(`<div class="real-bet-confirm">
-      <span class="kicker">OFFICIAL CASH BETTING</span>
-      <h2>公式投票へ移動しますか？</h2>
-        <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>MAMO BOATのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
-      <p>いま現金を使わずに済ませたい場合は、下の「AIR BETに戻る」を選んでください。</p>
-      <div class="real-bet-actions">
-        <button class="btn primary full" type="button" onclick="recordRealBetAvoided()">AIR BETに戻る</button>
-        <a class="btn real-cash-link full" href="${REAL_BET_URL}" target="_blank" rel="noopener noreferrer" onclick="recordRealBetExit()">公式TELEBOATログインへ ↗</a>
-      </div>
-        <small>公式サイトでの登録・ログイン・投票・入出金は、MAMO BOATには保存されません。</small>
-    </div>`);
-  };
-
-  window.recordRealBetAvoided = () => {
-    trackEvent("official_bet_prompt_cancelled", {}, {
-      raceDate: DATA.date,
-      venueCode: S.venue,
-      raceNo: S.raceNo,
-    });
-    window.closeModal();
-  };
-
-  window.recordRealBetExit = () => {
-    S.realBetExits.push({
-      at: new Date().toISOString(),
-      screen: document.body.dataset.screen || "home",
-      venueCode: S.venue || null,
-      raceNo: S.raceNo || null,
-    });
-    S.realBetExits = S.realBetExits.slice(-500);
-    trackEvent("official_bet_exit", {}, {
-      raceDate: DATA.date,
-      venueCode: S.venue,
-      raceNo: S.raceNo,
-    });
-    save();
-    window.closeModal();
-  };
-
-  function initRealBetFloat() {
-    const float = $("realBetFloat");
-    const button = $("realBetFloatButton");
-    if (!float || !button) return;
-
-    const positionKey = "mamoboat_real_bet_float_v1";
-    let drag = null;
-    let suppressClick = false;
-    let current = { x: null, y: null };
-
-    const bounds = () => {
-      const width = float.offsetWidth || 46;
-      const height = float.offsetHeight || 116;
-      const shellRect = document.querySelector(".app-shell")?.getBoundingClientRect();
-      const navRect = document.querySelector(".bottom-nav")?.getBoundingClientRect();
-      const bottomNavClearance = navRect && navRect.bottom >= window.innerHeight - 2
-        ? window.innerHeight - navRect.top + 8
-        : 8;
-      const minX = Math.max(6, (shellRect?.left || 0) + 6);
-      const minY = 74;
-      return {
-        minX,
-        minY,
-        maxX: Math.max(minX, Math.min(
-          window.innerWidth - width - 6,
-          (shellRect?.right || window.innerWidth) - width - 6
-        )),
-        maxY: Math.max(minY, window.innerHeight - height - bottomNavClearance),
-      };
-    };
-
-    const setPosition = (x, y) => {
-      const limit = bounds();
-      current = {
-        x: Math.min(limit.maxX, Math.max(limit.minX, Number(x) || 0)),
-        y: Math.min(limit.maxY, Math.max(limit.minY, Number(y) || 0)),
-      };
-      float.style.left = `${Math.round(current.x)}px`;
-      float.style.top = `${Math.round(current.y)}px`;
-      float.style.right = "auto";
-    };
-
-    const savePosition = () => {
-      const limit = bounds();
-      const xRange = Math.max(1, limit.maxX - limit.minX);
-      const yRange = Math.max(1, limit.maxY - limit.minY);
-      try {
-        localStorage.setItem(positionKey, JSON.stringify({
-          xRatio: (current.x - limit.minX) / xRange,
-          yRatio: (current.y - limit.minY) / yRange,
-        }));
-      } catch (error) {
-        // 保存できない環境でも、その場での移動は継続する。
-      }
-    };
-
-    const restorePosition = () => {
-      const limit = bounds();
-      try {
-        const stored = JSON.parse(localStorage.getItem(positionKey) || "null");
-        if (Number.isFinite(stored?.xRatio) && Number.isFinite(stored?.yRatio)) {
-          setPosition(
-            limit.minX + Math.min(1, Math.max(0, stored.xRatio)) * (limit.maxX - limit.minX),
-            limit.minY + Math.min(1, Math.max(0, stored.yRatio)) * (limit.maxY - limit.minY)
-          );
-          return;
-        }
-      } catch (error) {
-        // 壊れた保存値は使わず、右中央の初期位置へ戻す。
-      }
-      setPosition(limit.maxX, limit.minY + (limit.maxY - limit.minY) * .46);
-    };
-
-    button.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "mouse" && event.button !== 0) return;
-      const rect = float.getBoundingClientRect();
-      drag = {
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
-        originX: rect.left,
-        originY: rect.top,
-        moved: false,
-      };
-      suppressClick = false;
-      float.classList.add("dragging");
-      button.setPointerCapture?.(event.pointerId);
-    });
-
-    button.addEventListener("pointermove", (event) => {
-      if (!drag || event.pointerId !== drag.pointerId) return;
-      const dx = event.clientX - drag.startX;
-      const dy = event.clientY - drag.startY;
-      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
-      drag.moved = true;
-      setPosition(drag.originX + dx, drag.originY + dy);
-      event.preventDefault();
-    });
-
-    const finishDrag = (event) => {
-      if (!drag || event.pointerId !== drag.pointerId) return;
-      suppressClick = drag.moved;
-      if (drag.moved) savePosition();
-      float.classList.remove("dragging");
-      try {
-        if (button.hasPointerCapture?.(event.pointerId)) {
-          button.releasePointerCapture(event.pointerId);
-        }
-      } catch (error) {
-        // iOSが操作終了時に自動解放していても、そのまま終了する。
-      }
-      drag = null;
-      if (suppressClick) setTimeout(() => { suppressClick = false; }, 100);
-    };
-
-    button.addEventListener("pointerup", finishDrag);
-    button.addEventListener("pointercancel", finishDrag);
-    button.addEventListener("click", (event) => {
-      if (suppressClick) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-      window.openRealBetConfirm();
-    });
-    window.addEventListener("resize", () => requestAnimationFrame(restorePosition));
-    requestAnimationFrame(restorePosition);
-  }
-
   window.closeModal = () => $("modalBg").classList.remove("show");
   window.bgClose = (event) => {
     if (event.target.id === "modalBg") window.closeModal();
@@ -1271,6 +1145,7 @@
       ? visible.map((item) => vcard(item, true)).join("")
       : `<div class="card muted empty-home">${S.homeFilter === "favorite" ? "☆を押すと、お気に入りの開催場をここに表示します。" : "該当する公式開催データはありません。"}</div>`;
     $("aiMemo").textContent = aiText();
+    renderHomePressTeaser();
     const upcoming = nextRaces();
     $("nextRaces").innerHTML = upcoming.length
       ? upcoming.map((item) => `<article class="deadline-card">
@@ -1283,15 +1158,9 @@
     const unreviewed = S.records.filter(
       (record) => (record.settled || canReviewAfter(record)) && !record.behaviorReviewed
     ).length;
-    const unseenReward = [...S.records].reverse().find(
-      (record) => record.rewardOutcome && !record.rewardCelebratedAt
-    );
     const notices = [];
     if (unreviewed) {
       notices.push(`<div class="notice good" style="margin-top:10px"><b>${unreviewed}件のレース後振り返りがあります。</b> 任意で衝動の変化を記録できます。</div>`);
-    }
-    if (unseenReward) {
-      notices.push(`<div class="notice reward-arrived" style="margin-top:10px"><b>${unseenReward.rewardOutcome === "double-win" ? "DOUBLE WIN達成！" : "防衛スタンプを獲得！"}</b><br>${esc(unseenReward.venue)} ${unseenReward.raceNo}Rの成果を確認できます。<button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${unseenReward.id}')">成果を見る</button></div>`);
     }
     $("settledNotice").innerHTML = notices.join("");
   }
@@ -1874,14 +1743,10 @@ const reference = liveValue != null
     if (!cart.length) return alert("買い目を追加してください。");
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
     if (total > S.coins) return alert("Bメダル残高が不足しています。");
-    const challenge = dailyChallengeRecord(DATA.date);
-    const challengePanel = challenge
-      ? `<div class="notice challenge-taken"><b>今日の防衛勝負は選択済み</b><br>${esc(challenge.venue)} ${challenge.raceNo}Rが、ダブルWIN・防衛スタンプの対象です。この投票は通常のB投票として記録されます。</div>`
-      : `<label class="challenge-select"><input id="rewardChallenge" type="checkbox" checked><span><b>このレースを「今日の防衛勝負」にする</b><small>1日1レース限定。結果とアプリ内行動から自動判定します。</small></span></label>`;
     trackEvent("bet_review_opened", {
       line_count: cart.length,
       stake_b: total,
-      challenge_available: !challenge,
+      challenge_available: false,
     }, {
       raceDate: DATA.date,
       venueCode: venueItem.code,
@@ -1890,12 +1755,12 @@ const reference = liveValue != null
     openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
       <div class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
-      ${challengePanel}
-      <h3>このレースへの自信</h3>
+      <div class="notice editorial-safety"><b>AIは勝敗を判断しません。</b><br>ここから記録するのは、艇の強さではなく、今の自分の状態です。</div>
+      <h3>この選択への自分の納得度</h3>
       <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
       <h3>今、現金で買いたい気持ち</h3>
       <input id="urge" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('uv').textContent=this.value"><div id="uv" class="big">5</div>
-      <div class="field"><label>参加理由</label><select id="reason"><option>なんとなく</option><option>レースがあるから</option><option>自信がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
+      <div class="field"><label>参加理由</label><select id="reason"><option>まあ100円だけ</option><option>なんとなく</option><option>レースがあるから</option><option>自分なりの根拠がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
       <div class="field"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="なぜ買いたくなったか等"></textarea></div>
       <button class="btn teal full" onclick="placeBet()">AIR BETを確定する</button>`);
   };
@@ -1910,8 +1775,7 @@ const reference = liveValue != null
     const total = cart.reduce((sum, line) => sum + line.stake, 0);
     if (!cart.length || total > S.coins) return alert("Bメダル残高が不足しています。");
     const event = eventInfo(venueItem);
-    const challenge = dailyChallengeRecord(DATA.date);
-    const rewardChallenge = !challenge && $("rewardChallenge")?.checked === true;
+    const rewardChallenge = false;
     const recordId = window.crypto?.randomUUID ? window.crypto.randomUUID() : `r-${Date.now()}`;
     if (!postLedger("virtual_bet", -total, `bet:${recordId}`, {
       label: `${venueItem.name} ${raceItem.number}R 仮想投票`,
@@ -2039,9 +1903,14 @@ const reference = liveValue != null
   window.reviewAfter = (id) => {
     const record = S.records.find((item) => item.id === id);
     if (!record || !canReviewAfter(record)) return;
+    const fomoQuestion = record.status === "hit"
+      ? `<h3>「現金ならよかった」と感じる強さは？</h3>
+        <input id="cashWouldHaveWon" class="slider" type="range" min="0" max="10" value="3" oninput="document.getElementById('cwv').textContent=this.value"><div id="cwv" class="big">3</div>`
+      : "";
     openModal(`<h2>${esc(record.venue)} ${record.raceNo}R</h2>
       <h3>レース後、現金で買いたい気持ちは？</h3>
       <input id="after" class="slider" type="range" min="0" max="10" value="3" oninput="document.getElementById('av').textContent=this.value"><div id="av" class="big">3</div>
+      ${fomoQuestion}
       <h3>取り返すため、次も買いたい気持ちは？</h3>
       <input id="chaseAfter" class="slider" type="range" min="0" max="10" value="2" oninput="document.getElementById('cav').textContent=this.value"><div id="cav" class="big">2</div>
       <p class="muted">現金購入の自己申告は不要です。この入力は衝動変化の分析だけに使用します。</p>
@@ -2053,6 +1922,9 @@ const reference = liveValue != null
     if (!record || record.behaviorReviewed) return;
     record.afterUrge = Number($("after").value);
     record.chaseUrge = Number($("chaseAfter").value);
+    record.cashWouldHaveWonUrge = $("cashWouldHaveWon")
+      ? Number($("cashWouldHaveWon").value)
+      : null;
     record.behaviorReviewed = true;
     record.reviewedAt = new Date().toISOString();
     trackEvent("post_race_urge_recorded", {
@@ -2061,6 +1933,7 @@ const reference = liveValue != null
       urge_before: Number(record.urge) || 0,
       urge_after: record.afterUrge,
       chase_urge_after: record.chaseUrge,
+      cash_would_have_won_urge: record.cashWouldHaveWonUrge,
       confidence: Number(record.conf) || 0,
       reason: record.reason || "未入力",
       result_status: record.settled ? record.status : "pending",
@@ -2346,11 +2219,8 @@ const reference = liveValue != null
         recordSettlement(record, "manual-refresh");
         save();
         renderAll();
-        const rewardOutcome = record.rewardOutcome;
         openModal(`<div class="instant-result success"><span class="kicker">RESULT UPDATED</span><h2>結果を反映しました</h2>
           <div class="notice good"><b>${esc(record.venue)} ${record.raceNo}R　${record.status === "hit" ? "B的中" : record.status === "refunded" ? "不成立・返還" : "不的中"}</b><br>実着順 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? `払戻 ＋${fmt(record.payoutC)}B` : record.status === "refunded" ? `返還 ＋${fmt(record.payoutC)}B` : `投票 −${fmt(record.stake)}B`}</div>
-          ${rewardOutcome === "double-win" ? '<div class="double-win-mini"><b>DOUBLE WIN達成！</b><span>今日の防衛勝負でB的中しました。</span></div>' : rewardOutcome === "defense-stamp" ? '<div class="defense-mini"><b>防衛スタンプ獲得</b><span>仮想投票でレースを完了しました。</span></div>' : ""}
-          ${rewardOutcome ? `<button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${record.id}')">ご褒美結果を見る</button>` : ""}
           <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
         return;
       }
@@ -2379,115 +2249,6 @@ const reference = liveValue != null
         button.textContent = "今すぐ公式結果を確認";
       }
     }
-  };
-
-  function rewardClaimForRecord(record) {
-    return S.rewardClaims.find(
-      (claim) => claim.kind === "double-win" && claim.sourceId === record.id
-    ) || null;
-  }
-
-  function claimHtml(claim) {
-    if (!claim) return "";
-    const state = claim.redeemedAt ? "使用済みとして記録" : claim.openedAt ? "確認済み" : "未確認";
-    return `<div class="partner-reward-card">
-      <span class="partner-label">MAMOBOAT PARTNER REWARD</span>
-      <small>${esc(claim.sponsor || "協賛店舗")}</small>
-      <h3>${esc(claim.title)}</h3>
-      ${claim.description ? `<p>${esc(claim.description)}</p>` : ""}
-      ${claim.code ? `<div class="reward-code"><span>提示コード</span><strong>${esc(claim.code)}</strong></div>` : ""}
-      ${claim.expiresAt ? `<div class="tiny">期限：${esc(claim.expiresAt)}</div>` : ""}
-      ${claim.terms ? `<details><summary>利用条件</summary><p>${esc(claim.terms)}</p></details>` : ""}
-      <div class="reward-claim-actions">
-        ${claim.url ? `<a class="btn coral-btn full" href="${esc(claim.url)}" target="_blank" rel="noopener noreferrer" onclick="openRewardClaim('${claim.id}')">特典を利用する ↗</a>` : ""}
-        ${!claim.redeemedAt ? `<button class="btn secondary full" type="button" onclick="markRewardUsed('${claim.id}')">使用済みにする</button>` : ""}
-      </div><div class="tiny">状態：${esc(state)}／換金・譲渡不可</div>
-    </div>`;
-  }
-
-  function rewardRecordHtml(record) {
-    if (!record.rewardChallenge) return "";
-    if (!record.rewardOutcome) {
-      return `<div class="challenge-record pending"><span>今日の防衛勝負</span><b>実結果待ち</b></div>`;
-    }
-    if (record.rewardOutcome === "double-win") {
-      const claim = rewardClaimForRecord(record);
-      return `<div class="challenge-record double"><span>DOUBLE WIN</span><b>防衛勝負でB的中</b><small>${claim ? esc(claim.title) : "限定特典の提携準備中・達成記録は保存済み"}</small>
-        <button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${record.id}')">ご褒美結果を見る</button></div>`;
-    }
-    if (record.rewardOutcome === "defense-stamp") {
-      return `<div class="challenge-record defended"><span>DEFENSE SUCCESS</span><b>防衛スタンプを1個獲得</b><small>仮想投票でレースを完了しました。</small>
-        <button class="btn secondary full" type="button" onclick="openRewardCelebration('${record.id}')">防衛結果を見る</button></div>`;
-    }
-    return "";
-  }
-
-  window.openRewardCelebration = (id) => {
-    const record = S.records.find((item) => item.id === id);
-    if (!record?.rewardOutcome) return;
-    record.rewardCelebratedAt ||= new Date().toISOString();
-    trackEvent("reward_celebration_opened", {
-      record_id: record.id,
-      reward_outcome: record.rewardOutcome,
-      saved_yen: Number(record.saved) || 0,
-    }, {
-      raceDate: record.raceDate,
-      venueCode: record.venueCode,
-      raceNo: record.raceNo,
-    });
-    const metrics = C.rewardMetrics(S.records);
-    if (record.rewardOutcome === "double-win") {
-      const claim = ensureRewardClaim("double-win", record.id, record.rewardEvaluatedAt);
-      openModal(`<div class="reward-celebration double-win-celebration">
-        <span class="kicker">DOUBLE WIN</span><div class="celebration-mark">W</div>
-        <h2>今日の防衛勝負でB的中！</h2>
-        <p>${esc(record.venue)} ${record.raceNo}Rで、公式払戻に連動して${fmt(record.payoutC)}Bを獲得しました。</p>
-        ${claim ? claimHtml(claim) : '<div class="notice partner-wait"><b>限定特典の提携準備中</b><br>ダブルWIN達成記録は保存しました。現在は実店舗で使えるクーポンを発行していません。</div>'}
-        <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
-    } else if (record.rewardOutcome === "defense-stamp") {
-      const cycle = Math.floor(metrics.defenseStamps / 5);
-      const modalProgress = metrics.defenseStamps > 0 && metrics.stampProgress === 0
-        ? 5
-        : metrics.stampProgress;
-      const milestoneClaim = cycle
-        ? S.rewardClaims.find((claim) => claim.kind === "defense-5" && claim.sourceId === `defense-cycle-${cycle}`)
-        : null;
-      openModal(`<div class="reward-celebration defense-celebration">
-        <span class="kicker">DEFENSE SUCCESS</span><div class="celebration-mark shield">守</div>
-        <h2>防衛スタンプを獲得</h2>
-        <p>${esc(record.venue)} ${record.raceNo}Rを仮想投票で完了しました。</p>
-        <div class="modal-stamps">${Array.from({ length: 5 }, (_, index) => `<i class="${index < modalProgress ? "on" : ""}">${index + 1}</i>`).join("")}</div>
-        <div class="notice good"><b>防衛スタンプ ${metrics.defenseStamps}個</b><br>${modalProgress === 5 ? "5個達成しました。" : `次の特典まであと${5 - modalProgress}個です。`}</div>
-        ${milestoneClaim ? claimHtml(milestoneClaim) : metrics.stampProgress === 0 && metrics.defenseStamps ? '<div class="notice partner-wait"><b>限定特典の提携準備中</b><br>5個達成記録は保存されています。</div>' : ""}
-        <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
-    }
-    save();
-  };
-
-  window.openRewardClaim = (id) => {
-    const claim = S.rewardClaims.find((item) => item.id === id);
-    if (!claim) return;
-    claim.openedAt ||= new Date().toISOString();
-    trackEvent("partner_reward_opened", {
-      claim_id: claim.id,
-      reward_kind: claim.kind,
-      campaign_id: claim.campaignId,
-    });
-    save();
-  };
-
-  window.markRewardUsed = (id) => {
-    const claim = S.rewardClaims.find((item) => item.id === id);
-    if (!claim || claim.redeemedAt) return;
-    claim.redeemedAt = new Date().toISOString();
-    trackEvent("partner_reward_marked_used", {
-      claim_id: claim.id,
-      reward_kind: claim.kind,
-      campaign_id: claim.campaignId,
-    });
-    save();
-    window.closeModal();
-    renderAll();
   };
 
   function latencyMinuteText(value) {
@@ -2526,14 +2287,10 @@ const reference = liveValue != null
           ? `3連単 ${esc(record.resultCombo)} ${fmt(record.resultPayout)}円`
           : "";
       result = `<div class="notice ${record.status === "hit" ? "good" : ""}">
-        <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "的中！" : "今回の買い目は不的中"}</div>
+        <div class="result">実結果 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? "B的中" : "今回の買い目は不的中"}</div>
         ${payouts ? `公式払戻 ${payouts}<br>` : ""}${record.status === "hit" ? `払戻 ＋${fmt(record.payoutC)}B` : `投票 −${fmt(record.stake)}B`}${record.refundC ? `（一部返還 ＋${fmt(record.refundC)}B）` : ""}</div>`;
     }
-    const badge = record.rewardOutcome === "double-win"
-      ? "ダブルWIN"
-      : record.rewardOutcome === "defense-stamp"
-        ? "防衛スタンプ"
-        : record.saved
+    const badge = record.saved
       ? "仮想投票へ置換"
       : record.status === "refunded"
         ? "不成立・返還"
@@ -2558,11 +2315,10 @@ const reference = liveValue != null
       <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
       ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}${resultTimingHtml(record)}
       ${record.settled && officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果と払戻を照合 ↗</a>` : ""}
-      <div class="recgrid"><span>自信</span><b>${record.conf}/10</b><span>購入前衝動</span><b>${record.urge}/10</b>
+      <div class="recgrid"><span>自分の納得度</span><b>${record.conf}/10</b><span>参加前の現金衝動</span><b>${record.urge}/10</b>
       <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>仮想投票へ置換</span><b>${fmt(record.saved)}円</b>
-      ${record.behaviorReviewed ? `<span>購入後衝動</span><b>${record.afterUrge ?? "—"}/10</b><span>追い上げ衝動</span><b>${record.chaseUrge ?? "—"}/10</b>` : ""}</div>
+      ${record.behaviorReviewed ? `<span>参加後の現金衝動</span><b>${record.afterUrge ?? "—"}/10</b><span>追い上げ衝動</span><b>${record.chaseUrge ?? "—"}/10</b>${record.cashWouldHaveWonUrge == null ? "" : `<span>「現金なら」の強さ</span><b>${record.cashWouldHaveWonUrge}/10</b>`}` : ""}</div>
       ${canReviewAfter(record) ? `<button class="btn secondary full" onclick="reviewAfter('${record.id}')">レース後の行動を記録</button>` : ""}
-      ${rewardRecordHtml(record)}
       ${record.saved ? `<div class="reward"><span class="manga-label">VIRTUAL SHIFT</span> ${fmt(record.saved)}円分をB投票へ置き換えました。</div>` : ""}</div>`;
   }
 
@@ -2704,27 +2460,191 @@ const reference = liveValue != null
 
   function aiText() {
     if (!S.records.length) {
-      return "B投票を記録すると、低自信×高衝動、取り返したい参加、金額増加、短時間連投を分析します。";
+      return "加音 守です。レースは予想しません。B投票の記録から、あなたが勝負を選んだ過程だけを取材します。";
     }
-    const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
+    const report = C.editorialReport(S.records, "weekly");
+    if (report.available) return `${report.headline}。${report.question}`;
     const stats = C.behaviorStats(S.records);
-    const saved = C.savedTotals(S.records).all;
-    return `低自信×高衝動 ${low}件。追い上げ傾向 ${stats.chase}件、短時間の金額増加 ${stats.escalation}件。これまで ${fmt(saved)}円分を仮想投票へ置き換えました。`;
+    return `${S.records.length}件の記録があります。予定額の増加 ${stats.escalation}件、短時間の連続参加 ${stats.rapid}件を確認できます。`;
   }
 
+  const PRESS_PLANS = {
+    free: { label: "FREE", name: "無料", rank: 0, price: "0円" },
+    ume: { label: "梅", name: "朝刊", rank: 1, price: "月300円案" },
+    take: { label: "竹", name: "編集版", rank: 2, price: "月500〜700円案" },
+    matsu: { label: "松", name: "特別取材", rank: 3, price: "月1,000円案" },
+  };
+
+  function pressPlan() {
+    return PRESS_PLANS[S.pressroom.plan] || PRESS_PLANS.free;
+  }
+
+  function reportRequiredRank(type) {
+    return type === "morning" ? 1 : 2;
+  }
+
+  function reportUnlocked(type) {
+    return pressPlan().rank >= reportRequiredRank(type);
+  }
+
+  function reportFeedback(issueKey) {
+    return [...S.pressroom.feedback].reverse().find((item) => item.issueKey === issueKey) || null;
+  }
+
+  function renderHomePressTeaser() {
+    const target = $("homePressTeaser");
+    if (!target) return;
+    const report = C.editorialReport(S.records, "morning");
+    if (S.pressroom.plan === "free") {
+      target.innerHTML = `<article class="press-teaser-card preview"><span>MAMO BOAT PRESS</span><h3>賭けた翌朝、自分だけの朝刊を。</h3><p>加音 守が、勝敗ではなく選択の過程を記事にします。</p><button type="button" onclick="go('analysis')">編集部を見る →</button></article>`;
+      return;
+    }
+    if (!S.pressroom.morningEnabled) {
+      target.innerHTML = `<article class="press-teaser-card muted-edition"><span>MAMO朝刊</span><h3>朝刊は現在OFFです</h3><button type="button" onclick="go('settings')">発行設定を見る →</button></article>`;
+      return;
+    }
+    target.innerHTML = `<article class="press-teaser-card ${report.available ? "latest" : "quiet"}">
+      <span>${esc(report.kindLabel)} / ${esc(report.rangeLabel)}</span>
+      <h3>${esc(report.headline)}</h3>
+      <p>${esc(report.available ? report.standfirst : report.trend)}</p>
+      <button type="button" onclick="setReportType('morning');go('analysis')">最新号を読む →</button>
+    </article>`;
+  }
+
+  function reportPaperHtml(report) {
+    const feedback = reportFeedback(report.issueKey);
+    const simple = S.pressroom.displayMode === "simple";
+    if (!report.available) {
+      return `<article class="paper-sheet empty-edition">
+        <header class="paper-mast"><div><span>${esc(report.kindLabel)}</span><b>${esc(report.rangeLabel)}</b></div><small>加音 守 / MAMO BOAT編集部</small></header>
+        <div class="paper-empty"><span>NO EDITION</span><h3>${esc(report.headline)}</h3><p>${esc(report.standfirst)}</p><small>${esc(report.trend)}</small></div>
+      </article>`;
+    }
+    return `<article class="paper-sheet ${simple ? "simple" : ""}">
+      <header class="paper-mast"><div><span>${esc(report.kindLabel)}</span><b>${esc(report.rangeLabel)}</b></div><small>${simple ? "行動記録" : "加音 守 / MAMO BOAT編集部"}</small></header>
+      <div class="paper-lead"><span>${simple ? "記録から確認できたこと" : "本日の見出し"}</span><h3>${esc(report.headline)}</h3><p>${esc(report.standfirst)}</p></div>
+      <div class="paper-facts">${report.facts.map((fact) => `<div><span>${esc(fact.label)}</span><b>${esc(fact.value)}</b></div>`).join("")}</div>
+      <div class="paper-trend"><span>比較欄</span><p>${esc(report.trend)}</p></div>
+      <div class="paper-question"><span>${simple ? "確認" : "守から一問"}</span><h4>${esc(report.question)}</h4>
+        <div class="paper-feedback" role="group" aria-label="記事への回答">
+          ${[["fit", "しっくりくる"], ["different", "違う"], ["skip", "今は答えない"]].map(([value, label]) => `<button class="${feedback?.value === value ? "selected" : ""}" type="button" onclick="setPressFeedback('${report.issueKey}','${value}')">${label}</button>`).join("")}
+        </div>
+        ${feedback ? `<small>回答を記録しました。いつでも選び直せます。</small>` : ""}
+      </div>
+      <footer><b>勝敗・艇・買い目・賭け金は評価していません。</b><span>根拠 ${report.evidenceKeys.length}項目 / 端末内集計</span></footer>
+    </article>`;
+  }
+
+  function renderPressroom() {
+    const type = S.pressroom.reportType;
+    const plan = pressPlan();
+    $("pressPlanBadge").textContent = `${plan.label} / ${plan.name}`;
+    document.querySelectorAll("[data-report-type]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.reportType === type);
+      button.classList.toggle("locked", !reportUnlocked(button.dataset.reportType));
+    });
+    if (!reportUnlocked(type)) {
+      const required = type === "morning" ? PRESS_PLANS.ume : PRESS_PLANS.take;
+      $("pressPaper").innerHTML = `<div class="paper-locked">
+        <span>PREMIUM EDITION</span><h3>${type === "morning" ? "MAMO朝刊" : type === "weekly" ? "MAMO週間" : "MAMO月刊"}</h3>
+        <p>勝敗予想ではなく、本人の記録を「事実→傾向→問い」の順で記事にします。</p>
+        <small>${required.label}・${required.name}以上の発行内容です。</small>
+        <button class="btn primary full" type="button" onclick="openMembershipPlans()">PILOTで紙面を試す</button>
+      </div>`;
+    } else {
+      $("pressPaper").innerHTML = reportPaperHtml(C.editorialReport(S.records, type));
+    }
+    renderMembershipPanel();
+  }
+
+  function renderMembershipPanel() {
+    const target = $("membershipPanel");
+    if (!target) return;
+    const plan = pressPlan();
+    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3>${esc(plan.label)}・${esc(plan.name)}</h3><b>${esc(plan.price)}</b><p>PILOT版では決済されません。安全機能は全プラン共通で無料です。</p></div>
+      <div class="membership-points"><div><b>無料</b><span>AIR BET・基本記録・安全介入</span></div><div><b>梅</b><span>朝刊・任意の一問</span></div><div><b>竹</b><span>朝刊・週間・月刊</span></div><div><b>松</b><span>長期比較・選べる深掘り取材</span></div></div>
+      ${S.pressroom.plan === "matsu" ? `<button class="btn secondary full" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ</button>` : ""}
+      <button class="btn primary full" type="button" onclick="openMembershipPlans()">プラン設計を確認する</button>`;
+  }
+
+  window.setReportType = (type) => {
+    if (!["morning", "weekly", "monthly"].includes(type)) return;
+    S.pressroom.reportType = type;
+    save();
+    if (document.body.dataset.screen === "analysis") renderPressroom();
+  };
+
+  window.setPressFeedback = (issueKey, value) => {
+    if (!["fit", "different", "skip"].includes(value)) return;
+    S.pressroom.feedback = S.pressroom.feedback.filter((item) => item.issueKey !== issueKey);
+    S.pressroom.feedback.push({ issueKey, value, at: new Date().toISOString() });
+    S.pressroom.feedback = S.pressroom.feedback.slice(-300);
+    trackEvent("press_feedback_recorded", { issue_key: issueKey, response: value });
+    save();
+    renderPressroom();
+  };
+
+  window.openMembershipPlans = () => {
+    openModal(`<div class="plan-modal"><span class="kicker">MAMO BOAT PRESS</span><h2>無料＋松竹梅</h2><p>価格は検証中です。PILOT版では料金は発生せず、表示と質問量だけを確認します。</p>
+      <div class="plan-modal-grid">
+        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}')"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本機能と安全介入" : key === "ume" ? "MAMO朝刊" : key === "take" ? "朝刊・週間・月刊" : "全紙面と任意の深掘り"}</small></button>`).join("")}
+      </div>
+      <div class="notice editorial-safety"><b>課金で変わるのは分析の深さです。</b><br>安全介入、データ削除、基本記録は無料のままです。</div>
+      <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button>
+    </div>`);
+  };
+
+  window.selectPilotPlan = (key) => {
+    if (!PRESS_PLANS[key]) return;
+    S.pressroom.plan = key;
+    if (key === "free") {
+      S.pressroom.morningEnabled = false;
+      S.pressroom.weeklyEnabled = false;
+      S.pressroom.monthlyEnabled = false;
+    } else if (key === "ume") {
+      S.pressroom.morningEnabled = true;
+      S.pressroom.weeklyEnabled = false;
+      S.pressroom.monthlyEnabled = false;
+    } else {
+      S.pressroom.morningEnabled = true;
+      S.pressroom.weeklyEnabled = true;
+      S.pressroom.monthlyEnabled = true;
+    }
+    trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
+    save();
+    window.closeModal();
+    renderAll();
+    window.go("analysis");
+  };
+
+  window.openDeepInterview = () => {
+    if (S.pressroom.plan !== "matsu") return;
+    const themes = ["まあ100円から続く場面", "予定額が変わる場面", "勝敗後の気持ち", "自分で決めた上限", "参加しない選択"];
+    openModal(`<div class="deep-interview"><span class="kicker">SPECIAL INTERVIEW</span><h2>何を深く知りたいですか？</h2><p>質問数ではなく、本人が選んだテーマだけを詳しく取材します。</p>
+      <div class="deep-theme-list">${themes.map((theme) => `<button class="${S.pressroom.deepTheme === theme ? "selected" : ""}" type="button" onclick="saveDeepTheme('${theme}')">${theme}</button>`).join("")}</div>
+      <button class="btn secondary full" type="button" onclick="closeModal()">今は選ばない</button></div>`);
+  };
+
+  window.saveDeepTheme = (theme) => {
+    S.pressroom.deepTheme = String(theme || "").slice(0, 80);
+    trackEvent("deep_interview_theme_selected", { theme: S.pressroom.deepTheme });
+    save();
+    window.closeModal();
+    renderAnalysis();
+  };
+
   function renderAnalysis() {
-    S.records.forEach((record) => evaluateReward(record));
     const stats = C.behaviorStats(S.records);
     const total = C.savedTotals(S.records).all;
-    const reward = C.rewardMetrics(S.records);
     const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
+    const fomo = S.records.filter((item) => Number(item.cashWouldHaveWonUrge) >= 7).length;
     const settled = S.records.filter((item) => item.settled).length;
     const resultLatency = C.resultLatencyStats(S.records);
     $("analysisCards").innerHTML = [
       ["仮想投票へ置換", `${fmt(total)}円`],
-      ["現在のB残高", `${fmt(S.coins)}B`],
-      ["ダブルWIN", `${reward.doubleWins}回`],
-      ["防衛スタンプ", `${reward.defenseStamps}個`],
+      ["参加記録", `${fmt(S.records.length)}件`],
+      ["予定額の増加", `${stats.escalation}回`],
+      ["公式投票への移動", `${S.realBetExits.length}回`],
     ].map(([label, value]) => `<div class="stat-card"><div class="eyebrow">${label}</div><div class="metric">${value}</div></div>`).join("");
     const items = [
       ["B投票と結果", `${S.records.length}件中 ${settled}件反映・B的中 ${stats.virtualHits}件`],
@@ -2732,7 +2652,7 @@ const reference = liveValue != null
         ? `締切→MAMO BOAT反映 中央値 ${latencyMinuteText(resultLatency.medianMinutes)}（実測${resultLatency.samples}件）`
         : "次のB精算から自動測定"],
       ["仮想投票総額", `${fmt(stats.replacedTotal)}円相当`],
-      ["低自信×高衝動", `${low}件（自信4以下・衝動7以上）`],
+      ["低い納得度×高い衝動", `${low}件（納得度4以下・現金衝動7以上）`],
       ["取り返したい参加", `${stats.declaredChase}件`],
       ["短時間の金額増加", `${stats.escalation}件（30分以内に予定額が増加）`],
       ["外れ後の追い上げ", `${stats.postLossChase}件（30分以内・予定額増加）`],
@@ -2740,6 +2660,7 @@ const reference = liveValue != null
       ["衝動の変化", stats.urgeDrop == null
         ? "レース後データ待ち"
         : `B投票後、平均 ${stats.urgeDrop >= 0 ? "−" : "＋"}${Math.abs(stats.urgeDrop).toFixed(1)}`],
+      ["B的中後の『現金なら』", `${fomo}件（強さ7以上）`],
       ["多い参加理由", stats.topReason ? `${stats.topReason[0]}：${stats.topReason[1]}件` : "データ待ち"],
       ["置換額が多い場", stats.topVenue ? `${stats.topVenue[0]}：${fmt(stats.topVenue[1])}円` : "データ待ち"],
       ["公式投票への移動", `${S.realBetExits.length}回`],
@@ -2747,61 +2668,34 @@ const reference = liveValue != null
     $("analysisList").innerHTML = items.map(([label, value]) =>
       `<div class="card"><b>${esc(label)}</b><p class="muted">${esc(value)}</p></div>`
     ).join("");
-    renderRewardRoute(reward);
-  }
-
-  function renderRewardRoute(metrics = C.rewardMetrics(S.records)) {
-    S.records.filter((record) => record.rewardOutcome === "double-win").forEach(
-      (record) => ensureRewardClaim("double-win", record.id, record.rewardEvaluatedAt)
-    );
-    syncDefenseMilestoneClaims();
-    const today = metrics.todayChallenge;
-    const todayState = !today
-      ? "まだ選択していません"
-      : today.rewardOutcome === "double-win"
-        ? "ダブルWIN達成"
-        : today.rewardOutcome === "defense-stamp"
-          ? "防衛スタンプ獲得"
-          : "実結果待ち";
-    $("rewardRouteSummary").innerHTML = `<div class="today-challenge ${today ? "selected" : ""}">
-      <span>TODAY'S DEFENSE RACE</span><b>${today ? `${esc(today.venue)} ${today.raceNo}R` : "今日の防衛勝負"}</b><small>${esc(todayState)}</small>
-      ${today?.rewardOutcome ? `<button class="btn coral-btn full" type="button" onclick="openRewardCelebration('${today.id}')">成果を見る</button>` : ""}
-    </div><div class="reward-score"><div><span>DOUBLE WIN</span><b>${metrics.doubleWins}</b><small>累計達成</small></div><div><span>DEFENSE</span><b>${metrics.defenseStamps}</b><small>スタンプ</small></div></div>`;
-    const visibleProgress = metrics.defenseStamps > 0 && metrics.stampProgress === 0
-      ? 5
-      : metrics.stampProgress;
-    $("defenseStampRail").innerHTML = `<div class="stamp-copy"><b>今日の防衛勝負をBで完了すると1個</b><span>${visibleProgress === 5 ? "5個達成" : `次の限定特典まであと${5 - visibleProgress}個`}</span></div>
-      <div class="stamp-row">${Array.from({ length: 5 }, (_, index) => `<i class="${index < visibleProgress ? "on" : ""}"><span>守</span><small>${index + 1}</small></i>`).join("")}</div>`;
-    const claims = [...S.rewardClaims].reverse();
-    $("rewardWallet").innerHTML = claims.length
-      ? `<div class="wallet-title"><b>獲得した限定特典</b><span>${claims.length}件</span></div>${claims.map(claimHtml).join("")}`
-      : `<div class="notice partner-wait"><b>限定特典は提携準備中です</b><br>ダブルWINと防衛スタンプの達成記録は保存されます。実際に利用できる協賛クーポンだけを、提携開始後にここへ表示します。</div>`;
+    renderPressroom();
   }
 
   function analysisSummary() {
     const stats = C.behaviorStats(S.records);
-    const reward = C.rewardMetrics(S.records);
+    const fomo = S.records.filter((item) => Number(item.cashWouldHaveWonUrge) >= 7).length;
     return `MAMO BOAT行動分析用データ
 テスター番号: ${S.pilot.participantId}
 記録数: ${S.records.length}
 仮想投票へ置き換えた金額: ${C.savedTotals(S.records).all}円
 B残高: ${S.coins}B
 B的中: ${stats.virtualHits}件
-ダブルWIN: ${reward.doubleWins}件
-防衛スタンプ: ${reward.defenseStamps}個
-低自信×高衝動: ${S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length}件
+低い納得度×高い現金衝動: ${S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length}件
 追い上げ傾向: ${stats.chase}件
 取り返したい参加: ${stats.declaredChase}件
 短時間の金額増加: ${stats.escalation}件
 外れ後の追い上げ: ${stats.postLossChase}件
 短時間連投: ${stats.rapid}件
+B的中後の「現金なら」強度7以上: ${fomo}件
 平均衝動変化: ${stats.urgeDrop == null ? "未集計" : stats.urgeDrop.toFixed(2)}
 主な理由: ${stats.topReason ? stats.topReason.join(" / ") : "未集計"}
 場別最大セーブ: ${stats.topVenue ? stats.topVenue.join(" / ") : "未集計"}
 公式投票への移動: ${S.realBetExits.length}回
+購読プラン（PILOT）: ${S.pressroom.plan}
+新聞への回答: ${S.pressroom.feedback.length}件
 匿名イベント: ${S.pilot.events.length}件（未送信 ${S.pilot.events.filter((item) => !item.sent_at).length}件）
 
-このデータから、衝動的に現金を使いやすい条件と、仮想投票への置換が有効だった条件を分析してください。`;
+勝敗・艇・買い目・賭け金を推奨せず、記録された事実、本人の過去との比較、短い問いだけを作成してください。診断・説教・現金を守ったという断定は禁止です。`;
   }
 
   window.copyAnalysis = async () => {
@@ -2821,8 +2715,38 @@ B的中: ${stats.virtualHits}件
       本日の開催 ${stats.scheduleVenues || 0}場 / ${stats.scheduleRaces || 0}レース / ${stats.scheduleEntries || 0}艇<br>
       確定結果 ${stats.completedResultRaces || 0}レース / 払戻情報 ${stats.totalPayoutEntries || stats.sanrenshoPayouts || 0}件<br>
       参考オッズ ${stats.oddsRaces || 0}レース / 最終データ時刻 ${timeText(DATA.generatedAt)}`;
+    renderPressSettings();
     renderPilotSettings();
   }
+
+  function renderPressSettings() {
+    if (!$("pressMorningEnabled")) return;
+    $("pressMorningEnabled").checked = S.pressroom.morningEnabled;
+    $("pressWeeklyEnabled").checked = S.pressroom.weeklyEnabled;
+    $("pressMonthlyEnabled").checked = S.pressroom.monthlyEnabled;
+    $("pressDisplayMode").value = S.pressroom.displayMode;
+    const plan = pressPlan();
+    $("pressSettingsStatus").innerHTML = `<b>現在：${esc(plan.label)}・${esc(plan.name)}</b><br>端末内発行のみ。レース名・選手名・今日の開催は新聞通知へ載せません。`;
+  }
+
+  window.savePressSettings = () => {
+    S.pressroom.morningEnabled = $("pressMorningEnabled").checked;
+    S.pressroom.weeklyEnabled = $("pressWeeklyEnabled").checked;
+    S.pressroom.monthlyEnabled = $("pressMonthlyEnabled").checked;
+    S.pressroom.displayMode = $("pressDisplayMode").value === "simple"
+      ? "simple"
+      : "editorial";
+    trackEvent("press_preferences_saved", {
+      morning_enabled: S.pressroom.morningEnabled,
+      weekly_enabled: S.pressroom.weeklyEnabled,
+      monthly_enabled: S.pressroom.monthlyEnabled,
+      display_mode: S.pressroom.displayMode,
+    });
+    save();
+    document.body.classList.toggle("simple-press", S.pressroom.displayMode === "simple");
+    renderPressSettings();
+    renderHomePressTeaser();
+  };
 
   function renderPilotSettings() {
     if (!$("pilotStatus")) return;
@@ -2831,8 +2755,10 @@ B的中: ${stats.virtualHits}件
     $("pilotConsent").checked = S.pilot.consent;
     const collectorState = collectorReady()
       ? S.pilot.consent
-        ? '<b class="pilot-good">中央集約：接続可能</b>'
-        : '<b>中央集約：同意待ち</b>'
+        ? S.pilot.lastSyncAt
+          ? '<b class="pilot-good">中央集約：送信済み</b>'
+          : '<b class="pilot-good">中央集約：接続済み・初回送信待ち</b>'
+        : '<b>中央集約：接続済み・同意OFF</b>'
       : '<b class="pilot-warn">中央集約：未接続（現在は端末内保存のみ）</b>';
     $("pilotStatus").innerHTML = `${collectorState}<br>
       テスター番号 ${esc(S.pilot.participantId)} / 端末内イベント ${fmt(S.pilot.events.length)}件 / 未送信 ${fmt(pending)}件 / 送信済み ${fmt(S.pilot.sentCount)}件
@@ -2944,19 +2870,21 @@ B的中: ${stats.virtualHits}件
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v393-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v401-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
   window.resetData = () => {
-    if (!confirm("投票・行動イベント・特典の記録をすべて初期化しますか？この操作は取り消せません。必要なら先にJSONを書き出してください。")) return;
+    if (!confirm("投票・行動イベント・新聞への回答をすべて初期化しますか？この操作は取り消せません。必要なら先にJSONを書き出してください。")) return;
     const accepted = S.accepted;
     const participantId = S.pilot.participantId;
     const consent = S.pilot.consent;
+    const pressroom = { ...S.pressroom, feedback: [] };
     S = fresh();
     S.accepted = accepted;
     S.pilot.participantId = participantId;
     S.pilot.consent = consent;
+    S.pressroom = pressroom;
     save();
     renderAll();
     window.go("home");
@@ -2964,6 +2892,7 @@ B的中: ${stats.virtualHits}件
 
   function renderAll() {
     if (!document.body.dataset.screen) document.body.dataset.screen = "home";
+    document.body.classList.toggle("simple-press", S.pressroom.displayMode === "simple");
     $("onboard").classList.toggle("show", !S.accepted);
     renderOnboard();
     $("topCoins").textContent = `${fmt(S.coins)} B`;
@@ -2975,7 +2904,6 @@ B的中: ${stats.virtualHits}件
     renderSettings();
   }
 
-  initRealBetFloat();
   trackEvent("app_opened", {
     returning_user: S.accepted === true,
     local_records: S.records.length,
@@ -3010,6 +2938,6 @@ B的中: ${stats.virtualHits}件
 });
 
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=394").catch(() => {}));
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=401").catch(() => {}));
   }
 })();
