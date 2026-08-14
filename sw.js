@@ -1,4 +1,4 @@
-const CACHE = "mamoboat-v394-ios-bottom-nav-1";
+const CACHE = "mamoboat-v401-central-pilot-1";
 const SHELL = [
   "./",
   "./index.html",

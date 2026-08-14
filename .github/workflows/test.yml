@@ -41,10 +41,13 @@ jobs:
         run: |
           node --check app.js
           node --check core.js
+          node --check pilot-config.js
           python -m py_compile scripts/sync_official_data.py tests/test_sync_transform.py tests/test_result_validation.py tests/smoke_live_results.py
 
       - name: Run JavaScript tests
-        run: node tests/logic.test.js
+        run: |
+          node tests/logic.test.js
+          node tests/app-smoke.test.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v

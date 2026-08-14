@@ -1,16 +1,17 @@
 /*
  * MAMO BOAT パイロット設定
  *
- * GitHub Pagesでは受信サーバーを持てないため、中央集計を使う場合だけ
- * collector を設定します。Supabaseの匿名キーは公開クライアント用ですが、
- * 必ず supabase/mamoboat_pilot.sql の「INSERTのみ許可」のRLSと組み合わせてください。
+ * GitHub Pagesでは受信サーバーを持てないため、中央集計はSupabaseへ送信します。
+ * publishableKey は公開クライアント用です。秘密鍵ではありません。
+ * supabase/mamoboat_pilot.sql の「INSERTのみ許可」のRLSと必ず組み合わせます。
  */
 window.MAMOBOAT_PILOT = Object.freeze({
   studyId: "mamoboat-pilot-v1",
   collector: Object.freeze({
-    enabled: false,
-    endpoint: "",
-    anonKey: "",
+    enabled: true,
+    transport: "rpc",
+    endpoint: "https://mihicuoijitluvrufsoj.supabase.co/rest/v1/rpc/ingest_pilot_events",
+    publishableKey: "sb_publishable_cexgWfIKzthZ1d6tLOH3_g_sWgcunHB",
   }),
   rewards: Object.freeze([
     Object.freeze({
