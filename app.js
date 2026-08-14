@@ -2,7 +2,7 @@
   "use strict";
 
   const C = window.MamoCore;
-  const APP_VERSION = "3.9.2";
+  const APP_VERSION = "3.9.3";
   const WALLET_VERSION = 3;
   const LEGACY_BONUS_TYPES = new Set(["login_bonus", "defense_bonus"]);
   const KEY = "mamoboat_v39_personal";
@@ -652,6 +652,16 @@
       settlement_source: source,
       result_combo: record.resultCombo || null,
       refund_b: Number(record.refundC) || 0,
+      result_reflected_at: record.resultReflectedAt || null,
+      result_latency_minutes: Number.isFinite(record.resultLatencyMinutes)
+        ? record.resultLatencyMinutes
+        : null,
+      result_fetch_latency_minutes: Number.isFinite(record.resultFetchLatencyMinutes)
+        ? record.resultFetchLatencyMinutes
+        : null,
+      result_delivery_seconds: Number.isFinite(record.resultDeliverySeconds)
+        ? record.resultDeliverySeconds
+        : null,
     });
   }
 
@@ -2480,6 +2490,20 @@ const reference = liveValue != null
     renderAll();
   };
 
+  function latencyMinuteText(value) {
+    const minutes = Number(value);
+    if (!Number.isFinite(minutes) || minutes < 0) return "";
+    if (minutes < 1) return "1分未満";
+    return minutes < 10 ? `約${minutes.toFixed(1)}分` : `約${Math.round(minutes)}分`;
+  }
+
+  function resultTimingHtml(record) {
+    const reflected = latencyMinuteText(record.resultLatencyMinutes);
+    if (!reflected) return "";
+    const fetched = latencyMinuteText(record.resultFetchLatencyMinutes);
+    return `<div class="tiny"><b>締切→Air Boat反映 ${esc(reflected)}</b>${fetched ? ` / 結果データ取得 ${esc(fetched)}` : ""}</div>`;
+  }
+
   function recCard(record) {
     const officialResult = record.venueCode && record.raceNo && record.raceDate
       ? officialResultUrl(record.venueCode, record.raceNo, record.raceDate)
@@ -2532,7 +2556,7 @@ const reference = liveValue != null
     return `<div class="card rec"><div class="venuehead"><div><b>${esc(record.venue)} ${record.raceNo}R</b>
       <div class="tiny">${eventLine ? `${esc(eventLine)}<br>` : ""}${(record.lines || []).length}点 / ${fmt(record.stake)}B / 置換 ${fmt(record.saved)}円</div></div>
       <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
-      ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}
+      ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}${resultTimingHtml(record)}
       ${record.settled && officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果と払戻を照合 ↗</a>` : ""}
       <div class="recgrid"><span>自信</span><b>${record.conf}/10</b><span>購入前衝動</span><b>${record.urge}/10</b>
       <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>仮想投票へ置換</span><b>${fmt(record.saved)}円</b>
@@ -2695,6 +2719,7 @@ const reference = liveValue != null
     const reward = C.rewardMetrics(S.records);
     const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
     const settled = S.records.filter((item) => item.settled).length;
+    const resultLatency = C.resultLatencyStats(S.records);
     $("analysisCards").innerHTML = [
       ["仮想投票へ置換", `${fmt(total)}円`],
       ["現在のB残高", `${fmt(S.coins)}B`],
@@ -2703,6 +2728,9 @@ const reference = liveValue != null
     ].map(([label, value]) => `<div class="stat-card"><div class="eyebrow">${label}</div><div class="metric">${value}</div></div>`).join("");
     const items = [
       ["B投票と結果", `${S.records.length}件中 ${settled}件反映・B的中 ${stats.virtualHits}件`],
+      ["結果の反映時間", resultLatency.samples
+        ? `締切→Air Boat反映 中央値 ${latencyMinuteText(resultLatency.medianMinutes)}（実測${resultLatency.samples}件）`
+        : "次のB精算から自動測定"],
       ["仮想投票総額", `${fmt(stats.replacedTotal)}円相当`],
       ["低自信×高衝動", `${low}件（自信4以下・衝動7以上）`],
       ["取り返したい参加", `${stats.declaredChase}件`],
