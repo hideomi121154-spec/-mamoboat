@@ -869,13 +869,13 @@
     openModal(`<div class="real-bet-confirm">
       <span class="kicker">OFFICIAL CASH BETTING</span>
       <h2>公式投票へ移動しますか？</h2>
-      <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>まもボートのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
+      <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>MAMO BOATのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
       <p>いま現金を使わずに済ませたい場合は、下の「AIR BETに戻る」を選んでください。</p>
       <div class="real-bet-actions">
         <button class="btn primary full" type="button" onclick="recordRealBetAvoided()">AIR BETに戻る</button>
         <a class="btn real-cash-link full" href="${REAL_BET_URL}" target="_blank" rel="noopener noreferrer" onclick="recordRealBetExit()">公式TELEBOATログインへ ↗</a>
       </div>
-      <small>公式サイトでの登録・ログイン・投票・入出金は、まもボートには保存されません。</small>
+      <small>公式サイトでの登録・ログイン・投票・入出金は、MAMO BOATには保存されません。</small>
     </div>`);
   };
 
@@ -2501,7 +2501,7 @@ const reference = liveValue != null
     const reflected = latencyMinuteText(record.resultLatencyMinutes);
     if (!reflected) return "";
     const fetched = latencyMinuteText(record.resultFetchLatencyMinutes);
-    return `<div class="tiny"><b>締切→Air Boat反映 ${esc(reflected)}</b>${fetched ? ` / 結果データ取得 ${esc(fetched)}` : ""}</div>`;
+    return `<div class="tiny"><b>締切→MAMO BOAT反映 ${esc(reflected)}</b>${fetched ? ` / 結果データ取得 ${esc(fetched)}` : ""}</div>`;
   }
 
   function recCard(record) {
@@ -2729,7 +2729,7 @@ const reference = liveValue != null
     const items = [
       ["B投票と結果", `${S.records.length}件中 ${settled}件反映・B的中 ${stats.virtualHits}件`],
       ["結果の反映時間", resultLatency.samples
-        ? `締切→Air Boat反映 中央値 ${latencyMinuteText(resultLatency.medianMinutes)}（実測${resultLatency.samples}件）`
+        ? `締切→MAMO BOAT反映 中央値 ${latencyMinuteText(resultLatency.medianMinutes)}（実測${resultLatency.samples}件）`
         : "次のB精算から自動測定"],
       ["仮想投票総額", `${fmt(stats.replacedTotal)}円相当`],
       ["低自信×高衝動", `${low}件（自信4以下・衝動7以上）`],
@@ -2781,7 +2781,7 @@ const reference = liveValue != null
   function analysisSummary() {
     const stats = C.behaviorStats(S.records);
     const reward = C.rewardMetrics(S.records);
-    return `まもボート行動分析用データ
+    return `MAMO BOAT行動分析用データ
 テスター番号: ${S.pilot.participantId}
 記録数: ${S.records.length}
 仮想投票へ置き換えた金額: ${C.savedTotals(S.records).all}円
@@ -2944,7 +2944,7 @@ B的中: ${stats.virtualHits}件
     const anchor = document.createElement("a");
     const url = URL.createObjectURL(blob);
     anchor.href = url;
-    anchor.download = `mamoboat-records-v392-${C.jstDate()}.json`;
+    anchor.download = `mamoboat-records-v393-${C.jstDate()}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
@@ -3010,6 +3010,6 @@ B的中: ${stats.virtualHits}件
 });
 
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=393").catch(() => {}));
   }
 })();

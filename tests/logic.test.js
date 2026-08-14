@@ -271,7 +271,23 @@ const appSource = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 assert.match(appSource, /window\.refreshResultNow\s*=\s*async/);
 assert.match(appSource, /forceRefresh:\s*true/);
 assert.match(appSource, /result_latency_minutes/);
-assert.match(appSource, /締切→Air Boat反映/);
+assert.match(appSource, /締切→MAMO BOAT反映/);
+assert.doesNotMatch(appSource, /Air Boat/);
+
+const indexSource = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+const manifestSource = fs.readFileSync(
+  path.join(__dirname, "..", "manifest.webmanifest"),
+  "utf8"
+);
+const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
+assert.match(indexSource, /<title>MAMO BOAT v3\.9\.3<\/title>/);
+assert.match(indexSource, /styles\.css\?v=393/);
+assert.match(indexSource, /core\.js\?v=393/);
+assert.match(indexSource, /app\.js\?v=393/);
+assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
+assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
+assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
+assert.match(serviceWorkerSource, /mamoboat-v393-responsive-1/);
 // 実レースで確認した中止・返還・欠場を精算回帰テストとして固定する。
 function liveExceptionDataset(date, venueCode, raceNo, result) {
   return { date, venues: [{ code: venueCode, races: [{ number: raceNo, result }] }] };

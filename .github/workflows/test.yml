@@ -1,4 +1,4 @@
-name: Test Air Boat
+name: Test MAMO BOAT
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: air-boat-tests-${{ github.workflow }}-${{ github.ref }}
+  group: mamo-boat-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

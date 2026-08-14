@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#05233e">
   <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
-  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="manifest" href="manifest.webmanifest?v=393">
   <link rel="icon" href="icon.svg">
-  <link rel="stylesheet" href="styles.css?v=392">
-  <title>まもボート v3.9.2</title>
+  <link rel="stylesheet" href="styles.css?v=393">
+  <title>MAMO BOAT v3.9.3</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>まもボート</strong><small>PILOT v3.9.2</small></span>
+        <span class="brand-copy"><strong>MAMO BOAT</strong><small>PILOT v3.9.3</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -23,10 +23,10 @@
     <main>
       <section id="home" class="screen active">
         <div class="home-masthead">
-          <img class="masthead-character" src="mamoru-hero.webp" alt="Bメダルを持つ、まもボートのオリジナル航海ナビゲーター">
+          <img class="masthead-character" src="mamoru-hero.webp" alt="Bメダルを持つ、MAMO BOATのオリジナル航海ナビゲーター">
           <div class="masthead-brand">
-            <strong>まもボート</strong>
-            <small>MAMO BOAT</small>
+            <strong>MAMO</strong>
+            <small>BOAT</small>
             <div><span>PERSONAL</span><b>非公式・個人用</b></div>
           </div>
           <button class="masthead-wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く">
@@ -204,7 +204,7 @@
 
   <div id="onboard" class="onboard">
     <div class="onboard-shell">
-      <div class="onboard-top"><span class="brand-mark">B</span><span>まもボート / FIRST VOYAGE</span></div>
+      <div class="onboard-top"><span class="brand-mark">B</span><span>MAMO BOAT / FIRST VOYAGE</span></div>
       <div class="onboard-panel active" data-onboard="0">
         <div class="onboard-copy"><span class="kicker">WELCOME ABOARD</span><h1>勝負欲は、<br><em>Bで受け止める。</em></h1><p>実レースの緊張感はそのまま。現金だけを使わない、あなた専用の投票席です。</p></div>
         <img src="mamoru-hero.webp" alt="航海ナビゲーターのマモル">
@@ -228,8 +228,8 @@
   </div>
 
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
-  <script src="core.js"></script>
-  <script src="pilot-config.js"></script>
-  <script src="app.js?v=392"></script>
+  <script src="core.js?v=393"></script>
+  <script src="pilot-config.js?v=393"></script>
+  <script src="app.js?v=393"></script>
 </body>
 </html>
