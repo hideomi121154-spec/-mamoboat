@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#05233e">
   <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
-  <link rel="manifest" href="manifest.webmanifest?v=393">
+  <link rel="manifest" href="manifest.webmanifest?v=394">
   <link rel="icon" href="icon.svg">
-  <link rel="stylesheet" href="styles.css?v=393">
-  <title>MAMO BOAT v3.9.3</title>
+  <link rel="stylesheet" href="styles.css?v=394">
+  <title>MAMO BOAT v3.9.4</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand-button" type="button" onclick="go('home')" aria-label="開催一覧へ戻る">
         <span class="brand-mark">B</span>
-        <span class="brand-copy"><strong>MAMO BOAT</strong><small>PILOT v3.9.3</small></span>
+        <span class="brand-copy"><strong>MAMO BOAT</strong><small>PILOT v3.9.4</small></span>
       </button>
       <button class="wallet" type="button" onclick="openMedalTopup()" aria-label="Bメダル残高と履歴を開く"><span>B BALANCE</span><strong id="topCoins">-- B</strong></button>
     </header>
@@ -192,15 +192,16 @@
       </button>
     </aside>
 
-    <nav class="bottom-nav" aria-label="メインメニュー">
-      <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
-      <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
-      <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
-      <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
-      <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>◒</b><span>分析</span></button>
-      <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
-    </nav>
   </div>
+
+  <nav class="bottom-nav" aria-label="メインメニュー">
+    <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
+    <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
+    <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
+    <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
+    <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>◒</b><span>分析</span></button>
+    <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
+  </nav>
 
   <div id="onboard" class="onboard">
     <div class="onboard-shell">
@@ -228,8 +229,8 @@
   </div>
 
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
-  <script src="core.js?v=393"></script>
-  <script src="pilot-config.js?v=393"></script>
-  <script src="app.js?v=393"></script>
+  <script src="core.js?v=394"></script>
+  <script src="pilot-config.js?v=394"></script>
+  <script src="app.js?v=394"></script>
 </body>
 </html>

@@ -280,14 +280,18 @@ const manifestSource = fs.readFileSync(
   "utf8"
 );
 const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
-assert.match(indexSource, /<title>MAMO BOAT v3\.9\.3<\/title>/);
-assert.match(indexSource, /styles\.css\?v=393/);
-assert.match(indexSource, /core\.js\?v=393/);
-assert.match(indexSource, /app\.js\?v=393/);
+const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
+assert.match(indexSource, /<title>MAMO BOAT v3\.9\.4<\/title>/);
+assert.match(indexSource, /styles\.css\?v=394/);
+assert.match(indexSource, /core\.js\?v=394/);
+assert.match(indexSource, /app\.js\?v=394/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
+assert.match(indexSource, /<\/div>\s*<nav class="bottom-nav"/);
+assert.match(stylesSource, /@media \(max-width: 743px\)[\s\S]*?\.bottom-nav[\s\S]*?bottom: 0 !important/);
+assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v393-responsive-1/);
+assert.match(serviceWorkerSource, /mamoboat-v394-ios-bottom-nav-1/);
 // 実レースで確認した中止・返還・欠場を精算回帰テストとして固定する。
 function liveExceptionDataset(date, venueCode, raceNo, result) {
   return { date, venues: [{ code: venueCode, races: [{ number: raceNo, result }] }] };

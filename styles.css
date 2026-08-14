@@ -1146,6 +1146,21 @@ body { padding-right: 0; }
   }
 }
 
+/* v3.9.4 — iPhone/PWAで下部ナビが画面中央に残る問題を防ぐ。 */
+@media (max-width: 743px) {
+  .bottom-nav {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
 @media (min-width: 1100px) {
   .home-masthead { height: 320px; }
   .venue-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

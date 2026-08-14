@@ -869,13 +869,13 @@
     openModal(`<div class="real-bet-confirm">
       <span class="kicker">OFFICIAL CASH BETTING</span>
       <h2>公式投票へ移動しますか？</h2>
-      <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>MAMO BOATのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
+        <div class="real-bet-warning"><b>ここから先は現金を使う公式TELEBOATです。</b><p>MAMO BOATのBメダルとは別サービスです。20歳未満の方は利用できません。</p></div>
       <p>いま現金を使わずに済ませたい場合は、下の「AIR BETに戻る」を選んでください。</p>
       <div class="real-bet-actions">
         <button class="btn primary full" type="button" onclick="recordRealBetAvoided()">AIR BETに戻る</button>
         <a class="btn real-cash-link full" href="${REAL_BET_URL}" target="_blank" rel="noopener noreferrer" onclick="recordRealBetExit()">公式TELEBOATログインへ ↗</a>
       </div>
-      <small>公式サイトでの登録・ログイン・投票・入出金は、MAMO BOATには保存されません。</small>
+        <small>公式サイトでの登録・ログイン・投票・入出金は、MAMO BOATには保存されません。</small>
     </div>`);
   };
 
@@ -3010,6 +3010,6 @@ B的中: ${stats.virtualHits}件
 });
 
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=393").catch(() => {}));
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=394").catch(() => {}));
   }
 })();
