@@ -220,6 +220,34 @@ assert.equal(C.canonicalCombo([3, 1, 2], "trio"), "1-2-3");
 assert.equal(C.canonicalCombo([3, 1], "quinella"), "1-3");
 assert.equal(C.canonicalCombo([3, 1], "exacta"), "3-1");
 
+const latencyDataset = resultDataset([
+  { combination: "1-3-5", payout: 1200 },
+]);
+latencyDataset.venues[0].races[0].closeTime = "2026-08-09T10:00:00+09:00";
+latencyDataset.venues[0].races[0].result.fetchedAt = "2026-08-09T10:12:00+09:00";
+const latencyRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  closeTime: "2026-08-09T10:00:00+09:00",
+  settled: false,
+  lines: [{ combo: [1, 3, 5], stake: 100 }],
+};
+C.settleRecord(latencyRecord, latencyDataset, "2026-08-09T10:13:30+09:00");
+assert.equal(latencyRecord.resultFetchLatencyMinutes, 12);
+assert.equal(latencyRecord.resultLatencyMinutes, 13.5);
+assert.equal(latencyRecord.resultDeliverySeconds, 90);
+assert.equal(latencyRecord.resultReflectedAt, "2026-08-09T01:13:30.000Z");
+const latencyStats = C.resultLatencyStats([
+  latencyRecord,
+  { resultLatencyMinutes: 15.2, resultFetchLatencyMinutes: 14 },
+  { resultLatencyMinutes: 20, resultFetchLatencyMinutes: 18 },
+  { resultLatencyMinutes: null, resultFetchLatencyMinutes: null },
+]);
+assert.equal(latencyStats.samples, 3);
+assert.equal(latencyStats.medianMinutes, 15.2);
+assert.equal(latencyStats.fetchedMedianMinutes, 14);
+
 const official = JSON.parse(fs.readFileSync(
   path.join(__dirname, "..", "data", "today.json"),
   "utf8"
@@ -242,6 +270,8 @@ assert.equal(officialEntries, official.quality.stats.scheduleEntries);
 const appSource = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
 assert.match(appSource, /window\.refreshResultNow\s*=\s*async/);
 assert.match(appSource, /forceRefresh:\s*true/);
+assert.match(appSource, /result_latency_minutes/);
+assert.match(appSource, /締切→Air Boat反映/);
 // 実レースで確認した中止・返還・欠場を精算回帰テストとして固定する。
 function liveExceptionDataset(date, venueCode, raceNo, result) {
   return { date, venues: [{ code: venueCode, races: [{ number: raceNo, result }] }] };
