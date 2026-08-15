@@ -314,10 +314,6 @@
     setImage("#venues .page-intro > img", ART.shun, "一曲 瞬", "character-venues-shun");
     setImage("#records .page-intro > img", ART.miru, "木月 美留", "character-records-miru");
     setImage("#onboard .onboard-panel[data-onboard='0'] img", ART.cover, "加音 守、木月 美留、一曲 瞬が表紙を飾るMAMO BOAT PRESS", "onboard-cover-art");
-    const onboardTag = document.querySelector(".onboard-racer-tag span");
-    const onboardTagLabel = document.querySelector(".onboard-racer-tag b");
-    if (onboardTag) onboardTag.textContent = "加音 守・木月 美留・一曲 瞬";
-    if (onboardTagLabel) onboardTagLabel.textContent = "MAMO BOAT PRESS";
     renderAnalysisDuo();
     renderCastCards();
     ensureProfileOverlay();
