@@ -1,13 +1,14 @@
-/* MAMO BOAT v4.0.1 — character asset hotfix v7
- * Uses manually uploaded PNG character assets to avoid broken WebP/cache issues.
+/* MAMO BOAT v4.0.1 — character asset hotfix v8
+ * Uses manually uploaded PNG character assets and a single editorial-room scene.
  */
 (() => {
   "use strict";
 
   const ART = Object.freeze({
-    mamoru: "assets/mamoru.png?v=20260815-7",
-    miru: "assets/miru.png?v=20260815-7",
-    shun: "assets/shun.png?v=20260815-7",
+    mamoru: "assets/mamoru.png?v=20260815-8",
+    miru: "assets/miru.png?v=20260815-8",
+    shun: "assets/shun.png?v=20260815-8",
+    editorial: "assets/482089DF-4357-438E-8721-A6EFC38F4891.png?v=20260815-8",
   });
 
   function fresh(img, src, alt) {
@@ -19,16 +20,35 @@
     img.style.opacity = "1";
   }
 
+  function renderEditorialScene() {
+    const holder = document.querySelector("#analysis .analysis-character-duo");
+    if (!holder) return;
+
+    let scene = holder.querySelector(".editorial-scene");
+    if (!scene) {
+      holder.replaceChildren();
+      scene = document.createElement("img");
+      scene.className = "editorial-scene";
+      scene.alt = "加音 守と木月 美留が編集室で議論している様子";
+      holder.appendChild(scene);
+    }
+
+    fresh(scene, ART.editorial, "加音 守と木月 美留が編集室で議論している様子");
+    scene.style.setProperty("width", "100%", "important");
+    scene.style.setProperty("max-width", "100%", "important");
+    scene.style.setProperty("height", "100%", "important");
+    scene.style.setProperty("object-fit", "cover", "important");
+    scene.style.setProperty("object-position", "center center", "important");
+    scene.style.setProperty("transform", "none", "important");
+    scene.style.setProperty("filter", "none", "important");
+  }
+
   function apply() {
     fresh(document.querySelector("#home .masthead-character"), ART.mamoru, "加音 守");
     fresh(document.querySelector("#venues .page-intro > img"), ART.shun, "一曲 瞬");
     fresh(document.querySelector("#records .page-intro > img"), ART.miru, "木月 美留");
 
-    const duo = document.querySelector("#analysis .analysis-character-duo");
-    if (duo) {
-      fresh(duo.querySelector(".duo-mamoru"), ART.mamoru, "加音 守");
-      fresh(duo.querySelector(".duo-miru"), ART.miru, "木月 美留");
-    }
+    renderEditorialScene();
 
     fresh(document.querySelector("#analysis .cast-profile-card.mamoru .cast-thumb img"), ART.mamoru, "加音 守");
     fresh(document.querySelector("#analysis .cast-profile-card.miru .cast-thumb img"), ART.miru, "木月 美留");
