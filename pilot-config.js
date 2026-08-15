@@ -19,7 +19,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
 /* Character UI is isolated from pilot collection and betting logic. */
 (() => {
   const script = document.createElement("script");
-  script.src = "cast-ui.js?v=20260815-5";
+  script.src = "cast-ui.js?v=20260815-6";
   script.defer = true;
+  script.addEventListener("load", () => {
+    const hotfix = document.createElement("script");
+    hotfix.src = "cast-hotfix.js?v=20260815-6";
+    hotfix.defer = true;
+    document.head.appendChild(hotfix);
+  }, { once: true });
   document.head.appendChild(script);
 })();
