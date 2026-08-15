@@ -5,9 +5,9 @@
   "use strict";
 
   const ART = Object.freeze({
-    mamoru: "assets/cast/mamoru.webp?v=20260815-3",
-    miru: "assets/cast/miru.webp?v=20260815-3",
-    shun: "assets/cast/shun.webp?v=20260815-3",
+    mamoru: "assets/cast/mamoru.webp?v=20260815-4",
+    miru: "assets/cast/miru.webp?v=20260815-4",
+    shun: "assets/cast/shun.webp?v=20260815-4",
   });
 
   const PROFILES = Object.freeze({
@@ -196,7 +196,7 @@
         box-shadow:0 24px 70px rgba(0,0,0,.35);
       }
       .cast-profile-visual {
-        min-height:500px;
+        min-height:380px;
         display:flex;
         align-items:flex-end;
         justify-content:center;
@@ -205,7 +205,7 @@
       }
       .cast-profile-visual img {
         width:100%;
-        height:500px;
+        height:380px;
         min-height:0;
         display:block;
         object-fit:contain;
@@ -233,8 +233,8 @@
         .cast-profile-card { grid-template-columns:78px minmax(0,1fr) 18px; min-height:104px; }
         .cast-profile-card .cast-thumb { width:78px; height:90px; }
         .cast-profile-dialog { grid-template-columns:1fr; }
-        .cast-profile-visual { min-height:330px; max-height:43vh; }
-        .cast-profile-visual img { height:330px; }
+        .cast-profile-visual { min-height:300px; max-height:43vh; }
+        .cast-profile-visual img { height:300px; }
         .cast-profile-copy { padding:24px 22px 28px; }
         .cast-profile-copy h2 { font-size:28px; }
       }
