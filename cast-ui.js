@@ -1,13 +1,13 @@
-/* v4.0.1 character layout refresh v3.
- * Visual/editorial UI only. AIR BET, B wallet, official results and settlement logic are untouched.
+/* MAMO BOAT v4.0.1 — character UI v5 (mobile-first)
+ * Visual/editorial UI only. AIR BET, B wallet, official data and settlement logic are untouched.
  */
 (() => {
   "use strict";
 
   const ART = Object.freeze({
-    mamoru: "assets/cast/mamoru.webp?v=20260815-4",
-    miru: "assets/cast/miru.webp?v=20260815-4",
-    shun: "assets/cast/shun.webp?v=20260815-4",
+    mamoru: "assets/cast/mamoru.webp?v=20260815-5",
+    miru: "assets/cast/miru.webp?v=20260815-5",
+    shun: "assets/cast/shun.webp?v=20260815-5",
   });
 
   const PROFILES = Object.freeze({
@@ -38,179 +38,110 @@
   });
 
   function injectStyles() {
-    if (document.getElementById("mamoCharacterLayoutStyleV3")) return;
-    document.getElementById("mamoCharacterLayoutStyle")?.remove();
+    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5"]
+      .forEach((id) => document.getElementById(id)?.remove());
+
     const style = document.createElement("style");
-    style.id = "mamoCharacterLayoutStyleV3";
+    style.id = "mamoCharacterLayoutStyleV5";
     style.textContent = `
-      #home .home-masthead { isolation:isolate !important; }
-      #home .home-masthead::before { z-index:1 !important; pointer-events:none; }
-      #home .home-masthead::after { z-index:1 !important; pointer-events:none; }
+      .mamo-character-cut { image-rendering:auto !important; }
+
+      #home .home-masthead { position:relative !important; isolation:isolate !important; background:#fff !important; }
+      #home .home-masthead::before,
+      #home .home-masthead::after { z-index:1 !important; pointer-events:none !important; }
       #home .masthead-brand,
       #home .masthead-wallet,
-      #home .masthead-callout { z-index:3 !important; }
+      #home .masthead-callout { position:absolute; z-index:4 !important; }
       #home .masthead-character.mamo-character-cut {
         position:absolute !important;
-        inset:auto 1% 0 auto !important;
-        width:52% !important;
-        height:100% !important;
+        left:auto !important; top:auto !important; right:1.5% !important; bottom:0 !important;
+        width:auto !important; height:108% !important; max-width:49% !important;
         display:block !important;
-        object-fit:contain !important;
-        object-position:right bottom !important;
-        opacity:1 !important;
-        visibility:visible !important;
-        filter:none !important;
-        transform:none !important;
-        z-index:0 !important;
+        object-fit:contain !important; object-position:right bottom !important;
+        opacity:1 !important; visibility:visible !important;
+        filter:none !important; transform:none !important;
+        z-index:2 !important;
       }
 
       #venues .page-intro,
-      #records .page-intro,
-      #analysis .analysis-intro {
-        isolation:isolate !important;
+      #records .page-intro {
+        position:relative !important; isolation:isolate !important;
+        overflow:hidden !important; background:#fff !important; color:var(--ink) !important;
         min-height:190px !important;
-        background:linear-gradient(100deg,#fff 0 52%,#f5fbfc 70%,#e9f8fa 100%) !important;
-        color:var(--ink) !important;
+        padding-right:39% !important;
       }
       #venues .page-intro > div,
-      #records .page-intro > div,
-      #analysis .analysis-intro > div:first-child { position:relative; z-index:3; }
+      #records .page-intro > div { position:relative !important; z-index:3 !important; }
       #venues .page-intro .kicker,
-      #records .page-intro .kicker,
-      #analysis .analysis-intro .kicker { color:var(--teal-dark) !important; }
+      #records .page-intro .kicker { color:var(--teal-dark) !important; }
       #venues .page-intro p,
-      #records .page-intro p,
-      #analysis .analysis-intro p { color:var(--muted) !important; }
-
+      #records .page-intro p { color:var(--muted) !important; }
       #venues .page-intro > img.mamo-character-cut,
       #records .page-intro > img.mamo-character-cut {
         position:absolute !important;
-        inset:auto 1.5% 0 auto !important;
-        width:43% !important;
-        height:100% !important;
+        left:auto !important; top:auto !important; right:1.5% !important; bottom:-2% !important;
+        width:auto !important; height:112% !important; max-width:38% !important;
         display:block !important;
-        object-fit:contain !important;
-        object-position:right bottom !important;
-        opacity:1 !important;
-        visibility:visible !important;
-        filter:none !important;
-        transform:none !important;
+        object-fit:contain !important; object-position:right bottom !important;
+        opacity:1 !important; visibility:visible !important;
+        filter:none !important; transform:none !important;
         z-index:1 !important;
       }
-      #records .page-intro > img.mamo-character-cut { width:40% !important; right:3% !important; }
 
+      #analysis .analysis-intro {
+        position:relative !important; isolation:isolate !important; overflow:hidden !important;
+        height:220px !important; min-height:220px !important;
+        padding:28px 47% 24px 20px !important;
+        background:#fff !important; color:var(--ink) !important;
+        border-bottom-color:var(--gold) !important;
+      }
+      #analysis .analysis-intro > div:first-child { position:relative !important; z-index:3 !important; }
+      #analysis .analysis-intro .kicker { color:var(--teal-dark) !important; }
+      #analysis .analysis-intro h1 { white-space:nowrap !important; font-size:38px !important; line-height:1.05 !important; }
+      #analysis .analysis-intro p { color:var(--muted) !important; }
       .analysis-character-duo {
-        position:absolute;
-        right:1%;
-        bottom:0;
-        width:53%;
-        height:100%;
-        display:flex;
-        align-items:flex-end;
-        justify-content:flex-end;
-        overflow:hidden;
-        pointer-events:none;
-        z-index:1;
+        position:absolute !important; right:1% !important; bottom:0 !important;
+        width:46% !important; height:100% !important;
+        display:flex !important; justify-content:flex-end !important; align-items:flex-end !important;
+        gap:2px !important; overflow:hidden !important; pointer-events:none !important; z-index:1 !important;
       }
       .analysis-character-duo img {
-        position:relative !important;
-        inset:auto !important;
-        display:block !important;
-        height:100% !important;
-        width:auto !important;
-        max-width:none !important;
-        object-fit:contain !important;
-        object-position:center bottom !important;
-        opacity:1 !important;
-        visibility:visible !important;
-        filter:none !important;
+        position:relative !important; inset:auto !important;
+        width:auto !important; max-width:48% !important;
+        display:block !important; object-fit:contain !important; object-position:center bottom !important;
+        filter:none !important; transform:none !important; opacity:1 !important; visibility:visible !important;
       }
-      .analysis-character-duo .duo-mamoru { height:108% !important; margin-right:-8%; z-index:2; transform:none !important; }
-      .analysis-character-duo .duo-miru { height:96% !important; z-index:1; transform:none !important; }
+      .analysis-character-duo .duo-mamoru { height:105% !important; }
+      .analysis-character-duo .duo-miru { height:94% !important; }
 
-      .newsroom-cast { grid-template-columns:1.08fr .96fr 1fr !important; gap:10px !important; }
+      .newsroom-cast { display:grid !important; grid-template-columns:1.08fr .96fr 1fr !important; gap:10px !important; }
       .cast-profile-card {
-        appearance:none;
-        width:100%;
-        min-width:0;
-        min-height:122px;
-        padding:10px;
-        border:1px solid var(--soft-line);
-        border-top:4px solid var(--teal);
-        background:#fff;
-        color:var(--ink);
-        text-align:left;
-        display:grid;
-        grid-template-columns:86px minmax(0,1fr) 18px;
-        align-items:center;
-        gap:10px;
-        box-shadow:3px 4px 0 rgba(7,27,43,.07);
-        cursor:pointer;
-        transition:transform .15s ease,box-shadow .15s ease;
+        appearance:none; width:100%; min-width:0; min-height:118px; padding:10px;
+        border:1px solid var(--soft-line); border-top:4px solid var(--teal); background:#fff; color:var(--ink);
+        display:grid; grid-template-columns:78px minmax(0,1fr) 18px; align-items:center; gap:10px;
+        text-align:left; box-shadow:3px 4px 0 rgba(7,27,43,.07); cursor:pointer;
       }
-      .cast-profile-card:hover { transform:translateY(-2px); box-shadow:5px 7px 0 rgba(7,27,43,.10); }
       .cast-profile-card.miru { border-top-color:#d5a73b; }
       .cast-profile-card.shun { border-top-color:var(--coral); }
-      .cast-profile-card .cast-thumb {
-        width:86px;
-        height:100px;
-        display:flex;
-        align-items:flex-end;
-        justify-content:center;
-        overflow:hidden;
-        border-radius:6px;
-        background:#edf8fa;
-      }
-      .cast-profile-card .cast-thumb img {
-        width:100%;
-        height:100%;
-        display:block;
-        object-fit:contain;
-        object-position:center bottom;
-      }
-      .cast-profile-card small { display:block; color:var(--muted); font-size:8px; font-weight:900; line-height:1.4; }
+      .cast-profile-card .cast-thumb { width:78px; height:94px; display:grid; place-items:end center; overflow:hidden; border-radius:6px; background:#f4fbfc; }
+      .cast-profile-card .cast-thumb img { width:100%; height:100%; display:block; object-fit:contain; object-position:center bottom; }
+      .cast-profile-card small { display:block; color:var(--muted); font-size:8px; font-weight:900; line-height:1.35; }
       .cast-profile-card h3 { margin:4px 0 0; font-size:17px; letter-spacing:-.04em; }
-      .cast-profile-card .cast-open-hint { display:block; margin-top:7px; color:var(--teal-dark); font-size:8px; font-weight:900; }
+      .cast-profile-card .cast-open-hint { display:block; margin-top:6px; color:var(--teal-dark); font-size:8px; font-weight:900; }
       .cast-profile-card .cast-arrow { color:var(--teal-dark); font-size:20px; font-weight:1000; }
 
       .cast-profile-overlay[hidden] { display:none !important; }
       .cast-profile-overlay {
-        position:fixed;
-        inset:0;
-        z-index:120;
-        display:grid;
-        place-items:center;
-        padding:18px;
-        background:rgba(2,19,33,.72);
-        backdrop-filter:blur(5px);
+        position:fixed; inset:0; z-index:120; display:grid; place-items:center; padding:18px;
+        background:rgba(2,19,33,.72); backdrop-filter:blur(5px);
       }
       .cast-profile-dialog {
-        position:relative;
-        width:min(840px,96vw);
-        max-height:90vh;
-        overflow:auto;
-        display:grid;
-        grid-template-columns:minmax(300px,.9fr) minmax(300px,1.1fr);
-        background:#fff;
-        border-top:6px solid var(--teal);
-        box-shadow:0 24px 70px rgba(0,0,0,.35);
+        position:relative; width:min(840px,96vw); max-height:90vh; overflow:auto;
+        display:grid; grid-template-columns:minmax(280px,.9fr) minmax(300px,1.1fr);
+        background:#fff; border-top:6px solid var(--teal); box-shadow:0 24px 70px rgba(0,0,0,.35);
       }
-      .cast-profile-visual {
-        min-height:380px;
-        display:flex;
-        align-items:flex-end;
-        justify-content:center;
-        overflow:hidden;
-        background:#edf8fa;
-      }
-      .cast-profile-visual img {
-        width:100%;
-        height:380px;
-        min-height:0;
-        display:block;
-        object-fit:contain;
-        object-position:center bottom;
-      }
+      .cast-profile-visual { min-height:390px; display:grid; place-items:end center; overflow:hidden; background:#f3fbfc; }
+      .cast-profile-visual img { width:100%; height:390px; display:block; object-fit:contain; object-position:center bottom; }
       .cast-profile-copy { padding:34px 32px; align-self:center; }
       .cast-profile-copy .profile-kicker { color:var(--teal-dark); font-size:9px; font-weight:1000; letter-spacing:.14em; }
       .cast-profile-copy h2 { margin:8px 0 1px; font-size:34px; letter-spacing:-.06em; }
@@ -218,32 +149,51 @@
       .cast-profile-copy .profile-role { margin:18px 0 8px; color:var(--teal-dark); font-weight:1000; }
       .cast-profile-copy .profile-intro { margin:0 0 14px; font-size:15px; font-weight:900; line-height:1.7; }
       .cast-profile-copy .profile-detail { margin:0; color:var(--muted); font-size:12px; line-height:1.9; }
-      .cast-profile-close { position:absolute; right:12px; top:12px; z-index:4; width:38px; height:38px; border:0; border-radius:50%; background:var(--navy); color:#fff; font-size:22px; line-height:1; }
-
-      #onboard .mamo-character-cut { object-fit:contain !important; object-position:right bottom !important; filter:none !important; }
+      .cast-profile-close { position:absolute; right:12px; top:12px; z-index:4; width:40px; height:40px; border:0; border-radius:50%; background:var(--navy); color:#fff; font-size:23px; line-height:1; }
 
       @media (max-width:700px) {
-        #home .masthead-character.mamo-character-cut { width:63% !important; right:-5% !important; }
-        #venues .page-intro > img.mamo-character-cut { width:48% !important; right:-2% !important; }
-        #records .page-intro > img.mamo-character-cut { width:45% !important; right:0 !important; }
-        .analysis-character-duo { width:58%; right:-4%; }
-        .analysis-character-duo .duo-mamoru { height:105% !important; margin-right:-12%; }
-        .analysis-character-duo .duo-miru { height:90% !important; }
+        #home .masthead-character.mamo-character-cut {
+          right:-1% !important; bottom:0 !important; height:92% !important; max-width:48% !important;
+        }
+        #venues .page-intro,
+        #records .page-intro { min-height:170px !important; padding-right:40% !important; }
+        #venues .page-intro > img.mamo-character-cut,
+        #records .page-intro > img.mamo-character-cut {
+          right:-1% !important; bottom:0 !important; height:96% !important; max-width:39% !important;
+        }
+        #analysis .analysis-intro {
+          height:330px !important; min-height:330px !important;
+          padding:24px 18px 170px !important;
+        }
+        #analysis .analysis-intro h1 { white-space:nowrap !important; font-size:34px !important; letter-spacing:-.07em !important; }
+        #analysis .analysis-intro p { max-width:100% !important; font-size:11px !important; }
+        .analysis-character-duo {
+          left:0 !important; right:0 !important; bottom:0 !important;
+          width:100% !important; height:165px !important;
+          justify-content:center !important; gap:4px !important;
+        }
+        .analysis-character-duo img { max-width:43% !important; }
+        .analysis-character-duo .duo-mamoru { height:165px !important; }
+        .analysis-character-duo .duo-miru { height:155px !important; }
         .newsroom-cast { grid-template-columns:1fr !important; }
-        .cast-profile-card { grid-template-columns:78px minmax(0,1fr) 18px; min-height:104px; }
-        .cast-profile-card .cast-thumb { width:78px; height:90px; }
-        .cast-profile-dialog { grid-template-columns:1fr; }
-        .cast-profile-visual { min-height:300px; max-height:43vh; }
-        .cast-profile-visual img { height:300px; }
-        .cast-profile-copy { padding:24px 22px 28px; }
+        .cast-profile-card { grid-template-columns:72px minmax(0,1fr) 18px; min-height:100px; }
+        .cast-profile-card .cast-thumb { width:72px; height:86px; }
+        .cast-profile-dialog { grid-template-columns:1fr; width:min(94vw,520px); }
+        .cast-profile-visual { min-height:260px; max-height:38vh; }
+        .cast-profile-visual img { height:280px; }
+        .cast-profile-copy { padding:22px 20px 26px; }
         .cast-profile-copy h2 { font-size:28px; }
       }
 
       @media (max-width:390px) {
-        #home .masthead-character.mamo-character-cut { width:66% !important; right:-8% !important; }
+        #home .masthead-character.mamo-character-cut { right:-3% !important; height:90% !important; max-width:47% !important; }
         #venues .page-intro > img.mamo-character-cut,
-        #records .page-intro > img.mamo-character-cut { width:50% !important; right:-5% !important; }
-        .analysis-character-duo { opacity:.96; width:61%; right:-8%; }
+        #records .page-intro > img.mamo-character-cut { right:-3% !important; height:92% !important; max-width:38% !important; }
+        #analysis .analysis-intro { height:320px !important; min-height:320px !important; padding-bottom:160px !important; }
+        #analysis .analysis-intro h1 { font-size:31px !important; }
+        .analysis-character-duo { height:155px !important; }
+        .analysis-character-duo .duo-mamoru { height:155px !important; }
+        .analysis-character-duo .duo-miru { height:146px !important; }
       }
     `;
     document.head.appendChild(style);
@@ -259,6 +209,11 @@
     img.removeAttribute("aria-hidden");
     img.classList.add("mamo-character-cut");
     if (extraClass) img.classList.add(extraClass);
+    img.onerror = () => {
+      console.error("MAMO character image failed:", src);
+      img.style.display = "none";
+    };
+    img.onload = () => { img.style.display = "block"; };
     return img;
   }
 
@@ -283,26 +238,25 @@
         </div>
       </section>`;
     overlay.addEventListener("click", (event) => { if (event.target === overlay) closeCastProfile(); });
-    overlay.querySelector(".cast-profile-close").addEventListener("click", closeCastProfile);
+    overlay.querySelector(".cast-profile-close")?.addEventListener("click", closeCastProfile);
     document.body.appendChild(overlay);
     return overlay;
   }
 
   function openCastProfile(key) {
-    const profile = PROFILES[key];
-    if (!profile) return;
+    const p = PROFILES[key];
+    if (!p) return;
     const overlay = ensureProfileOverlay();
     const image = overlay.querySelector("#castProfileImage");
-    image.src = profile.image;
-    image.alt = profile.name;
-    overlay.querySelector("#castProfileName").textContent = profile.name;
-    overlay.querySelector("#castProfileReading").textContent = profile.reading;
-    overlay.querySelector("#castProfileRole").textContent = profile.role;
-    overlay.querySelector("#castProfileIntro").textContent = profile.intro;
-    overlay.querySelector("#castProfileDetail").textContent = profile.detail;
+    image.src = p.image;
+    image.alt = p.name;
+    overlay.querySelector("#castProfileName").textContent = p.name;
+    overlay.querySelector("#castProfileReading").textContent = p.reading;
+    overlay.querySelector("#castProfileRole").textContent = p.role;
+    overlay.querySelector("#castProfileIntro").textContent = p.intro;
+    overlay.querySelector("#castProfileDetail").textContent = p.detail;
     overlay.hidden = false;
     document.body.style.overflow = "hidden";
-    overlay.querySelector(".cast-profile-close").focus({ preventScroll:true });
   }
 
   function closeCastProfile() {
@@ -322,19 +276,19 @@
     const heading = analysis.querySelector(".section-head h2");
     if (heading) heading.textContent = "MAMO BOAT PRESSの3人";
 
-    const card = (key, roleShort, cls) => {
+    const card = (key, cls) => {
       const p = PROFILES[key];
-      return `<button class="cast-profile-card ${cls}" type="button" onclick="openCastProfile('${key}')" aria-label="${p.name}のプロフィールを開く">
-        <span class="cast-thumb"><img src="${p.image}" alt="" aria-hidden="true"></span>
-        <span><small>${roleShort}</small><h3>${p.name}</h3><span class="cast-open-hint">タップでプロフィール</span></span>
+      return `<button class="cast-profile-card ${cls}" type="button" data-cast-profile="${key}" aria-label="${p.name}のプロフィールを開く">
+        <span class="cast-thumb"><img src="${p.image}" alt="${p.name}"></span>
+        <span><small>${p.role}</small><h3>${p.name}</h3><span class="cast-open-hint">タップでプロフィール</span></span>
         <b class="cast-arrow" aria-hidden="true">›</b>
       </button>`;
     };
-    cast.innerHTML = [
-      card("mamoru", "競艇担当記者・編集部デスク", "mamoru"),
-      card("miru", "新人記者・読者担当", "miru"),
-      card("shun", "トップレーサー・守の幼なじみ", "shun"),
-    ].join("");
+
+    cast.innerHTML = card("mamoru", "mamoru") + card("miru", "miru") + card("shun", "shun");
+    cast.querySelectorAll("[data-cast-profile]").forEach((button) => {
+      button.addEventListener("click", () => openCastProfile(button.dataset.castProfile));
+    });
   }
 
   function renderAnalysisDuo() {
