@@ -1,13 +1,13 @@
-/* MAMO BOAT v4.0.1 — character asset hotfix v6
- * Forces fresh character assets after Safari cached a broken Mamoru image.
+/* MAMO BOAT v4.0.1 — character asset hotfix v7
+ * Uses manually uploaded PNG character assets to avoid broken WebP/cache issues.
  */
 (() => {
   "use strict";
 
   const ART = Object.freeze({
-    mamoru: "assets/cast/mamoru.webp?v=20260815-6",
-    miru: "assets/cast/miru.webp?v=20260815-6",
-    shun: "assets/cast/shun.webp?v=20260815-6",
+    mamoru: "assets/mamoru.png?v=20260815-7",
+    miru: "assets/miru.png?v=20260815-7",
+    shun: "assets/shun.png?v=20260815-7",
   });
 
   function fresh(img, src, alt) {
