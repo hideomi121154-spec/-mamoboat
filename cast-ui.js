@@ -5,9 +5,10 @@
   "use strict";
 
   const ART = Object.freeze({
-    mamoru: "assets/cast/mamoru.webp?v=20260815-5",
-    miru: "assets/cast/miru.webp?v=20260815-5",
-    shun: "assets/cast/shun.webp?v=20260815-5",
+    mamoru: "assets/mamoru.png?v=20260815-9",
+    miru: "assets/miru.png?v=20260815-9",
+    shun: "assets/shun.png?v=20260815-9",
+    editorial: "assets/482089DF-4357-438E-8721-A6EFC38F4891.png?v=20260815-9",
   });
 
   const PROFILES = Object.freeze({
@@ -113,6 +114,10 @@
       }
       .analysis-character-duo .duo-mamoru { height:105% !important; }
       .analysis-character-duo .duo-miru { height:94% !important; }
+      .analysis-character-duo .editorial-scene {
+        width:100% !important; max-width:100% !important; height:100% !important;
+        object-fit:cover !important; object-position:center center !important;
+      }
 
       .newsroom-cast { display:grid !important; grid-template-columns:1.08fr .96fr 1fr !important; gap:10px !important; }
       .cast-profile-card {
@@ -298,7 +303,7 @@
     const duo = document.createElement("div");
     duo.className = "analysis-character-duo";
     duo.setAttribute("aria-hidden", "true");
-    duo.innerHTML = `<img class="duo-mamoru" src="${ART.mamoru}" alt=""><img class="duo-miru" src="${ART.miru}" alt="">`;
+    duo.innerHTML = `<img class="editorial-scene" src="${ART.editorial}" alt="">`;
     intro.appendChild(duo);
   }
 
