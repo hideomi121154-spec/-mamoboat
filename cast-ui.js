@@ -9,6 +9,7 @@
     miru: "assets/miru.png?v=20260815-9",
     shun: "assets/shun.png?v=20260815-9",
     editorial: "assets/482089DF-4357-438E-8721-A6EFC38F4891.png?v=20260815-9",
+    cover: "assets/EFE288D7-4C85-4906-A6E9-1590E55E7070.png?v=20260815-10",
   });
 
   const PROFILES = Object.freeze({
@@ -312,9 +313,11 @@
     setImage("#home .masthead-character", ART.mamoru, "加音 守", "character-home-mamoru");
     setImage("#venues .page-intro > img", ART.shun, "一曲 瞬", "character-venues-shun");
     setImage("#records .page-intro > img", ART.miru, "木月 美留", "character-records-miru");
-    setImage("#onboard .onboard-panel[data-onboard='0'] img", ART.shun, "一曲 瞬", "character-onboard-shun");
+    setImage("#onboard .onboard-panel[data-onboard='0'] img", ART.cover, "加音 守、木月 美留、一曲 瞬が表紙を飾るMAMO BOAT PRESS", "onboard-cover-art");
     const onboardTag = document.querySelector(".onboard-racer-tag span");
-    if (onboardTag) onboardTag.textContent = "一曲 瞬 / 加音 守の幼なじみ";
+    const onboardTagLabel = document.querySelector(".onboard-racer-tag b");
+    if (onboardTag) onboardTag.textContent = "加音 守・木月 美留・一曲 瞬";
+    if (onboardTagLabel) onboardTagLabel.textContent = "MAMO BOAT PRESS";
     renderAnalysisDuo();
     renderCastCards();
     ensureProfileOverlay();
