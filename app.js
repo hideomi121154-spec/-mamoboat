@@ -396,6 +396,9 @@
         intendedYen: stake || intended,
         conf: Number(record.conf ?? 5),
         urge: Number(record.urge ?? record.before ?? 5),
+        reason: ["まあ100円だけ", "まぁ100円だけ"].includes(record.reason)
+          ? "とりあえず賭けたい"
+          : record.reason,
         afterUrge: record.afterUrge ?? record.after ?? null,
         status,
         settled: record.settled === true || ["hit", "miss", "refunded"].includes(status),
@@ -1760,7 +1763,7 @@ const reference = liveValue != null
       <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
       <h3>今、現金で買いたい気持ち</h3>
       <input id="urge" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('uv').textContent=this.value"><div id="uv" class="big">5</div>
-      <div class="field"><label>参加理由</label><select id="reason"><option>まあ100円だけ</option><option>なんとなく</option><option>レースがあるから</option><option>自分なりの根拠がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
+      <div class="field"><label>参加理由</label><select id="reason"><option>とりあえず賭けたい</option><option>なんとなく</option><option>レースがあるから</option><option>自分なりの根拠がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
       <div class="field"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="なぜ買いたくなったか等"></textarea></div>
       <button class="btn teal full" onclick="placeBet()">AIR BETを確定する</button>`);
   };
@@ -2619,7 +2622,7 @@ const reference = liveValue != null
 
   window.openDeepInterview = () => {
     if (S.pressroom.plan !== "matsu") return;
-    const themes = ["まあ100円から続く場面", "予定額が変わる場面", "勝敗後の気持ち", "自分で決めた上限", "参加しない選択"];
+    const themes = ["軽い気持ちから続く場面", "予定額が変わる場面", "勝敗後の気持ち", "自分で決めた上限", "参加しない選択"];
     openModal(`<div class="deep-interview"><span class="kicker">SPECIAL INTERVIEW</span><h2>何を深く知りたいですか？</h2><p>質問数ではなく、本人が選んだテーマだけを詳しく取材します。</p>
       <div class="deep-theme-list">${themes.map((theme) => `<button class="${S.pressroom.deepTheme === theme ? "selected" : ""}" type="button" onclick="saveDeepTheme('${theme}')">${theme}</button>`).join("")}</div>
       <button class="btn secondary full" type="button" onclick="closeModal()">今は選ばない</button></div>`);
