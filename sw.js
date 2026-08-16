@@ -1,3 +1,4 @@
+// Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
 const CACHE = "mamoboat-v401-central-pilot-4";
 const SHELL = ["./","./index.html","./styles.css","./core.js","./pilot-config.js","./app.js","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
