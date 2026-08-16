@@ -21,8 +21,7 @@ const MAMO_SCRIPTS = [
   ["baseline-intelligence.js?v=20260816-1","baseline-intel"],
   ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
   ["press-intelligence.js?v=20260816-1","press-intel"],
-  ["race-ux.js?v=20260816-2","race-ux"],
-  ["visual-refresh.js?v=20260816-1","visual-refresh"],
+  ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-1","race-layout-refresh"],
 ];
 MAMO_SCRIPTS.forEach(([src,key])=>{if(document.querySelector(`script[data-mamo-module="${key}"]`))return;const s=document.createElement("script");s.src=src;s.defer=true;s.dataset.mamoModule=key;document.head.appendChild(s)});
