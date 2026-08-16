@@ -1,6 +1,9 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-central-pilot-6";
+const CACHE = "mamoboat-v401-central-pilot-7";
 const SHELL = ["./","./index.html","./styles.css","./core.js","./pilot-config.js","./app.js","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp"];
+const PUSH_DB="mamoboat_push_state_v1",PUSH_STORE="kv",PUSH_KEY="pending_morning";
+function pushDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(PUSH_DB,1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(PUSH_STORE))db.createObjectStore(PUSH_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+async function saveMorningOpen(){const db=await pushDb();await new Promise((resolve,reject)=>{const tx=db.transaction(PUSH_STORE,"readwrite");tx.objectStore(PUSH_STORE).put({at:Date.now(),source:"push"},PUSH_KEY);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});db.close()}
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;const url=new URL(event.request.url);if(url.origin!==location.origin)return;if(url.pathname.includes("/data/")&&url.pathname.endsWith(".json")){const canonical=new Request(url.origin+url.pathname,{method:"GET"});event.respondWith(fetch(event.request,{cache:"no-store"}).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(canonical,r.clone()));return r}).catch(()=>caches.match(canonical)));return}event.respondWith(fetch(event.request).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(event.request,r.clone()));return r}).catch(()=>caches.match(event.request)))});
@@ -8,22 +11,18 @@ self.addEventListener("push",event=>{let data={};try{data=event.data?event.data.
 self.addEventListener("notificationclick",event=>{
   if(typeof event.preventDefault==="function")event.preventDefault();
   event.notification.close();
-  const target=new URL("./?open=morning&from=push",self.registration.scope).href;
   event.waitUntil((async()=>{
-    // iOS Home Screen web apps are most reliable when notification clicks
-    // explicitly open the destination URL instead of trying to navigate an
-    // already-running WindowClient first.
-    if(self.clients.openWindow){
-      try{
-        await self.clients.openWindow(target);
-        return;
-      }catch(_){}
-    }
+    try{await saveMorningOpen()}catch(_){}
+    const scope=self.registration.scope;
     const list=await self.clients.matchAll({type:"window",includeUncontrolled:true});
-    const client=list.find(item=>{try{return new URL(item.url).pathname.startsWith(new URL(self.registration.scope).pathname)}catch(_){return false}})||list[0];
+    const client=list.find(item=>{try{return item.url.startsWith(scope)}catch(_){return false}});
     if(client){
-      try{if("navigate" in client)await client.navigate(target)}catch(_){}
+      try{client.postMessage({type:"MAMO_OPEN_MORNING_PRESS"})}catch(_){}
       try{await client.focus()}catch(_){}
+      return;
+    }
+    if(self.clients.openWindow){
+      try{await self.clients.openWindow(scope)}catch(_){}
     }
   })());
 });
