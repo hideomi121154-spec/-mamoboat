@@ -1,0 +1,25 @@
+/* MAMO BOAT Hey MAMO v1 — foreground-only, opt-in wake phrase listener. */
+(() => {
+  "use strict";
+  if (window.__HEY_MAMO_V1__) return; window.__HEY_MAMO_V1__=true;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const KEY="mamoboat_hey_mamo_enabled_v1";
+  let rec=null,running=false,armed=false,restartTimer=null,manualStop=false;
+  const norm=s=>String(s||"").toLowerCase().replace(/[\s　、。,.!！?？]/g,"").replace(/ｍａｍｏ/g,"mamo");
+  const enabled=()=>localStorage.getItem(KEY)==="1";
+  function status(msg,active=false){let el=document.getElementById("heyMamoStatus");if(el){el.textContent=msg;el.dataset.active=active?"1":"0"}const voice=document.getElementById("mamoVoiceStatus");if(voice&&active)voice.textContent=msg;}
+  function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="ja-JP";u.rate=1.05;speechSynthesis.speak(u)}catch(_){}}
+  function commandFrom(text){const s=String(text||"").replace(/^(へい|ヘイ|hey)[\s　]*(まも|マモ|mamo)[、,\s　]*/i,"").trim();return s;}
+  function execute(text){const cmd=commandFrom(text);if(!cmd){armed=true;status("はい、どうぞ",true);speak("はい、どうぞ");return}if(typeof window.MAMOVoiceExecute==="function"){const r=window.MAMOVoiceExecute(cmd);status(r?.message||`「${cmd}」`,!!r?.ok);return}const btn=document.getElementById("mamoVoiceBtn");status(`「${cmd}」を聞きました`,true);if(btn)btn.click();}
+  function handle(text){const s=norm(text),wake=/(へい|ヘイ|hey)(まも|マモ|mamo)/i.test(s);if(wake){armed=false;execute(text);return}if(armed){armed=false;execute(text)}}
+  function scheduleRestart(){clearTimeout(restartTimer);if(!enabled()||document.hidden||manualStop)return;restartTimer=setTimeout(start,650)}
+  function start(){if(!SR||!enabled()||document.hidden||running)return;manualStop=false;rec=new SR();rec.lang="ja-JP";rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{running=true;status("Hey MAMO 待機中",true)};rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)handle(e.results[i][0]?.transcript||"")}};rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){localStorage.setItem(KEY,"0");manualStop=true;status("マイク許可が必要です");syncToggle()}else status("Hey MAMO 再接続中")};rec.onend=()=>{running=false;scheduleRestart()};try{rec.start()}catch(_){scheduleRestart()}}
+  function stop(){manualStop=true;clearTimeout(restartTimer);armed=false;if(rec){try{rec.stop()}catch(_){}}running=false;status("Hey MAMO OFF");}
+  function setEnabled(on){localStorage.setItem(KEY,on?"1":"0");manualStop=!on;syncToggle();if(on)start();else stop()}
+  function syncToggle(){const cb=document.getElementById("heyMamoToggle");if(cb)cb.checked=enabled();const badge=document.getElementById("heyMamoStatus");if(badge&&!enabled())badge.textContent="OFF"}
+  function renderSettings(){const settings=document.getElementById("settings");if(!settings||document.getElementById("heyMamoPanel"))return;const panel=document.createElement("div");panel.id="heyMamoPanel";panel.className="panel hey-mamo-panel";panel.innerHTML=`<div class="hm-head"><div><small>VOICE WAKE</small><h3>Hey MAMO</h3></div><b id="heyMamoStatus">${enabled()?"待機準備中":"OFF"}</b></div><label class="hm-toggle"><input id="heyMamoToggle" type="checkbox" ${enabled()?"checked":""}><span><strong>アプリ表示中に「Hey MAMO」を待機</strong><small>ONにするとマイク許可が必要です。画面を閉じたりバックグラウンドにすると待機を停止します。</small></span></label><div class="hm-examples">「Hey MAMO、次のレース」<br>「Hey MAMO」→「オッズ見せて」</div>`;const intro=settings.querySelector(".settings-intro");intro?.insertAdjacentElement("afterend",panel);panel.querySelector("#heyMamoToggle").onchange=e=>setEnabled(e.target.checked)}
+  function style(){if(document.getElementById("heyMamoStyle"))return;const s=document.createElement("style");s.id="heyMamoStyle";s.textContent=`.hey-mamo-panel{margin:12px 0}.hm-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #dbe4e5;padding-bottom:8px}.hm-head small{font-size:8px;font-weight:1000;color:#007c78}.hm-head h3{margin:2px 0;font-size:20px}.hm-head b{font-size:9px;background:#071b2b;color:#fff;padding:5px 8px}.hm-head b[data-active='1']{background:#007c78}.hm-toggle{display:flex;gap:10px;padding:12px 0;align-items:flex-start}.hm-toggle input{width:22px;height:22px}.hm-toggle span{display:block}.hm-toggle strong{display:block;font-size:12px}.hm-toggle small{display:block;margin-top:4px;color:#697a80;font-size:9px;line-height:1.5}.hm-examples{padding:9px;background:#f4f8f8;font-size:10px;line-height:1.7;font-weight:800}`;document.head.appendChild(s)}
+  document.addEventListener("visibilitychange",()=>{if(document.hidden)stop();else if(enabled()){manualStop=false;start()}});
+  function boot(){style();renderSettings();if(enabled()){manualStop=false;start()}const obs=new MutationObserver(renderSettings);obs.observe(document.body,{childList:true,subtree:true})}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+})();
