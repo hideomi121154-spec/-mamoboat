@@ -1,88 +1,150 @@
-/* MAMO BOAT Page Swipe v2 — direct, finger-tracking page navigation. */
+/* MAMO BOAT Page Swipe v3 — native iOS horizontal scroll-snap between bottom-nav pages. */
 (() => {
   "use strict";
-  if (window.__MAMO_PAGE_SWIPE_V2__) return;
-  window.__MAMO_PAGE_SWIPE_V2__ = true;
+  if (window.__MAMO_PAGE_SWIPE_V3__) return;
+  window.__MAMO_PAGE_SWIPE_V3__ = true;
 
   const ORDER = ["home", "venues", "race", "records", "analysis", "settings"];
-  let gesture = null;
-  let locked = false;
+  let main = null;
+  let settling = false;
+  let settleTimer = null;
+  let currentIndex = 0;
+  let originalGo = null;
 
-  function activeScreen() { return document.querySelector(".screen.active"); }
-  function activeId() { return activeScreen()?.id || "home"; }
-  function isInteractive(target) {
-    return !!target.closest?.("button,a,input,select,textarea,label,[role='button'],.mru-races,.filter-rail,.deadline-rail");
-  }
-  function resetTransform(el, animate=true) {
-    if (!el) return;
-    el.style.transition = animate ? "transform 120ms ease-out, opacity 120ms ease-out" : "none";
-    el.style.transform = "translate3d(0,0,0)";
-    el.style.opacity = "1";
-    if (animate) setTimeout(()=>{el.style.transition="";el.style.transform="";el.style.opacity="";},130);
-    else { el.style.transition=""; el.style.transform=""; el.style.opacity=""; }
-  }
-  function switchPage(id, direction) {
-    if (locked || typeof window.go !== "function") return;
-    locked = true;
-    const current = activeScreen();
-    if (current) {
-      current.style.transition = "transform 90ms ease-out, opacity 90ms ease-out";
-      current.style.transform = `translate3d(${direction < 0 ? -18 : 18}%,0,0)`;
-      current.style.opacity = ".45";
-    }
-    // No artificial pre-delay: switch immediately.
-    window.go(id);
-    const next = document.getElementById(id);
-    if (next) {
-      next.style.transition = "none";
-      next.style.transform = `translate3d(${direction < 0 ? 7 : -7}%,0,0)`;
-      next.style.opacity = ".75";
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        next.style.transition = "transform 120ms ease-out, opacity 120ms ease-out";
-        next.style.transform = "translate3d(0,0,0)";
-        next.style.opacity = "1";
-      }));
-      setTimeout(()=>{next.style.transition="";next.style.transform="";next.style.opacity="";},140);
-    }
-    if (current) { current.style.transition=""; current.style.transform=""; current.style.opacity=""; }
-    window.scrollTo(0,0);
-    setTimeout(()=>{locked=false;},130);
+  function indexOfActive() {
+    const id = document.querySelector(".screen.active")?.id || "home";
+    const i = ORDER.indexOf(id);
+    return i >= 0 ? i : 0;
   }
 
-  function onStart(e) {
-    if (locked || e.touches?.length !== 1 || isInteractive(e.target)) { gesture=null; return; }
-    const t=e.touches[0];
-    gesture={x:t.clientX,y:t.clientY,lastX:t.clientX,time:Date.now(),id:activeId(),axis:null};
+  function sizeMainTo(index) {
+    const screen = document.getElementById(ORDER[index]);
+    if (!main || !screen) return;
+    const h = Math.max(screen.scrollHeight, window.innerHeight - 130);
+    main.style.height = `${h}px`;
   }
-  function onMove(e) {
-    if (!gesture || locked) return;
-    const t=e.touches?.[0]; if(!t) return;
-    const dx=t.clientX-gesture.x, dy=t.clientY-gesture.y;
-    if (!gesture.axis && (Math.abs(dx)>8 || Math.abs(dy)>8)) gesture.axis = Math.abs(dx)>Math.abs(dy)*1.15 ? "x" : "y";
-    if (gesture.axis !== "x") return;
-    const idx=ORDER.indexOf(gesture.id);
-    if ((dx>0&&idx===0)||(dx<0&&idx===ORDER.length-1)) return;
-    const el=activeScreen(); if(!el)return;
-    const capped=Math.max(-110,Math.min(110,dx));
-    el.style.transition="none";
-    el.style.transform=`translate3d(${capped*.55}px,0,0)`;
-    el.style.opacity=String(Math.max(.72,1-Math.abs(capped)/420));
-    gesture.lastX=t.clientX;
+
+  function updateNav(index) {
+    document.querySelectorAll(".bottom-nav .nav").forEach((btn) => btn.classList.remove("active"));
+    document.getElementById(`nav-${ORDER[index]}`)?.classList.add("active");
   }
-  function onEnd(e) {
-    if (!gesture || locked) { gesture=null; return; }
-    const t=e.changedTouches?.[0]; if(!t){gesture=null;return;}
-    const dx=t.clientX-gesture.x, dy=t.clientY-gesture.y, dt=Date.now()-gesture.time;
-    const from=gesture.id, axis=gesture.axis; gesture=null;
-    const el=activeScreen();
-    if (axis!=="x" || dt>900 || Math.abs(dx)<48 || Math.abs(dx)<Math.abs(dy)*1.15) { resetTransform(el,true); return; }
-    const idx=ORDER.indexOf(from);
-    if (dx<0 && idx<ORDER.length-1) switchPage(ORDER[idx+1],-1);
-    else if (dx>0 && idx>0) switchPage(ORDER[idx-1],1);
-    else resetTransform(el,true);
+
+  function activateWithoutAnimation(index) {
+    const id = ORDER[index];
+    document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
+    updateNav(index);
+    currentIndex = index;
+    sizeMainTo(index);
   }
-  function fixRaceGuide(){const span=document.querySelector("#mamoRaceUx .mru-head span");if(span)span.textContent="左右スワイプでメニュー移動";const rv=document.getElementById("raceView");if(rv)rv.dataset.mamoSwipeBound="1";}
-  function style(){if(document.getElementById("mamoPageSwipeStyleV2"))return;const s=document.createElement("style");s.id="mamoPageSwipeStyleV2";s.textContent=`.screen.active{will-change:transform,opacity;backface-visibility:hidden;transform:translateZ(0)}main{overflow-x:hidden}.bottom-nav{touch-action:manipulation}`;document.head.appendChild(s)}
-  function boot(){style();document.addEventListener("touchstart",onStart,{passive:true,capture:true});document.addEventListener("touchmove",onMove,{passive:true,capture:true});document.addEventListener("touchend",onEnd,{passive:true,capture:true});fixRaceGuide();setInterval(fixRaceGuide,1200)}
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+
+  function scrollToIndex(index, behavior = "auto") {
+    if (!main || index < 0 || index >= ORDER.length) return;
+    main.scrollTo({ left: index * main.clientWidth, top: 0, behavior });
+    currentIndex = index;
+    sizeMainTo(index);
+  }
+
+  function settleFromScroll() {
+    if (!main || settling) return;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      const width = main.clientWidth || 1;
+      const index = Math.max(0, Math.min(ORDER.length - 1, Math.round(main.scrollLeft / width)));
+      if (index !== currentIndex || !document.getElementById(ORDER[index])?.classList.contains("active")) {
+        activateWithoutAnimation(index);
+      }
+      currentIndex = index;
+      sizeMainTo(index);
+    }, 55);
+  }
+
+  function patchGo() {
+    if (typeof window.go !== "function" || window.go.__mamoNativeSwipePatched) return;
+    originalGo = window.go;
+    const patched = function(id) {
+      const index = ORDER.indexOf(id);
+      if (index < 0) return originalGo.apply(this, arguments);
+      // Let original logic prepare/render the requested page, but suppress visual delay via CSS.
+      originalGo.apply(this, arguments);
+      requestAnimationFrame(() => {
+        activateWithoutAnimation(index);
+        scrollToIndex(index, "smooth");
+      });
+    };
+    patched.__mamoNativeSwipePatched = true;
+    window.go = patched;
+  }
+
+  function fixRaceSwipe() {
+    const rv = document.getElementById("raceView");
+    if (rv) rv.dataset.mamoSwipeBound = "1";
+    const label = document.querySelector("#mamoRaceUx .mru-head span");
+    if (label) label.textContent = "左右スワイプでメニュー移動";
+  }
+
+  function style() {
+    if (document.getElementById("mamoNativeSwipeStyle")) return;
+    const s = document.createElement("style");
+    s.id = "mamoNativeSwipeStyle";
+    s.textContent = `
+      html,body{overflow-x:hidden}
+      .app-shell{overflow:hidden}
+      .app-shell>main{
+        display:flex!important;
+        align-items:flex-start;
+        gap:0;
+        overflow-x:auto!important;
+        overflow-y:hidden!important;
+        padding:0!important;
+        scroll-snap-type:x mandatory;
+        scroll-behavior:auto;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+        overscroll-behavior-x:contain;
+        touch-action:pan-x pan-y;
+      }
+      .app-shell>main::-webkit-scrollbar{display:none}
+      .app-shell>main>.screen{
+        display:block!important;
+        flex:0 0 100%!important;
+        width:100%!important;
+        min-width:100%!important;
+        padding:14px!important;
+        margin:0!important;
+        scroll-snap-align:start;
+        scroll-snap-stop:always;
+        animation:none!important;
+        transform:none!important;
+        opacity:1!important;
+      }
+      .app-shell>main>.screen:not(.active){pointer-events:none}
+      .bottom-nav{touch-action:manipulation}
+    `;
+    document.head.appendChild(s);
+  }
+
+  function boot() {
+    main = document.querySelector(".app-shell > main");
+    if (!main) return;
+    style();
+    patchGo();
+    currentIndex = indexOfActive();
+    requestAnimationFrame(() => {
+      scrollToIndex(currentIndex, "auto");
+      sizeMainTo(currentIndex);
+    });
+    main.addEventListener("scroll", settleFromScroll, { passive: true });
+    window.addEventListener("resize", () => {
+      scrollToIndex(currentIndex, "auto");
+      sizeMainTo(currentIndex);
+    }, { passive: true });
+    setInterval(() => {
+      patchGo();
+      fixRaceSwipe();
+      sizeMainTo(currentIndex);
+    }, 900);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
 })();
