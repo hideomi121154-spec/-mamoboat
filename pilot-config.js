@@ -60,11 +60,11 @@ function loadMamoModule([src,key]) {
     document.documentElement.classList.remove("mamo-sync-booting");
     document.getElementById("mamoSyncBootGate")?.remove();
   };
-  setTimeout(()=>window.MAMO_RELEASE_SYNC_GATE?.(),6000);
+  setTimeout(()=>window.MAMO_RELEASE_SYNC_GATE?.(),6500);
 })();
 
 /* 同期は最優先。完了Promiseを公開する。 */
-window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-5","device-sync"])
+window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-6","device-sync"])
   .then(()=>window.MAMO_DEVICE_SYNC_READY || true)
   .catch(()=>false);
 
