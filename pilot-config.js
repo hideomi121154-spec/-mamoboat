@@ -39,3 +39,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   script.dataset.mamoAiSafe = "1";
   document.head.appendChild(script);
 })();
+
+/* Persistent BOAT RACE official link: separate from LIVE and REAL投票. */
+(() => {
+  if (document.querySelector('script[data-mamo-official-link="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "official-link.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoOfficialLink = "1";
+  document.head.appendChild(script);
+})();
