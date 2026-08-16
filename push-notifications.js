@@ -1,8 +1,9 @@
-/* MAMO BOAT Morning Push v2 */
+/* MAMO BOAT Morning Push v3 */
 (()=>{
   "use strict";
-  if(window.__MAMO_PUSH_V2__) return; window.__MAMO_PUSH_V2__=true;
+  if(window.__MAMO_PUSH_V3__) return; window.__MAMO_PUSH_V3__=true;
   const ENDPOINT="https://mihicuoijitluvrufsoj.supabase.co/rest/v1/rpc/";
+  const TEST_ENDPOINT="https://mihicuoijitluvrufsoj.supabase.co/functions/v1/send-test-push";
   const KEY="sb_publishable_cexgWfIKzthZ1d6tLOH3_g_sWgcunHB";
   const PREF="mamoboat_morning_push_v1";
   const STATE_KEY="mamoboat_v40_personal";
@@ -26,10 +27,21 @@
     await saveSubscription(sub);localStorage.setItem(PREF,"1");await syncActivity();return true;
   }
   async function disable(){const reg=await registration();const sub=await reg.pushManager.getSubscription();if(sub){await rpc("disable_push_subscription",{p_endpoint:sub.endpoint});await sub.unsubscribe()}localStorage.setItem(PREF,"0");}
+  async function sendTest(){
+    if(localStorage.getItem(PREF)!=="1")throw new Error("先に朝刊通知をONにしてください");
+    const reg=await registration();const sub=await reg.pushManager.getSubscription();if(!sub)throw new Error("通知登録が見つかりません。いったんOFF→ONを試してください");
+    const r=await fetch(TEST_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json",apikey:KEY},body:JSON.stringify({endpoint:sub.endpoint})});
+    let data={};try{data=await r.json()}catch(_){}
+    if(r.status===429)throw new Error("テスト通知は1分に1回までです");
+    if(!r.ok||data.ok!==true)throw new Error("テスト通知の送信に失敗しました");
+    return true;
+  }
   async function refreshExisting(){if(localStorage.getItem(PREF)!=="1")return;try{const reg=await registration();const sub=await reg.pushManager.getSubscription();if(sub){await saveSubscription(sub);await syncActivity()}else localStorage.setItem(PREF,"0")}catch(_){}}
-  function render(){const settings=document.getElementById("settings");if(!settings||document.getElementById("mamoPushPanel"))return;const on=localStorage.getItem(PREF)==="1";const p=document.createElement("div");p.id="mamoPushPanel";p.className="panel";p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><small style="font-weight:900;color:#087d77">MAMO BOAT PRESS</small><h3 style="margin:3px 0">朝刊のプッシュ通知</h3><p style="margin:0;color:#6e7b85;font-size:11px;line-height:1.55">前日の行動がある朝だけ、朝刊の到着をお知らせします。</p></div><button id="mamoPushToggle" type="button" style="min-width:82px;min-height:42px;border:1px solid #d8a12a;background:#fff;border-radius:10px;font-weight:900">${on?"通知 ON":"通知 OFF"}</button></div><p id="mamoPushNote" style="font-size:10px;color:#6e7b85;margin:8px 0 0">${on?"毎朝8時ごろ、朝刊がある日だけ通知します。":"タップすると端末の通知許可を確認します。"}</p>`;
+  function render(){const settings=document.getElementById("settings");if(!settings||document.getElementById("mamoPushPanel"))return;const on=localStorage.getItem(PREF)==="1";const p=document.createElement("div");p.id="mamoPushPanel";p.className="panel";p.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><small style="font-weight:900;color:#087d77">MAMO BOAT PRESS</small><h3 style="margin:3px 0">朝刊のプッシュ通知</h3><p style="margin:0;color:#6e7b85;font-size:11px;line-height:1.55">前日の行動がある朝だけ、朝刊の到着をお知らせします。</p></div><button id="mamoPushToggle" type="button" style="min-width:82px;min-height:42px;border:1px solid #d8a12a;background:#fff;border-radius:10px;font-weight:900">${on?"通知 ON":"通知 OFF"}</button></div><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px"><button id="mamoPushTest" type="button" ${on?"":"disabled"} style="min-height:42px;border:1px solid #0c8d86;background:${on?"#f4fffd":"#f2f2f2"};color:${on?"#087d77":"#999"};border-radius:10px;font-weight:900">テスト通知を送る</button></div><p id="mamoPushNote" style="font-size:10px;color:#6e7b85;margin:8px 0 0">${on?"毎朝8時ごろ、朝刊がある日だけ通知します。":"タップすると端末の通知許可を確認します。"}</p>`;
     const intro=settings.querySelector(".settings-intro");(intro||settings.firstElementChild)?.insertAdjacentElement("afterend",p);
-    p.querySelector("#mamoPushToggle").onclick=async()=>{const b=p.querySelector("#mamoPushToggle"),n=p.querySelector("#mamoPushNote");b.disabled=true;try{if(localStorage.getItem(PREF)==="1"){await disable();b.textContent="通知 OFF";n.textContent="朝刊通知をOFFにしました。"}else{await enable();b.textContent="通知 ON";n.textContent="朝刊通知をONにしました。朝刊がある日の朝8時ごろに届きます。"}}catch(e){n.textContent=e.message||"通知設定に失敗しました。"}finally{b.disabled=false}};
+    const toggle=p.querySelector("#mamoPushToggle"),test=p.querySelector("#mamoPushTest"),note=p.querySelector("#mamoPushNote");
+    toggle.onclick=async()=>{toggle.disabled=true;try{if(localStorage.getItem(PREF)==="1"){await disable();toggle.textContent="通知 OFF";test.disabled=true;note.textContent="朝刊通知をOFFにしました。"}else{await enable();toggle.textContent="通知 ON";test.disabled=false;note.textContent="朝刊通知をONにしました。朝刊がある日の朝8時ごろに届きます。"}}catch(e){note.textContent=e.message||"通知設定に失敗しました。"}finally{toggle.disabled=false}};
+    test.onclick=async()=>{test.disabled=true;const old=test.textContent;test.textContent="送信中…";try{await sendTest();test.textContent="送信しました ✓";note.textContent="数秒以内にテスト通知が届きます。通知をタップすると朝刊を開きます。";setTimeout(()=>{test.textContent=old;test.disabled=localStorage.getItem(PREF)!=="1"},4000)}catch(e){test.textContent=old;note.textContent=e.message||"テスト通知に失敗しました。";test.disabled=localStorage.getItem(PREF)!=="1"}};
   }
   function boot(){render();refreshExisting();new MutationObserver(render).observe(document.body,{childList:true,subtree:true});setInterval(syncActivity,120000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncActivity()});window.addEventListener("beforeunload",()=>{syncActivity()})}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
