@@ -13,9 +13,27 @@ window.MAMOBOAT_PILOT = Object.freeze({
   rewards: Object.freeze([]),
 });
 
-/* 起動速度優先: 本体描画後に拡張を順番に読み込む。 */
+function loadMamoModule([src,key]) {
+  if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const s=document.createElement("script");
+    s.src=src;
+    s.async=true;
+    s.dataset.mamoModule=key;
+    s.onload=resolve;
+    s.onerror=resolve;
+    document.head.appendChild(s);
+  });
+}
+
+/*
+ * 同期だけは最優先。
+ * Safari版とホーム画面版で別ストレージになるため、表示後のidle待ちには回さない。
+ */
+loadMamoModule(["device-sync.js?v=20260817-4","device-sync"]);
+
+/* 起動速度優先: その他の拡張は本体描画後に順番に読み込む。 */
 const MAMO_SCRIPTS = [
-  ["device-sync.js?v=20260817-3","device-sync"],
   ["ai-safe.js?v=20260816-1","ai-safe"],
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260816-1","decision-intel"],
@@ -30,19 +48,6 @@ const MAMO_SCRIPTS = [
   ["nav-stability.js?v=20260816-1","nav-stability"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
-
-function loadMamoModule([src,key]) {
-  if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve();
-  return new Promise((resolve) => {
-    const s=document.createElement("script");
-    s.src=src;
-    s.async=true;
-    s.dataset.mamoModule=key;
-    s.onload=resolve;
-    s.onerror=resolve;
-    document.head.appendChild(s);
-  });
-}
 
 async function loadMamoEnhancements() {
   for (const item of MAMO_SCRIPTS) {
