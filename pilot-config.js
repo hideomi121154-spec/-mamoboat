@@ -13,12 +13,9 @@ window.MAMOBOAT_PILOT = Object.freeze({
   rewards: Object.freeze([]),
 });
 
-/*
- * 起動速度優先:
- * index.html から core/app/cast を先に描画し、拡張機能は初回描画後に読み込む。
- * 機能は削除せず、ネットワークとJS実行の集中だけを避ける。
- */
+/* 起動速度優先: 本体描画後に拡張を順番に読み込む。 */
 const MAMO_SCRIPTS = [
+  ["device-sync.js?v=20260817-1","device-sync"],
   ["ai-safe.js?v=20260816-1","ai-safe"],
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260816-1","decision-intel"],
@@ -50,18 +47,14 @@ function loadMamoModule([src,key]) {
 async function loadMamoEnhancements() {
   for (const item of MAMO_SCRIPTS) {
     await loadMamoModule(item);
-    // iPhoneのメインスレッドを占有しないよう、各モジュール間で描画機会を返す。
     await new Promise((resolve)=>setTimeout(resolve,0));
   }
 }
 
 function scheduleMamoEnhancements() {
   const start=()=>{
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(()=>loadMamoEnhancements(),{timeout:1800});
-    } else {
-      setTimeout(()=>loadMamoEnhancements(),700);
-    }
+    if ("requestIdleCallback" in window) requestIdleCallback(()=>loadMamoEnhancements(),{timeout:1800});
+    else setTimeout(()=>loadMamoEnhancements(),700);
   };
   if (document.readyState==="complete") start();
   else window.addEventListener("load",start,{once:true});
