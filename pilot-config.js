@@ -14,6 +14,7 @@ window.MAMOBOAT_PILOT = Object.freeze({
 });
 
 const MAMO_SCRIPTS = [
+  ["sw-refresh.js?v=20260816-1","sw-refresh"],
   ["cast-ui.js?v=20260815-8","cast"],
   ["ai-safe.js?v=20260816-1","ai-safe"],
   ["official-link.js?v=20260816-1","official-link"],
@@ -24,7 +25,7 @@ const MAMO_SCRIPTS = [
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260816-1","air-outcome"],
-  ["morning-delivery.js?v=20260816-3","morning-delivery"],
+  ["morning-delivery.js?v=20260816-4","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
   ["nav-stability.js?v=20260816-1","nav-stability"],
 ];
