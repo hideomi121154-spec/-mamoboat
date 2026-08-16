@@ -22,5 +22,6 @@ const MAMO_SCRIPTS = [
   ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
   ["press-intelligence.js?v=20260816-1","press-intel"],
   ["race-ux.js?v=20260816-2","race-ux"],
+  ["visual-refresh.js?v=20260816-1","visual-refresh"],
 ];
 MAMO_SCRIPTS.forEach(([src,key])=>{if(document.querySelector(`script[data-mamo-module="${key}"]`))return;const s=document.createElement("script");s.src=src;s.defer=true;s.dataset.mamoModule=key;document.head.appendChild(s)});
