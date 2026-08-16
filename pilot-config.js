@@ -14,19 +14,16 @@ window.MAMOBOAT_PILOT = Object.freeze({
 });
 
 function loadMamoModule([src,key]) {
-  const existing=document.querySelector(`script[data-mamo-module="${key}"]`);
-  if (existing) return existing.__mamoPromise || Promise.resolve();
-  const promise=new Promise((resolve) => {
+  if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve(true);
+  return new Promise((resolve) => {
     const s=document.createElement("script");
     s.src=src;
     s.async=true;
     s.dataset.mamoModule=key;
     s.onload=()=>resolve(true);
     s.onerror=()=>resolve(false);
-    s.__mamoPromise=promise;
     document.head.appendChild(s);
   });
-  return promise;
 }
 
 /*
