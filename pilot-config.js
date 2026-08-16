@@ -79,3 +79,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   script.dataset.mamoTriggerIntel = "1";
   document.head.appendChild(script);
 })();
+
+/* Integrated editorial intelligence: morning / weekly / monthly behavior articles. */
+(() => {
+  if (document.querySelector('script[data-mamo-press-intel="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "press-intelligence.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoPressIntel = "1";
+  document.head.appendChild(script);
+})();
