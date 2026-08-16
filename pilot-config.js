@@ -69,3 +69,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   script.dataset.mamoBaselineIntel = "1";
   document.head.appendChild(script);
 })();
+
+/* Personal trigger map: detect conditions linked to stake changes and REAL transitions. */
+(() => {
+  if (document.querySelector('script[data-mamo-trigger-intel="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "trigger-intelligence.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoTriggerIntel = "1";
+  document.head.appendChild(script);
+})();
