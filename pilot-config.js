@@ -49,3 +49,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   script.dataset.mamoOfficialLink = "1";
   document.head.appendChild(script);
 })();
+
+/* Decision intelligence: skip detection + 30-minute pre-REAL action sequence. */
+(() => {
+  if (document.querySelector('script[data-mamo-decision-intel="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "decision-intelligence.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoDecisionIntel = "1";
+  document.head.appendChild(script);
+})();
