@@ -29,3 +29,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   }, { once: true });
   document.head.appendChild(script);
 })();
+
+/* Safe AI behavior layer: loaded once, passive only. */
+(() => {
+  if (document.querySelector('script[data-mamo-ai-safe="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "ai-safe.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoAiSafe = "1";
+  document.head.appendChild(script);
+})();
