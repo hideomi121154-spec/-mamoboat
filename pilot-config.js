@@ -59,3 +59,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   script.dataset.mamoDecisionIntel = "1";
   document.head.appendChild(script);
 })();
+
+/* Personal baseline: compare today only with the user's own past behavior. */
+(() => {
+  if (document.querySelector('script[data-mamo-baseline-intel="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "baseline-intelligence.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoBaselineIntel = "1";
+  document.head.appendChild(script);
+})();
