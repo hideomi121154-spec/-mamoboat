@@ -29,11 +29,3 @@ window.MAMOBOAT_PILOT = Object.freeze({
   }, { once: true });
   document.head.appendChild(script);
 })();
-
-/* AI Phase 1: passive behavior logging + LIVE/REAL decision analysis. */
-(() => {
-  const script = document.createElement("script");
-  script.src = "ai-phase1.js?v=20260816-1";
-  script.defer = true;
-  document.head.appendChild(script);
-})();
