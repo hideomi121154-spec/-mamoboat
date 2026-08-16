@@ -14,23 +14,62 @@ window.MAMOBOAT_PILOT = Object.freeze({
 });
 
 function loadMamoModule([src,key]) {
-  if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve();
-  return new Promise((resolve) => {
+  const existing=document.querySelector(`script[data-mamo-module="${key}"]`);
+  if (existing) return existing.__mamoPromise || Promise.resolve();
+  const promise=new Promise((resolve) => {
     const s=document.createElement("script");
     s.src=src;
     s.async=true;
     s.dataset.mamoModule=key;
-    s.onload=resolve;
-    s.onerror=resolve;
+    s.onload=()=>resolve(true);
+    s.onerror=()=>resolve(false);
+    s.__mamoPromise=promise;
     document.head.appendChild(s);
   });
+  return promise;
 }
 
 /*
- * 同期だけは最優先。
- * Safari版とホーム画面版で別ストレージになるため、表示後のidle待ちには回さない。
+ * 共有コードがある端末では、同期前の100,000Bや --B を完成画面として見せない。
+ * pilot-config.js は app.js より先に読み込まれるため、ここで起動ゲートを掛ける。
  */
-loadMamoModule(["device-sync.js?v=20260817-4","device-sync"]);
+(function installSyncBootGate(){
+  const TOKEN_KEY="mamoboat_sync_token_v1";
+  let hasToken=false;
+  try{hasToken=!!localStorage.getItem(TOKEN_KEY);}catch(_){ }
+  if(!hasToken) return;
+  document.documentElement.classList.add("mamo-sync-booting");
+  const style=document.createElement("style");
+  style.id="mamoSyncBootStyle";
+  style.textContent=`
+    html.mamo-sync-booting .app-shell,
+    html.mamo-sync-booting .bottom-nav{visibility:hidden!important}
+    #mamoSyncBootGate{position:fixed;inset:0;z-index:2147483000;background:#f7f4ec;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#05233e}
+    #mamoSyncBootGate>div{width:min(360px,90vw);text-align:center}
+    #mamoSyncBootGate b{display:block;font-size:18px;margin-bottom:8px}
+    #mamoSyncBootGate span{font-size:13px;color:#647786}
+  `;
+  document.head.appendChild(style);
+  const addGate=()=>{
+    if(document.getElementById("mamoSyncBootGate")) return;
+    const gate=document.createElement("div");
+    gate.id="mamoSyncBootGate";
+    gate.innerHTML="<div><b>MAMO BOATを同期しています</b><span>記録・B残高を確認中です…</span></div>";
+    document.body.appendChild(gate);
+  };
+  if(document.body) addGate();
+  else document.addEventListener("DOMContentLoaded",addGate,{once:true});
+  window.MAMO_RELEASE_SYNC_GATE=()=>{
+    document.documentElement.classList.remove("mamo-sync-booting");
+    document.getElementById("mamoSyncBootGate")?.remove();
+  };
+  setTimeout(()=>window.MAMO_RELEASE_SYNC_GATE?.(),6000);
+})();
+
+/* 同期は最優先。完了Promiseを公開する。 */
+window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-5","device-sync"])
+  .then(()=>window.MAMO_DEVICE_SYNC_READY || true)
+  .catch(()=>false);
 
 /* 起動速度優先: その他の拡張は本体描画後に順番に読み込む。 */
 const MAMO_SCRIPTS = [
