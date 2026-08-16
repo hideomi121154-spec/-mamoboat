@@ -28,8 +28,10 @@
       --paper:#f7f4ed;--paper-2:#fffefa;--ink:#10263b;--muted:#6e7b85;
       --line:#d9dee0;--soft-line:#e8e4db;--shadow-soft:0 6px 18px rgba(8,35,61,.08);
     }
+    html,body{overflow-x:hidden!important;max-width:100%!important}
     html{background:#efece5}
-    body{background:linear-gradient(180deg,#fff 0,#faf8f3 22%,#f7f4ed 100%);color:var(--ink)}
+    body{background:linear-gradient(180deg,#fff 0,#faf8f3 22%,#f7f4ed 100%);color:var(--ink);touch-action:pan-y}
+    .app-shell,.app-shell>main,.screen{max-width:100%!important;overflow-x:hidden!important}
     .app-shell{background:rgba(255,254,250,.98);box-shadow:0 0 36px rgba(8,35,61,.07)}
 
     /* Premium white header */
@@ -75,9 +77,6 @@
     .bottom-nav .nav.active b{background:transparent!important;color:var(--teal-dark)!important;padding:0!important;border-radius:0!important}
     .bottom-nav .nav.active:after{content:"";position:absolute;left:24%;right:24%;bottom:1px;height:2px;border-radius:2px;background:var(--gold)}
     .bottom-nav .nav:active{background:rgba(216,161,42,.07)!important}
-
-    /* Race controls retain function, but visually calmer */
-    .mru-shell{background:rgba(255,255,255,.98)!important;border-bottom:1px solid #e2e5e5!important;box-shadow:0 4px 12px rgba(8,35,61,.05)!important}.mru-races button{border-radius:8px!important}.mru-races button.active{background:var(--navy)!important;box-shadow:inset 0 -2px 0 var(--gold)}.mru-tabs button{border-radius:8px!important}.mru-actions button{border-radius:8px!important}.mru-actions [data-action='air']{background:var(--teal)!important}.mru-actions [data-action='real']{background:var(--navy)!important}
 
     .paper-tabs button{border-radius:9px!important}.paper-tabs button.active{background:var(--navy)!important;color:#fff!important;box-shadow:0 3px 0 var(--gold)!important}
     .mamo-press-intel{background:#f7f1e3!important;border:1px solid #dfd2b7!important;border-radius:13px!important}.mamo-press-intel article{background:#fff!important;border-top:4px solid var(--gold)!important;border-radius:8px!important}
