@@ -23,5 +23,6 @@ const MAMO_SCRIPTS = [
   ["press-intelligence.js?v=20260816-1","press-intel"],
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
+  ["air-outcome-experience.js?v=20260816-1","air-outcome"],
 ];
 MAMO_SCRIPTS.forEach(([src,key])=>{if(document.querySelector(`script[data-mamo-module="${key}"]`))return;const s=document.createElement("script");s.src=src;s.defer=true;s.dataset.mamoModule=key;document.head.appendChild(s)});
