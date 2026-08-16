@@ -15,7 +15,7 @@ window.MAMOBOAT_PILOT = Object.freeze({
 
 /* 起動速度優先: 本体描画後に拡張を順番に読み込む。 */
 const MAMO_SCRIPTS = [
-  ["device-sync.js?v=20260817-1","device-sync"],
+  ["device-sync.js?v=20260817-2","device-sync"],
   ["ai-safe.js?v=20260816-1","ai-safe"],
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260816-1","decision-intel"],
