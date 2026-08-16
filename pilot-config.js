@@ -24,7 +24,7 @@ const MAMO_SCRIPTS = [
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260816-1","air-outcome"],
-  ["morning-delivery.js?v=20260816-1","morning-delivery"],
-  ["push-notifications.js?v=20260816-1","push-notifications"],
+  ["morning-delivery.js?v=20260816-2","morning-delivery"],
+  ["push-notifications.js?v=20260816-2","push-notifications"],
 ];
 MAMO_SCRIPTS.forEach(([src,key])=>{if(document.querySelector(`script[data-mamo-module="${key}"]`))return;const s=document.createElement("script");s.src=src;s.defer=true;s.dataset.mamoModule=key;document.head.appendChild(s)});
