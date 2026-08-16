@@ -10,92 +10,18 @@ window.MAMOBOAT_PILOT = Object.freeze({
     endpoint: "https://mihicuoijitluvrufsoj.supabase.co/rest/v1/rpc/ingest_pilot_events",
     publishableKey: "sb_publishable_cexgWfIKzthZ1d6tLOH3_g_sWgcunHB",
   }),
-  rewards: Object.freeze([
-    Object.freeze({ id: "double-win-partner-sample", active: false, kind: "double-win", sponsor: "提携店舗名", title: "トッピング無料", description: "今日の防衛勝負でB的中し、アプリ内の防衛条件を達成した方への限定特典です。", code: "", url: "", expiresAt: "", terms: "1日1回・他券併用不可など、提携条件をここへ記載" }),
-    Object.freeze({ id: "defense-five-partner-sample", active: false, kind: "defense-5", sponsor: "提携店舗名", title: "防衛スタンプ5個特典", description: "外れても現金を守った行動を5回続けた方への限定特典です。", code: "", url: "", expiresAt: "", terms: "1人1回・換金不可など、提携条件をここへ記載" }),
-  ]),
+  rewards: Object.freeze([]),
 });
 
-/* Character UI is isolated from pilot collection and betting logic. */
-(() => {
-  const script = document.createElement("script");
-  script.src = "cast-ui.js?v=20260815-8";
-  script.defer = true;
-  script.addEventListener("load", () => {
-    const hotfix = document.createElement("script");
-    hotfix.src = "cast-hotfix.js?v=20260815-8";
-    hotfix.defer = true;
-    document.head.appendChild(hotfix);
-  }, { once: true });
-  document.head.appendChild(script);
-})();
-
-/* Safe AI behavior layer: loaded once, passive only. */
-(() => {
-  if (document.querySelector('script[data-mamo-ai-safe="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "ai-safe.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoAiSafe = "1";
-  document.head.appendChild(script);
-})();
-
-/* Persistent BOAT RACE official link: separate from LIVE and REAL投票. */
-(() => {
-  if (document.querySelector('script[data-mamo-official-link="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "official-link.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoOfficialLink = "1";
-  document.head.appendChild(script);
-})();
-
-/* Decision intelligence: skip detection + 30-minute pre-REAL action sequence. */
-(() => {
-  if (document.querySelector('script[data-mamo-decision-intel="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "decision-intelligence.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoDecisionIntel = "1";
-  document.head.appendChild(script);
-})();
-
-/* Personal baseline: compare today only with the user's own past behavior. */
-(() => {
-  if (document.querySelector('script[data-mamo-baseline-intel="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "baseline-intelligence.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoBaselineIntel = "1";
-  document.head.appendChild(script);
-})();
-
-/* Personal trigger map: detect conditions linked to stake changes and REAL transitions. */
-(() => {
-  if (document.querySelector('script[data-mamo-trigger-intel="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "trigger-intelligence.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoTriggerIntel = "1";
-  document.head.appendChild(script);
-})();
-
-/* Integrated editorial intelligence: morning / weekly / monthly behavior articles. */
-(() => {
-  if (document.querySelector('script[data-mamo-press-intel="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "press-intelligence.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoPressIntel = "1";
-  document.head.appendChild(script);
-})();
-
-/* Push-to-talk voice control: no always-on microphone. */
-(() => {
-  if (document.querySelector('script[data-mamo-voice="1"]')) return;
-  const script = document.createElement("script");
-  script.src = "voice-control.js?v=20260816-1";
-  script.defer = true;
-  script.dataset.mamoVoice = "1";
-  document.head.appendChild(script);
-})();
+const MAMO_SCRIPTS = [
+  ["cast-ui.js?v=20260815-8","cast"],
+  ["ai-safe.js?v=20260816-1","ai-safe"],
+  ["official-link.js?v=20260816-1","official-link"],
+  ["decision-intelligence.js?v=20260816-1","decision-intel"],
+  ["baseline-intelligence.js?v=20260816-1","baseline-intel"],
+  ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
+  ["press-intelligence.js?v=20260816-1","press-intel"],
+  ["voice-control.js?v=20260816-2","voice"],
+  ["hey-mamo.js?v=20260816-1","hey-mamo"],
+];
+MAMO_SCRIPTS.forEach(([src,key])=>{if(document.querySelector(`script[data-mamo-module="${key}"]`))return;const s=document.createElement("script");s.src=src;s.defer=true;s.dataset.mamoModule=key;document.head.appendChild(s)});
