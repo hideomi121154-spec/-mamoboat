@@ -89,3 +89,13 @@ window.MAMOBOAT_PILOT = Object.freeze({
   script.dataset.mamoPressIntel = "1";
   document.head.appendChild(script);
 })();
+
+/* Push-to-talk voice control: no always-on microphone. */
+(() => {
+  if (document.querySelector('script[data-mamo-voice="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "voice-control.js?v=20260816-1";
+  script.defer = true;
+  script.dataset.mamoVoice = "1";
+  document.head.appendChild(script);
+})();
