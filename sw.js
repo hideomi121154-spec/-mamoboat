@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-central-pilot-10";
+const CACHE = "mamoboat-v401-central-pilot-11";
 const SHELL = ["./","./index.html","./styles.css","./core.js","./pilot-config.js","./app.js","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
@@ -15,6 +15,21 @@ self.addEventListener("fetch",event=>{
       if(r.ok)caches.open(CACHE).then(c=>c.put(canonical,r.clone()));
       return r;
     }).catch(()=>caches.match(canonical)));
+    return;
+  }
+
+  // Critical runtime loaders must not be trapped behind an old iOS PWA cache.
+  if(url.pathname.endsWith("/pilot-config.js")||url.pathname.endsWith("/device-sync.js")){
+    event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);
+      try{
+        const fresh=await fetch(event.request,{cache:"no-store"});
+        if(fresh.ok) await cache.put(event.request,fresh.clone());
+        return fresh;
+      }catch(_){
+        return (await cache.match(event.request,{ignoreSearch:true}))||Response.error();
+      }
+    })());
     return;
   }
 
