@@ -2,12 +2,14 @@
   "use strict";
   const STATE_KEY = "mamoboat_v40_personal";
   const TOKEN_KEY = "mamoboat_sync_token_v1";
+  const LINKED_KEY = "mamoboat_sync_linked_v1";
   const ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/device-state-sync";
   let busy = false;
   let saveTimer = null;
   let suppressUpload = false;
 
   const token = () => localStorage.getItem(TOKEN_KEY) || "";
+  const linked = () => localStorage.getItem(LINKED_KEY) === "1";
   const makeToken = () => {
     const bytes = new Uint8Array(24);
     crypto.getRandomValues(bytes);
@@ -54,11 +56,25 @@
     return [...map.values()];
   }
 
+  function isFreshInstallState(state) {
+    if (!state) return true;
+    const records = Array.isArray(state.records) ? state.records.length : 0;
+    const ledger = Array.isArray(state.ledger) ? state.ledger : [];
+    const onlyInitial = ledger.length <= 1 && ledger.every(item => ["initial_grant", "opening_balance"].includes(item?.type));
+    return records === 0 && Number(state.coins) === 100000 && onlyInitial;
+  }
+
   function mergeState(local, remote) {
     if (!local) return remote;
     if (!remote) return local;
-    const merged = { ...remote, ...local };
 
+    // Once a device is linked, a fresh 100,000B local state must never overwrite
+    // the already established shared wallet/onboarding state.
+    if (linked() && isFreshInstallState(local) && !isFreshInstallState(remote)) {
+      return { ...remote, accepted: remote.accepted === true };
+    }
+
+    const merged = { ...remote, ...local };
     merged.records = mergeByKey(remote.records, local.records, item => item.id || `${item.raceDate}:${item.venueCode}:${item.raceNo}:${item.time || ""}`);
     merged.ledger = mergeByKey(remote.ledger, local.ledger, item => item.uniqueKey || item.id);
     merged.realBetExits = mergeByKey(remote.realBetExits, local.realBetExits, item => item.id || item.at);
@@ -90,12 +106,18 @@
       lastError: "",
     };
 
-    // B残高は、統合した台帳の増減を合計して一意に決める。
-    if (merged.ledger.length) {
-      merged.coins = Math.max(0, merged.ledger.reduce((sum, item) => sum + (Number(item.amount) || 0), 0));
-    } else {
-      merged.coins = Math.max(Number(local.coins) || 0, Number(remote.coins) || 0);
-    }
+    // Preserve the established wallet balance rather than reconstructing old
+    // pre-ledger histories from incomplete ledger data.
+    const localEstablished = !isFreshInstallState(local);
+    const remoteEstablished = !isFreshInstallState(remote);
+    if (remoteEstablished && !localEstablished) merged.coins = Number(remote.coins) || 0;
+    else if (localEstablished && !remoteEstablished) merged.coins = Number(local.coins) || 0;
+    else if (remoteEstablished && localEstablished) {
+      const remoteRecords = Array.isArray(remote.records) ? remote.records.length : 0;
+      const localRecords = Array.isArray(local.records) ? local.records.length : 0;
+      merged.coins = remoteRecords > localRecords ? Number(remote.coins) || 0 : Number(local.coins) || 0;
+    } else merged.coins = Math.max(Number(local.coins) || 0, Number(remote.coins) || 0);
+
     merged.accepted = local.accepted === true || remote.accepted === true;
     return merged;
   }
@@ -117,9 +139,7 @@
     } catch {
       setStatus("同期できませんでした");
       return false;
-    } finally {
-      busy = false;
-    }
+    } finally { busy = false; }
   }
 
   async function syncNow({ reloadIfChanged = true } = {}) {
@@ -140,6 +160,7 @@
         suppressUpload = false;
       }
       await request("POST", { state: merged });
+      localStorage.setItem(LINKED_KEY, "1");
       setStatus("同期済み");
       if (changed && reloadIfChanged) {
         sessionStorage.setItem("mamoboat_sync_reloaded", "1");
@@ -150,9 +171,7 @@
     } catch {
       setStatus("同期できませんでした");
       return false;
-    } finally {
-      busy = false;
-    }
+    } finally { busy = false; }
   }
 
   function scheduleUpload() {
@@ -173,7 +192,7 @@
     const box = document.createElement("div");
     box.id = "deviceSyncPanel";
     box.style.cssText = "margin-top:18px;padding:16px;border:1px solid #d9e0e5;border-radius:14px;background:#f8fbfc";
-    box.innerHTML = `<b style="display:block;margin-bottom:6px">ブラウザ・アプリ同期</b><p style="margin:0 0 10px;color:#647786;font-size:14px">Safari版とホーム画面版で同じ記録・B残高・朝刊を使います。変更は自動で統合されます。</p><div id="deviceSyncStatus" style="font-size:13px;margin-bottom:10px">${token() ? "自動同期 ON" : "未設定"}</div><button class="btn secondary full" type="button" id="deviceSyncButton">同期コードを確認・変更</button>`;
+    box.innerHTML = `<b style="display:block;margin-bottom:6px">ブラウザ・アプリ同期</b><p style="margin:0 0 10px;color:#647786;font-size:14px">Safari版とホーム画面版で同じ記録・B残高・朝刊を使います。初回確認や設定も不用意にリセットしません。</p><div id="deviceSyncStatus" style="font-size:13px;margin-bottom:10px">${token() ? "自動同期 ON" : "未設定"}</div><button class="btn secondary full" type="button" id="deviceSyncButton">同期コードを確認・変更</button>`;
     host.appendChild(box);
     document.getElementById("deviceSyncButton").onclick = async () => {
       const current = token();
@@ -182,14 +201,11 @@
       const entered = value.trim();
       const generated = !entered;
       const next = entered || makeToken();
-      if (!/^[A-Za-z0-9_-]{24,128}$/.test(next)) {
-        alert("同期コードが短すぎます。");
-        return;
-      }
+      if (!/^[A-Za-z0-9_-]{24,128}$/.test(next)) { alert("同期コードが短すぎます。"); return; }
       localStorage.setItem(TOKEN_KEY, next);
+      if (!generated) localStorage.setItem(LINKED_KEY, "1");
       setStatus("自動同期 ON");
-      if (generated) await upload();
-      else await syncNow();
+      if (generated) await upload(); else await syncNow();
       prompt("もう一方のMAMO BOATにも同じ同期コードを入力してください。", next);
     };
   }
@@ -207,12 +223,6 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
-
-  window.addEventListener("pageshow", () => {
-    renderPanel();
-    if (token()) syncNow();
-  });
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && token()) syncNow();
-  });
+  window.addEventListener("pageshow", () => { renderPanel(); if (token()) syncNow(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && token()) syncNow(); });
 })();
