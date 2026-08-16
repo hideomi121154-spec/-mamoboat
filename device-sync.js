@@ -1,34 +1,33 @@
 (() => {
   "use strict";
+
   const STATE_KEY = "mamoboat_v40_personal";
   const TOKEN_KEY = "mamoboat_sync_token_v1";
   const LINKED_KEY = "mamoboat_sync_linked_v1";
   const ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/device-state-sync";
-  let busy = false;
-  let saveTimer = null;
-  let suppressUpload = false;
 
-  const token = () => localStorage.getItem(TOKEN_KEY) || "";
-  const linked = () => localStorage.getItem(LINKED_KEY) === "1";
-  let bootSyncInProgress = !!token();
   const nativeSetItem = Storage.prototype.setItem;
   const writeLocal = (key, value) => nativeSetItem.call(localStorage, key, value);
+  const token = () => localStorage.getItem(TOKEN_KEY) || "";
 
-  const makeToken = () => {
-    const bytes = new Uint8Array(24);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
-  };
-  const readState = () => {
-    try { return JSON.parse(localStorage.getItem(STATE_KEY) || "null"); }
-    catch { return null; }
-  };
+  let booting = !!token();
+  let networkBusy = false;
+  let uploadTimer = null;
+  let uploadQueued = false;
+  let suppressUpload = false;
+
   const stable = value => JSON.stringify(value || null);
   const uniq = values => [...new Set((values || []).filter(Boolean))];
 
-  function releaseBootGate() {
-    bootSyncInProgress = false;
-    window.MAMO_RELEASE_SYNC_GATE?.();
+  function readState() {
+    try { return JSON.parse(localStorage.getItem(STATE_KEY) || "null"); }
+    catch { return null; }
+  }
+
+  function makeToken() {
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
   }
 
   function setStatus(text) {
@@ -36,11 +35,16 @@
     if (el) el.textContent = text;
   }
 
+  function releaseBootGate() {
+    booting = false;
+    window.MAMO_RELEASE_SYNC_GATE?.();
+  }
+
   async function request(method, body) {
     const t = token();
     if (!t) return null;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 6000);
     try {
       const res = await fetch(ENDPOINT, {
         method,
@@ -50,7 +54,7 @@
         signal: controller.signal,
       });
       if (!res.ok) throw new Error(`sync ${res.status}`);
-      return res.json();
+      return await res.json();
     } finally {
       clearTimeout(timeout);
     }
@@ -61,7 +65,6 @@
     return (item.settled ? 10000 : 0)
       + (item.resultEventAt ? 5000 : 0)
       + (item.resultReflectedAt ? 3000 : 0)
-      + (Array.isArray(item.resultPayouts) ? item.resultPayouts.length * 50 : 0)
       + stable(item).length;
   }
 
@@ -77,7 +80,7 @@
     return [...map.values()];
   }
 
-  function isFreshInstallState(state) {
+  function isFresh(state) {
     if (!state) return true;
     const records = Array.isArray(state.records) ? state.records.length : 0;
     const ledger = Array.isArray(state.ledger) ? state.ledger : [];
@@ -89,7 +92,8 @@
     if (!local) return remote;
     if (!remote) return local;
 
-    if (isFreshInstallState(local) && !isFreshInstallState(remote)) {
+    // A linked fresh install must never replace an established shared state.
+    if (isFresh(local) && !isFresh(remote)) {
       return { ...remote, accepted: remote.accepted === true || local.accepted === true };
     }
 
@@ -106,65 +110,70 @@
     merged.pressroom = {
       ...rp,
       ...lp,
-      plan: (planRank[lp.plan] || 0) >= (planRank[rp.plan] || 0) ? (lp.plan || "free") : rp.plan,
+      plan: (planRank[lp.plan] || 0) >= (planRank[rp.plan] || 0) ? (lp.plan || "free") : (rp.plan || "free"),
       morningEnabled: rp.morningEnabled === true || lp.morningEnabled === true,
       weeklyEnabled: rp.weeklyEnabled === true || lp.weeklyEnabled === true,
       monthlyEnabled: rp.monthlyEnabled === true || lp.monthlyEnabled === true,
       feedback: mergeByKey(rp.feedback, lp.feedback, item => `${item.issueKey || ""}:${item.value || ""}:${item.at || ""}`),
     };
 
-    const remotePilot = remote.pilot || {};
-    const localPilot = local.pilot || {};
-    merged.pilot = {
-      ...localPilot,
-      participantId: remotePilot.participantId || localPilot.participantId,
-      consent: remotePilot.consent === true || localPilot.consent === true,
-      events: mergeByKey(remotePilot.events, localPilot.events, item => item.event_id).slice(-5000),
-      sentCount: Math.max(Number(remotePilot.sentCount) || 0, Number(localPilot.sentCount) || 0),
-      lastSyncAt: localPilot.lastSyncAt || remotePilot.lastSyncAt || null,
-      lastError: "",
-    };
-
-    const localEstablished = !isFreshInstallState(local);
-    const remoteEstablished = !isFreshInstallState(remote);
+    const localEstablished = !isFresh(local);
+    const remoteEstablished = !isFresh(remote);
     if (remoteEstablished && !localEstablished) merged.coins = Number(remote.coins) || 0;
     else if (localEstablished && !remoteEstablished) merged.coins = Number(local.coins) || 0;
     else if (remoteEstablished && localEstablished) {
-      const remoteRecords = Array.isArray(remote.records) ? remote.records.length : 0;
-      const localRecords = Array.isArray(local.records) ? local.records.length : 0;
-      merged.coins = remoteRecords >= localRecords ? Number(remote.coins) || 0 : Number(local.coins) || 0;
-    } else merged.coins = Math.max(Number(local.coins) || 0, Number(remote.coins) || 0);
+      const rr = Array.isArray(remote.records) ? remote.records.length : 0;
+      const lr = Array.isArray(local.records) ? local.records.length : 0;
+      merged.coins = rr >= lr ? Number(remote.coins) || 0 : Number(local.coins) || 0;
+    } else {
+      merged.coins = Math.max(Number(remote.coins) || 0, Number(local.coins) || 0);
+    }
 
     merged.accepted = local.accepted === true || remote.accepted === true;
     return merged;
   }
 
-  async function upload(stateOverride) {
-    if (busy || !token()) return false;
-    const state = stateOverride || readState();
+  async function uploadSnapshot() {
+    if (!token()) return false;
+    if (networkBusy) {
+      uploadQueued = true;
+      return false;
+    }
+    const state = readState();
     if (!state) return false;
-    busy = true;
+    networkBusy = true;
     try {
       await request("POST", { state });
+      writeLocal(LINKED_KEY, "1");
       setStatus("同期済み");
       return true;
     } catch (error) {
       console.warn("端末同期アップロードに失敗しました", error);
       setStatus("同期できませんでした");
       return false;
-    } finally { busy = false; }
+    } finally {
+      networkBusy = false;
+      if (uploadQueued) {
+        uploadQueued = false;
+        scheduleUpload();
+      }
+    }
   }
 
-  async function syncNow({ reloadIfChanged = true } = {}) {
-    if (busy || !token()) return false;
-    busy = true;
+  async function pullAndMerge() {
+    if (!token()) return { ok: true, skipped: true };
+    if (networkBusy) return { ok: false, busy: true };
+    networkBusy = true;
+    setStatus("同期中…");
     try {
       const remote = await request("GET");
       const local = readState();
       if (!remote?.state) {
-        busy = false;
-        return upload(local);
+        networkBusy = false;
+        const uploaded = await uploadSnapshot();
+        return { ok: uploaded, created: uploaded };
       }
+
       const merged = mergeState(local, remote.state);
       const changed = stable(merged) !== stable(local);
       if (changed) {
@@ -172,33 +181,31 @@
         writeLocal(STATE_KEY, JSON.stringify(merged));
         suppressUpload = false;
       }
+
+      // One authoritative write after the boot/manual merge only.
       await request("POST", { state: merged });
       writeLocal(LINKED_KEY, "1");
       setStatus("同期済み");
       window.dispatchEvent(new CustomEvent("mamo:state-synced", { detail: { changed } }));
-      if (changed && reloadIfChanged) {
-        sessionStorage.setItem("mamoboat_sync_reloaded", "1");
-        location.reload();
-        return true;
-      }
-      return changed;
+      return { ok: true, changed };
     } catch (error) {
       console.warn("端末同期に失敗しました", error);
       setStatus("同期できませんでした");
-      return false;
-    } finally { busy = false; }
+      return { ok: false, error: String(error) };
+    } finally {
+      networkBusy = false;
+    }
   }
 
   function scheduleUpload() {
-    if (!token() || suppressUpload || bootSyncInProgress) return;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => syncNow({ reloadIfChanged: false }), 900);
+    if (!token() || suppressUpload || booting) return;
+    clearTimeout(uploadTimer);
+    uploadTimer = setTimeout(uploadSnapshot, 1500);
   }
 
+  // During boot, app.js must not overwrite the shared state with its initial state.
   Storage.prototype.setItem = function(key, value) {
-    if (this === localStorage && key === STATE_KEY && bootSyncInProgress) {
-      return;
-    }
+    if (this === localStorage && key === STATE_KEY && booting) return;
     nativeSetItem.call(this, key, value);
     if (this === localStorage && key === STATE_KEY) scheduleUpload();
   };
@@ -209,8 +216,9 @@
     const box = document.createElement("div");
     box.id = "deviceSyncPanel";
     box.style.cssText = "margin-top:18px;padding:16px;border:1px solid #d9e0e5;border-radius:14px;background:#f8fbfc";
-    box.innerHTML = `<b style="display:block;margin-bottom:6px">ブラウザ・アプリ同期</b><p style="margin:0 0 10px;color:#647786;font-size:14px">Safari版とホーム画面版で同じ記録・B残高・朝刊を使います。同期済みの記録を初期100,000Bで上書きしません。</p><div id="deviceSyncStatus" style="font-size:13px;margin-bottom:10px">${token() ? "自動同期 ON" : "未設定"}</div><button class="btn secondary full" type="button" id="deviceSyncButton">同期コードを確認・変更</button><button class="btn secondary full" style="margin-top:8px" type="button" id="deviceSyncNowButton">今すぐ同期</button>`;
+    box.innerHTML = `<b style="display:block;margin-bottom:6px">ブラウザ・アプリ同期</b><p style="margin:0 0 10px;color:#647786;font-size:14px">起動時に1回取得し、その後の変更だけを自動保存します。画面復帰のたびに同期しないため、安定性を優先します。</p><div id="deviceSyncStatus" style="font-size:13px;margin-bottom:10px">${token() ? "自動同期 ON" : "未設定"}</div><button class="btn secondary full" type="button" id="deviceSyncButton">同期コードを確認・変更</button><button class="btn secondary full" style="margin-top:8px" type="button" id="deviceSyncNowButton">今すぐ同期</button>`;
     host.appendChild(box);
+
     document.getElementById("deviceSyncButton").onclick = async () => {
       const current = token();
       const value = prompt("同期コードを入力してください。最初の端末では空欄のままOKを押すと新しく作成します。", current);
@@ -218,18 +226,19 @@
       const entered = value.trim();
       const generated = !entered;
       const next = entered || makeToken();
-      if (!/^[A-Za-z0-9_-]{24,128}$/.test(next)) { alert("同期コードが短すぎます。"); return; }
+      if (!/^[A-Za-z0-9_-]{24,128}$/.test(next)) return alert("同期コードが短すぎます。");
       writeLocal(TOKEN_KEY, next);
       if (!generated) writeLocal(LINKED_KEY, "1");
-      setStatus("同期中…");
-      if (generated) await upload(); else await syncNow();
+      const result = generated ? await uploadSnapshot() : await pullAndMerge();
+      if (result !== false && result?.ok !== false) setStatus("同期済み");
       prompt("もう一方のMAMO BOATにも同じ同期コードを入力してください。", next);
     };
+
     document.getElementById("deviceSyncNowButton").onclick = async function() {
       if (!token()) return alert("先に同期コードを設定してください。");
       this.disabled = true;
       this.textContent = "同期中…";
-      await syncNow();
+      await pullAndMerge();
       if (document.body.contains(this)) {
         this.disabled = false;
         this.textContent = "今すぐ同期";
@@ -238,25 +247,13 @@
   }
 
   async function initialSync() {
-    const hasToken = !!token();
-    if (!hasToken) {
+    if (!token()) {
       releaseBootGate();
       return { ok: true, skipped: true };
     }
-    if (sessionStorage.getItem("mamoboat_sync_reloaded") === "1") {
-      sessionStorage.removeItem("mamoboat_sync_reloaded");
-      releaseBootGate();
-      return { ok: true, reloaded: true };
-    }
-    setStatus("同期中…");
-    try {
-      const changed = await syncNow({ reloadIfChanged: true });
-      releaseBootGate();
-      return { ok: true, changed };
-    } catch (error) {
-      releaseBootGate();
-      return { ok: false, error: String(error) };
-    }
+    const result = await pullAndMerge();
+    releaseBootGate();
+    return result;
   }
 
   window.MAMO_DEVICE_SYNC_READY = initialSync();
@@ -265,11 +262,6 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountPanel, { once: true });
   else mountPanel();
 
-  window.addEventListener("pageshow", () => {
-    renderPanel();
-    if (token() && !bootSyncInProgress) syncNow({ reloadIfChanged: true });
-  });
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && token() && !bootSyncInProgress) syncNow({ reloadIfChanged: true });
-  });
+  // Intentionally no pageshow / visibilitychange auto-pull.
+  // This prevents duplicate GET->merge->POST races on iOS Safari/PWA.
 })();
