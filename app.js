@@ -2614,10 +2614,11 @@ const reference = liveValue != null
       S.pressroom.monthlyEnabled = true;
     }
     trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
+    const scrollTop = window.scrollY;
     save();
     window.closeModal();
-    renderAll();
-    window.go("analysis");
+    renderPressroom();
+    requestAnimationFrame(() => window.scrollTo(0, scrollTop));
   };
 
   window.openDeepInterview = () => {
