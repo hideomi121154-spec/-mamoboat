@@ -26,10 +26,6 @@ function loadMamoModule([src,key]) {
   });
 }
 
-/*
- * 共有コードがある端末では、同期前の100,000Bや --B を完成画面として見せない。
- * pilot-config.js は app.js より先に読み込まれるため、ここで起動ゲートを掛ける。
- */
 (function installSyncBootGate(){
   const TOKEN_KEY="mamoboat_sync_token_v1";
   let hasToken=false;
@@ -63,19 +59,17 @@ function loadMamoModule([src,key]) {
   setTimeout(()=>window.MAMO_RELEASE_SYNC_GATE?.(),6500);
 })();
 
-/* 同期は最優先。完了Promiseを公開する。 */
 window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-8","device-sync"])
   .then(()=>window.MAMO_DEVICE_SYNC_READY || true)
   .catch(()=>false);
 
-/* 起動速度優先: その他の拡張は本体描画後に順番に読み込む。 */
 const MAMO_SCRIPTS = [
   ["ai-safe.js?v=20260816-1","ai-safe"],
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260816-1","decision-intel"],
   ["baseline-intelligence.js?v=20260816-1","baseline-intel"],
   ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
-  ["press-intelligence.js?v=20260816-1","press-intel"],
+  ["press-intelligence.js?v=20260817-2","press-intel"],
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260816-1","air-outcome"],
