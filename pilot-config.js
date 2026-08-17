@@ -52,7 +52,7 @@ const MAMO_SCRIPTS = [
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
   ["nav-stability.js?v=20260817-2","nav-stability"],
-  ["plan-anchor-fix.js?v=20260817-2","plan-anchor-fix"],
+  ["plan-selection-stable.js?v=20260818-1","plan-selection-stable"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
