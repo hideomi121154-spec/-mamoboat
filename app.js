@@ -335,9 +335,9 @@
     pilot.lastError = String(pilot.lastError || "").slice(0, 300);
     state.pilot = pilot;
     const pressroom = Object.assign(fresh().pressroom, state.pressroom || {});
-    pressroom.plan = ["free", "ume", "take", "matsu"].includes(pressroom.plan)
+    pressroom.plan = ["free", "bronze", "silver", "gold"].includes(pressroom.plan)
       ? pressroom.plan
-      : "free";
+      : ({ ume: "bronze", take: "silver", matsu: "gold" }[pressroom.plan] || "free");
     pressroom.reportType = ["morning", "weekly", "monthly"].includes(pressroom.reportType)
       ? pressroom.reportType
       : "morning";
@@ -2473,9 +2473,9 @@ const reference = liveValue != null
 
   const PRESS_PLANS = {
     free: { label: "FREE", name: "無料", rank: 0, price: "0円" },
-    ume: { label: "梅", name: "朝刊", rank: 1, price: "月300円案" },
-    take: { label: "竹", name: "編集版", rank: 2, price: "月500〜700円案" },
-    matsu: { label: "松", name: "特別取材", rank: 3, price: "月1,000円案" },
+    bronze: { label: "BRONZE", name: "ブロンズ", rank: 1, price: "390円/月" },
+    silver: { label: "SILVER", name: "シルバー", rank: 2, price: "690円/月" },
+    gold: { label: "GOLD", name: "ゴールド", rank: 3, price: "1,190円/月" },
   };
 
   function pressPlan() {
@@ -2547,7 +2547,7 @@ const reference = liveValue != null
       button.classList.toggle("locked", !reportUnlocked(button.dataset.reportType));
     });
     if (!reportUnlocked(type)) {
-      const required = type === "morning" ? PRESS_PLANS.ume : PRESS_PLANS.take;
+      const required = type === "morning" ? PRESS_PLANS.bronze : PRESS_PLANS.silver;
       $("pressPaper").innerHTML = `<div class="paper-locked">
         <span>PREMIUM EDITION</span><h3>${type === "morning" ? "MAMO朝刊" : type === "weekly" ? "MAMO週間" : "MAMO月刊"}</h3>
         <p>勝敗予想ではなく、本人の記録を「事実→傾向→問い」の順で記事にします。</p>
@@ -2564,9 +2564,9 @@ const reference = liveValue != null
     const target = $("membershipPanel");
     if (!target) return;
     const plan = pressPlan();
-    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3>${esc(plan.label)}・${esc(plan.name)}</h3><b>${esc(plan.price)}</b><p>PILOT版では決済されません。安全機能は全プラン共通で無料です。</p></div>
-      <div class="membership-points"><div><b>無料</b><span>AIR BET・基本記録・安全介入</span></div><div><b>梅</b><span>朝刊・任意の一問</span></div><div><b>竹</b><span>朝刊・週間・月刊</span></div><div><b>松</b><span>長期比較・選べる深掘り取材</span></div></div>
-      ${S.pressroom.plan === "matsu" ? `<button class="btn secondary full" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ</button>` : ""}
+    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3>${esc(plan.label)}・${esc(plan.name)}</h3><b>${esc(plan.price)}</b><p>PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。</p></div>
+      <div class="membership-points"><div><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></div><div><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></div><div><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></div><div><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></div></div>
+      ${S.pressroom.plan === "gold" ? `<button class="btn secondary full" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ</button>` : ""}
       <button class="btn primary full" type="button" onclick="openMembershipPlans()">プラン設計を確認する</button>`;
   }
 
@@ -2588,9 +2588,9 @@ const reference = liveValue != null
   };
 
   window.openMembershipPlans = () => {
-    openModal(`<div class="plan-modal"><span class="kicker">MAMO BOAT PRESS</span><h2>無料＋松竹梅</h2><p>価格は検証中です。PILOT版では料金は発生せず、表示と質問量だけを確認します。</p>
+    openModal(`<div class="plan-modal"><span class="kicker">MAMO BOAT PRESS</span><h2>FREE / BRONZE / SILVER / GOLD</h2><p>価格は検証中です。PILOT版では料金は発生せず、分析の深さだけを4段階で確認します。</p>
       <div class="plan-modal-grid">
-        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}')"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本機能と安全介入" : key === "ume" ? "MAMO朝刊" : key === "take" ? "朝刊・週間・月刊" : "全紙面と任意の深掘り"}</small></button>`).join("")}
+        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}')"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本機能と安全介入" : key === "bronze" ? "比較・時間帯・基本グラフ" : key === "silver" ? "行動指数・トリガー・週間分析" : "朝刊・週間・月刊・長期分析"}</small></button>`).join("")}
       </div>
       <div class="notice editorial-safety"><b>課金で変わるのは分析の深さです。</b><br>安全介入、データ削除、基本記録は無料のままです。</div>
       <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button>
@@ -2604,7 +2604,7 @@ const reference = liveValue != null
       S.pressroom.morningEnabled = false;
       S.pressroom.weeklyEnabled = false;
       S.pressroom.monthlyEnabled = false;
-    } else if (key === "ume") {
+    } else if (key === "bronze") {
       S.pressroom.morningEnabled = true;
       S.pressroom.weeklyEnabled = false;
       S.pressroom.monthlyEnabled = false;
@@ -2621,7 +2621,7 @@ const reference = liveValue != null
   };
 
   window.openDeepInterview = () => {
-    if (S.pressroom.plan !== "matsu") return;
+    if (S.pressroom.plan !== "gold") return;
     const themes = ["軽い気持ちから続く場面", "予定額が変わる場面", "勝敗後の気持ち", "自分で決めた上限", "参加しない選択"];
     openModal(`<div class="deep-interview"><span class="kicker">SPECIAL INTERVIEW</span><h2>何を深く知りたいですか？</h2><p>質問数ではなく、本人が選んだテーマだけを詳しく取材します。</p>
       <div class="deep-theme-list">${themes.map((theme) => `<button class="${S.pressroom.deepTheme === theme ? "selected" : ""}" type="button" onclick="saveDeepTheme('${theme}')">${theme}</button>`).join("")}</div>
