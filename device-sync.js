@@ -4,6 +4,7 @@
   const STATE_KEY = "mamoboat_v40_personal";
   const TOKEN_KEY = "mamoboat_sync_token_v1";
   const LINKED_KEY = "mamoboat_sync_linked_v1";
+  const HANDOFF_SKIP_KEY = "mamoboat_handoff_skip_v1";
   const ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/device-state-sync";
 
   const nativeSetItem = Storage.prototype.setItem;
@@ -18,6 +19,7 @@
 
   const stable = value => JSON.stringify(value || null);
   const uniq = values => [...new Set((values || []).filter(Boolean))];
+  const isStandalone = () => window.matchMedia?.("(display-mode: standalone)")?.matches === true || window.navigator.standalone === true;
 
   function readState() {
     try { return JSON.parse(localStorage.getItem(STATE_KEY) || "null"); }
@@ -207,13 +209,25 @@
     if (this === localStorage && key === STATE_KEY) scheduleUpload();
   };
 
+  async function copyToken() {
+    const current = token();
+    if (!current) return false;
+    try {
+      await navigator.clipboard.writeText(current);
+      return true;
+    } catch (_) {
+      prompt("この同期コードをコピーしてください。", current);
+      return true;
+    }
+  }
+
   function renderPanel() {
     const host = document.querySelector("#settings .settings-panel");
     if (!host || document.getElementById("deviceSyncPanel")) return;
     const box = document.createElement("div");
     box.id = "deviceSyncPanel";
     box.style.cssText = "margin-top:18px;padding:16px;border:1px solid #d9e0e5;border-radius:14px;background:#f8fbfc";
-    box.innerHTML = `<b style="display:block;margin-bottom:6px">ブラウザ・アプリ同期</b><p style="margin:0 0 10px;color:#647786;font-size:14px">起動時に1回取得し、その後の変更だけを自動保存します。画面復帰のたびに同期しないため、安定性を優先します。</p><div id="deviceSyncStatus" style="font-size:13px;margin-bottom:10px">${token() ? "自動同期 ON" : "未設定"}</div><button class="btn secondary full" type="button" id="deviceSyncButton">同期コードを確認・変更</button><button class="btn secondary full" style="margin-top:8px" type="button" id="deviceSyncNowButton">今すぐ同期</button>`;
+    box.innerHTML = `<b style="display:block;margin-bottom:6px">ブラウザ・アプリ同期</b><p style="margin:0 0 10px;color:#647786;font-size:14px">Safari版とホーム画面版は別保存領域です。ホーム画面へ追加した直後は、既存データを1回だけ引き継いでください。</p><div id="deviceSyncStatus" style="font-size:13px;margin-bottom:10px">${token() ? "自動同期 ON" : "未設定"}</div><button class="btn secondary full" type="button" id="deviceSyncButton">同期コードを確認・変更</button><button class="btn secondary full" style="margin-top:8px" type="button" id="deviceSyncCopyButton">同期コードをコピー</button><button class="btn secondary full" style="margin-top:8px" type="button" id="deviceSyncNowButton">今すぐ同期</button>`;
     host.appendChild(box);
 
     document.getElementById("deviceSyncButton").onclick = async () => {
@@ -229,6 +243,14 @@
       const result = generated ? await uploadSnapshot() : await pullAndMerge();
       if (result !== false && result?.ok !== false) setStatus("同期済み");
       prompt("もう一方のMAMO BOATにも同じ同期コードを入力してください。", next);
+    };
+
+    document.getElementById("deviceSyncCopyButton").onclick = async function() {
+      if (!token()) return alert("先に同期コードを設定してください。");
+      await copyToken();
+      const original = this.textContent;
+      this.textContent = "コピーしました ✓";
+      setTimeout(() => { if (document.body.contains(this)) this.textContent = original; }, 1600);
     };
 
     document.getElementById("deviceSyncNowButton").onclick = async function() {
@@ -275,6 +297,45 @@
     host.appendChild(button);
   }
 
+  function renderPwaHandoff() {
+    if (!isStandalone() || token() || localStorage.getItem(HANDOFF_SKIP_KEY) === "1") return;
+    if (document.getElementById("mamoPwaHandoff")) return;
+
+    const overlay = document.createElement("div");
+    overlay.id = "mamoPwaHandoff";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:2147483646;background:#f7f4ec;display:flex;align-items:center;justify-content:center;padding:22px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;color:#05233e";
+    overlay.innerHTML = `<div style="width:min(420px,92vw);background:#fff;border:1px solid #d9e0e5;border-radius:22px;padding:24px;box-shadow:0 12px 40px rgba(5,35,62,.14)"><div style="font-size:12px;font-weight:800;letter-spacing:.14em;color:#0b9c90;margin-bottom:10px">MAMO BOAT</div><h2 style="margin:0 0 10px;font-size:25px;line-height:1.35">既存の記録を引き継ぎますか？</h2><p style="margin:0 0 18px;color:#647786;font-size:14px;line-height:1.65">ホーム画面版はSafari版とは別の保存領域です。Safari版ですでに使っている場合は、同期コードを1回入力するとB残高・記録・朝刊・初回確認を引き継げます。</p><button id="mamoPwaHandoffLink" type="button" style="width:100%;border:0;border-radius:14px;background:#05233e;color:#fff;padding:15px 16px;font-size:16px;font-weight:800">既存データを引き継ぐ</button><button id="mamoPwaHandoffNew" type="button" style="width:100%;margin-top:10px;border:1px solid #ccd7de;border-radius:14px;background:#fff;color:#05233e;padding:14px 16px;font-size:14px;font-weight:700">新しく始める</button><p id="mamoPwaHandoffStatus" style="min-height:20px;margin:12px 0 0;color:#647786;font-size:13px"></p></div>`;
+    document.body.appendChild(overlay);
+
+    document.getElementById("mamoPwaHandoffLink").onclick = async () => {
+      const value = prompt("Safari版の『設定 → ブラウザ・アプリ同期 → 同期コードをコピー』でコピーしたコードを貼り付けてください。", "");
+      if (value === null) return;
+      const entered = value.trim();
+      if (!/^[A-Za-z0-9_-]{24,128}$/.test(entered)) return alert("同期コードを確認してください。");
+      const status = document.getElementById("mamoPwaHandoffStatus");
+      const button = document.getElementById("mamoPwaHandoffLink");
+      button.disabled = true;
+      button.textContent = "引き継いでいます…";
+      status.textContent = "B残高・記録を確認しています。";
+      writeLocal(TOKEN_KEY, entered);
+      writeLocal(LINKED_KEY, "1");
+      const result = await pullAndMerge();
+      if (result?.ok) {
+        status.textContent = "引き継ぎました。MAMO BOATを開きます。";
+        setTimeout(() => location.reload(), 250);
+        return;
+      }
+      button.disabled = false;
+      button.textContent = "既存データを引き継ぐ";
+      status.textContent = "引き継げませんでした。通信状態または同期コードを確認してください。";
+    };
+
+    document.getElementById("mamoPwaHandoffNew").onclick = () => {
+      writeLocal(HANDOFF_SKIP_KEY, "1");
+      overlay.remove();
+    };
+  }
+
   async function initialSync() {
     if (!token()) {
       releaseBootGate();
@@ -290,10 +351,8 @@
   const mountUi = () => {
     renderPanel();
     renderHomeRefreshButton();
+    renderPwaHandoff();
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountUi, { once: true });
   else mountUi();
-
-  // Intentionally no pageshow / visibilitychange auto-pull.
-  // This prevents duplicate GET->merge->POST races on iOS Safari/PWA.
 })();
