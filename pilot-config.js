@@ -64,7 +64,7 @@ function loadMamoModule([src,key]) {
 })();
 
 /* 同期は最優先。完了Promiseを公開する。 */
-window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-7","device-sync"])
+window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-8","device-sync"])
   .then(()=>window.MAMO_DEVICE_SYNC_READY || true)
   .catch(()=>false);
 
