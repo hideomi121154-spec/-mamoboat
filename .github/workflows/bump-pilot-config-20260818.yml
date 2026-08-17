@@ -1,0 +1,32 @@
+name: Bump pilot config 20260818
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bump-pilot-config-20260818.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refresh pilot config asset
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s2 = re.sub(r'pilot-config\.js\?v=[^"\']+', 'pilot-config.js?v=20260818-1', s)
+          if s2 == s:
+              raise SystemExit('pilot-config script reference not found or already current')
+          p.write_text(s2, encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Refresh pilot config for stable reading"
+          git push
