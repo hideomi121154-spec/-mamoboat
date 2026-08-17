@@ -1,0 +1,44 @@
+name: Enable simple plan selection
+
+on:
+  push:
+    paths:
+      - '.github/workflows/enable-simple-plan-selection.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch membership cards
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+          old = '<div class="membership-points"><div><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></div><div><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></div><div><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></div><div><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></div></div>'
+          new = '<div class="membership-points membership-selectable"><button type="button" onclick="selectPilotPlan(\'free\')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button><button type="button" onclick="selectPilotPlan(\'bronze\')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button><button type="button" onclick="selectPilotPlan(\'silver\')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button><button type="button" onclick="selectPilotPlan(\'gold\')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button></div>'
+          if old not in s:
+              raise SystemExit('membership block not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+
+          css = Path('styles.css')
+          c = css.read_text(encoding='utf-8')
+          marker = '/* membership selectable cards */'
+          if marker not in c:
+              c += '\n\n/* membership selectable cards */\n.membership-selectable button{width:100%;text-align:left;background:#fff;border:1px solid #ddd6c8;border-radius:10px;padding:12px;font:inherit;color:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.membership-selectable button:active{transform:scale(.985)}\n'
+              css.write_text(c, encoding='utf-8')
+          PY
+          node --check app.js
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js styles.css
+          git commit -m "Enable direct membership plan selection"
+          git push
