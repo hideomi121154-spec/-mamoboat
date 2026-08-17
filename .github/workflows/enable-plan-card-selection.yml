@@ -1,0 +1,53 @@
+name: Enable plan card selection
+
+on:
+  push:
+    paths:
+      - '.github/workflows/enable-plan-card-selection.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Make membership cards selectable
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+
+          old = '''<div class="membership-points"><div><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></div><div><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></div><div><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></div><div><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></div></div>'''
+          new = '''<div class="membership-points membership-selectable">
+        <button type="button" class="membership-tier ${S.pressroom.plan === "free" ? "selected" : ""}" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span>${S.pressroom.plan === "free" ? "<em>選択中</em>" : ""}</button>
+        <button type="button" class="membership-tier bronze ${S.pressroom.plan === "bronze" ? "selected" : ""}" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span>${S.pressroom.plan === "bronze" ? "<em>選択中</em>" : ""}</button>
+        <button type="button" class="membership-tier silver ${S.pressroom.plan === "silver" ? "selected" : ""}" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span>${S.pressroom.plan === "silver" ? "<em>選択中</em>" : ""}</button>
+        <button type="button" class="membership-tier gold ${S.pressroom.plan === "gold" ? "selected" : ""}" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span>${S.pressroom.plan === "gold" ? "<em>選択中</em>" : ""}</button>
+      </div>'''
+          if old not in s:
+              raise SystemExit('membership points block not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
+          css = Path('styles.css')
+          c = css.read_text(encoding='utf-8')
+          marker = '/* selectable membership tiers */'
+          if marker not in c:
+              c += '''\n\n/* selectable membership tiers */\n.membership-selectable{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}\n.membership-selectable .membership-tier{position:relative;width:100%;min-height:92px;text-align:left;background:#fff;border:1px solid #ddd6c8;border-radius:12px;padding:14px;color:#0a2a44;font:inherit;appearance:none;-webkit-appearance:none;touch-action:manipulation}\n.membership-selectable .membership-tier b{display:block;font-size:16px;letter-spacing:.04em;color:#008b85}\n.membership-selectable .membership-tier span{display:block;margin-top:8px;font-size:12px;line-height:1.45;color:#6b7a86}\n.membership-selectable .membership-tier em{position:absolute;right:10px;top:10px;font-size:10px;font-style:normal;font-weight:800;padding:3px 7px;border-radius:999px;background:#082b47;color:#fff}\n.membership-selectable .membership-tier.selected{border:2px solid #082b47;box-shadow:0 0 0 2px rgba(8,43,71,.06)}\n.membership-selectable .membership-tier.bronze b{color:#a96537}.membership-selectable .membership-tier.silver b{color:#768693}.membership-selectable .membership-tier.gold b{color:#b28a22}\n@media(max-width:380px){.membership-selectable{grid-template-columns:1fr}}\n'''
+              css.write_text(c, encoding='utf-8')
+          PY
+
+          node --check app.js
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js styles.css
+          git commit -m "Make membership tiers directly selectable"
+          git push
