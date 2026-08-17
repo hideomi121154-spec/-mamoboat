@@ -180,48 +180,24 @@
           </div>
         </div>
         <div class="section-head small"><div><span class="section-number">PRESS</span><h2>新聞の発行設定</h2></div><span class="section-meta">任意購読</span></div>
-        <div class="panel press-settings-panel">
+        <div class="panel settings-panel">
           <p>現在のPILOT版では端末内に発行します。プッシュ通知はまだ送信しません。</p>
-          <label class="check"><input id="pressMorningEnabled" type="checkbox"><span><b>MAMO朝刊</b><small>前日に記録があるときだけ発行</small></span></label>
-          <label class="check"><input id="pressWeeklyEnabled" type="checkbox"><span><b>MAMO週間</b><small>直近7日を前の7日と比較</small></span></label>
-          <label class="check"><input id="pressMonthlyEnabled" type="checkbox"><span><b>MAMO月刊</b><small>直近30日の変化を確認</small></span></label>
-          <div class="field"><label for="pressDisplayMode">表示方法</label><select id="pressDisplayMode"><option value="editorial">編集部モード</option><option value="simple">シンプルモード</option></select></div>
-          <button class="btn primary full" type="button" onclick="savePressSettings()">発行設定を保存</button>
-          <div id="pressSettingsStatus" class="pilot-status"></div>
+          <label class="check"><input id="morningToggle" type="checkbox" onchange="togglePressSetting('morningEnabled', this.checked)"><span><b>MAMO朝刊</b><small>前日に記録があるときだけ発行</small></span></label>
+          <label class="check"><input id="weeklyToggle" type="checkbox" onchange="togglePressSetting('weeklyEnabled', this.checked)"><span><b>MAMO週間</b><small>直近7日を前の7日と比較</small></span></label>
+          <label class="check"><input id="monthlyToggle" type="checkbox" onchange="togglePressSetting('monthlyEnabled', this.checked)"><span><b>MAMO月刊</b><small>長期傾向を月単位で確認</small></span></label>
         </div>
-        <div class="section-head small"><div><span class="section-number">PILOT</span><h2>行動データ計測</h2></div><span class="section-meta">匿名・同意制</span></div>
-        <div class="panel pilot-panel">
-          <p>仮想投票額、投票前後の衝動、実結果、追い上げ傾向、新聞への反応を記録します。氏名、メール、決済情報は取得しません。</p>
-          <div class="field"><label for="pilotParticipantId">テスター番号（氏名は入力しない）</label><input id="pilotParticipantId" type="text" maxlength="40" autocomplete="off" placeholder="例：P01"></div>
-          <label class="check pilot-consent"><input id="pilotConsent" type="checkbox"><span><b>匿名の行動イベント送信に同意する</b><small>同意しない場合も端末内記録とJSON書き出しは利用できます</small></span></label>
-          <div id="pilotStatus" class="pilot-status"></div>
-          <div class="pilot-actions">
-            <button class="btn primary full" type="button" onclick="savePilotSettings()">計測設定を保存</button>
-            <button class="btn secondary full" type="button" onclick="sendPilotDataNow(this)">未送信データを送る</button>
-            <button class="btn secondary full" type="button" onclick="exportPilotCSV()">イベントCSVを書き出す</button>
-          </div>
-        </div>
-        <div class="section-head small"><div><span class="section-number">SAFE</span><h2>安全なデータ取得</h2></div></div>
-        <div class="panel policy-grid">
-          <div><b>約15分ごと</b><h3>レース情報を自動更新</h3><p>番組表と確定結果を、負担を抑えながら自動で確認します。</p></div>
-          <div><b>ずっと保存</b><h3>結果アーカイブ</h3><p>確定した着順と払戻を日付ごとに残し、あとから検索できます。</p></div>
-          <div><b>更新時刻を表示</b><h3>参考オッズ</h3><p>締切前に低頻度で取得し、倍率・更新時刻・注意事項を一緒に表示します。</p></div>
-        </div>
-        <a class="official-wide" href="https://www.boatrace.jp/owpc/pc/extra/data/download.html" target="_blank" rel="noopener noreferrer">公式データダウンロード案内 <span>↗</span></a>
-        <p class="footnote">公式データの公開・更新には遅れが生じる場合があります。最終確認は公式サイトで行ってください。</p>
       </section>
     </main>
 
+    <nav class="bottom-nav" aria-label="メインメニュー">
+      <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
+      <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
+      <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
+      <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
+      <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>▤</b><span>編集部</span></button>
+      <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
+    </nav>
   </div>
-
-  <nav class="bottom-nav" aria-label="メインメニュー">
-    <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
-    <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
-    <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
-    <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
-    <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>▤</b><span>編集部</span></button>
-    <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
-  </nav>
 
   <div id="onboard" class="onboard">
     <div class="onboard-shell">
@@ -251,8 +227,8 @@
 
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
   <script src="core.js?v=401"></script>
-  <script src="pilot-config.js?v=401"></script>
-  <script src="app.js?v=401"></script>
+  <script src="pilot-config.js?v=20260817-30"></script>
+  <script src="app.js?v=20260817-30"></script>
   <script src="cast-ui.js?v=20260815-11"></script>
 </body>
 </html>
