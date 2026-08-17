@@ -1,0 +1,31 @@
+name: Fix plan scroll simple
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-plan-scroll-simple.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch app
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('''    save();\n    window.closeModal();\n    renderAll();\n    window.go("analysis");''','''    const scrollTop = window.scrollY;\n    save();\n    window.closeModal();\n    renderPressroom();\n    requestAnimationFrame(() => window.scrollTo(0, scrollTop));''',1)
+          p.write_text(s,encoding='utf-8')
+          i = Path('index.html')
+          h = i.read_text(encoding='utf-8').replace('app.js?v=20260817-31','app.js?v=20260817-32').replace('app.js?v=20260817-30','app.js?v=20260817-32')
+          i.write_text(h,encoding='utf-8')
+          PY
+          node --check app.js
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app.js index.html
+          git commit -m 'Keep scroll position when changing plan'
+          git push
