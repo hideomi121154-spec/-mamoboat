@@ -1,8 +1,8 @@
-/* MAMO BOAT Plan System v2 — intuitive 4-tier architecture. PILOT keeps every feature open. */
+/* MAMO BOAT Plan System v2.1 — intuitive 4-tier architecture. PILOT keeps every feature open. */
 (() => {
   "use strict";
-  if (window.__MAMO_PLAN_SYSTEM_V2__) return;
-  window.__MAMO_PLAN_SYSTEM_V2__ = true;
+  if (window.__MAMO_PLAN_SYSTEM_V21__) return;
+  window.__MAMO_PLAN_SYSTEM_V21__ = true;
 
   const PLAN_KEY = "mamoboat_plan_preview_v1";
   const PILOT_ALL_OPEN = true;
@@ -64,7 +64,7 @@
     if (!PLANS[id]) return;
     try { localStorage.setItem(PLAN_KEY, id); } catch (_) {}
     document.documentElement.dataset.mamoPlan = id;
-    render();
+    renderMembershipOnly();
   }
 
   window.MAMO_PLAN = Object.freeze({
@@ -91,14 +91,15 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.dataset.planTier = tier;
+    const text = `${label} / ${PLANS[tier].name}+`;
     const existing = el.querySelector(":scope > .mamo-tier-tag");
     if (existing) {
-      existing.textContent = `${label} / ${PLANS[tier].name}+`;
+      if (existing.textContent !== text) existing.textContent = text;
       return;
     }
     const tag = document.createElement("span");
     tag.className = "mamo-tier-tag";
-    tag.textContent = `${label} / ${PLANS[tier].name}+`;
+    tag.textContent = text;
     el.prepend(tag);
   }
 
@@ -111,24 +112,24 @@
     tagPanel("mamoMorningInsightBridge", "MORNING", "premium");
   }
 
-  function render() {
+  function renderMembershipOnly() {
     document.documentElement.dataset.mamoPlan = selectedPlan().id;
     const panel = document.getElementById("membershipPanel");
-    if (panel) {
-      panel.innerHTML = `
-        <div class="mamo-plan-intro">
-          <div><span>MEMBERSHIP / PRODUCT PREVIEW</span><h3>ひと目でわかる、4つのランク。</h3></div>
-          <b>PILOT<br>ALL OPEN</b>
-        </div>
-        <p class="mamo-plan-copy">現在は検証版のため、選択プランに関係なく全分析を表示します。本番では同じデータを裏で記録し、見える分析の深さを FREE・BRONZE・SILVER・GOLD の4段階に分けます。</p>
-        <div class="mamo-plan-grid">${Object.values(PLANS).map(planCard).join("")}</div>
-        <div class="mamo-plan-policy"><strong>設計原則</strong><span>無料でも役に立つ。有料になるほど「機能数」ではなく「自分を理解する解像度」が上がる。</span></div>`;
-      panel.querySelectorAll("[data-plan-preview]").forEach((btn) => {
-        btn.addEventListener("click", () => setPreview(btn.dataset.planPreview));
-      });
-    }
+    if (!panel) return;
+    panel.innerHTML = `
+      <div class="mamo-plan-intro">
+        <div><span>MEMBERSHIP / PRODUCT PREVIEW</span><h3>ひと目でわかる、4つのランク。</h3></div>
+        <b>PILOT<br>ALL OPEN</b>
+      </div>
+      <p class="mamo-plan-copy">現在は検証版のため、選択プランに関係なく全分析を表示します。本番では同じデータを裏で記録し、見える分析の深さを FREE・BRONZE・SILVER・GOLD の4段階に分けます。</p>
+      <div class="mamo-plan-grid">${Object.values(PLANS).map(planCard).join("")}</div>
+      <div class="mamo-plan-policy"><strong>設計原則</strong><span>無料でも役に立つ。有料になるほど「機能数」ではなく「自分を理解する解像度」が上がる。</span></div>`;
+  }
+
+  function render() {
+    renderMembershipOnly();
     const badge = document.getElementById("pressPlanBadge");
-    if (badge) badge.textContent = "PILOT / ALL OPEN";
+    if (badge && badge.textContent !== "PILOT / ALL OPEN") badge.textContent = "PILOT / ALL OPEN";
     applyTierTags();
   }
 
@@ -140,8 +141,8 @@
       .membership-panel{background:#071b2b!important;color:#f8f4e8!important;border:1px solid rgba(204,174,102,.45)!important;padding:14px!important;box-shadow:0 10px 28px rgba(7,27,43,.18)!important}
       .mamo-plan-intro{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid rgba(204,174,102,.38);padding-bottom:11px}.mamo-plan-intro span{font-size:8px;letter-spacing:.15em;font-weight:1000;color:#cdb275}.mamo-plan-intro h3{margin:4px 0 0;font-size:21px;color:#fff}.mamo-plan-intro>b{text-align:right;font-size:9px;line-height:1.35;color:#071b2b;background:#d8bd78;padding:6px 8px;letter-spacing:.08em}
       .mamo-plan-copy{font-size:10px;line-height:1.7;color:#bdc8cc;margin:11px 0 13px}.mamo-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.mamo-plan-card{position:relative;background:#0d293e;border:1px solid rgba(255,255,255,.12);padding:11px;min-width:0}.mamo-plan-card.active{box-shadow:inset 0 0 0 2px currentColor}.mamo-plan-card.recommended{background:#102f43}.mamo-plan-card.tier-free{--tier:#d7dde0;color:#d7dde0}.mamo-plan-card.tier-light{--tier:#c88752;color:#c88752;border-color:rgba(200,135,82,.55)}.mamo-plan-card.tier-standard{--tier:#d8dde2;color:#d8dde2;border-color:rgba(216,221,226,.55)}.mamo-plan-card.tier-premium{--tier:#d8bd78;color:#d8bd78;border-color:rgba(216,189,120,.7);background:linear-gradient(145deg,#102f43,#0a2234)}
-      .mamo-plan-ribbon{position:absolute;right:7px;top:7px;background:var(--tier,#d8bd78);color:#071b2b;font-size:7px;font-weight:1000;padding:3px 5px}.mamo-plan-head{display:flex;justify-content:space-between;gap:6px}.mamo-plan-head small{font-size:8px;letter-spacing:.12em;color:var(--tier,#cdb275);font-weight:1000}.mamo-plan-head h3{margin:3px 0;font-size:20px;color:#fff}.mamo-plan-head h3 em{font-size:8px;font-style:normal;color:#8fa2aa}.mamo-plan-head>b{font-size:7px;color:var(--tier,#d8bd78)}.mamo-plan-card>p{min-height:30px;font-size:9px;line-height:1.5;color:#b9c5ca}.mamo-plan-card ul{margin:9px 0;padding:0;list-style:none}.mamo-plan-card li{font-size:8px;line-height:1.55;padding:2px 0;color:#edf0ef}.mamo-plan-card li:before{content:'◆';font-size:5px;color:var(--tier,#d8bd78);margin-right:5px}.mamo-plan-card button{width:100%;border:1px solid var(--tier,#d8bd78);background:transparent;color:var(--tier,#f4e7bd);padding:7px 5px;font-size:8px;font-weight:1000}.mamo-plan-card.active button{background:var(--tier,#d8bd78);color:#071b2b}.mamo-plan-policy{margin-top:10px;padding:9px;border-top:1px solid rgba(255,255,255,.1);display:grid;gap:3px}.mamo-plan-policy strong{font-size:8px;color:#d8bd78;letter-spacing:.1em}.mamo-plan-policy span{font-size:9px;line-height:1.55;color:#bdc8cc}
-      .mamo-tier-tag{display:inline-block!important;margin:0 0 7px!important;padding:3px 6px!important;background:#071b2b!important;color:#d8bd78!important;font-size:7px!important;font-weight:1000!important;letter-spacing:.1em!important;width:auto!important}
+      .mamo-plan-ribbon{position:absolute;right:7px;top:7px;background:var(--tier,#d8bd78);color:#071b2b;font-size:7px;font-weight:1000;padding:3px 5px}.mamo-plan-head{display:flex;justify-content:space-between;gap:6px}.mamo-plan-head small{font-size:8px;letter-spacing:.12em;color:var(--tier,#cdb275);font-weight:1000}.mamo-plan-head h3{margin:3px 0;font-size:20px;color:#fff}.mamo-plan-head h3 em{font-size:8px;font-style:normal;color:#8fa2aa}.mamo-plan-head>b{font-size:7px;color:var(--tier,#d8bd78)}.mamo-plan-card>p{min-height:30px;font-size:9px;line-height:1.5;color:#b9c5ca}.mamo-plan-card ul{margin:9px 0;padding:0;list-style:none}.mamo-plan-card li{font-size:8px;line-height:1.55;padding:2px 0;color:#edf0ef}.mamo-plan-card li:before{content:'◆';font-size:5px;color:var(--tier,#d8bd78);margin-right:5px}.mamo-plan-card button{width:100%;border:1px solid var(--tier,#d8bd78);background:transparent;color:var(--tier,#f4e7bd);padding:9px 5px;font-size:9px;font-weight:1000;touch-action:manipulation;position:relative;z-index:2}.mamo-plan-card.active button{background:var(--tier,#d8bd78);color:#071b2b}.mamo-plan-policy{margin-top:10px;padding:9px;border-top:1px solid rgba(255,255,255,.1);display:grid;gap:3px}.mamo-plan-policy strong{font-size:8px;color:#d8bd78;letter-spacing:.1em}.mamo-plan-policy span{font-size:9px;line-height:1.55;color:#bdc8cc}
+      .mamo-tier-tag{display:inline-block!important;margin:0 0 7px!important;padding:3px 6px!important;background:#071b2b!important;color:#d8bd78!important;font-size:7px!important;font-weight:1000!important;letter-spacing:.1em!important;width:auto!important;pointer-events:none!important}
       @media(max-width:380px){.mamo-plan-grid{grid-template-columns:1fr}}
     `;
     document.head.appendChild(s);
@@ -150,11 +151,25 @@
   function boot() {
     styles();
     render();
-    const observer = new MutationObserver(() => applyTierTags());
+
+    document.addEventListener("click", (event) => {
+      const btn = event.target.closest?.("[data-plan-preview]");
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPreview(btn.dataset.planPreview);
+    }, false);
+
+    let observerQueued = false;
+    const observer = new MutationObserver(() => {
+      if (observerQueued) return;
+      observerQueued = true;
+      requestAnimationFrame(() => {
+        observerQueued = false;
+        applyTierTags();
+      });
+    });
     observer.observe(document.body, { childList:true, subtree:true });
-    window.setInterval(() => {
-      if (document.getElementById("analysis")?.classList.contains("active")) render();
-    }, 5000);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });
