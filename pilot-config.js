@@ -51,7 +51,7 @@ const MAMO_SCRIPTS = [
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
-  ["nav-stability.js?v=20260816-1","nav-stability"],
+  ["nav-stability.js?v=20260817-2","nav-stability"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
