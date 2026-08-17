@@ -71,6 +71,7 @@ const MAMO_SCRIPTS = [
   ["baseline-intelligence.js?v=20260816-1","baseline-intel"],
   ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
   ["press-intelligence.js?v=20260817-3","press-intel"],
+  ["morning-insight-bridge.js?v=20260817-1","morning-insight-bridge"],
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
