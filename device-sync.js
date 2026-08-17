@@ -92,7 +92,6 @@
     if (!local) return remote;
     if (!remote) return local;
 
-    // A linked fresh install must never replace an established shared state.
     if (isFresh(local) && !isFresh(remote)) {
       return { ...remote, accepted: remote.accepted === true || local.accepted === true };
     }
@@ -182,7 +181,6 @@
         suppressUpload = false;
       }
 
-      // One authoritative write after the boot/manual merge only.
       await request("POST", { state: merged });
       writeLocal(LINKED_KEY, "1");
       setStatus("同期済み");
@@ -203,7 +201,6 @@
     uploadTimer = setTimeout(uploadSnapshot, 1500);
   }
 
-  // During boot, app.js must not overwrite the shared state with its initial state.
   Storage.prototype.setItem = function(key, value) {
     if (this === localStorage && key === STATE_KEY && booting) return;
     nativeSetItem.call(this, key, value);
@@ -238,12 +235,44 @@
       if (!token()) return alert("先に同期コードを設定してください。");
       this.disabled = true;
       this.textContent = "同期中…";
-      await pullAndMerge();
+      const result = await pullAndMerge();
+      if (result?.ok) {
+        location.reload();
+        return;
+      }
       if (document.body.contains(this)) {
         this.disabled = false;
         this.textContent = "今すぐ同期";
       }
     };
+  }
+
+  function renderHomeRefreshButton() {
+    const host = document.querySelector("#home .home-date");
+    if (!host || document.getElementById("mamoManualRefresh")) return;
+    const button = document.createElement("button");
+    button.id = "mamoManualRefresh";
+    button.type = "button";
+    button.textContent = "↻ 更新";
+    button.setAttribute("aria-label", "記録とB残高を最新状態に更新");
+    button.style.cssText = "margin-top:7px;margin-left:auto;border:1px solid #c8d4dc;border-radius:999px;background:#fff;color:#05233e;padding:5px 11px;font:700 12px/1.2 -apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;box-shadow:0 1px 2px rgba(5,35,62,.06)";
+    button.onclick = async () => {
+      if (!token()) {
+        location.reload();
+        return;
+      }
+      button.disabled = true;
+      button.textContent = "更新中…";
+      const result = await pullAndMerge();
+      if (result?.ok) {
+        location.reload();
+        return;
+      }
+      button.disabled = false;
+      button.textContent = "↻ 更新";
+      alert("更新できませんでした。通信状態を確認して、もう一度お試しください。");
+    };
+    host.appendChild(button);
   }
 
   async function initialSync() {
@@ -258,9 +287,12 @@
 
   window.MAMO_DEVICE_SYNC_READY = initialSync();
 
-  const mountPanel = () => renderPanel();
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountPanel, { once: true });
-  else mountPanel();
+  const mountUi = () => {
+    renderPanel();
+    renderHomeRefreshButton();
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountUi, { once: true });
+  else mountUi();
 
   // Intentionally no pageshow / visibilitychange auto-pull.
   // This prevents duplicate GET->merge->POST races on iOS Safari/PWA.
