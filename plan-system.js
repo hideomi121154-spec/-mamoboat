@@ -1,8 +1,8 @@
-/* MAMO BOAT Plan System v2.4 — display-only, navigation-safe. */
+/* MAMO BOAT Plan System v2.5 — display-only, navigation-safe. */
 (() => {
   "use strict";
-  if (window.__MAMO_PLAN_SYSTEM_V24__) return;
-  window.__MAMO_PLAN_SYSTEM_V24__ = true;
+  if (window.__MAMO_PLAN_SYSTEM_V25__) return;
+  window.__MAMO_PLAN_SYSTEM_V25__ = true;
 
   const PLANS = [
     { id:"free", name:"FREE", price:0, tagline:"まず、自分の勝負を見る。", bullets:["AIR BET・実結果・B精算", "AIR BET総額・回数・平均", "基本の振り返り"] },
@@ -15,10 +15,8 @@
   const card = plan => `<article class="mamo-plan-card mamo-${plan.id}">${plan.recommended?'<span class="mamo-plan-ribbon">おすすめ</span>':""}<div class="mamo-plan-head"><small>${plan.name}</small><h3>${plan.price?`${plan.price.toLocaleString("ja-JP")}円`:'無料'}<em>${plan.price?'/月':''}</em></h3></div><p>${esc(plan.tagline)}</p><ul>${plan.bullets.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></article>`;
 
   function render(){
-    if(document.body.dataset.screen !== "analysis") return;
     const panel=document.getElementById("membershipPanel");
-    if(!panel || panel.dataset.mamoPlanV24 === "1") return;
-    panel.dataset.mamoPlanV24="1";
+    if(!panel) return;
     panel.innerHTML=`<div class="mamo-plan-intro"><div><span>MAMO MEMBERSHIP</span><h3>ひと目でわかる、4つのランク。</h3></div><b>PILOT<br>ALL OPEN</b></div><p class="mamo-plan-copy">現在は検証版のため全機能を開放しています。本番では、同じデータを裏で記録しながら「見える分析の深さ」だけを4段階に分けます。</p><div class="mamo-plan-grid">${PLANS.map(card).join("")}</div><div class="mamo-plan-policy"><strong>全プラン共通</strong><span>AIR BET・実レース結果・B精算・安全機能は無料。課金対象は分析の深さです。</span></div>`;
     const badge=document.getElementById("pressPlanBadge");
     if(badge) badge.textContent="PILOT / ALL OPEN";
@@ -32,10 +30,12 @@
   }
 
   installStyles();
-  // Never touch the app during startup. Only refresh the plan panel after the user explicitly opens 編集部.
+
+  // Inline onclick="go('analysis')" runs on the target before this bubble handler.
+  // Rendering here replaces the legacy panel in the same user-interaction frame,
+  // without MutationObserver, timers, overlays or navigation interception.
   document.addEventListener("click", (event) => {
-    const nav=event.target.closest?.("#nav-analysis");
-    if(!nav) return;
-    window.setTimeout(render, 80);
+    if(!event.target.closest?.("#nav-analysis")) return;
+    render();
   }, {passive:true});
 })();
