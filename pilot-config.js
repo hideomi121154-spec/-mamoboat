@@ -26,40 +26,17 @@ function loadMamoModule([src,key]) {
   });
 }
 
-(function installSyncBootGate(){
-  const TOKEN_KEY="mamoboat_sync_token_v1";
-  let hasToken=false;
-  try{hasToken=!!localStorage.getItem(TOKEN_KEY);}catch(_){ }
-  if(!hasToken) return;
-  document.documentElement.classList.add("mamo-sync-booting");
-  const style=document.createElement("style");
-  style.id="mamoSyncBootStyle";
-  style.textContent=`
-    html.mamo-sync-booting .app-shell,
-    html.mamo-sync-booting .bottom-nav{visibility:hidden!important}
-    #mamoSyncBootGate{position:fixed;inset:0;z-index:2147483000;background:#f7f4ec;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#05233e}
-    #mamoSyncBootGate>div{width:min(360px,90vw);text-align:center}
-    #mamoSyncBootGate b{display:block;font-size:18px;margin-bottom:8px}
-    #mamoSyncBootGate span{font-size:13px;color:#647786}
-  `;
-  document.head.appendChild(style);
-  const addGate=()=>{
-    if(document.getElementById("mamoSyncBootGate")) return;
-    const gate=document.createElement("div");
-    gate.id="mamoSyncBootGate";
-    gate.innerHTML="<div><b>MAMO BOATを同期しています</b><span>記録・B残高を確認中です…</span></div>";
-    document.body.appendChild(gate);
-  };
-  if(document.body) addGate();
-  else document.addEventListener("DOMContentLoaded",addGate,{once:true});
-  window.MAMO_RELEASE_SYNC_GATE=()=>{
-    document.documentElement.classList.remove("mamo-sync-booting");
-    document.getElementById("mamoSyncBootGate")?.remove();
-  };
-  setTimeout(()=>window.MAMO_RELEASE_SYNC_GATE?.(),6500);
-})();
+/*
+ * 同期は画面表示をブロックしない。
+ * ローカル状態で即起動し、Supabase同期完了後にB残高・記録だけ更新する。
+ */
+window.MAMO_RELEASE_SYNC_GATE = () => {
+  document.documentElement.classList.remove("mamo-sync-booting");
+  document.getElementById("mamoSyncBootGate")?.remove();
+};
+window.MAMO_RELEASE_SYNC_GATE();
 
-window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-8","device-sync"])
+window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-sync"])
   .then(()=>window.MAMO_DEVICE_SYNC_READY || true)
   .catch(()=>false);
 
