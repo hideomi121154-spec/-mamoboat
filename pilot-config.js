@@ -45,7 +45,7 @@ const MAMO_SCRIPTS = [
   ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
   ["press-intelligence.js?v=20260817-3","press-intel"],
   ["morning-insight-bridge.js?v=20260817-1","morning-insight-bridge"],
-  // plan-system.js disabled: iOS touch freezes after first navigation when loaded.
+  ["plan-system.js?v=20260817-25","plan-system"],
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
