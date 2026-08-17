@@ -1,0 +1,87 @@
+name: Apply stable membership tiers in app core
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-membership-core-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Replace legacy plan logic in app.js
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+
+          # 1) Migrate old stored plan names while accepting the new names.
+          s, n = re.subn(
+              r'pressroom\.plan = \["free", "ume", "take", "matsu"\]\.includes\(pressroom\.plan\)\s*\? pressroom\.plan\s*:\s*"free";',
+              'pressroom.plan = ["free", "bronze", "silver", "gold"].includes(pressroom.plan)\n      ? pressroom.plan\n      : ({ ume: "bronze", take: "silver", matsu: "gold" }[pressroom.plan] || "free");',
+              s,
+              count=1,
+          )
+          if n != 1:
+              raise SystemExit('normalizeState plan mapping not found')
+
+          # 2) Replace the core plan definitions only; no new module or observer is added.
+          s, n = re.subn(
+              r'const PRESS_PLANS = \{\s*free: \{ label: "FREE", name: "無料", rank: 0, price: "0円" \},\s*ume: \{ label: "梅", name: "朝刊", rank: 1, price: "月300円案" \},\s*take: \{ label: "竹", name: "編集版", rank: 2, price: "月500〜700円案" \},\s*matsu: \{ label: "松", name: "特別取材", rank: 3, price: "月1,000円案" \},\s*\};',
+              '''const PRESS_PLANS = {\n    free: { label: "FREE", name: "無料", rank: 0, price: "0円" },\n    bronze: { label: "BRONZE", name: "ブロンズ", rank: 1, price: "390円/月" },\n    silver: { label: "SILVER", name: "シルバー", rank: 2, price: "690円/月" },\n    gold: { label: "GOLD", name: "ゴールド", rank: 3, price: "1,190円/月" },\n  };''',
+              s,
+              count=1,
+          )
+          if n != 1:
+              raise SystemExit('PRESS_PLANS block not found')
+
+          replacements = {
+              'const required = type === "morning" ? PRESS_PLANS.ume : PRESS_PLANS.take;':
+                  'const required = type === "morning" ? PRESS_PLANS.bronze : PRESS_PLANS.silver;',
+              'S.pressroom.plan === "matsu"': 'S.pressroom.plan === "gold"',
+              'if (S.pressroom.plan !== "matsu") return;': 'if (S.pressroom.plan !== "gold") return;',
+              '} else if (key === "ume") {': '} else if (key === "bronze") {',
+              '<h2>無料＋松竹梅</h2>': '<h2>FREE / BRONZE / SILVER / GOLD</h2>',
+              '価格は検証中です。PILOT版では料金は発生せず、表示と質問量だけを確認します。':
+                  '価格は検証中です。PILOT版では料金は発生せず、分析の深さだけを4段階で確認します。',
+              'key === "ume" ? "MAMO朝刊" : key === "take" ? "朝刊・週間・月刊" : "全紙面と任意の深掘り"':
+                  'key === "bronze" ? "比較・時間帯・基本グラフ" : key === "silver" ? "行動指数・トリガー・週間分析" : "朝刊・週間・月刊・長期分析"',
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'missing expected text: {old}')
+              s = s.replace(old, new)
+
+          old_panel = '''<div class="membership-points"><div><b>無料</b><span>AIR BET・基本記録・安全介入</span></div><div><b>梅</b><span>朝刊・任意の一問</span></div><div><b>竹</b><span>朝刊・週間・月刊</span></div><div><b>松</b><span>長期比較・選べる深掘り取材</span></div></div>'''
+          new_panel = '''<div class="membership-points"><div><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></div><div><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></div><div><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></div><div><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></div></div>'''
+          if old_panel not in s:
+              raise SystemExit('membership panel not found')
+          s = s.replace(old_panel, new_panel, 1)
+
+          s = s.replace(
+              'PILOT版では決済されません。安全機能は全プラン共通で無料です。',
+              'PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。',
+              1,
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          node --check app.js
+          git diff --check
+          git diff -- app.js
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js
+          git commit -m "Replace legacy plans with Bronze Silver Gold in core"
+          git push
