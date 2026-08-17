@@ -1,4 +1,4 @@
-/* MAMO BOAT AI SAFE v2 — passive logging + daily/weekly/monthly behavior summaries */
+/* MAMO BOAT AI SAFE v3 — passive logging + period comparison behavior summaries */
 (() => {
   "use strict";
 
@@ -95,15 +95,16 @@
     anchorPoint.insertAdjacentElement("afterend", box);
   }
 
-  function daysAgoCutoff(days) {
-    return Date.now() - days*24*60*60*1000;
-  }
-
-  function rangeStats(days) {
-    const cutoff = daysAgoCutoff(days);
+  function rangeStatsBetween(startMs, endMs) {
     const s = state();
-    const records = (Array.isArray(s.records)?s.records:[]).filter(r=>new Date(r.time||0).getTime()>=cutoff);
-    const events = allEvents().filter(e=>new Date(e.at||0).getTime()>=cutoff);
+    const records = (Array.isArray(s.records)?s.records:[]).filter(r=>{
+      const t = new Date(r.time||0).getTime();
+      return t >= startMs && t < endMs;
+    });
+    const events = allEvents().filter(e=>{
+      const t = new Date(e.at||0).getTime();
+      return t >= startMs && t < endMs;
+    });
     const stakes = records.map(r=>Number(r.stake)||0).filter(v=>v>0);
     const totalStake = stakes.reduce((sum,v)=>sum+v,0);
     const real = events.filter(e=>e.name==="real_open");
@@ -126,7 +127,7 @@
     });
     const topBeforeReal = Object.entries(seqCounts).sort((a,b)=>b[1]-a[1])[0] || null;
     return {
-      days, records, events, stakes, totalStake,
+      records, events, stakes, totalStake,
       average:mean(stakes), max:stakes.length?Math.max(...stakes):0, min:stakes.length?Math.min(...stakes):0, deviation:sd(stakes),
       hundredRate:stakes.length?stakes.filter(v=>v===100).length/stakes.length:0,
       real:real.length, live:live.length, airToReal, liveToReal, activeSeconds,
@@ -134,12 +135,80 @@
     };
   }
 
+  function jstTodayStart() {
+    const key = dateKey();
+    return new Date(`${key}T00:00:00+09:00`).getTime();
+  }
+
+  function periodPair(kind) {
+    const now = Date.now();
+    if (kind === "today") {
+      const start = jstTodayStart();
+      const prevStart = start - 86400000;
+      return {
+        current: rangeStatsBetween(start, now),
+        previous: rangeStatsBetween(prevStart, start),
+        compareLabel: "昨日比",
+      };
+    }
+    const days = kind === "week" ? 7 : 30;
+    const span = days * 86400000;
+    return {
+      current: rangeStatsBetween(now-span, now),
+      previous: rangeStatsBetween(now-(span*2), now-span),
+      compareLabel: kind === "week" ? "前7日比" : "前30日比",
+    };
+  }
+
+  function pctChange(current, previous) {
+    const c = Number(current)||0;
+    const p = Number(previous)||0;
+    if (p === 0) return c === 0 ? 0 : null;
+    return ((c-p)/Math.abs(p))*100;
+  }
+
+  function changeText(current, previous, suffix="") {
+    const diff = pctChange(current, previous);
+    if (diff === null) return previous ? "—" : "比較データなし";
+    if (Math.abs(diff) < 1) return `ほぼ同じ${suffix}`;
+    return `${diff > 0 ? "+" : ""}${fmt(diff)}%${suffix}`;
+  }
+
+  function compareInsight(current, previous) {
+    if (!previous.records.length) return "前期間のAIR BET記録がまだないため、比較はこれからです。";
+    const totalDiff = pctChange(current.totalStake, previous.totalStake);
+    const countDiff = pctChange(current.records.length, previous.records.length);
+    const avgDiff = pctChange(current.average, previous.average);
+    if (totalDiff === null) return "前期間との比較データを蓄積中です。";
+    if (Math.abs(totalDiff) < 10) {
+      if (Math.abs(countDiff||0) >= 20 || Math.abs(avgDiff||0) >= 20) {
+        return "AIR総額は大きく変わっていませんが、回数と1回平均の配分には変化があります。";
+      }
+      return "AIR総額・回数・1回平均とも、前期間から大きな変化はありません。";
+    }
+    const countEffect = Math.abs(countDiff||0);
+    const avgEffect = Math.abs(avgDiff||0);
+    if (countEffect >= avgEffect * 1.25) {
+      return totalDiff > 0
+        ? "AIR総額の増加は、1回の金額より参加回数が増えた影響の方が大きそうです。"
+        : "AIR総額の減少は、1回の金額より参加回数が減った影響の方が大きそうです。";
+    }
+    if (avgEffect >= countEffect * 1.25) {
+      return totalDiff > 0
+        ? "AIR総額の増加は、参加回数より1回あたりのAIR BET額が上がった影響の方が大きそうです。"
+        : "AIR総額の減少は、参加回数より1回あたりのAIR BET額が下がった影響の方が大きそうです。";
+    }
+    return totalDiff > 0
+      ? "AIR総額は増えています。参加回数と1回平均の両方が影響しています。"
+      : "AIR総額は減っています。参加回数と1回平均の両方が影響しています。";
+  }
+
   function narrative(x) {
     if (!x.records.length && !x.real && !x.live) return "まだ判断できる行動データがありません。使うほど、あなた自身の比較材料が増えます。";
     const lines = [];
     if (x.stakes.length) lines.push(`AIR BET総額は${fmt(x.totalStake)}B、${x.records.length}回、1回平均${fmt(x.average)}Bです。`);
     if (x.stakes.length >= 3) {
-      if (x.deviation <= Math.max(100, x.average*0.25)) lines.push(`現時点ではBET額の金額差は小さめです。`);
+      if (x.deviation <= Math.max(100, x.average*0.25)) lines.push("現時点ではBET額の金額差は小さめです。");
       else lines.push(`${fmt(x.min)}〜${fmt(x.max)}Bとレースごとに強弱が出ています。`);
       if (x.hundredRate >= .5) lines.push(`100B参加が${fmt(x.hundredRate*100,0)}%を占めています。暇つぶしかどうかは断定せず、今後REAL移行との関係を比較します。`);
     }
@@ -161,23 +230,27 @@
       if (!list) return;
       list.insertAdjacentElement("afterend", panel);
     }
-    const today = rangeStats(1), week = rangeStats(7), month = rangeStats(30);
-    const card = (label,x) => `<article>
-      <header><span>${label}</span><b>${x.records.length} AIR / ${x.real} REAL導線</b></header>
-      <div class="metrics primary">
-        <i><small>AIR BET総額</small><strong>${x.stakes.length?fmt(x.totalStake)+"B":"—"}</strong></i>
-        <i><small>AIR BET回数</small><strong>${x.records.length}回</strong></i>
-        <i><small>平均AIR</small><strong>${x.stakes.length?fmt(x.average)+"B":"—"}</strong></i>
-        <i><small>最大AIR</small><strong>${x.stakes.length?fmt(x.max)+"B":"—"}</strong></i>
-      </div>
-      <div class="metrics secondary">
-        <i><small>100B率</small><strong>${x.stakes.length?fmt(x.hundredRate*100,0)+"%":"—"}</strong></i>
-        <i><small>LIVE</small><strong>${x.live}回</strong></i>
-        <i><small>鑑賞</small><strong>${Math.round(x.activeSeconds/60)}分</strong></i>
-        <i><small>REAL導線</small><strong>${x.real}回</strong></i>
-      </div>
-      <p>${esc(narrative(x))}</p>
-    </article>`;
+    const today = periodPair("today"), week = periodPair("week"), month = periodPair("month");
+    const card = (label,pair) => {
+      const x = pair.current, prev = pair.previous;
+      return `<article>
+        <header><span>${label}</span><b>${x.records.length} AIR / ${x.real} REAL導線</b></header>
+        <div class="metrics primary">
+          <i><small>AIR BET総額</small><strong>${x.stakes.length?fmt(x.totalStake)+"B":"—"}</strong><em>${pair.compareLabel} ${changeText(x.totalStake,prev.totalStake)}</em></i>
+          <i><small>AIR BET回数</small><strong>${x.records.length}回</strong><em>${pair.compareLabel} ${changeText(x.records.length,prev.records.length)}</em></i>
+          <i><small>平均AIR</small><strong>${x.stakes.length?fmt(x.average)+"B":"—"}</strong><em>${pair.compareLabel} ${changeText(x.average,prev.average)}</em></i>
+          <i><small>最大AIR</small><strong>${x.stakes.length?fmt(x.max)+"B":"—"}</strong><em>前期間 ${prev.stakes.length?fmt(prev.max)+"B":"—"}</em></i>
+        </div>
+        <div class="compare-note"><b>加音 守 / 比較</b><span>${esc(compareInsight(x,prev))}</span></div>
+        <div class="metrics secondary">
+          <i><small>100B率</small><strong>${x.stakes.length?fmt(x.hundredRate*100,0)+"%":"—"}</strong></i>
+          <i><small>LIVE</small><strong>${x.live}回</strong></i>
+          <i><small>鑑賞</small><strong>${Math.round(x.activeSeconds/60)}分</strong></i>
+          <i><small>REAL導線</small><strong>${x.real}回</strong></i>
+        </div>
+        <p>${esc(narrative(x))}</p>
+      </article>`;
+    };
     panel.innerHTML = `<div class="title"><div><span>MAMO AI / PHASE 2</span><h3>行動レポート</h3></div><small>事実 → 比較 → 傾向</small></div>${card("今日",today)}${card("7日",week)}${card("30日",month)}<footer>艇の勝敗予想ではなく、MAMO BOAT内で確認できた操作とAIR BET記録だけを分析しています。</footer>`;
   }
 
@@ -185,7 +258,7 @@
     if (document.getElementById("mamoAiSafeStyle")) return;
     const st = document.createElement("style");
     st.id = "mamoAiSafeStyle";
-    st.textContent = `.mamo-ai-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;padding:10px;background:#f4f8f8;border:1px solid #dce6e6}.mamo-ai-actions a{display:flex;min-height:46px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000;border:2px solid var(--teal);color:var(--navy);background:#fff}.mamo-ai-actions a.real{background:var(--navy);color:#fff;border-color:var(--navy)}.mamo-ai-actions small{grid-column:1/-1;color:var(--muted);font-size:9px;line-height:1.5}.mamo-ai-report{margin:14px 0 22px;padding:14px;background:#fff;border-top:5px solid var(--teal);box-shadow:3px 4px 0 rgba(7,27,43,.07)}.mamo-ai-report .title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}.mamo-ai-report .title span{font-size:9px;font-weight:1000;color:var(--teal-dark);letter-spacing:.12em}.mamo-ai-report .title h3{margin:3px 0;font-size:20px}.mamo-ai-report .title small{color:var(--muted);font-weight:900}.mamo-ai-report article{padding:11px 0;border-top:1px solid var(--soft-line)}.mamo-ai-report article header{display:flex;justify-content:space-between;gap:8px}.mamo-ai-report article header span{font-weight:1000}.mamo-ai-report article header b{font-size:11px;color:var(--teal-dark)}.mamo-ai-report .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.mamo-ai-report .metrics i{font-style:normal;background:#f4f8f8;padding:7px}.mamo-ai-report .metrics.primary i:first-child{background:#eef8f6;border-left:4px solid var(--teal)}.mamo-ai-report .metrics small{display:block;font-size:8px;color:var(--muted);font-weight:900}.mamo-ai-report .metrics strong{display:block;margin-top:2px;font-size:14px}.mamo-ai-report .metrics.primary strong{font-size:16px}.mamo-ai-report .metrics.secondary{margin-top:6px}.mamo-ai-report .metrics.secondary i{background:#fafbfb}.mamo-ai-report article p{margin:8px 0 0;font-size:11px;line-height:1.7}.mamo-ai-report footer{margin-top:8px;color:var(--muted);font-size:9px;line-height:1.5}@media(max-width:500px){.mamo-ai-report .metrics{grid-template-columns:repeat(2,1fr)}}`;
+    st.textContent = `.mamo-ai-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;padding:10px;background:#f4f8f8;border:1px solid #dce6e6}.mamo-ai-actions a{display:flex;min-height:46px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000;border:2px solid var(--teal);color:var(--navy);background:#fff}.mamo-ai-actions a.real{background:var(--navy);color:#fff;border-color:var(--navy)}.mamo-ai-actions small{grid-column:1/-1;color:var(--muted);font-size:9px;line-height:1.5}.mamo-ai-report{margin:14px 0 22px;padding:14px;background:#fff;border-top:5px solid var(--teal);box-shadow:3px 4px 0 rgba(7,27,43,.07)}.mamo-ai-report .title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}.mamo-ai-report .title span{font-size:9px;font-weight:1000;color:var(--teal-dark);letter-spacing:.12em}.mamo-ai-report .title h3{margin:3px 0;font-size:20px}.mamo-ai-report .title small{color:var(--muted);font-weight:900}.mamo-ai-report article{padding:11px 0;border-top:1px solid var(--soft-line)}.mamo-ai-report article header{display:flex;justify-content:space-between;gap:8px}.mamo-ai-report article header span{font-weight:1000}.mamo-ai-report article header b{font-size:11px;color:var(--teal-dark)}.mamo-ai-report .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.mamo-ai-report .metrics i{font-style:normal;background:#f4f8f8;padding:7px}.mamo-ai-report .metrics.primary i:first-child{background:#eef8f6;border-left:4px solid var(--teal)}.mamo-ai-report .metrics small{display:block;font-size:8px;color:var(--muted);font-weight:900}.mamo-ai-report .metrics strong{display:block;margin-top:2px;font-size:14px}.mamo-ai-report .metrics.primary strong{font-size:16px}.mamo-ai-report .metrics.primary em{display:block;margin-top:3px;font-style:normal;font-size:8px;font-weight:900;color:var(--teal-dark)}.mamo-ai-report .compare-note{margin:7px 0 9px;padding:9px 10px;background:#fffaf0;border-left:4px solid var(--gold,#d9a321);font-size:10px;line-height:1.6}.mamo-ai-report .compare-note b{display:block;margin-bottom:2px;color:var(--navy)}.mamo-ai-report .compare-note span{color:#455866}.mamo-ai-report .metrics.secondary{margin-top:6px}.mamo-ai-report .metrics.secondary i{background:#fafbfb}.mamo-ai-report article p{margin:8px 0 0;font-size:11px;line-height:1.7}.mamo-ai-report footer{margin-top:8px;color:var(--muted);font-size:9px;line-height:1.5}@media(max-width:500px){.mamo-ai-report .metrics{grid-template-columns:repeat(2,1fr)}}`;
     document.head.appendChild(st);
   }
 
@@ -210,7 +283,7 @@
 
   function boot() {
     styles();
-    log("ai_safe_loaded", { version:2 });
+    log("ai_safe_loaded", { version:3 });
     detectLatestAir();
     ensureDecisionButtons();
     renderReport();
