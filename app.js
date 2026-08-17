@@ -2565,7 +2565,7 @@ const reference = liveValue != null
     if (!target) return;
     const plan = pressPlan();
     target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3>${esc(plan.label)}・${esc(plan.name)}</h3><b>${esc(plan.price)}</b><p>PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。</p></div>
-      <div class="membership-points"><div><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></div><div><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></div><div><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></div><div><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></div></div>
+      <div class="membership-points membership-selectable"><button type="button" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button><button type="button" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button><button type="button" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button><button type="button" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button></div>
       ${S.pressroom.plan === "gold" ? `<button class="btn secondary full" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ</button>` : ""}
       <button class="btn primary full" type="button" onclick="openMembershipPlans()">プラン設計を確認する</button>`;
   }
