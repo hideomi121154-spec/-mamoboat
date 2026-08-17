@@ -1,8 +1,8 @@
-/* MAMO BOAT bottom nav stability v1 */
+/* MAMO BOAT bottom nav stability v2 — no continuous observers. */
 (()=>{
   "use strict";
-  if(window.__MAMO_NAV_STABILITY_V1__) return;
-  window.__MAMO_NAV_STABILITY_V1__=true;
+  if(window.__MAMO_NAV_STABILITY_V2__) return;
+  window.__MAMO_NAV_STABILITY_V2__=true;
 
   function stabilize(){
     const nav=document.querySelector('.bottom-nav');
@@ -27,10 +27,10 @@
 
   function boot(){
     stabilize();
-    new MutationObserver(stabilize).observe(document.body,{childList:true,subtree:true});
-    window.addEventListener('pageshow',stabilize);
-    window.addEventListener('resize',stabilize,{passive:true});
-    if(window.visualViewport) window.visualViewport.addEventListener('resize',stabilize,{passive:true});
+    window.addEventListener('pageshow',stabilize,{passive:true});
+    window.addEventListener('orientationchange',()=>setTimeout(stabilize,120),{passive:true});
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
 })();
