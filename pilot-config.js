@@ -64,7 +64,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-8","device-s
   .catch(()=>false);
 
 const MAMO_SCRIPTS = [
-  ["ai-safe.js?v=20260816-1","ai-safe"],
+  ["ai-safe.js?v=20260817-2","ai-safe"],
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260816-1","decision-intel"],
   ["baseline-intelligence.js?v=20260816-1","baseline-intel"],
