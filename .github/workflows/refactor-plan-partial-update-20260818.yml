@@ -11,9 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Refactor plan selection
+      - name: Patch core app directly
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -29,8 +27,6 @@ jobs:
           new='''    trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
     save();
     window.closeModal();
-
-    // Partial update only: preserve the newspaper and analysis DOM while reading.
     const plan = pressPlan();
     const badge = $("pressPlanBadge");
     if (badge) badge.textContent = `${plan.label} / ${plan.name}`;
@@ -38,49 +34,26 @@ jobs:
     renderPressSettings();
   };'''
           if old not in s:
-            raise SystemExit('selectPilotPlan target block not found')
-          s=s.replace(old,new,1)
-          old2='''      <div class="membership-points membership-selectable"><button type="button" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button><button type="button" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button><button type="button" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button><button type="button" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button></div>'''
-          new2='''      <div class="membership-points membership-selectable"><button type="button" class="${S.pressroom.plan === "free" ? "selected" : ""}" aria-pressed="${S.pressroom.plan === "free"}" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button><button type="button" class="${S.pressroom.plan === "bronze" ? "selected" : ""}" aria-pressed="${S.pressroom.plan === "bronze"}" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button><button type="button" class="${S.pressroom.plan === "silver" ? "selected" : ""}" aria-pressed="${S.pressroom.plan === "silver"}" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button><button type="button" class="${S.pressroom.plan === "gold" ? "selected" : ""}" aria-pressed="${S.pressroom.plan === "gold"}" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button></div>'''
-          if old2 not in s:
-            raise SystemExit('membership buttons target block not found')
-          s=s.replace(old2,new2,1)
-          p.write_text(s)
+            raise SystemExit('core target not found')
+          p.write_text(s.replace(old,new,1))
           PY
-      - name: Add stable selected-state CSS
-        run: |
-          cat >> styles.css <<'CSS'
-
-          /* v4.0.1 platform stability: plan cards update in place; no page-level rerender. */
-          .membership-selectable button.selected,
-          .membership-selectable button[aria-pressed="true"] {
-            outline: 3px solid var(--teal);
-            outline-offset: -3px;
-            box-shadow: inset 0 -4px var(--teal);
-          }
-          CSS
-      - name: Bump static cache keys
+      - name: Bump app cache key
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p=Path('index.html')
           s=p.read_text()
-          import re
-          s=re.sub(r'app\.js\?v=[^"\']+', 'app.js?v=20260818-41', s)
-          s=re.sub(r'styles\.css\?v=[^"\']+', 'styles.css?v=20260818-41', s)
-          s=re.sub(r'pilot-config\.js\?v=[^"\']+', 'pilot-config.js?v=20260818-41', s)
+          s=re.sub(r'app\.js\?v=[^"\']+', 'app.js?v=20260818-42', s)
           p.write_text(s)
           PY
-      - name: Validate
-        run: |
-          node --check app.js
-          node --check pilot-config.js
-          node tests/logic.test.js
-      - name: Commit
+      - name: Syntax check
+        run: node --check app.js
+      - name: Commit core fix
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js styles.css index.html
-          git commit -m "Refactor press plan selection to partial updates" || exit 0
+          git add app.js index.html
+          git commit -m "Remove press plan rerender and scroll restoration" || exit 0
           git push
-# trigger 3
+# trigger 4
