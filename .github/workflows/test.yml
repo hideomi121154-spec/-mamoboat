@@ -43,6 +43,7 @@ jobs:
           node --check core.js
           node --check pilot-config.js
           node --check master-room.js
+          node --check mamokamo.js
           node --check tests/master-room.test.js
           python -m py_compile scripts/sync_official_data.py tests/test_sync_transform.py tests/test_result_validation.py tests/smoke_live_results.py
 
