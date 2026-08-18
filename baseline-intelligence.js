@@ -265,7 +265,7 @@
   function boot() {
     styles();
     render();
-    // Reading stability: render once at boot; no background repaint while reading.
+    window.addEventListener("mamo:analysis-rendered", render);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });

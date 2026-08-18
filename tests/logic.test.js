@@ -320,6 +320,21 @@ assert.match(appSource, /result_latency_minutes/);
 assert.match(appSource, /締切→MAMO BOAT反映/);
 assert.doesNotMatch(appSource, /Air Boat/);
 
+const selectPlanMatch = appSource.match(
+  /window\.selectPilotPlan\s*=\s*\(key\)\s*=>\s*\{([\s\S]*?)\n  \};/
+);
+assert(selectPlanMatch, "selectPilotPlan implementation must exist in app.js");
+assert.match(selectPlanMatch[1], /updatePlanUI\(\)/);
+assert.doesNotMatch(
+  selectPlanMatch[1],
+  /renderPressroom|renderMembershipPanel|scrollTo|scrollBy|scrollY|requestAnimationFrame|visualViewport/
+);
+assert.match(appSource, /function updatePlanUI\(\)/);
+assert.match(appSource, /data-pilot-plan="gold"/);
+assert.doesNotMatch(appSource, /serviceWorker\.register/);
+assert.match(appSource, /function renderAfterBackgroundUpdate\(\)/);
+assert.match(appSource, /if \(id === "analysis"\) return;/);
+
 const indexSource = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const manifestSource = fs.readFileSync(
   path.join(__dirname, "..", "manifest.webmanifest"),
@@ -328,25 +343,26 @@ const manifestSource = fs.readFileSync(
 const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
 const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
-assert.match(indexSource, /styles\.css\?v=20260815-11/);
+assert.match(indexSource, /styles\.css\?v=20260818-3/);
 assert.match(indexSource, /cast-ui\.js\?v=20260815-11/);
 assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=20260815-10/);
 assert.match(indexSource, /onboard-cover-art/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /app\.js\?v=401/);
+assert.match(indexSource, /pilot-config\.js\?v=20260818-3/);
+assert.match(indexSource, /app\.js\?v=20260818-3/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
 assert.match(indexSource, /加音 守/);
 assert.doesNotMatch(indexSource, /id="realBetFloat"/);
 assert.doesNotMatch(indexSource, /ダブルWIN・防衛スタンプ/);
-assert.match(indexSource, /<\/div>\s*<nav class="bottom-nav"/);
+assert.match(indexSource, /<\/main>\s*<nav class="bottom-nav"/);
 assert.match(stylesSource, /@media \(max-width: 743px\)[\s\S]*?\.bottom-nav[\s\S]*?bottom: 0 !important/);
 assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v401-central-pilot-1/);
+assert.match(serviceWorkerSource, /mamoboat-v401-central-pilot-14/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
@@ -354,8 +370,50 @@ assert.match(pilotConfigSource, /transport:\s*"rpc"/);
 assert.match(pilotConfigSource, /\/rest\/v1\/rpc\/ingest_pilot_events/);
 assert.match(pilotConfigSource, /publishableKey:\s*"sb_publishable_/);
 assert.doesNotMatch(pilotConfigSource, /sb_secret_|service_role/);
+assert.doesNotMatch(
+  pilotConfigSource,
+  /plan-(?:stable-controller|partial-update|selection-stable|click-stability|anchor-fix|system)|nav-stability|analysis-zoom-stability/
+);
 assert.match(appSource, /collectorClientKey/);
 assert.match(appSource, /if \(\/\^eyJ\/\.test\(clientKey\)\)/);
+
+const pressIntelligenceSource = fs.readFileSync(
+  path.join(__dirname, "..", "press-intelligence.js"),
+  "utf8"
+);
+const morningInsightSource = fs.readFileSync(
+  path.join(__dirname, "..", "morning-insight-bridge.js"),
+  "utf8"
+);
+const aiSafeSource = fs.readFileSync(path.join(__dirname, "..", "ai-safe.js"), "utf8");
+const swRefreshSource = fs.readFileSync(path.join(__dirname, "..", "sw-refresh.js"), "utf8");
+assert.doesNotMatch(pressIntelligenceSource, /setInterval\s*\(/);
+assert.doesNotMatch(pressIntelligenceSource, /document\.addEventListener\("click"/);
+assert.match(pressIntelligenceSource, /mamo:analysis-rendered/);
+assert.doesNotMatch(morningInsightSource, /setInterval\s*\(/);
+assert.doesNotMatch(morningInsightSource, /document\.addEventListener\("click"/);
+assert.match(morningInsightSource, /mamo:press-intelligence-rendered/);
+const aiSafeClickHandler = aiSafeSource.match(
+  /document\.addEventListener\("click"[\s\S]*?\n  \}, false\);/
+);
+assert(aiSafeClickHandler, "AI safe click collector must exist");
+assert.doesNotMatch(aiSafeClickHandler[0], /renderReport\(\)/);
+assert.match(aiSafeSource, /mamo:analysis-rendered/);
+assert.match(swRefreshSource, /serviceWorker\.register/);
+
+for (const retiredPath of [
+  "plan-anchor-fix.js",
+  "plan-click-stability.js",
+  "plan-partial-update.js",
+  "plan-selection-stable.js",
+  "plan-stable-controller.js",
+  "plan-system.js",
+  "analysis-zoom-stability.js",
+  "nav-stability.js",
+  ".github/workflows/patch-select-plan-only.yml",
+]) {
+  assert.equal(fs.existsSync(path.join(__dirname, "..", retiredPath)), false);
+}
 // 実レースで確認した中止・返還・欠場を精算回帰テストとして固定する。
 function liveExceptionDataset(date, venueCode, raceNo, result) {
   return { date, venues: [{ code: venueCode, races: [{ number: raceNo, result }] }] };

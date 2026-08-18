@@ -26,18 +26,28 @@ class ClassList {
 class FakeElement {
   constructor(id = "") {
     this.id = id;
-    this.innerHTML = "";
+    this._innerHTML = "";
+    this.innerHTMLWriteCount = 0;
     this.textContent = "";
     this.className = "";
     this.classList = new ClassList();
     this.dataset = {};
     this.style = {};
+    this.attributes = new Map();
     this.value = "";
     this.checked = false;
     this.disabled = false;
     this.options = [];
   }
+  get innerHTML() { return this._innerHTML; }
+  set innerHTML(value) {
+    this._innerHTML = String(value);
+    this.innerHTMLWriteCount += 1;
+  }
   addEventListener() {}
+  setAttribute(name, value) { this.attributes.set(name, String(value)); }
+  getAttribute(name) { return this.attributes.get(name) ?? null; }
+  removeAttribute(name) { this.attributes.delete(name); }
   insertAdjacentHTML() {}
   contains() { return true; }
   click() {}
@@ -56,6 +66,11 @@ body.dataset.screen = "home";
 const reportButtons = ["morning", "weekly", "monthly"].map((type) => {
   const button = new FakeElement(`report-${type}`);
   button.dataset.reportType = type;
+  return button;
+});
+const planButtons = ["free", "bronze", "silver", "gold"].map((plan) => {
+  const button = new FakeElement(`plan-${plan}`);
+  button.dataset.pilotPlan = plan;
   return button;
 });
 const storage = new Map();
@@ -137,6 +152,7 @@ storage.set("mamoboat_v40_personal", JSON.stringify({
 }));
 
 const collectorRequests = [];
+const scrollCalls = [];
 
 const document = {
   body,
@@ -148,6 +164,7 @@ const document = {
   },
   querySelectorAll(selector) {
     if (selector === "[data-report-type]") return reportButtons;
+    if (selector === "[data-pilot-plan]") return planButtons;
     return [];
   },
   createElement: () => new FakeElement(),
@@ -183,7 +200,7 @@ const context = {
   alert() {},
   confirm: () => true,
   prompt() {},
-  scrollTo() {},
+  scrollTo(...args) { scrollCalls.push(args); },
   addEventListener() {},
   setInterval: () => 0,
   clearInterval() {},
@@ -205,14 +222,52 @@ vm.runInContext(
   { filename: "app.js" }
 );
 
-assert.match(elements.get("pressPlanBadge").textContent, /竹/);
+assert.match(elements.get("pressPlanBadge").textContent, /SILVER/);
 assert.match(elements.get("pressPaper").innerHTML, /MAMO朝刊/);
 assert.match(elements.get("pressPaper").innerHTML, /B的中後の「現金なら」/);
 assert.doesNotMatch(elements.get("pressPaper").innerHTML, /勝率|おすすめ艇|公式投票/);
 assert.match(elements.get("membershipPanel").innerHTML, /PILOT版では決済されません/);
 assert.match(elements.get("homePressTeaser").innerHTML, /最新号を読む/);
 
-console.log("app smoke test OK");
+const stableTargets = ["pressPaper", "analysisCards", "analysisList", "membershipPanel"];
+const writesBeforePlanChanges = Object.fromEntries(
+  stableTargets.map((id) => [id, elements.get(id).innerHTMLWriteCount])
+);
+const expectedPlanState = {
+  free: [false, false, false],
+  bronze: [true, false, false],
+  silver: [true, true, true],
+  gold: [true, true, true],
+};
+
+for (const key of ["bronze", "silver", "gold", "free", "bronze"]) {
+  context.selectPilotPlan(key);
+  const saved = JSON.parse(storage.get("mamoboat_v40_personal"));
+  assert.equal(saved.pressroom.plan, key);
+  assert.deepEqual(
+    [saved.pressroom.morningEnabled, saved.pressroom.weeklyEnabled, saved.pressroom.monthlyEnabled],
+    expectedPlanState[key]
+  );
+  assert.match(elements.get("pressPlanBadge").textContent, new RegExp(key.toUpperCase()));
+  planButtons.forEach((button) => {
+    const selected = button.dataset.pilotPlan === key;
+    assert.equal(button.classList.contains("selected"), selected);
+    assert.equal(button.getAttribute("aria-pressed"), selected ? "true" : "false");
+  });
+  assert.equal(elements.get("membershipDeepInterview").disabled, key !== "gold");
+  reportButtons.forEach((button) => {
+    const unlocked = button.dataset.reportType === "morning"
+      ? key !== "free"
+      : ["silver", "gold"].includes(key);
+    assert.equal(button.classList.contains("locked"), !unlocked);
+  });
+  stableTargets.forEach((id) => {
+    assert.equal(elements.get(id).innerHTMLWriteCount, writesBeforePlanChanges[id]);
+  });
+}
+assert.equal(scrollCalls.length, 0);
+
+console.log("app smoke and stable plan UI tests OK");
 
 (async () => {
   await context.sendPilotDataNow();

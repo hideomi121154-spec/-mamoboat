@@ -239,7 +239,7 @@
   function boot() {
     styles();
     render();
-    // Reading stability: render once at boot; no click/timer repaint.
+    window.addEventListener("mamo:analysis-rendered", render);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });
