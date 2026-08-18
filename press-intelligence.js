@@ -89,13 +89,6 @@
     return desk;
   }
 
-  function syncGoldDeskPlan(){
-    const desk=ensureGoldDesk();if(!desk)return;
-    const plan=String(state()?.pressroom?.plan||"free");
-    desk.classList.toggle("is-gold",plan==="gold");
-    desk.setAttribute("data-gold-active",plan==="gold"?"true":"false");
-  }
-
   function renderGoldDesk(){
     const desk=ensureGoldDesk();if(!desk)return;
     const info=goldUnderstanding();
@@ -107,7 +100,6 @@
     setText("goldReviewCount",`${info.reviewed}件`);
     setText("goldThemeCount",`${info.themes}項目`);
     setText("goldNextTarget",info.next);
-    syncGoldDeskPlan();
   }
 
   function winningOrder(record){
@@ -176,7 +168,7 @@
     #analysis.active>#goldEditorialDesk{order:49!important}
     .gold-editorial-desk{--gold-understanding:0%;position:relative;margin:14px 0 18px;border-radius:16px;overflow:hidden;box-shadow:0 10px 26px rgba(7,27,43,.13)}
     .ged-live{display:none;padding:17px;background:linear-gradient(145deg,#071b2b 0%,#0d3047 68%,#103f51 100%);color:#fff;border-top:4px solid #d8a12a}
-    .gold-editorial-desk.is-gold .ged-live{display:block}.gold-editorial-desk.is-gold .ged-lock{display:none}
+    body[data-mamo-plan="gold"] .gold-editorial-desk .ged-live{display:block}body[data-mamo-plan="gold"] .gold-editorial-desk .ged-lock{display:none}
     .ged-mast{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.18)}.ged-mast span{color:#f0c45a;font-size:8px;font-weight:1000;letter-spacing:.15em}.ged-mast b{padding:4px 8px;border:1px solid rgba(240,196,90,.55);border-radius:999px;color:#f4d889;font-size:8px}
     .ged-head{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:14px;align-items:center;padding:16px 0 12px}.ged-head small{color:#8fd9d3;font-size:8px;font-weight:900}.ged-head h2{margin:4px 0 7px;color:#fff;font-size:24px;line-height:1.22;letter-spacing:-.055em}.ged-head p{margin:0;color:#d3e0e5;font-size:10px;line-height:1.6}
     .ged-ring{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;align-content:center;background:radial-gradient(circle at center,#0b2d45 57%,transparent 58%),conic-gradient(#d8a12a var(--gold-understanding),rgba(255,255,255,.13) 0);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}.ged-ring strong{font-size:23px;color:#fff;line-height:1}.ged-ring span{margin-top:5px;color:#e7cf91;font-size:7px;font-weight:900}
@@ -197,7 +189,6 @@
     window.addEventListener("mamo:analysis-rendered",()=>{render();renderGoldDesk()});
     window.addEventListener("pageshow",renderGoldDesk);
     window.addEventListener("storage",e=>{if(e.key===STATE_KEY)renderGoldDesk()});
-    document.addEventListener("click",e=>{if(e.target?.closest?.("[data-pilot-plan],.plan-option"))Promise.resolve().then(()=>{syncGoldDeskPlan();renderGoldDesk()})},false);
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
