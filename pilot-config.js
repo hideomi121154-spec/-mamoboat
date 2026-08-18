@@ -38,6 +38,45 @@ function installMamoPlanTierStyles() {
   const style = document.createElement("style");
   style.id = "mamoPlanTierStyles";
   style.textContent = `
+    /* Keep the pressroom visually ordered by value: FREE → BRONZE → SILVER → GOLD. */
+    #analysis.active {
+      display: flex;
+      flex-direction: column;
+    }
+    #analysis.active > * {
+      order: 45;
+      min-width: 0;
+    }
+    #analysis.active > .analysis-intro { order: 0; }
+    #analysis.active > .section-head:has(+ .newsroom-cast) { order: 10; }
+    #analysis.active > .newsroom-cast { order: 11; }
+
+    /* FREE */
+    #analysis.active > .section-head:has(+ #analysisCards) { order: 20; }
+    #analysis.active > #analysisCards { order: 21; }
+    #analysis.active > .section-head:has(+ #analysisList) { order: 22; }
+    #analysis.active > #analysisList { order: 23; }
+
+    /* BRONZE */
+    #analysis.active > #mamoAiSafeReport { order: 30; }
+
+    /* SILVER */
+    #analysis.active > #mamoDecisionPanel { order: 40; }
+    #analysis.active > #mamoBaselinePanel { order: 41; }
+    #analysis.active > #mamoTriggerPanel { order: 42; }
+    #analysis.active > #mamoPeriodTriggerSummary { order: 43; }
+
+    /* GOLD */
+    #analysis.active > .section-head:has(+ .paper-tabs) { order: 50; }
+    #analysis.active > .paper-tabs { order: 51; }
+    #analysis.active > #pressPaper { order: 52; }
+    #analysis.active > #mamoPressIntel { order: 53; }
+
+    /* Subscription choice always comes last. */
+    #analysis.active > .section-head:has(+ #membershipPanel) { order: 60; }
+    #analysis.active > #membershipPanel { order: 61; }
+    #analysis.active > .analysis-tools { order: 62; }
+
     #mamoAiSafeReport { --mamo-plan-title: "前の自分との比較"; --mamo-tier-frame-height: 176px; }
     #mamoDecisionPanel { --mamo-plan-title: "勝負の選び方"; --mamo-tier-frame-height: 176px; }
     #mamoBaselinePanel { --mamo-plan-title: "個人ベースライン"; --mamo-tier-frame-height: 176px; }
