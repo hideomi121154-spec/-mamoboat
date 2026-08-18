@@ -1,8 +1,19 @@
-/* MAMO BOAT Service Worker refresh v2 — do not compete with startup rendering. */
+/* MAMO BOAT Service Worker refresh v3 — lightweight post-load brand module + SW refresh. */
 (()=>{
   "use strict";
-  if(!("serviceWorker" in navigator)) return;
+
+  const loadMamokamo=()=>{
+    if(document.querySelector('script[data-mamo-mamokamo="1"]')) return;
+    const script=document.createElement("script");
+    script.src="mamokamo.js?v=20260818-1";
+    script.async=true;
+    script.dataset.mamoMamokamo="1";
+    document.head.appendChild(script);
+  };
+
   const register=async()=>{
+    loadMamokamo();
+    if(!("serviceWorker" in navigator)) return;
     try{
       const reg=await navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"});
       const refresh=()=>reg.update().catch(()=>{});
@@ -10,6 +21,7 @@
       else setTimeout(refresh,2500);
     }catch(e){console.warn("MAMO SW refresh failed",e)}
   };
+
   if(document.readyState==="complete") register();
   else window.addEventListener("load",register,{once:true});
 })();
