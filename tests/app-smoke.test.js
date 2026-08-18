@@ -273,9 +273,13 @@ const pilotConfigSource = fs.readFileSync(
 );
 assert.match(pilotConfigSource, /MAMO_PLAN_STATE_KEY/);
 assert.match(pilotConfigSource, /data-mamo-plan|dataset\.mamoPlan/);
-assert.match(pilotConfigSource, /BRONZEで開放 \/ 前の自分との比較/);
-assert.match(pilotConfigSource, /SILVERで開放 \/ 勝負トリガー・個人ベースライン・週間分析/);
-assert.match(pilotConfigSource, /GOLDで開放 \/ MAMO朝刊・週間・月刊・深掘り・長期分析/);
+assert.match(pilotConfigSource, /--mamo-plan-lock: "BRONZEで開放"/);
+assert.match(pilotConfigSource, /--mamo-plan-lock: "SILVERで開放"/);
+assert.match(pilotConfigSource, /--mamo-plan-lock: "GOLDで開放"/);
+assert.match(pilotConfigSource, /--mamo-plan-title: "あなたの勝負トリガー"/);
+assert.match(pilotConfigSource, /--mamo-plan-title: "あなた専用の新聞"/);
+assert.match(pilotConfigSource, /visibility: hidden !important/);
+assert.doesNotMatch(pilotConfigSource, /opacity:\s*0\.24/);
 assert.match(pilotConfigSource, /#mamoAiSafeReport/);
 assert.match(pilotConfigSource, /#mamoBaselinePanel/);
 assert.match(pilotConfigSource, /#mamoTriggerPanel/);
@@ -288,7 +292,7 @@ assert.doesNotMatch(tierUiSource, /scrollTo|scrollBy|visualViewport|MutationObse
 assert.doesNotMatch(tierUiSource, /selectPilotPlan\s*=/);
 assert.doesNotMatch(tierUiSource, /localStorage\.setItem/);
 
-console.log("app smoke, stable plan UI, and plan tier presentation tests OK");
+console.log("app smoke, stable plan UI, and title-only plan lock tests OK");
 
 (async () => {
   await context.sendPilotDataNow();
