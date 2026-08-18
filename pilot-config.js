@@ -52,7 +52,7 @@ const MAMO_SCRIPTS = [
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
   // Stable platform rule: no global scroll/zoom correction helpers in pressroom.
-  ["plan-partial-update.js?v=20260818-1","plan-partial-update"],
+  ["plan-partial-update.js?v=20260818-2","plan-partial-update"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
