@@ -168,6 +168,172 @@
       white-space:pre-line!important;
     }
 
+    /* Make the plan selector sell the value before the price. Card geometry never changes on selection. */
+    #membershipPanel{
+      padding:14px!important;
+      overflow:visible!important;
+    }
+    #membershipPanel .membership-current{
+      margin:0 0 12px!important;
+      padding:13px 14px!important;
+      border:1px solid #e7e1d5!important;
+      border-left:4px solid var(--teal)!important;
+      border-radius:12px!important;
+      background:linear-gradient(120deg,#fff 0%,#f8fbfa 100%)!important;
+    }
+    #membershipPanel .membership-current>span{
+      color:var(--teal-dark)!important;
+      font-size:8px!important;
+      font-weight:1000!important;
+      letter-spacing:.12em!important;
+    }
+    #membershipPanel .membership-current h3{
+      margin:5px 0 1px!important;
+      color:var(--navy)!important;
+      font-size:20px!important;
+      letter-spacing:-.04em!important;
+    }
+    #membershipPanel .membership-current>b{
+      display:block!important;
+      color:var(--navy)!important;
+      font-size:15px!important;
+    }
+    #membershipPanel .membership-current p{
+      margin:7px 0 0!important;
+      color:#61717c!important;
+      font-size:9px!important;
+      line-height:1.55!important;
+    }
+    #membershipPanel .membership-points.membership-selectable{
+      display:grid!important;
+      grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      gap:9px!important;
+      margin:0 0 12px!important;
+    }
+    #membershipPanel [data-pilot-plan]{
+      --tier-accent:#71818b;
+      --tier-soft:#f5f7f8;
+      --tier-price:"¥0";
+      --tier-stage:"START / 記録する";
+      --tier-copy:"AIR BETと基本記録。まず、自分の行動を残す。";
+      position:relative!important;
+      min-height:142px!important;
+      margin:0!important;
+      padding:39px 14px 39px!important;
+      overflow:hidden!important;
+      border:2px solid #e3e6e6!important;
+      border-radius:14px!important;
+      background:#fff!important;
+      color:var(--navy)!important;
+      box-shadow:0 4px 11px rgba(8,35,61,.05)!important;
+      text-align:left!important;
+      transform:none!important;
+      transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease!important;
+    }
+    #membershipPanel [data-pilot-plan="bronze"]{
+      --tier-accent:#a86d32;
+      --tier-soft:#fbf4ea;
+      --tier-price:"¥390 / 月";
+      --tier-stage:"COMPARE / 比べる";
+      --tier-copy:"過去の自分と比較して、増えた・減ったを見つける。";
+    }
+    #membershipPanel [data-pilot-plan="silver"]{
+      --tier-accent:#718796;
+      --tier-soft:#f1f5f7;
+      --tier-price:"¥690 / 月";
+      --tier-stage:"おすすめ / 理由を知る";
+      --tier-copy:"勝負トリガーと普段との差から、なぜ動いたかを読む。";
+    }
+    #membershipPanel [data-pilot-plan="gold"]{
+      --tier-accent:#c8941f;
+      --tier-soft:#fff8e8;
+      --tier-price:"¥1,190 / 月";
+      --tier-stage:"EDITORIAL / 専属編集部";
+      --tier-copy:"朝刊・週間・月刊と深掘りで、自分専用の編集部を持つ。";
+    }
+    #membershipPanel [data-pilot-plan]::before{
+      content:var(--tier-stage)!important;
+      position:absolute!important;
+      left:13px!important;
+      top:11px!important;
+      max-width:calc(100% - 26px)!important;
+      padding:3px 7px!important;
+      border-radius:999px!important;
+      background:var(--tier-soft)!important;
+      color:var(--tier-accent)!important;
+      font-size:7.5px!important;
+      line-height:1.3!important;
+      font-weight:1000!important;
+      letter-spacing:.05em!important;
+      white-space:nowrap!important;
+    }
+    #membershipPanel [data-pilot-plan]::after{
+      content:var(--tier-price)!important;
+      position:absolute!important;
+      left:14px!important;
+      bottom:12px!important;
+      color:var(--navy)!important;
+      font-size:13px!important;
+      line-height:1!important;
+      font-weight:1000!important;
+      letter-spacing:-.02em!important;
+    }
+    #membershipPanel [data-pilot-plan]>b{
+      display:block!important;
+      margin:0 0 7px!important;
+      color:var(--navy)!important;
+      font-size:19px!important;
+      line-height:1!important;
+      letter-spacing:-.04em!important;
+    }
+    #membershipPanel [data-pilot-plan]>span{
+      display:block!important;
+      margin:0!important;
+      color:transparent!important;
+      font-size:0!important;
+      line-height:0!important;
+    }
+    #membershipPanel [data-pilot-plan]>span::after{
+      content:var(--tier-copy)!important;
+      display:block!important;
+      color:#5c6d79!important;
+      font-size:9.5px!important;
+      line-height:1.55!important;
+      font-weight:750!important;
+    }
+    #membershipPanel [data-pilot-plan="silver"]{
+      box-shadow:inset 0 3px 0 #718796,0 6px 16px rgba(8,35,61,.08)!important;
+    }
+    #membershipPanel [data-pilot-plan="gold"]{
+      box-shadow:inset 0 3px 0 #c8941f,0 6px 16px rgba(8,35,61,.08)!important;
+    }
+    #membershipPanel [data-pilot-plan].selected{
+      border-color:var(--tier-accent)!important;
+      background:var(--tier-soft)!important;
+      box-shadow:0 0 0 2px color-mix(in srgb,var(--tier-accent) 22%,transparent),0 7px 17px rgba(8,35,61,.09)!important;
+    }
+    #membershipPanel [data-pilot-plan].selected::before{
+      background:var(--tier-accent)!important;
+      color:#fff!important;
+    }
+    #membershipPanel .membership-deep-action{
+      margin-top:4px!important;
+    }
+    .plan-modal-grid .plan-option{
+      border-width:2px!important;
+      border-radius:12px!important;
+      transform:none!important;
+    }
+    .plan-modal-grid .plan-option:nth-child(3){
+      border-color:#91a2ad!important;
+      box-shadow:inset 0 3px 0 #718796!important;
+    }
+    .plan-modal-grid .plan-option:nth-child(4){
+      border-color:#ddc071!important;
+      background:#fffaf0!important;
+      box-shadow:inset 0 3px 0 #c8941f!important;
+    }
+
     /* Plan choice is above expandable reports, so unlocking grows content below the tap point. */
     #analysis.active > .section-head:has(+ #membershipPanel){order:15!important}
     #analysis.active > #membershipPanel{order:16!important}
@@ -176,6 +342,8 @@
       main{padding:12px!important}.bottom-nav .nav span{font-size:8px!important}.bottom-nav .nav b svg{width:23px;height:23px}.bottom-nav .nav{min-height:56px!important}.venue-name{font-size:20px!important}.home-command{margin:0!important}
       .modal-bg{align-items:stretch!important;padding:8px!important;padding-top:max(8px,env(safe-area-inset-top))!important;padding-bottom:max(8px,env(safe-area-inset-bottom))!important}
       .modal{margin:auto!important;width:100%!important;max-height:calc(100dvh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)))!important;border-radius:14px!important}
+      #membershipPanel .membership-points.membership-selectable{grid-template-columns:1fr!important}
+      #membershipPanel [data-pilot-plan]{min-height:128px!important;padding-top:37px!important;padding-bottom:36px!important}
     }
   `;
   document.head.appendChild(style);
