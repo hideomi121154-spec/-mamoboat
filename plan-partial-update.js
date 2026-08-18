@@ -1,27 +1,39 @@
 (() => {
   "use strict";
 
+  const PLAN_META = {
+    free: { label: "FREE", name: "無料", price: "0円" },
+    bronze: { label: "BRONZE", name: "ブロンズ", price: "390円/月" },
+    silver: { label: "SILVER", name: "シルバー", price: "690円/月" },
+    gold: { label: "GOLD", name: "ゴールド", price: "1,190円/月" },
+  };
+
   function install() {
     const original = window.selectPilotPlan;
     if (typeof original !== "function" || original.__mamoPartialUpdate) return false;
 
     const wrapped = function selectPilotPlanPartial(key) {
-      const paper = document.getElementById("pressPaper");
-      const paperSnapshot = paper ? paper.innerHTML : null;
-      const paperClass = paper ? paper.className : null;
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
+      const meta = PLAN_META[key];
+      if (!meta) return;
 
-      // The legacy handler schedules a scroll correction after rebuilding the
-      // whole pressroom. Suppress only that scheduled correction during this
-      // synchronous plan-selection transaction.
+      const paper = document.getElementById("pressPaper");
+      const membership = document.getElementById("membershipPanel");
+      const paperSnapshot = paper ? paper.innerHTML : null;
+      const membershipSnapshot = membership ? membership.innerHTML : null;
+
+      // iOS Safari can scroll when the focused button is removed by innerHTML.
+      // Remove focus before the legacy renderer runs.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+
       const nativeRaf = window.requestAnimationFrame;
       const nativeScrollTo = window.scrollTo;
-      let suppressedRaf = false;
+      let suppressedLegacyRaf = false;
 
+      // The current core handler schedules one scroll correction after its full
+      // pressroom repaint. Suppress that legacy correction only for this action.
       window.requestAnimationFrame = (callback) => {
-        if (!suppressedRaf) {
-          suppressedRaf = true;
+        if (!suppressedLegacyRaf) {
+          suppressedLegacyRaf = true;
           return 0;
         }
         return nativeRaf.call(window, callback);
@@ -29,30 +41,34 @@
       window.scrollTo = () => {};
 
       try {
+        // Keep the core state/save/event logic authoritative.
         original(key);
       } finally {
         window.requestAnimationFrame = nativeRaf;
         window.scrollTo = nativeScrollTo;
       }
 
-      // Keep the article the user is currently reading untouched. The plan
-      // state and membership panel were already updated by the core handler.
-      if (paper && paperSnapshot !== null) {
-        paper.innerHTML = paperSnapshot;
-        if (paperClass !== null) paper.className = paperClass;
-      }
+      // Restore the reading DOM before the browser paints. This prevents a
+      // layout-height change above/below the reader and preserves the article.
+      if (paper && paperSnapshot !== null) paper.innerHTML = paperSnapshot;
+      if (membership && membershipSnapshot !== null) membership.innerHTML = membershipSnapshot;
 
-      const labels = { free: "FREE", bronze: "BRONZE", silver: "SILVER", gold: "GOLD" };
-      document.querySelectorAll("#membershipPanel .membership-selectable button").forEach((button) => {
-        const selected = button.querySelector("b")?.textContent?.trim() === labels[key];
-        button.classList.toggle("selected", selected);
-        button.setAttribute("aria-pressed", selected ? "true" : "false");
-      });
+      // Update only the nodes that actually represent the selected plan.
+      const badge = document.getElementById("pressPlanBadge");
+      if (badge) badge.textContent = `${meta.label} / ${meta.name}`;
 
-      // Do not scroll. If Safari changed the visual position synchronously,
-      // restore only the exact pre-click position once, without animation.
-      if (window.scrollX !== scrollX || window.scrollY !== scrollY) {
-        nativeScrollTo.call(window, scrollX, scrollY);
+      if (membership) {
+        const current = membership.querySelector(".membership-current");
+        const title = current?.querySelector("h3");
+        const price = current?.querySelector("b");
+        if (title) title.textContent = `${meta.label}・${meta.name}`;
+        if (price) price.textContent = meta.price;
+
+        membership.querySelectorAll(".membership-selectable button").forEach((button) => {
+          const selected = button.querySelector("b")?.textContent?.trim() === meta.label;
+          button.classList.toggle("selected", selected);
+          button.setAttribute("aria-pressed", selected ? "true" : "false");
+        });
       }
     };
 
