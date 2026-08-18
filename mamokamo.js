@@ -4,7 +4,7 @@
   if (window.__MAMO_MAMOKAMO_V1__) return;
   window.__MAMO_MAMOKAMO_V1__ = true;
 
-  const ASSET = "assets/mamokamo.webp?v=20260818-1";
+  const ASSET = "assets/mamokamo-v3.svg?v=20260818-3";
 
   function installStyle() {
     if (document.getElementById("mamokamoStyles")) return;
