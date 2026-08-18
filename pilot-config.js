@@ -38,11 +38,11 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
 
 const MAMO_SCRIPTS = [
   ["ai-safe.js?v=20260817-3","ai-safe"],
-  ["period-trigger-summary.js?v=20260817-1","period-trigger-summary"],
+  ["period-trigger-summary.js?v=20260818-2","period-trigger-summary"],
   ["official-link.js?v=20260816-1","official-link"],
-  ["decision-intelligence.js?v=20260816-1","decision-intel"],
-  ["baseline-intelligence.js?v=20260816-1","baseline-intel"],
-  ["trigger-intelligence.js?v=20260816-1","trigger-intel"],
+  ["decision-intelligence.js?v=20260818-2","decision-intel"],
+  ["baseline-intelligence.js?v=20260818-2","baseline-intel"],
+  ["trigger-intelligence.js?v=20260818-2","trigger-intel"],
   ["press-intelligence.js?v=20260817-3","press-intel"],
   ["morning-insight-bridge.js?v=20260817-1","morning-insight-bridge"],
   // plan-system.js disabled: it freezes iOS navigation and causes partial rendering.

@@ -265,15 +265,7 @@
   function boot() {
     styles();
     render();
-    document.addEventListener("click", () => {
-      if (document.getElementById("analysis")?.classList.contains("active")) setTimeout(render, 80);
-    }, false);
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && document.getElementById("analysis")?.classList.contains("active")) setTimeout(render, 80);
-    });
-    window.setInterval(() => {
-      if (document.getElementById("analysis")?.classList.contains("active")) render();
-    }, 5000);
+    // Reading stability: render once at boot; no background repaint while reading.
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });

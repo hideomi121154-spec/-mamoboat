@@ -239,12 +239,7 @@
   function boot() {
     styles();
     render();
-    document.addEventListener("click", () => setTimeout(() => {
-      if (document.getElementById("analysis")?.classList.contains("active")) render();
-    }, 100), false);
-    window.setInterval(() => {
-      if (document.getElementById("analysis")?.classList.contains("active")) render();
-    }, 8000);
+    // Reading stability: render once at boot; no click/timer repaint.
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });

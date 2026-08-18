@@ -238,10 +238,7 @@
   function boot() {
     styles();
     render();
-    document.addEventListener("click", () => setTimeout(render, 80), false);
-    window.setInterval(() => {
-      if (document.getElementById("analysis")?.classList.contains("active")) render();
-    }, 1400);
+    // Reading stability: do not repaint the pressroom on clicks or timers.
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });

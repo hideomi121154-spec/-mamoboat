@@ -245,7 +245,6 @@
     if (!classified || !raceSession) return;
     if (classified.kind === "real") saveRealSequence();
     else addAction(classified.kind, classified.label);
-    window.setTimeout(renderDecisionPanel, 30);
   }, false);
 
   window.addEventListener("pagehide", () => {
@@ -261,7 +260,6 @@
     window.setInterval(() => {
       syncRaceSession();
       recordNewAirBet();
-      if (document.getElementById("analysis")?.classList.contains("active")) renderDecisionPanel();
     }, 900);
   }
 
