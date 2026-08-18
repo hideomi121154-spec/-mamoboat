@@ -4,7 +4,7 @@
   if (window.__MAMO_MAMOKAMO_V1__) return;
   window.__MAMO_MAMOKAMO_V1__ = true;
 
-  const ASSET = "assets/mamokamo-v3.svg?v=20260818-3";
+  const ASSET = "assets/mamokamo-card-v4.svg?v=20260818-4";
 
   function installStyle() {
     if (document.getElementById("mamokamoStyles")) return;
@@ -12,8 +12,8 @@
     style.id = "mamokamoStyles";
     style.textContent = `
       .mamokamo-profile{display:grid;grid-template-columns:minmax(112px,150px) 1fr;gap:16px;align-items:stretch;margin:12px 0 18px;padding:0;overflow:hidden;border:1px solid #d9d1bd;border-top:4px solid #d8a12a;border-radius:16px;background:linear-gradient(120deg,#fffdf8 0%,#fff 52%,#f3f7f8 100%);box-shadow:0 7px 20px rgba(8,35,61,.08)}
-      .mamokamo-profile__visual{position:relative;min-height:188px;overflow:hidden;background:linear-gradient(160deg,#0a2b47,#08233d)}
-      .mamokamo-profile__visual img{display:block;width:100%;height:100%;min-height:188px;object-fit:cover;object-position:50% 22%}
+      .mamokamo-profile__visual{position:relative;min-height:188px;overflow:hidden;background:#fffdf8}
+      .mamokamo-profile__visual img{display:block;width:100%;height:100%;min-height:188px;object-fit:cover;object-position:50% 50%}
       .mamokamo-profile__visual:after{content:"MAMOKAMO";position:absolute;left:10px;bottom:9px;padding:3px 7px;border-radius:999px;background:rgba(8,35,61,.86);color:#f4c95f;font-size:7px;font-weight:1000;letter-spacing:.13em}
       .mamokamo-profile__body{padding:17px 16px 15px 0;min-width:0}
       .mamokamo-profile__eyebrow{display:block;color:#98701d;font-size:8px;font-weight:1000;letter-spacing:.16em}
@@ -23,10 +23,10 @@
       .mamokamo-role b{padding:4px 8px;border:1px solid #dacb9f;border-radius:999px;background:#fffaf0;color:#765615;font-size:8px;letter-spacing:.05em}
       .mamokamo-profile__quote{display:block;padding-top:8px;border-top:1px solid #ece6d9;color:#087d77;font-size:9px;font-weight:900;line-height:1.55}
       .cast-card.mamokamo{border-top-color:#d8a12a!important;background:linear-gradient(135deg,#fffdf7,#fff)!important}
-      .cast-card.mamokamo .cast-avatar{overflow:hidden;padding:0!important;background:#08233d!important;border-color:#d8a12a!important}
-      .cast-card.mamokamo .cast-avatar img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+      .cast-card.mamokamo .cast-avatar{overflow:hidden;padding:0!important;background:#fffdf8!important;border-color:#d8a12a!important}
+      .cast-card.mamokamo .cast-avatar img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
       .mamokamo-home{display:grid;grid-template-columns:74px 1fr;gap:12px;align-items:center;margin:10px 0;padding:10px 12px;border:1px solid #e0d7c2;border-left:4px solid #d8a12a;border-radius:13px;background:linear-gradient(110deg,#fffdf7,#fff);box-shadow:0 4px 12px rgba(8,35,61,.055)}
-      .mamokamo-home img{width:74px;height:74px;object-fit:cover;object-position:50% 20%;border-radius:12px;background:#08233d}
+      .mamokamo-home img{width:74px;height:74px;object-fit:cover;object-position:50% 50%;border-radius:12px;background:#fffdf8}
       .mamokamo-home small{display:block;color:#98701d;font-size:7px;font-weight:1000;letter-spacing:.13em}
       .mamokamo-home strong{display:block;margin-top:2px;color:#08233d;font-size:14px}
       .mamokamo-home p{margin:4px 0 0;color:#566873;font-size:9px;font-weight:750;line-height:1.55}
