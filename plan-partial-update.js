@@ -8,71 +8,80 @@
     gold: { label: "GOLD", name: "ゴールド", price: "1,190円/月" },
   };
 
+  function lockInnerHTML(element) {
+    if (!element) return () => {};
+    const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+    if (!descriptor?.get || !descriptor?.set) return () => {};
+    Object.defineProperty(element, "innerHTML", {
+      configurable: true,
+      get() { return descriptor.get.call(element); },
+      set() { /* intentionally ignore full-block repaint during plan selection */ },
+    });
+    return () => {
+      try { delete element.innerHTML; } catch (_) {}
+    };
+  }
+
+  function updateVisiblePlan(key) {
+    const meta = PLAN_META[key];
+    if (!meta) return;
+
+    const badge = document.getElementById("pressPlanBadge");
+    if (badge) badge.textContent = `${meta.label} / ${meta.name}`;
+
+    const membership = document.getElementById("membershipPanel");
+    if (!membership) return;
+
+    const leafNodes = Array.from(membership.querySelectorAll("*")).filter((node) => node.children.length === 0);
+    const titleNode = leafNodes.find((node) => /^(FREE|BRONZE|SILVER|GOLD)[\s・]/.test(node.textContent.trim()));
+    const priceNode = leafNodes.find((node) => /^(0円|390円|690円|1,190円)(\/月)?$/.test(node.textContent.trim()));
+    if (titleNode) titleNode.textContent = `${meta.label}・${meta.name}`;
+    if (priceNode) priceNode.textContent = meta.price;
+
+    membership.querySelectorAll(".membership-selectable button").forEach((button) => {
+      const selected = button.querySelector("b")?.textContent?.trim() === meta.label;
+      button.classList.toggle("selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+  }
+
   function install() {
     const original = window.selectPilotPlan;
-    if (typeof original !== "function" || original.__mamoPartialUpdate) return false;
+    if (typeof original !== "function" || original.__mamoPartialUpdateV2) return false;
 
-    const wrapped = function selectPilotPlanPartial(key) {
-      const meta = PLAN_META[key];
-      if (!meta) return;
+    const wrapped = function selectPilotPlanPartialV2(key) {
+      if (!PLAN_META[key]) return;
 
-      const paper = document.getElementById("pressPaper");
-      const membership = document.getElementById("membershipPanel");
-      const paperSnapshot = paper ? paper.innerHTML : null;
-      const membershipSnapshot = membership ? membership.innerHTML : null;
-
-      // iOS Safari can scroll when the focused button is removed by innerHTML.
-      // Remove focus before the legacy renderer runs.
       if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 
-      const nativeRaf = window.requestAnimationFrame;
-      const nativeScrollTo = window.scrollTo;
-      let suppressedLegacyRaf = false;
+      const locked = [
+        document.getElementById("pressPaper"),
+        document.getElementById("analysisCards"),
+        document.getElementById("analysisList"),
+        document.getElementById("membershipPanel"),
+      ].map(lockInnerHTML);
 
-      // The current core handler schedules one scroll correction after its full
-      // pressroom repaint. Suppress that legacy correction only for this action.
-      window.requestAnimationFrame = (callback) => {
-        if (!suppressedLegacyRaf) {
-          suppressedLegacyRaf = true;
-          return 0;
-        }
-        return nativeRaf.call(window, callback);
-      };
+      const nativeScrollTo = window.scrollTo;
       window.scrollTo = () => {};
 
       try {
-        // Keep the core state/save/event logic authoritative.
+        // Let the core remain authoritative for state, persistence and event logs,
+        // but block its full pressroom DOM repaint for this single transaction.
         original(key);
       } finally {
-        window.requestAnimationFrame = nativeRaf;
-        window.scrollTo = nativeScrollTo;
-      }
-
-      // Restore the reading DOM before the browser paints. This prevents a
-      // layout-height change above/below the reader and preserves the article.
-      if (paper && paperSnapshot !== null) paper.innerHTML = paperSnapshot;
-      if (membership && membershipSnapshot !== null) membership.innerHTML = membershipSnapshot;
-
-      // Update only the nodes that actually represent the selected plan.
-      const badge = document.getElementById("pressPlanBadge");
-      if (badge) badge.textContent = `${meta.label} / ${meta.name}`;
-
-      if (membership) {
-        const current = membership.querySelector(".membership-current");
-        const title = current?.querySelector("h3");
-        const price = current?.querySelector("b");
-        if (title) title.textContent = `${meta.label}・${meta.name}`;
-        if (price) price.textContent = meta.price;
-
-        membership.querySelectorAll(".membership-selectable button").forEach((button) => {
-          const selected = button.querySelector("b")?.textContent?.trim() === meta.label;
-          button.classList.toggle("selected", selected);
-          button.setAttribute("aria-pressed", selected ? "true" : "false");
+        locked.reverse().forEach((unlock) => unlock());
+        // Keep scrollTo suppressed through the legacy requestAnimationFrame callback.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo = nativeScrollTo;
+          });
         });
       }
+
+      updateVisiblePlan(key);
     };
 
-    wrapped.__mamoPartialUpdate = true;
+    wrapped.__mamoPartialUpdateV2 = true;
     wrapped.__mamoOriginal = original;
     window.selectPilotPlan = wrapped;
     return true;
