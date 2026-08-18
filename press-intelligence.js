@@ -47,6 +47,69 @@
   }
   function confidence(m,base){const total=m.air+m.starts+base.air+base.starts;if(total>=60)return"傾向";if(total>=25)return"仮説";if(total>=8)return"参考";return"蓄積中"}
 
+  function goldUnderstanding(){
+    const s=state(),records=Array.isArray(s.records)?s.records:[];
+    const reviewed=records.filter(r=>r.behaviorReviewed===true).length;
+    const settled=records.filter(r=>r.settled===true||["hit","miss","refunded"].includes(String(r.status||""))).length;
+    const reasons=new Set(records.map(r=>String(r.reason||"").trim()).filter(Boolean));
+    const decisionCount=events().length;
+    const score=Math.min(100,Math.round(
+      Math.min(50,records.length*2.2)+
+      Math.min(20,reviewed*4)+
+      Math.min(15,settled*1.2)+
+      Math.min(15,reasons.size*3)
+    ));
+    let label="取材開始",next="まず5件のAIR BET記録を集めると、比較の輪郭が見え始めます。";
+    if(score>=80){label="長期傾向を読める段階";next="十分な記録があります。月ごとの変化と長期トリガーを追います。"}
+    else if(score>=60){label="個人パターンを比較中";next="事後レビューを増やすと、勝負前後の変化をさらに深く読めます。"}
+    else if(score>=40){label="行動の輪郭を確認中";next="参加理由と事後レビューが増えるほど、トリガーの精度が上がります。"}
+    else if(score>=20){label="傾向を集めています";next="10件以上の記録を目安に、時間帯や参加理由の偏りを比較します。"}
+    const themes=[records.length>0,reasons.size>0,reviewed>0,decisionCount>0].filter(Boolean).length;
+    return {score,label,next,total:records.length,reviewed,settled,themes};
+  }
+
+  function ensureGoldDesk(){
+    const analysis=document.getElementById("analysis");if(!analysis)return null;
+    let desk=document.getElementById("goldEditorialDesk");
+    if(desk)return desk;
+    desk=document.createElement("section");
+    desk.id="goldEditorialDesk";
+    desk.className="gold-editorial-desk";
+    desk.innerHTML=`<div class="ged-live">
+      <div class="ged-mast"><span>GOLD / PRIVATE EDITORIAL</span><b>専属編集部</b></div>
+      <div class="ged-head"><div><small>MAMO BOAT編集部</small><h2>あなたを知るほど、記事は深くなる。</h2><p>勝敗ではなく、あなた自身の勝負の選び方を継続取材します。</p></div><div class="ged-ring"><strong id="goldUnderstandingScore">0%</strong><span>編集部の理解度</span></div></div>
+      <div class="ged-status"><span>現在</span><b id="goldUnderstandingLabel">取材開始</b></div>
+      <div class="ged-kpis"><div><span>取材記録</span><b id="goldRecordCount">0件</b></div><div><span>事後レビュー</span><b id="goldReviewCount">0件</b></div><div><span>分析テーマ</span><b id="goldThemeCount">0項目</b></div></div>
+      <div class="ged-next"><span>NEXT INTERVIEW</span><b id="goldNextTarget">記録を集めています。</b></div>
+      <div class="ged-actions"><button type="button" onclick="setReportType('morning')">今朝の朝刊を読む →</button><button type="button" onclick="openDeepInterview()">編集部に深掘りを依頼 →</button></div>
+      <small class="ged-note">理解度は記録量・事後レビュー・参加理由・結果反映の揃い方から算出する「分析準備度」です。勝率や的中可能性ではありません。</small>
+    </div><div class="ged-lock"><span>GOLD / PRIVATE EDITORIAL</span><h3>🔒 あなた専属のMAMO BOAT編集部</h3><p>朝刊・週間・月刊に加え、使うほど蓄積する「編集部の理解度」で長期変化まで追います。</p><b>→ GOLDで開放</b></div>`;
+    const paper=document.getElementById("pressPaper");
+    if(paper?.parentElement===analysis)analysis.insertBefore(desk,paper);else analysis.appendChild(desk);
+    return desk;
+  }
+
+  function syncGoldDeskPlan(){
+    const desk=ensureGoldDesk();if(!desk)return;
+    const plan=String(state()?.pressroom?.plan||"free");
+    desk.classList.toggle("is-gold",plan==="gold");
+    desk.setAttribute("data-gold-active",plan==="gold"?"true":"false");
+  }
+
+  function renderGoldDesk(){
+    const desk=ensureGoldDesk();if(!desk)return;
+    const info=goldUnderstanding();
+    desk.style.setProperty("--gold-understanding",`${info.score}%`);
+    const setText=(id,value)=>{const node=document.getElementById(id);if(node)node.textContent=value};
+    setText("goldUnderstandingScore",`${info.score}%`);
+    setText("goldUnderstandingLabel",info.label);
+    setText("goldRecordCount",`${info.total}件`);
+    setText("goldReviewCount",`${info.reviewed}件`);
+    setText("goldThemeCount",`${info.themes}項目`);
+    setText("goldNextTarget",info.next);
+    syncGoldDeskPlan();
+  }
+
   function winningOrder(record){
     const direct=record.finishOrder||record.resultOrder||record.result?.finishOrder||record.result?.order||record.result?.top3;
     if(Array.isArray(direct)&&direct.length>=3)return direct.slice(0,3).join("-");
@@ -102,19 +165,39 @@
     const type=panel.dataset.type||"morning",a=buildArticle(type),c=a.cur,reasonChip=c.topReason?`<span>主な理由<b>${esc(c.topReason)}</b></span>`:"",timeChip=c.topBand?`<span>集中時間<b>${esc(c.topBand)}</b></span>`:"";
     panel.innerHTML=`<div class="mpi-mast"><div><span>MAMO BOAT PRESS / ${esc(a.label)}</span><h3>加音 守の行動記事</h3></div><b>${esc(a.level)}</b></div><div class="mpi-tabs"><button data-p="morning" class="${type==="morning"?"active":""}">朝刊</button><button data-p="weekly" class="${type==="weekly"?"active":""}">週間</button><button data-p="monthly" class="${type==="monthly"?"active":""}">月刊</button></div><article><small>${esc(a.periodLabel)} / HEADLINE</small><h2>${esc(a.headline)}</h2>${a.paragraphs.map(p=>`<p>${esc(p)}</p>`).join("")}<footer>― 加音 守 / MAMO BOAT PRESS</footer></article>${type==="morning"?resultCards(c.records):""}<div class="mpi-kpis"><span>AIR<b>${c.air}</b></span><span>置換予定額<b>${esc(yen(c.totalStake))}</b></span><span>衝動平均<b>${c.avgUrge?c.avgUrge.toFixed(1):"—"}</b></span><span>見送り<b>${c.skips}</b></span>${reasonChip}${timeChip}</div><small class="mpi-note">勝敗・艇・買い目・賭け金の良し悪しは評価しません。結果欄は公式結果と仮想投票結果の事実表示です。この記事は端末内の行動記録から「自分の普段との差」を観察するためのものです。</small>`;
     panel.querySelectorAll("[data-p]").forEach(btn=>btn.onclick=()=>{panel.dataset.type=btn.dataset.p;render()});
+    renderGoldDesk();
     window.dispatchEvent(new CustomEvent("mamo:press-intelligence-rendered",{detail:{type}}));
   }
 
   function style(){
     if(document.getElementById("mamoPressIntelStyle"))return;
     const s=document.createElement("style");s.id="mamoPressIntelStyle";
-    s.textContent=`.mamo-press-intel{margin:14px 0 22px;background:#f7f3e8;border:1px solid #d8cfba;box-shadow:3px 4px 0 rgba(7,27,43,.08);padding:14px}.mpi-mast{display:flex;justify-content:space-between;border-bottom:4px double #071b2b;padding-bottom:8px}.mpi-mast span{font-size:9px;font-weight:1000;letter-spacing:.12em}.mpi-mast h3{margin:2px 0;font-size:20px}.mpi-mast>b{align-self:center;background:#071b2b;color:#fff;padding:5px 8px;font-size:10px}.mpi-tabs{display:flex;gap:5px;margin:10px 0}.mpi-tabs button{flex:1;border:1px solid #b9b09d;background:#fff;padding:8px;font-weight:900}.mpi-tabs button.active{background:#071b2b;color:#fff}.mamo-press-intel article{background:#fffdf6;padding:13px;border-top:5px solid #00a8a0}.mamo-press-intel article>small{font-size:8px;font-weight:1000;color:#007c78}.mamo-press-intel article h2{font-size:20px;line-height:1.35;margin:4px 0 10px}.mamo-press-intel article p{font-size:11px;line-height:1.75;margin:7px 0}.mamo-press-intel article footer{text-align:right;font-size:9px;font-weight:900;margin-top:12px}.mpi-results{margin-top:10px;background:#fff;border:1px solid #d5ccb8}.mpi-results-head{padding:11px 12px;border-bottom:3px double #071b2b}.mpi-results-head>span{font-size:8px;font-weight:1000;letter-spacing:.12em;color:#007c78}.mpi-results-head h4{font-size:17px;margin:2px 0}.mpi-results-head small{font-size:8px;color:#68767e}.mpi-result-card{padding:11px 12px;border-bottom:1px solid #ded7c8}.mpi-result-card:last-child{border-bottom:0}.mpi-result-title{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px}.mpi-result-title b{font-size:13px}.mpi-result-title span{font-size:8px;color:#6c7a80}.mpi-result-card dl{margin:0}.mpi-result-card dl>div{display:grid;grid-template-columns:70px 1fr;gap:7px;padding:5px 0;border-top:1px dotted #d8d1c4}.mpi-result-card dt{font-size:8px;font-weight:1000;color:#6a777d}.mpi-result-card dd{margin:0;font-size:10px;font-weight:800}.mpi-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px}.mpi-kpis span{background:#fff;padding:7px;font-size:8px;font-weight:900;min-width:0}.mpi-kpis b{display:block;font-size:14px;margin-top:2px;overflow-wrap:anywhere}.mpi-note{display:block;margin-top:9px;font-size:8px;line-height:1.6;color:#697a80}@media(min-width:640px){.mpi-kpis{grid-template-columns:repeat(4,1fr)}}`;
+    s.textContent=`.mamo-press-intel{margin:14px 0 22px;background:#f7f3e8;border:1px solid #d8cfba;box-shadow:3px 4px 0 rgba(7,27,43,.08);padding:14px}.mpi-mast{display:flex;justify-content:space-between;border-bottom:4px double #071b2b;padding-bottom:8px}.mpi-mast span{font-size:9px;font-weight:1000;letter-spacing:.12em}.mpi-mast h3{margin:2px 0;font-size:20px}.mpi-mast>b{align-self:center;background:#071b2b;color:#fff;padding:5px 8px;font-size:10px}.mpi-tabs{display:flex;gap:5px;margin:10px 0}.mpi-tabs button{flex:1;border:1px solid #b9b09d;background:#fff;padding:8px;font-weight:900}.mpi-tabs button.active{background:#071b2b;color:#fff}.mamo-press-intel article{background:#fffdf6;padding:13px;border-top:5px solid #00a8a0}.mamo-press-intel article>small{font-size:8px;font-weight:1000;color:#007c78}.mamo-press-intel article h2{font-size:20px;line-height:1.35;margin:4px 0 10px}.mamo-press-intel article p{font-size:11px;line-height:1.75;margin:7px 0}.mamo-press-intel article footer{text-align:right;font-size:9px;font-weight:900;margin-top:12px}.mpi-results{margin-top:10px;background:#fff;border:1px solid #d5ccb8}.mpi-results-head{padding:11px 12px;border-bottom:3px double #071b2b}.mpi-results-head>span{font-size:8px;font-weight:1000;letter-spacing:.12em;color:#007c78}.mpi-results-head h4{font-size:17px;margin:2px 0}.mpi-results-head small{font-size:8px;color:#68767e}.mpi-result-card{padding:11px 12px;border-bottom:1px solid #ded7c8}.mpi-result-card:last-child{border-bottom:0}.mpi-result-title{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px}.mpi-result-title b{font-size:13px}.mpi-result-title span{font-size:8px;color:#6c7a80}.mpi-result-card dl{margin:0}.mpi-result-card dl>div{display:grid;grid-template-columns:70px 1fr;gap:7px;padding:5px 0;border-top:1px dotted #d8d1c4}.mpi-result-card dt{font-size:8px;font-weight:1000;color:#6a777d}.mpi-result-card dd{margin:0;font-size:10px;font-weight:800}.mpi-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:8px}.mpi-kpis span{background:#fff;padding:7px;font-size:8px;font-weight:900;min-width:0}.mpi-kpis b{display:block;font-size:14px;margin-top:2px;overflow-wrap:anywhere}.mpi-note{display:block;margin-top:9px;font-size:8px;line-height:1.6;color:#697a80}
+    #analysis.active>#goldEditorialDesk{order:49!important}
+    .gold-editorial-desk{--gold-understanding:0%;position:relative;margin:14px 0 18px;border-radius:16px;overflow:hidden;box-shadow:0 10px 26px rgba(7,27,43,.13)}
+    .ged-live{display:none;padding:17px;background:linear-gradient(145deg,#071b2b 0%,#0d3047 68%,#103f51 100%);color:#fff;border-top:4px solid #d8a12a}
+    .gold-editorial-desk.is-gold .ged-live{display:block}.gold-editorial-desk.is-gold .ged-lock{display:none}
+    .ged-mast{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.18)}.ged-mast span{color:#f0c45a;font-size:8px;font-weight:1000;letter-spacing:.15em}.ged-mast b{padding:4px 8px;border:1px solid rgba(240,196,90,.55);border-radius:999px;color:#f4d889;font-size:8px}
+    .ged-head{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:14px;align-items:center;padding:16px 0 12px}.ged-head small{color:#8fd9d3;font-size:8px;font-weight:900}.ged-head h2{margin:4px 0 7px;color:#fff;font-size:24px;line-height:1.22;letter-spacing:-.055em}.ged-head p{margin:0;color:#d3e0e5;font-size:10px;line-height:1.6}
+    .ged-ring{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;align-content:center;background:radial-gradient(circle at center,#0b2d45 57%,transparent 58%),conic-gradient(#d8a12a var(--gold-understanding),rgba(255,255,255,.13) 0);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}.ged-ring strong{font-size:23px;color:#fff;line-height:1}.ged-ring span{margin-top:5px;color:#e7cf91;font-size:7px;font-weight:900}
+    .ged-status{display:flex;align-items:center;gap:8px;margin:2px 0 10px;padding:9px 10px;background:rgba(255,255,255,.07);border-left:3px solid #d8a12a}.ged-status span{color:#9db1bd;font-size:8px;font-weight:900}.ged-status b{font-size:11px}
+    .ged-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.ged-kpis div{padding:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:9px}.ged-kpis span{display:block;color:#9fb4bf;font-size:7px;font-weight:900}.ged-kpis b{display:block;margin-top:3px;color:#fff;font-size:15px}
+    .ged-next{margin:9px 0 10px;padding:11px 12px;background:#fffaf0;color:#071b2b;border-radius:10px}.ged-next span{display:block;color:#a87719;font-size:7px;font-weight:1000;letter-spacing:.12em}.ged-next b{display:block;margin-top:4px;font-size:10px;line-height:1.55}
+    .ged-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.ged-actions button{min-height:42px;border:1px solid rgba(255,255,255,.25);border-radius:9px;background:#fff;color:#071b2b;font-size:9px;font-weight:1000}.ged-actions button:last-child{background:transparent;color:#fff}
+    .ged-note{display:block;margin-top:10px;color:#9eb1bb;font-size:7px;line-height:1.55}
+    .ged-lock{padding:18px 17px;background:linear-gradient(135deg,#fffdf8,#f8f3e6);border:1px solid #e4d7b7;border-left:5px solid #c8941f;color:#071b2b}.ged-lock>span{color:#a87719;font-size:7px;font-weight:1000;letter-spacing:.14em}.ged-lock h3{margin:5px 0 7px;font-size:19px;letter-spacing:-.035em}.ged-lock p{margin:0;color:#61717c;font-size:10px;line-height:1.6}.ged-lock b{display:block;margin-top:9px;color:#8c6513;font-size:10px}
+    @media(max-width:520px){.ged-head{grid-template-columns:minmax(0,1fr) 92px;gap:9px}.ged-ring{width:90px;height:90px}.ged-ring strong{font-size:20px}.ged-head h2{font-size:21px}.ged-kpis{gap:5px}.ged-kpis div{padding:8px 6px}.ged-kpis b{font-size:13px}.ged-actions{grid-template-columns:1fr}.ged-actions button{min-height:40px}}
+    @media(min-width:640px){.mpi-kpis{grid-template-columns:repeat(4,1fr)}}`;
     document.head.appendChild(s);
   }
   function boot(){
     style();
     render();
-    window.addEventListener("mamo:analysis-rendered",render);
+    renderGoldDesk();
+    window.addEventListener("mamo:analysis-rendered",()=>{render();renderGoldDesk()});
+    window.addEventListener("pageshow",renderGoldDesk);
+    window.addEventListener("storage",e=>{if(e.key===STATE_KEY)renderGoldDesk()});
+    document.addEventListener("click",e=>{if(e.target?.closest?.("[data-pilot-plan],.plan-option"))Promise.resolve().then(()=>{syncGoldDeskPlan();renderGoldDesk()})},false);
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
