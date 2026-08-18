@@ -238,7 +238,7 @@
   function boot() {
     styles();
     render();
-    // Reading stability: do not repaint the pressroom on clicks or timers.
+    window.addEventListener("mamo:analysis-rendered", render);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });

@@ -257,6 +257,7 @@
     lastRecordId = records[records.length - 1]?.id || null;
     syncRaceSession();
     renderDecisionPanel();
+    window.addEventListener("mamo:analysis-rendered", renderDecisionPanel);
     window.setInterval(() => {
       syncRaceSession();
       recordNewAirBet();

@@ -89,6 +89,10 @@
     document.head.appendChild(s);
   }
 
-  function boot(){style();render();document.addEventListener("click",()=>setTimeout(render,100),false);setInterval(render,5000)}
+  function boot(){
+    style();
+    render();
+    window.addEventListener("mamo:press-intelligence-rendered",render);
+  }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();

@@ -271,13 +271,12 @@
     setTimeout(() => {
       detectLatestAir();
       ensureDecisionButtons();
-      if (document.getElementById("analysis")?.classList.contains("active")) renderReport();
     }, 60);
   }, false);
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) recordVisible("hidden");
-    else { visibleFrom=Date.now(); log("return",{}); setTimeout(()=>{ensureDecisionButtons();renderReport();},60); }
+    else { visibleFrom=Date.now(); log("return",{}); setTimeout(ensureDecisionButtons,60); }
   });
   window.addEventListener("pagehide", ()=>recordVisible("pagehide"));
 
@@ -287,6 +286,7 @@
     detectLatestAir();
     ensureDecisionButtons();
     renderReport();
+    window.addEventListener("mamo:analysis-rendered", renderReport);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true }); else boot();
 })();

@@ -772,7 +772,7 @@
       }
       lastLoadAt = Date.now();
       await settleAllPending();
-      renderAll();
+      renderAfterBackgroundUpdate();
       return { ok: !dataError, error: dataError };
     })();
     try {
@@ -965,6 +965,15 @@
     if (id === "records") renderRecords();
     if (id === "analysis") renderAnalysis();
     if (id === "settings") renderSettings();
+  }
+
+  function renderAfterBackgroundUpdate() {
+    $("topCoins").textContent = `${fmt(S.coins)} B`;
+    const id = document.body.dataset.screen || "home";
+    // Preserve the article currently being read. Updated records are rendered
+    // the next time the user explicitly opens the pressroom.
+    if (id === "analysis") return;
+    renderCurrent(id);
   }
 
   function isFresh() {
@@ -2147,7 +2156,7 @@ const reference = liveValue != null
 
     // 実際に精算が起きた時だけ画面を更新
     if (settlementChanged) {
-      renderAll();
+      renderAfterBackgroundUpdate();
     }
   }
 
@@ -2221,7 +2230,7 @@ const reference = liveValue != null
       if (result.changed) {
         recordSettlement(record, "manual-refresh");
         save();
-        renderAll();
+        renderAfterBackgroundUpdate();
         openModal(`<div class="instant-result success"><span class="kicker">RESULT UPDATED</span><h2>結果を反映しました</h2>
           <div class="notice good"><b>${esc(record.venue)} ${record.raceNo}R　${record.status === "hit" ? "B的中" : record.status === "refunded" ? "不成立・返還" : "不的中"}</b><br>実着順 ${esc(record.resultCombo || "確定")} / ${record.status === "hit" ? `払戻 ＋${fmt(record.payoutC)}B` : record.status === "refunded" ? `返還 ＋${fmt(record.payoutC)}B` : `投票 −${fmt(record.stake)}B`}</div>
           <button class="btn primary full" type="button" onclick="closeModal()">記録へ戻る</button></div>`);
@@ -2538,36 +2547,89 @@ const reference = liveValue != null
     </article>`;
   }
 
-  function renderPressroom() {
+  function updateReportTabsUI() {
     const type = S.pressroom.reportType;
-    const plan = pressPlan();
-    $("pressPlanBadge").textContent = `${plan.label} / ${plan.name}`;
     document.querySelectorAll("[data-report-type]").forEach((button) => {
       button.classList.toggle("active", button.dataset.reportType === type);
       button.classList.toggle("locked", !reportUnlocked(button.dataset.reportType));
     });
+  }
+
+  function renderPressPaper() {
+    const target = $("pressPaper");
+    if (!target) return;
+    const type = S.pressroom.reportType;
     if (!reportUnlocked(type)) {
       const required = type === "morning" ? PRESS_PLANS.bronze : PRESS_PLANS.silver;
-      $("pressPaper").innerHTML = `<div class="paper-locked">
+      target.innerHTML = `<div class="paper-locked">
         <span>PREMIUM EDITION</span><h3>${type === "morning" ? "MAMO朝刊" : type === "weekly" ? "MAMO週間" : "MAMO月刊"}</h3>
         <p>勝敗予想ではなく、本人の記録を「事実→傾向→問い」の順で記事にします。</p>
         <small>${required.label}・${required.name}以上の発行内容です。</small>
         <button class="btn primary full" type="button" onclick="openMembershipPlans()">PILOTで紙面を試す</button>
       </div>`;
     } else {
-      $("pressPaper").innerHTML = reportPaperHtml(C.editorialReport(S.records, type));
+      target.innerHTML = reportPaperHtml(C.editorialReport(S.records, type));
     }
-    renderMembershipPanel();
   }
 
   function renderMembershipPanel() {
     const target = $("membershipPanel");
     if (!target) return;
-    const plan = pressPlan();
-    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3>${esc(plan.label)}・${esc(plan.name)}</h3><b>${esc(plan.price)}</b><p>PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。</p></div>
-      <div class="membership-points membership-selectable"><button type="button" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button><button type="button" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button><button type="button" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button><button type="button" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button></div>
-      ${S.pressroom.plan === "gold" ? `<button class="btn secondary full" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ</button>` : ""}
+    if (target.dataset.planUiReady === "true") return;
+    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3 id="membershipCurrentTitle"></h3><b id="membershipCurrentPrice"></b><p>PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。</p></div>
+      <div class="membership-points membership-selectable" role="group" aria-label="PILOTプラン">
+        <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button>
+        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button>
+        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button>
+        <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button>
+      </div>
+      <button id="membershipDeepInterview" class="btn secondary full membership-deep-action" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ（GOLD）</button>
       <button class="btn primary full" type="button" onclick="openMembershipPlans()">プラン設計を確認する</button>`;
+    target.dataset.planUiReady = "true";
+  }
+
+  function updatePlanUI() {
+    const planKey = PRESS_PLANS[S.pressroom.plan] ? S.pressroom.plan : "free";
+    const plan = PRESS_PLANS[planKey];
+    const badge = $("pressPlanBadge");
+    const currentTitle = $("membershipCurrentTitle");
+    const currentPrice = $("membershipCurrentPrice");
+    const deepInterview = $("membershipDeepInterview");
+
+    if (badge) badge.textContent = `${plan.label} / ${plan.name}`;
+    if (currentTitle) currentTitle.textContent = `${plan.label}・${plan.name}`;
+    if (currentPrice) currentPrice.textContent = plan.price;
+
+    document.querySelectorAll("[data-pilot-plan]").forEach((button) => {
+      const selected = button.dataset.pilotPlan === planKey;
+      button.classList.toggle("selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+
+    if (deepInterview) {
+      const enabled = planKey === "gold";
+      deepInterview.disabled = !enabled;
+      deepInterview.setAttribute("aria-disabled", enabled ? "false" : "true");
+      deepInterview.classList.toggle("is-disabled", !enabled);
+    }
+
+    const settingControls = {
+      morningToggle: S.pressroom.morningEnabled,
+      weeklyToggle: S.pressroom.weeklyEnabled,
+      monthlyToggle: S.pressroom.monthlyEnabled,
+    };
+    Object.entries(settingControls).forEach(([id, checked]) => {
+      const control = $(id);
+      if (control) control.checked = checked;
+    });
+
+    updateReportTabsUI();
+  }
+
+  function renderPressroom() {
+    renderPressPaper();
+    renderMembershipPanel();
+    updatePlanUI();
   }
 
   window.setReportType = (type) => {
@@ -2590,7 +2652,7 @@ const reference = liveValue != null
   window.openMembershipPlans = () => {
     openModal(`<div class="plan-modal"><span class="kicker">MAMO BOAT PRESS</span><h2>FREE / BRONZE / SILVER / GOLD</h2><p>価格は検証中です。PILOT版では料金は発生せず、分析の深さだけを4段階で確認します。</p>
       <div class="plan-modal-grid">
-        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}')"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本機能と安全介入" : key === "bronze" ? "比較・時間帯・基本グラフ" : key === "silver" ? "行動指数・トリガー・週間分析" : "朝刊・週間・月刊・長期分析"}</small></button>`).join("")}
+        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}');closeModal()"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本機能と安全介入" : key === "bronze" ? "比較・時間帯・基本グラフ" : key === "silver" ? "行動指数・トリガー・週間分析" : "朝刊・週間・月刊・長期分析"}</small></button>`).join("")}
       </div>
       <div class="notice editorial-safety"><b>課金で変わるのは分析の深さです。</b><br>安全介入、データ削除、基本記録は無料のままです。</div>
       <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button>
@@ -2614,11 +2676,8 @@ const reference = liveValue != null
       S.pressroom.monthlyEnabled = true;
     }
     trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
-    const scrollTop = window.scrollY;
     save();
-    window.closeModal();
-    renderPressroom();
-    requestAnimationFrame(() => window.scrollTo(0, scrollTop));
+    updatePlanUI();
   };
 
   window.openDeepInterview = () => {
@@ -2673,6 +2732,13 @@ const reference = liveValue != null
       `<div class="card"><b>${esc(label)}</b><p class="muted">${esc(value)}</p></div>`
     ).join("");
     renderPressroom();
+    if (
+      document.body.dataset.screen === "analysis"
+      && typeof window.dispatchEvent === "function"
+      && typeof window.CustomEvent === "function"
+    ) {
+      window.dispatchEvent(new CustomEvent("mamo:analysis-rendered"));
+    }
   }
 
   function analysisSummary() {
@@ -2941,7 +3007,4 @@ B的中後の「現金なら」強度7以上: ${fomo}件
   }
 });
 
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=401").catch(() => {}));
-  }
 })();

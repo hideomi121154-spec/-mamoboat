@@ -37,22 +37,20 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
   .catch(()=>false);
 
 const MAMO_SCRIPTS = [
-  ["ai-safe.js?v=20260817-3","ai-safe"],
-  ["period-trigger-summary.js?v=20260818-2","period-trigger-summary"],
+  ["ai-safe.js?v=20260818-3","ai-safe"],
+  ["period-trigger-summary.js?v=20260818-3","period-trigger-summary"],
   ["official-link.js?v=20260816-1","official-link"],
-  ["decision-intelligence.js?v=20260818-2","decision-intel"],
-  ["baseline-intelligence.js?v=20260818-2","baseline-intel"],
-  ["trigger-intelligence.js?v=20260818-2","trigger-intel"],
-  ["press-intelligence.js?v=20260817-3","press-intel"],
-  ["morning-insight-bridge.js?v=20260817-1","morning-insight-bridge"],
-  // plan-system.js disabled: it freezes iOS navigation and causes partial rendering.
+  ["decision-intelligence.js?v=20260818-3","decision-intel"],
+  ["baseline-intelligence.js?v=20260818-3","baseline-intel"],
+  ["trigger-intelligence.js?v=20260818-3","trigger-intel"],
+  ["press-intelligence.js?v=20260818-3","press-intel"],
+  ["morning-insight-bridge.js?v=20260818-3","morning-insight-bridge"],
+  // Plan selection is owned by app.js. Do not load plan wrappers or scroll fixes.
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
-  // Single authoritative plan controller: no legacy rerender/scroll wrapper.
-  ["plan-stable-controller.js?v=20260818-1","plan-stable-controller"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
