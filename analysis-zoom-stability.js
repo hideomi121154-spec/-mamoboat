@@ -10,7 +10,12 @@
   function updateZoomState() {
     const analysisActive = document.body.dataset.screen === "analysis" || document.getElementById("analysis")?.classList.contains("active");
     const zoomed = viewport.scale > 1.02;
-    document.documentElement.classList.toggle("mamo-analysis-zoomed", !!(analysisActive && zoomed));
+    const nav = document.querySelector(".bottom-nav");
+    const shouldHide = !!(analysisActive && zoomed);
+    if (nav) {
+      nav.style.visibility = shouldHide ? "hidden" : "";
+      nav.style.pointerEvents = shouldHide ? "none" : "";
+    }
   }
 
   viewport.addEventListener("resize", updateZoomState, { passive: true });
