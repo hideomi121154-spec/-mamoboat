@@ -80,6 +80,98 @@
     .paper-tabs button{border-radius:9px!important}.paper-tabs button.active{background:var(--navy)!important;color:#fff!important;box-shadow:0 3px 0 var(--gold)!important}
     .mamo-press-intel{background:#f7f1e3!important;border:1px solid #dfd2b7!important;border-radius:13px!important}.mamo-press-intel article{background:#fff!important;border-top:4px solid var(--gold)!important;border-radius:8px!important}
 
+    /* Plan merchandising: unlocked value is fully readable; locked value is a compact teaser. */
+    #mamoAiSafeReport{--mamo-plan-pitch:"過去の自分と比べて、金額・回数・時間帯の変化を見つける";--mamo-plan-accent:#a86d32}
+    #mamoDecisionPanel{--mamo-plan-pitch:"見送りやREAL移行までの動きから、勝負の入り方を読む";--mamo-plan-accent:#8c9aa6}
+    #mamoBaselinePanel{--mamo-plan-pitch:"今日と普段の自分を比べて、いつもとのズレを発見する";--mamo-plan-accent:#8c9aa6}
+    #mamoTriggerPanel{--mamo-plan-pitch:"熱くなる条件や連続参加のきっかけを、本人データから整理する";--mamo-plan-accent:#8c9aa6}
+    #mamoPeriodTriggerSummary{--mamo-plan-pitch:"7日間の変化をまとめて、今週の行動のクセを確認する";--mamo-plan-accent:#8c9aa6}
+    #pressPaper{--mamo-plan-pitch:"朝刊・週間・月刊で、自分専用の記事として振り返る";--mamo-plan-accent:#d8a12a}
+    #mamoPressIntel{--mamo-plan-pitch:"長期データをつないで、変化の背景まで編集部が深掘りする";--mamo-plan-accent:#d8a12a}
+    #homePressTeaser{--mamo-plan-pitch:"次のレース予想ではなく、あなた自身の勝負の選び方を読む";--mamo-plan-accent:#d8a12a}
+
+    #mamoAiSafeReport,#mamoDecisionPanel,#mamoBaselinePanel,#mamoTriggerPanel,
+    #mamoPeriodTriggerSummary,#pressPaper,#mamoPressIntel,#homePressTeaser{
+      height:auto!important;
+      max-height:none!important;
+      overflow:visible!important;
+      overscroll-behavior:auto!important;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport,
+    body[data-mamo-plan="free"] #mamoDecisionPanel,
+    body[data-mamo-plan="free"] #mamoBaselinePanel,
+    body[data-mamo-plan="free"] #mamoTriggerPanel,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary,
+    body:not([data-mamo-plan="gold"]) #pressPaper,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser{
+      height:142px!important;
+      max-height:142px!important;
+      min-height:142px!important;
+      overflow:hidden!important;
+      background:linear-gradient(135deg,#fff 0%,#fbfaf6 100%)!important;
+      border:1px solid #e6e1d7!important;
+      border-left:5px solid var(--mamo-plan-accent)!important;
+      box-shadow:0 5px 16px rgba(8,35,61,.06)!important;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::before,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::before,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::before,
+    body:not([data-mamo-plan="gold"]) #pressPaper::before,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::before{
+      top:17px!important;
+      left:16px!important;
+      right:16px!important;
+      font-size:19px!important;
+      line-height:1.3!important;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::after,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::after,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::after,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::after,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::after,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::after,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::after,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::after,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::after,
+    body:not([data-mamo-plan="gold"]) #pressPaper::after,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::after,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::after{
+      content:var(--mamo-plan-pitch) "\A→ " var(--mamo-plan-lock)!important;
+      top:53px!important;
+      left:16px!important;
+      right:16px!important;
+      padding:0!important;
+      border:0!important;
+      border-radius:0!important;
+      background:transparent!important;
+      box-shadow:none!important;
+      color:#5c6d79!important;
+      font-size:10.5px!important;
+      line-height:1.55!important;
+      font-weight:750!important;
+      letter-spacing:0!important;
+      white-space:pre-line!important;
+    }
+
+    /* Plan choice is above expandable reports, so unlocking grows content below the tap point. */
+    #analysis.active > .section-head:has(+ #membershipPanel){order:15!important}
+    #analysis.active > #membershipPanel{order:16!important}
+
     @media(max-width:620px){
       main{padding:12px!important}.bottom-nav .nav span{font-size:8px!important}.bottom-nav .nav b svg{width:23px;height:23px}.bottom-nav .nav{min-height:56px!important}.venue-name{font-size:20px!important}.home-command{margin:0!important}
       .modal-bg{align-items:stretch!important;padding:8px!important;padding-top:max(8px,env(safe-area-inset-top))!important;padding-bottom:max(8px,env(safe-area-inset-bottom))!important}
