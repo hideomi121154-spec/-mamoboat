@@ -38,14 +38,31 @@ function installMamoPlanTierStyles() {
   const style = document.createElement("style");
   style.id = "mamoPlanTierStyles";
   style.textContent = `
-    #mamoAiSafeReport { --mamo-plan-title: "前の自分との比較"; }
-    #mamoDecisionPanel { --mamo-plan-title: "勝負の選び方"; }
-    #mamoBaselinePanel { --mamo-plan-title: "個人ベースライン"; }
-    #mamoTriggerPanel { --mamo-plan-title: "あなたの勝負トリガー"; }
-    #mamoPeriodTriggerSummary { --mamo-plan-title: "週間分析"; }
-    #pressPaper { --mamo-plan-title: "あなた専用の新聞"; }
-    #mamoPressIntel { --mamo-plan-title: "編集部の深掘り分析"; }
-    #homePressTeaser { --mamo-plan-title: "MAMO BOAT PRESS"; }
+    #mamoAiSafeReport { --mamo-plan-title: "前の自分との比較"; --mamo-tier-frame-height: 176px; }
+    #mamoDecisionPanel { --mamo-plan-title: "勝負の選び方"; --mamo-tier-frame-height: 176px; }
+    #mamoBaselinePanel { --mamo-plan-title: "個人ベースライン"; --mamo-tier-frame-height: 176px; }
+    #mamoTriggerPanel { --mamo-plan-title: "あなたの勝負トリガー"; --mamo-tier-frame-height: 176px; }
+    #mamoPeriodTriggerSummary { --mamo-plan-title: "週間分析"; --mamo-tier-frame-height: 176px; }
+    #pressPaper { --mamo-plan-title: "あなた専用の新聞"; --mamo-tier-frame-height: 220px; }
+    #mamoPressIntel { --mamo-plan-title: "編集部の深掘り分析"; --mamo-tier-frame-height: 200px; }
+    #homePressTeaser { --mamo-plan-title: "MAMO BOAT PRESS"; --mamo-tier-frame-height: 112px; }
+
+    #mamoAiSafeReport,
+    #mamoDecisionPanel,
+    #mamoBaselinePanel,
+    #mamoTriggerPanel,
+    #mamoPeriodTriggerSummary,
+    #pressPaper,
+    #mamoPressIntel,
+    #homePressTeaser {
+      height: var(--mamo-tier-frame-height) !important;
+      max-height: var(--mamo-tier-frame-height) !important;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
 
     body[data-mamo-plan="free"] #mamoAiSafeReport {
       --mamo-plan-lock: "BRONZEで開放";
@@ -82,7 +99,7 @@ function installMamoPlanTierStyles() {
     body:not([data-mamo-plan="gold"]) #homePressTeaser {
       position: relative !important;
       isolation: isolate;
-      overflow: hidden;
+      overflow: hidden !important;
       pointer-events: none;
       color: transparent !important;
       text-shadow: none !important;
@@ -120,7 +137,7 @@ function installMamoPlanTierStyles() {
       z-index: 21;
       left: 18px;
       right: 18px;
-      top: 22px;
+      top: 24px;
       color: var(--navy, #071b2b);
       font-size: clamp(18px, 4.8vw, 25px);
       line-height: 1.35;
@@ -146,7 +163,7 @@ function installMamoPlanTierStyles() {
       position: absolute;
       z-index: 21;
       left: 18px;
-      top: 68px;
+      top: 76px;
       padding: 5px 10px;
       border: 1px solid rgba(7, 27, 43, 0.16);
       border-radius: 999px;
