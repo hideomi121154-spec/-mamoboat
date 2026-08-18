@@ -66,9 +66,9 @@ jobs:
           p=Path('index.html')
           s=p.read_text()
           import re
-          s=re.sub(r'app\.js\?v=[^"\']+', 'app.js?v=20260818-40', s)
-          s=re.sub(r'styles\.css\?v=[^"\']+', 'styles.css?v=20260818-40', s)
-          s=re.sub(r'pilot-config\.js\?v=[^"\']+', 'pilot-config.js?v=20260818-40', s)
+          s=re.sub(r'app\.js\?v=[^"\']+', 'app.js?v=20260818-41', s)
+          s=re.sub(r'styles\.css\?v=[^"\']+', 'styles.css?v=20260818-41', s)
+          s=re.sub(r'pilot-config\.js\?v=[^"\']+', 'pilot-config.js?v=20260818-41', s)
           p.write_text(s)
           PY
       - name: Validate
@@ -83,4 +83,4 @@ jobs:
           git add app.js styles.css index.html
           git commit -m "Refactor press plan selection to partial updates" || exit 0
           git push
-# trigger 2
+# trigger 3
