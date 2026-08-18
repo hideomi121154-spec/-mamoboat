@@ -267,7 +267,28 @@ for (const key of ["bronze", "silver", "gold", "free", "bronze"]) {
 }
 assert.equal(scrollCalls.length, 0);
 
-console.log("app smoke and stable plan UI tests OK");
+const pilotConfigSource = fs.readFileSync(
+  path.join(__dirname, "..", "pilot-config.js"),
+  "utf8"
+);
+assert.match(pilotConfigSource, /MAMO_PLAN_STATE_KEY/);
+assert.match(pilotConfigSource, /data-mamo-plan|dataset\.mamoPlan/);
+assert.match(pilotConfigSource, /BRONZEで開放 \/ 前の自分との比較/);
+assert.match(pilotConfigSource, /SILVERで開放 \/ 勝負トリガー・個人ベースライン・週間分析/);
+assert.match(pilotConfigSource, /GOLDで開放 \/ MAMO朝刊・週間・月刊・深掘り・長期分析/);
+assert.match(pilotConfigSource, /#mamoAiSafeReport/);
+assert.match(pilotConfigSource, /#mamoBaselinePanel/);
+assert.match(pilotConfigSource, /#mamoTriggerPanel/);
+assert.match(pilotConfigSource, /#pressPaper/);
+const tierUiSource = pilotConfigSource.slice(
+  pilotConfigSource.indexOf("const MAMO_PLAN_STATE_KEY"),
+  pilotConfigSource.indexOf("function loadMamoModule")
+);
+assert.doesNotMatch(tierUiSource, /scrollTo|scrollBy|visualViewport|MutationObserver/);
+assert.doesNotMatch(tierUiSource, /selectPilotPlan\s*=/);
+assert.doesNotMatch(tierUiSource, /localStorage\.setItem/);
+
+console.log("app smoke, stable plan UI, and plan tier presentation tests OK");
 
 (async () => {
   await context.sendPilotDataNow();
