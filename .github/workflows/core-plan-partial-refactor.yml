@@ -1,0 +1,64 @@
+name: Core plan partial refactor
+on:
+  push:
+    paths:
+      - '.trigger-core-plan-refactor'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch core plan handler
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app.js')
+          s=p.read_text()
+          old='''    trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
+    const scrollTop = window.scrollY;
+    save();
+    window.closeModal();
+    renderPressroom();
+    requestAnimationFrame(() => window.scrollTo(0, scrollTop));
+  };'''
+          new='''    trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
+    save();
+    window.closeModal();
+
+    // Stable partial update: never rebuild the pressroom or touch scroll position.
+    const plan = pressPlan();
+    const badge = $("pressPlanBadge");
+    if (badge) badge.textContent = `${plan.label} / ${plan.name}`;
+    renderMembershipPanel();
+    renderPressSettings();
+  };'''
+          if old not in s:
+            raise SystemExit('target selectPilotPlan block not found')
+          p.write_text(s.replace(old,new,1))
+
+          cfg=Path('pilot-config.js')
+          c=cfg.read_text()
+          c=c.replace('  ["plan-partial-update.js?v=20260818-1","plan-partial-update"],\n','')
+          cfg.write_text(c)
+
+          html=Path('index.html')
+          h=html.read_text()
+          import re
+          h=re.sub(r'app\\.js\\?v=[^"\']+', 'app.js?v=20260818-50', h)
+          h=re.sub(r'pilot-config\\.js\\?v=[^"\']+', 'pilot-config.js?v=20260818-50', h)
+          html.write_text(h)
+          PY
+      - name: Validate
+        run: |
+          node --check app.js
+          node --check pilot-config.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js pilot-config.js index.html
+          git commit -m "Refactor plan selection in core without pressroom rerender"
+          git push
