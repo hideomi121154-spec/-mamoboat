@@ -77,23 +77,19 @@ function installMamoPlanTierStyles() {
       pointer-events: none;
     }
 
-    body[data-mamo-plan="free"] #mamoAiSafeReport::before,
-    body[data-mamo-plan="free"] #mamoDecisionPanel::before,
-    body[data-mamo-plan="free"] #mamoBaselinePanel::before,
-    body[data-mamo-plan="free"] #mamoTriggerPanel::before,
-    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::before,
-    body[data-mamo-plan="bronze"] #mamoDecisionPanel::before,
-    body[data-mamo-plan="bronze"] #mamoBaselinePanel::before,
-    body[data-mamo-plan="bronze"] #mamoTriggerPanel::before,
-    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::before,
-    body:not([data-mamo-plan="gold"]) #pressPaper::before,
-    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 20;
-      background: rgba(255, 255, 255, 0.965);
+    body[data-mamo-plan="free"] #mamoAiSafeReport > *,
+    body[data-mamo-plan="free"] #mamoDecisionPanel > *,
+    body[data-mamo-plan="free"] #mamoBaselinePanel > *,
+    body[data-mamo-plan="free"] #mamoTriggerPanel > *,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary > *,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel > *,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel > *,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel > *,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary > *,
+    body:not([data-mamo-plan="gold"]) #pressPaper > *,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel > *,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser > * {
+      opacity: 0.24;
     }
 
     body[data-mamo-plan="free"] #mamoAiSafeReport::after,
@@ -113,15 +109,14 @@ function installMamoPlanTierStyles() {
       z-index: 21;
       left: 14px;
       right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      padding: 14px 12px;
+      top: 14px;
+      padding: 12px;
       border: 1px solid rgba(7, 27, 43, 0.14);
       border-left: 5px solid var(--gold, #ffc83d);
       border-radius: 8px;
-      background: #fffdf7;
+      background: rgba(255, 253, 247, 0.98);
       color: var(--navy, #071b2b);
-      box-shadow: 0 8px 24px rgba(7, 27, 43, 0.08);
+      box-shadow: 0 6px 18px rgba(7, 27, 43, 0.08);
       font-size: 12px;
       line-height: 1.7;
       font-weight: 900;
@@ -131,7 +126,7 @@ function installMamoPlanTierStyles() {
 
     body:not([data-mamo-plan="gold"]) .paper-tabs button {
       pointer-events: none;
-      opacity: 0.48;
+      opacity: 0.62;
     }
   `;
   document.head.appendChild(style);
