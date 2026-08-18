@@ -1,0 +1,74 @@
+name: Fix analysis repaint 20260818
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-analysis-repaint-20260818.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Disable periodic pressroom repaints
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          patches = {
+            'period-trigger-summary.js': [
+              ('    document.addEventListener("click", () => setTimeout(render, 80), false);\n    window.setInterval(() => {\n      if (document.getElementById("analysis")?.classList.contains("active")) render();\n    }, 1400);\n',
+               '    // Reading stability: do not repaint the pressroom on clicks or timers.\n')
+            ],
+            'baseline-intelligence.js': [
+              ('    document.addEventListener("click", () => {\n      if (document.getElementById("analysis")?.classList.contains("active")) setTimeout(render, 80);\n    }, false);\n    document.addEventListener("visibilitychange", () => {\n      if (!document.hidden && document.getElementById("analysis")?.classList.contains("active")) setTimeout(render, 80);\n    });\n    window.setInterval(() => {\n      if (document.getElementById("analysis")?.classList.contains("active")) render();\n    }, 5000);\n',
+               '    // Reading stability: render once at boot; no background repaint while reading.\n')
+            ],
+            'trigger-intelligence.js': [
+              ('    document.addEventListener("click", () => setTimeout(() => {\n      if (document.getElementById("analysis")?.classList.contains("active")) render();\n    }, 100), false);\n    window.setInterval(() => {\n      if (document.getElementById("analysis")?.classList.contains("active")) render();\n    }, 8000);\n',
+               '    // Reading stability: render once at boot; no click/timer repaint.\n')
+            ],
+            'decision-intelligence.js': [
+              ('    window.setTimeout(renderDecisionPanel, 30);\n',
+               ''),
+              ('      if (document.getElementById("analysis")?.classList.contains("active")) renderDecisionPanel();\n',
+               '')
+            ],
+          }
+
+          for name, reps in patches.items():
+            p = Path(name)
+            text = p.read_text()
+            for old, new in reps:
+              if old not in text:
+                raise SystemExit(f'expected block not found in {name}: {old[:80]!r}')
+              text = text.replace(old, new, 1)
+            p.write_text(text)
+          PY
+      - name: Bump module cache keys
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('pilot-config.js')
+          s=p.read_text()
+          for old,new in [
+            ('period-trigger-summary.js?v=20260817-1','period-trigger-summary.js?v=20260818-2'),
+            ('decision-intelligence.js?v=20260816-1','decision-intelligence.js?v=20260818-2'),
+            ('baseline-intelligence.js?v=20260816-1','baseline-intelligence.js?v=20260818-2'),
+            ('trigger-intelligence.js?v=20260816-1','trigger-intelligence.js?v=20260818-2'),
+          ]:
+            if old not in s:
+              raise SystemExit(f'cache key not found: {old}')
+            s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add period-trigger-summary.js baseline-intelligence.js trigger-intelligence.js decision-intelligence.js pilot-config.js
+          git commit -m "Stop pressroom background repaints on iOS" || exit 0
+          git push
