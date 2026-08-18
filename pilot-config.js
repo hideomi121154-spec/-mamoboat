@@ -51,9 +51,8 @@ const MAMO_SCRIPTS = [
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
-  ["analysis-zoom-stability.js?v=20260818-1","analysis-zoom-stability"],
-  ["plan-click-stability.js?v=20260818-1","plan-click-stability"],
-  // iOS scroll-position helpers remain disabled.
+  // Stable platform rule: no global scroll/zoom correction helpers in pressroom.
+  ["plan-partial-update.js?v=20260818-1","plan-partial-update"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
