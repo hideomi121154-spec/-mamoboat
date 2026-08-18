@@ -51,8 +51,7 @@ const MAMO_SCRIPTS = [
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
-  ["nav-stability.js?v=20260817-2","nav-stability"],
-  ["plan-selection-stable.js?v=20260818-1","plan-selection-stable"],
+  // iOS scroll helpers disabled: Safari pinch-zoom and reading position must remain native.
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
