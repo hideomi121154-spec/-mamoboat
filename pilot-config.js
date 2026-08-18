@@ -52,6 +52,7 @@ const MAMO_SCRIPTS = [
   ["morning-delivery.js?v=20260817-2","morning-delivery"],
   ["push-notifications.js?v=20260816-3","push-notifications"],
   ["analysis-zoom-stability.js?v=20260818-1","analysis-zoom-stability"],
+  ["plan-click-stability.js?v=20260818-1","plan-click-stability"],
   // iOS scroll-position helpers remain disabled.
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
