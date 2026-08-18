@@ -38,8 +38,17 @@ function installMamoPlanTierStyles() {
   const style = document.createElement("style");
   style.id = "mamoPlanTierStyles";
   style.textContent = `
+    #mamoAiSafeReport { --mamo-plan-title: "前の自分との比較"; }
+    #mamoDecisionPanel { --mamo-plan-title: "勝負の選び方"; }
+    #mamoBaselinePanel { --mamo-plan-title: "個人ベースライン"; }
+    #mamoTriggerPanel { --mamo-plan-title: "あなたの勝負トリガー"; }
+    #mamoPeriodTriggerSummary { --mamo-plan-title: "週間分析"; }
+    #pressPaper { --mamo-plan-title: "あなた専用の新聞"; }
+    #mamoPressIntel { --mamo-plan-title: "編集部の深掘り分析"; }
+    #homePressTeaser { --mamo-plan-title: "MAMO BOAT PRESS"; }
+
     body[data-mamo-plan="free"] #mamoAiSafeReport {
-      --mamo-plan-lock: "BRONZEで開放 / 前の自分との比較・時間帯・基本グラフ";
+      --mamo-plan-lock: "BRONZEで開放";
     }
 
     body[data-mamo-plan="free"] #mamoDecisionPanel,
@@ -50,13 +59,13 @@ function installMamoPlanTierStyles() {
     body[data-mamo-plan="bronze"] #mamoBaselinePanel,
     body[data-mamo-plan="bronze"] #mamoTriggerPanel,
     body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary {
-      --mamo-plan-lock: "SILVERで開放 / 勝負トリガー・個人ベースライン・週間分析";
+      --mamo-plan-lock: "SILVERで開放";
     }
 
     body:not([data-mamo-plan="gold"]) #pressPaper,
     body:not([data-mamo-plan="gold"]) #mamoPressIntel,
     body:not([data-mamo-plan="gold"]) #homePressTeaser {
-      --mamo-plan-lock: "GOLDで開放 / MAMO朝刊・週間・月刊・深掘り・長期分析";
+      --mamo-plan-lock: "GOLDで開放";
     }
 
     body[data-mamo-plan="free"] #mamoAiSafeReport,
@@ -75,6 +84,8 @@ function installMamoPlanTierStyles() {
       isolation: isolate;
       overflow: hidden;
       pointer-events: none;
+      color: transparent !important;
+      text-shadow: none !important;
     }
 
     body[data-mamo-plan="free"] #mamoAiSafeReport > *,
@@ -89,7 +100,34 @@ function installMamoPlanTierStyles() {
     body:not([data-mamo-plan="gold"]) #pressPaper > *,
     body:not([data-mamo-plan="gold"]) #mamoPressIntel > *,
     body:not([data-mamo-plan="gold"]) #homePressTeaser > * {
-      opacity: 0.24;
+      visibility: hidden !important;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::before,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::before,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::before,
+    body:not([data-mamo-plan="gold"]) #pressPaper::before,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::before {
+      content: "🔒  " var(--mamo-plan-title);
+      position: absolute;
+      z-index: 21;
+      left: 18px;
+      right: 18px;
+      top: 22px;
+      color: var(--navy, #071b2b);
+      font-size: clamp(18px, 4.8vw, 25px);
+      line-height: 1.35;
+      font-weight: 1000;
+      letter-spacing: -0.02em;
+      text-align: left;
+      white-space: normal;
     }
 
     body[data-mamo-plan="free"] #mamoAiSafeReport::after,
@@ -107,21 +145,20 @@ function installMamoPlanTierStyles() {
       content: var(--mamo-plan-lock);
       position: absolute;
       z-index: 21;
-      left: 14px;
-      right: 14px;
-      top: 14px;
-      padding: 12px;
-      border: 1px solid rgba(7, 27, 43, 0.14);
-      border-left: 5px solid var(--gold, #ffc83d);
-      border-radius: 8px;
-      background: rgba(255, 253, 247, 0.98);
-      color: var(--navy, #071b2b);
-      box-shadow: 0 6px 18px rgba(7, 27, 43, 0.08);
-      font-size: 12px;
-      line-height: 1.7;
+      left: 18px;
+      top: 68px;
+      padding: 5px 10px;
+      border: 1px solid rgba(7, 27, 43, 0.16);
+      border-radius: 999px;
+      background: #fffdf7;
+      color: #765615;
+      box-shadow: 0 4px 12px rgba(7, 27, 43, 0.06);
+      font-size: 10px;
+      line-height: 1.4;
       font-weight: 900;
+      letter-spacing: 0.04em;
       text-align: left;
-      white-space: normal;
+      white-space: nowrap;
     }
 
     body:not([data-mamo-plan="gold"]) .paper-tabs button {
