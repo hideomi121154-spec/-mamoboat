@@ -13,6 +13,153 @@ window.MAMOBOAT_PILOT = Object.freeze({
   rewards: Object.freeze([]),
 });
 
+const MAMO_PLAN_STATE_KEY = "mamoboat_v40_personal";
+const MAMO_PLAN_ALIASES = Object.freeze({ ume: "bronze", take: "silver", matsu: "gold" });
+const MAMO_PLAN_KEYS = Object.freeze(["free", "bronze", "silver", "gold"]);
+
+function readMamoPlan() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(MAMO_PLAN_STATE_KEY) || "{}");
+    const raw = stored?.pressroom?.plan;
+    if (MAMO_PLAN_KEYS.includes(raw)) return raw;
+    return MAMO_PLAN_ALIASES[raw] || "free";
+  } catch (_) {
+    return "free";
+  }
+}
+
+function syncMamoPlanMarker() {
+  if (!document.body) return;
+  document.body.dataset.mamoPlan = readMamoPlan();
+}
+
+function installMamoPlanTierStyles() {
+  if (document.getElementById("mamoPlanTierStyles")) return;
+  const style = document.createElement("style");
+  style.id = "mamoPlanTierStyles";
+  style.textContent = `
+    body[data-mamo-plan="free"] #mamoAiSafeReport {
+      --mamo-plan-lock: "BRONZEで開放 / 前の自分との比較・時間帯・基本グラフ";
+    }
+
+    body[data-mamo-plan="free"] #mamoDecisionPanel,
+    body[data-mamo-plan="free"] #mamoBaselinePanel,
+    body[data-mamo-plan="free"] #mamoTriggerPanel,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary {
+      --mamo-plan-lock: "SILVERで開放 / 勝負トリガー・個人ベースライン・週間分析";
+    }
+
+    body:not([data-mamo-plan="gold"]) #pressPaper,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser {
+      --mamo-plan-lock: "GOLDで開放 / MAMO朝刊・週間・月刊・深掘り・長期分析";
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport,
+    body[data-mamo-plan="free"] #mamoDecisionPanel,
+    body[data-mamo-plan="free"] #mamoBaselinePanel,
+    body[data-mamo-plan="free"] #mamoTriggerPanel,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary,
+    body:not([data-mamo-plan="gold"]) #pressPaper,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser {
+      position: relative !important;
+      isolation: isolate;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::before,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::before,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::before,
+    body:not([data-mamo-plan="gold"]) #pressPaper::before,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.965);
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::after,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::after,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::after,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::after,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::after,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::after,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::after,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::after,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::after,
+    body:not([data-mamo-plan="gold"]) #pressPaper::after,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::after,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::after {
+      content: var(--mamo-plan-lock);
+      position: absolute;
+      z-index: 21;
+      left: 14px;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 14px 12px;
+      border: 1px solid rgba(7, 27, 43, 0.14);
+      border-left: 5px solid var(--gold, #ffc83d);
+      border-radius: 8px;
+      background: #fffdf7;
+      color: var(--navy, #071b2b);
+      box-shadow: 0 8px 24px rgba(7, 27, 43, 0.08);
+      font-size: 12px;
+      line-height: 1.7;
+      font-weight: 900;
+      text-align: left;
+      white-space: normal;
+    }
+
+    body:not([data-mamo-plan="gold"]) .paper-tabs button {
+      pointer-events: none;
+      opacity: 0.48;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function bootMamoPlanTierUI() {
+  installMamoPlanTierStyles();
+  syncMamoPlanMarker();
+
+  document.addEventListener("click", (event) => {
+    const target = event.target?.closest?.("[data-pilot-plan], .plan-option");
+    if (!target) return;
+    Promise.resolve().then(syncMamoPlanMarker);
+  }, false);
+
+  window.addEventListener("mamo:analysis-rendered", syncMamoPlanMarker);
+  window.addEventListener("pageshow", syncMamoPlanMarker);
+  window.addEventListener("storage", (event) => {
+    if (event.key === MAMO_PLAN_STATE_KEY) syncMamoPlanMarker();
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootMamoPlanTierUI, { once: true });
+} else {
+  bootMamoPlanTierUI();
+}
+
 function loadMamoModule([src,key]) {
   if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve(true);
   return new Promise((resolve) => {
