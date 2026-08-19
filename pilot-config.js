@@ -13,6 +13,96 @@ window.MAMOBOAT_PILOT = Object.freeze({
   rewards: Object.freeze([]),
 });
 
+const MAMO_PLAN_STATE_KEY = "mamoboat_v40_personal";
+const MAMO_PLAN_ALIASES = Object.freeze({ ume: "bronze", take: "silver", matsu: "gold" });
+const MAMO_PLAN_KEYS = Object.freeze(["free", "bronze", "silver", "gold"]);
+
+function readMamoPlan() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(MAMO_PLAN_STATE_KEY) || "{}");
+    const raw = stored?.pressroom?.plan;
+    if (MAMO_PLAN_KEYS.includes(raw)) return raw;
+    return MAMO_PLAN_ALIASES[raw] || "free";
+  } catch (_) {
+    return "free";
+  }
+}
+
+function syncMamoPlanMarker() {
+  if (!document.body) return;
+  document.body.dataset.mamoPlan = readMamoPlan();
+}
+
+function installMamoPlanTierStyles() {
+  if (document.getElementById("mamoPlanTierStyles")) return;
+  const style = document.createElement("style");
+  style.id = "mamoPlanTierStyles";
+  style.textContent = `
+    #analysis.active { display:flex; flex-direction:column; }
+    #analysis.active > * { order:45; min-width:0; }
+    #analysis.active > .analysis-intro { order:0; }
+    #analysis.active > .section-head:has(+ .newsroom-cast) { order:10; }
+    #analysis.active > .newsroom-cast { order:11; }
+    #analysis.active > .section-head:has(+ #analysisCards) { order:20; }
+    #analysis.active > #analysisCards { order:21; }
+    #analysis.active > .section-head:has(+ #analysisList) { order:22; }
+    #analysis.active > #analysisList { order:23; }
+    #analysis.active > #mamoAiSafeReport { order:30; }
+    #analysis.active > #mamoDecisionPanel { order:40; }
+    #analysis.active > #mamoBaselinePanel { order:41; }
+    #analysis.active > #mamoTriggerPanel { order:42; }
+    #analysis.active > #mamoPeriodTriggerSummary { order:43; }
+    #analysis.active > .section-head:has(+ .paper-tabs) { order:50; }
+    #analysis.active > .paper-tabs { order:51; }
+    #analysis.active > #pressPaper { order:52; }
+    #analysis.active > #mamoPressIntel { order:53; }
+    #analysis.active > .section-head:has(+ #membershipPanel) { order:60; }
+    #analysis.active > #membershipPanel { order:61; }
+    #analysis.active > .analysis-tools { order:62; }
+    #mamoAiSafeReport { --mamo-plan-title:"前の自分との比較"; --mamo-tier-frame-height:176px; }
+    #mamoDecisionPanel { --mamo-plan-title:"勝負の選び方"; --mamo-tier-frame-height:176px; }
+    #mamoBaselinePanel { --mamo-plan-title:"個人ベースライン"; --mamo-tier-frame-height:176px; }
+    #mamoTriggerPanel { --mamo-plan-title:"あなたの勝負トリガー"; --mamo-tier-frame-height:176px; }
+    #mamoPeriodTriggerSummary { --mamo-plan-title:"週間分析"; --mamo-tier-frame-height:176px; }
+    #pressPaper { --mamo-plan-title:"あなた専用の新聞"; --mamo-tier-frame-height:220px; }
+    #mamoPressIntel { --mamo-plan-title:"編集部の深掘り分析"; --mamo-tier-frame-height:200px; }
+    #homePressTeaser { --mamo-plan-title:"MAMO BOAT PRESS"; --mamo-tier-frame-height:112px; }
+    #mamoAiSafeReport,#mamoDecisionPanel,#mamoBaselinePanel,#mamoTriggerPanel,#mamoPeriodTriggerSummary,#pressPaper,#mamoPressIntel,#homePressTeaser {
+      height:var(--mamo-tier-frame-height)!important; max-height:var(--mamo-tier-frame-height)!important; box-sizing:border-box;
+      overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    }
+    body[data-mamo-plan="free"] #mamoAiSafeReport { --mamo-plan-lock:"BRONZEで開放"; }
+    body[data-mamo-plan="free"] #mamoDecisionPanel,
+    body[data-mamo-plan="free"] #mamoBaselinePanel,
+    body[data-mamo-plan="free"] #mamoTriggerPanel,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary { --mamo-plan-lock:"SILVERで開放"; }
+    body:not([data-mamo-plan="gold"]) #pressPaper,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser { --mamo-plan-lock:"GOLDで開放"; }
+  `;
+  document.head.appendChild(style);
+}
+
+function bootMamoPlanTierUI() {
+  installMamoPlanTierStyles();
+  syncMamoPlanMarker();
+  document.addEventListener("click", (event) => {
+    const target = event.target?.closest?.("[data-pilot-plan], .plan-option");
+    if (!target) return;
+    Promise.resolve().then(syncMamoPlanMarker);
+  }, false);
+  window.addEventListener("mamo:analysis-rendered", syncMamoPlanMarker);
+  window.addEventListener("pageshow", syncMamoPlanMarker);
+  window.addEventListener("storage", (event) => { if (event.key === MAMO_PLAN_STATE_KEY) syncMamoPlanMarker(); });
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootMamoPlanTierUI, { once:true });
+else bootMamoPlanTierUI();
+
 function loadMamoModule([src,key]) {
   if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve(true);
   return new Promise((resolve) => {
@@ -40,7 +130,7 @@ const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
   ["decision-event-api-compat.js?v=20260819-1","decision-event-api-compat"],
-  ["decision-transition-model.js?v=20260819-1","decision-transition-model"],
+  ["decision-transition-model.js?v=20260819-2","decision-transition-model"],
   ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],
   ["ai-safe.js?v=20260818-3","ai-safe"],
@@ -57,12 +147,11 @@ const MAMO_SCRIPTS = [
   ["morning-insight-bridge.js?v=20260818-3","morning-insight-bridge"],
   ["morning-intervention-insight.js?v=20260819-1","morning-intervention-insight"],
   ["period-intervention-insight.js?v=20260819-1","period-intervention-insight"],
-  // Plan selection is owned by app.js. Do not load plan wrappers or scroll fixes.
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
-  ["morning-delivery.js?v=20260817-2","morning-delivery"],
-  ["push-notifications.js?v=20260816-3","push-notifications"],
+  ["morning-delivery.js?v=20260818-1","morning-delivery"],
+  ["push-notifications.js?v=20260818-1","push-notifications"],
   ["sw-refresh.js?v=20260817-2","sw-refresh"],
 ];
 
