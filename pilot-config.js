@@ -49,6 +49,7 @@ const MAMO_SCRIPTS = [
   ["trigger-intelligence.js?v=20260818-3","trigger-intel"],
   ["behavior-pattern-profile.js?v=20260819-1","behavior-pattern-profile"],
   ["compound-pattern-intelligence.js?v=20260819-1","compound-pattern-intel"],
+  ["compound-pattern-realtime.js?v=20260819-1","compound-pattern-realtime"],
   ["press-intelligence.js?v=20260818-3","press-intel"],
   ["morning-insight-bridge.js?v=20260818-3","morning-insight-bridge"],
   ["morning-intervention-insight.js?v=20260819-1","morning-intervention-insight"],
