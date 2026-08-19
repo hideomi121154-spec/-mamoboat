@@ -7,14 +7,6 @@
   const s = document.createElement("style");
   s.id = "mamoRaceLayoutRefreshV2";
   s.textContent = `
-    /* Home only: make Mamoru clearly larger without moving any other UI. */
-    #home.active .home-masthead .masthead-character,
-    body[data-screen="home"] .home-masthead .masthead-character{
-      transform:translateX(11%) scale(1.58)!important;
-      transform-origin:72% 52%!important;
-      object-position:58% 24%!important;
-    }
-
     #raceView{--r-navy:#082238;--r-teal:#0c8f88;--r-gold:#d3a23a;--r-paper:#fffdf8;--r-line:#dde3e4;overflow-x:hidden!important;}
 
     /* Event/race header */
@@ -34,7 +26,7 @@
     #raceView .racename strong{display:inline-block;color:var(--r-teal);font-size:24px;margin:0 3px;}
     #raceView .raceclock{border-radius:10px;min-width:116px;flex-basis:116px;padding:8px;background:#f6f8f8;}
 
-    /* Six racers: number > racer name > profile > class/machine */
+    /* Six racers */
     #raceView .boats{display:grid!important;grid-template-columns:1fr!important;gap:8px;margin-top:13px;overflow:visible!important;}
     #raceView .boat{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr) 88px;gap:11px;align-items:center;min-height:72px;padding:9px 10px 9px 8px;border:1px solid #dce3e4;border-left-width:1px!important;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(8,34,56,.045);overflow:hidden;}
     #raceView .boat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#ddd;}
@@ -48,13 +40,11 @@
     #raceView .boat>div:nth-child(3) .tiny{margin-top:5px;font-size:9px;line-height:1.45;}
     #raceView .racerlinkhint{margin-top:5px;font-size:8px;color:#879398;font-weight:800;}
 
-    /* Official information: secondary, fixed 2x2 on mobile */
     #raceView .officialmenu{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:13px;overflow:visible!important;}
     #raceView .officiallink{border-radius:10px;padding:9px 4px;background:#fafbfb;border:1px solid #dce3e4;}
     #raceView .officiallink span{font-size:8px;color:#79868c;}#raceView .officiallink b{font-size:9px;color:#0b2a42;}
     #raceView .source-note{border-left-color:var(--r-gold);background:#fffaf0;border-radius:0 8px 8px 0;padding:8px 9px;}
 
-    /* AIR BET: strongest hierarchy */
     #race .section-head.small{margin-top:24px;}
     #race .section-head.small .section-number{background:var(--r-gold);color:#082238;border-radius:7px;transform:none;}
     #race .section-head.small h2{font-size:22px;color:#082238;}
@@ -74,13 +64,9 @@
     #raceView .cart-tools .clear{flex-basis:100%;background:#f5f5f2;color:#6f797e;}
     #raceView .cartrow{border-radius:10px;background:#fff;}
     #raceView .btn.teal.full{min-height:52px;border-radius:12px;background:linear-gradient(100deg,#0b8f88,#08766f)!important;box-shadow:0 4px 0 #075b57;font-size:14px;letter-spacing:.03em;}
-
-    /* Never allow horizontal gesture UI on race screen */
     #raceView *,#race .betdesk *{scroll-snap-type:none!important;scroll-snap-align:none!important;}
 
     @media(max-width:520px){
-      #home.active .home-masthead .masthead-character,
-      body[data-screen="home"] .home-masthead .masthead-character{transform:translateX(12%) scale(1.58)!important;transform-origin:72% 52%!important;}
       #raceView .boat{grid-template-columns:48px minmax(0,1fr) 76px;gap:8px;padding:8px 8px 8px 7px;min-height:68px;}
       #raceView .num{width:46px;height:46px;font-size:21px;}
       #raceView .boat>div:nth-child(2)>b{font-size:15px;}
