@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v3 — lightweight post-load brand module + SW refresh. */
+/* MAMO BOAT Service Worker refresh v4 — lightweight post-load brand module + SW refresh. */
 (()=>{
   "use strict";
 
@@ -9,13 +9,13 @@
     style.textContent=`
       /* Home only: enlarge Mamoru without changing masthead/card/layout dimensions. */
       .home-masthead .masthead-character{
-        transform:translateX(8%) scale(1.20)!important;
-        transform-origin:66% 50%!important;
+        transform:translateX(14%) scale(1.55)!important;
+        transform-origin:68% 56%!important;
       }
       @media (max-width:390px){
         .home-masthead .masthead-character{
-          transform:translateX(9%) scale(1.20)!important;
-          transform-origin:66% 50%!important;
+          transform:translateX(16%) scale(1.55)!important;
+          transform-origin:68% 56%!important;
         }
       }
     `;
