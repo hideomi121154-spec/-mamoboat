@@ -1,6 +1,27 @@
-/* MAMO BOAT Service Worker refresh v5 — lightweight post-load brand module + SW refresh. */
+/* MAMO BOAT Service Worker refresh v6 — lightweight post-load brand module + SW refresh. */
 (()=>{
   "use strict";
+
+  const installApprovedHomeHero=()=>{
+    if(document.getElementById("mamoApprovedHomeHero")) return;
+    const style=document.createElement("style");
+    style.id="mamoApprovedHomeHero";
+    style.textContent=`
+      .home-masthead .masthead-character{
+        transform:scale(1.78)!important;
+        transform-origin:100% 55%!important;
+        object-position:68% 24%!important;
+      }
+      @media (max-width:520px){
+        .home-masthead .masthead-character{
+          transform:scale(1.78)!important;
+          transform-origin:100% 55%!important;
+          object-position:68% 24%!important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  };
 
   const loadMamokamo=()=>{
     if(document.querySelector('script[data-mamo-mamokamo="1"]')) return;
@@ -12,6 +33,7 @@
   };
 
   const register=async()=>{
+    installApprovedHomeHero();
     loadMamokamo();
     if(!("serviceWorker" in navigator)) return;
     try{
