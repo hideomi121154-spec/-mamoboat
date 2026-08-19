@@ -10,7 +10,7 @@
   const STATE_KEY = "mamoboat_v40_personal";
   const JOURNEY_KEY = "mamoboat_decision_journeys_v1";
   const MAX_JOURNEYS = 300;
-  const SCAN_MS = 1200;
+  const SCAN_MS = 900;
   let initialized = false;
   const seenAirIds = new Set();
 
@@ -41,10 +41,7 @@
     write(JOURNEY_KEY, list.slice(-MAX_JOURNEYS));
     window.dispatchEvent(new CustomEvent("mamo:decision-journey-updated"));
   }
-
-  function emit(name, payload, context) {
-    window.MAMO_DECISION_EVENTS?.track?.(name, payload, context);
-  }
+  function emit(name, payload, context) { window.MAMO_DECISION_EVENTS?.track?.(name, payload, context); }
 
   function derive(actions) {
     const firstAir = actions.findIndex((a) => a.kind === "air");
@@ -78,13 +75,9 @@
     save(list);
     if (row.transition && row.transition !== before) {
       emit("decision_transition_recorded", {
-        journey_id:row.id,
-        transition:row.transition,
-        action_count:row.actions.length,
-        air_stake_b:Number(row.air?.stakeB)||0,
-        real_stake_yen:Number(row.real?.stakeYen)||0,
-        same_ticket:row.real?.sameTicket ?? null,
-        final:row.final || null,
+        journey_id:row.id, transition:row.transition, action_count:row.actions.length,
+        air_stake_b:Number(row.air?.stakeB)||0, real_stake_yen:Number(row.real?.stakeYen)||0,
+        same_ticket:row.real?.sameTicket ?? null, final:row.final || null,
       }, context);
     }
     return row;
@@ -117,13 +110,9 @@
       x.final = "real";
     });
     if (row) emit("decision_real_confirmed", {
-      journey_id:row.id,
-      amount_yen:stakeYen,
-      same_ticket:sameTicket === true,
-      had_air_before:!!row.air,
-      air_stake_b:Number(row.air?.stakeB)||0,
-      transition:row.transition,
-      source:"self_report",
+      journey_id:row.id, amount_yen:stakeYen, same_ticket:sameTicket === true,
+      had_air_before:!!row.air, air_stake_b:Number(row.air?.stakeB)||0,
+      transition:row.transition, source:"self_report",
     }, context);
     return row;
   }
@@ -131,12 +120,48 @@
   function findRow(context) { return rows().find((x) => x.key === keyOf(context)) || null; }
 
   function airText(row) {
-    if (!row?.air) return "このレースはAIR BETなし。REALだけ買った場合は自己申告で残せます。";
+    if (!row?.air) return "AIR BETをしていない場合も、REALだけ買った記録を残せます。";
     const lines = (row.air.lines || []).slice(0, 4).map((line) => {
       const combo = Array.isArray(line.combo) ? line.combo.join("-") : String(line.combo || "—");
       return `${combo} ${Math.round(Number(line.stake)||0).toLocaleString("ja-JP")}B`;
     }).join(" / ");
-    return `AIR ${Math.round(Number(row.air.stakeB)||0).toLocaleString("ja-JP")}B${lines ? ` ・ ${lines}` : ""}`;
+    return `このレースのAIR：${Math.round(Number(row.air.stakeB)||0).toLocaleString("ja-JP")}B${lines ? ` ｜ ${lines}` : ""}`;
+  }
+
+  function createPanel() {
+    const panel = document.createElement("section");
+    panel.id = "mamoAirRealBridge";
+    panel.className = "mamo-air-real-bridge";
+    panel.innerHTML = `
+      <div class="marb-kicker">AIR BETの次に記録</div>
+      <div class="marb-head"><b>実際の舟券はどうした？</b><span>REALは自己申告で記録します</span></div>
+      <p data-marb-summary></p>
+      <div class="marb-actions">
+        <button type="button" data-marb-same><strong>AIRと同じ舟券で買った</strong><small>金額だけ入力</small></button>
+        <button type="button" data-marb-real><strong>内容を変えて買った</strong><small>実際の金額を入力</small></button>
+        <button type="button" data-marb-air><strong>買わなかった</strong><small>AIRだけで完結</small></button>
+      </div>
+      <div class="marb-form" data-marb-form hidden>
+        <label><span>実際に使った金額</span><div><input type="number" min="100" step="100" inputmode="numeric" data-marb-amount><b>円</b></div></label>
+        <div><button type="button" data-marb-save>この内容で記録</button><button type="button" data-marb-cancel>戻る</button></div>
+      </div>
+      <small data-marb-status>公式サイトを開いただけではREAL購入扱いにしません。</small>`;
+    return panel;
+  }
+
+  function placePanel(panel, raceView) {
+    const betdesk = raceView.querySelector(".betdesk");
+    if (betdesk) {
+      if (panel.previousElementSibling !== betdesk) betdesk.insertAdjacentElement("afterend", panel);
+      return;
+    }
+    const airHeading = [...raceView.querySelectorAll(".section-head")].find((x) => /AIR BET/i.test(x.textContent || ""));
+    if (airHeading) {
+      const next = airHeading.nextElementSibling;
+      (next || airHeading).insertAdjacentElement("afterend", panel);
+      return;
+    }
+    raceView.appendChild(panel);
   }
 
   function ensurePanel() {
@@ -144,22 +169,9 @@
     const raceView = document.getElementById("raceView");
     if (!context || !raceView) return;
     let panel = document.getElementById("mamoAirRealBridge");
-    if (!panel) {
-      panel = document.createElement("section");
-      panel.id = "mamoAirRealBridge";
-      panel.className = "mamo-air-real-bridge";
-      panel.innerHTML = `<div class="marb-head"><span>REAL SELF REPORT</span><b>実際の舟券はどうした？</b></div>
-        <p data-marb-summary></p>
-        <div class="marb-actions">
-          <button type="button" data-marb-same>AIRと同じ舟券で買った</button>
-          <button type="button" data-marb-real>内容を変えて買った</button>
-          <button type="button" data-marb-air>買わなかった（AIRのみ）</button>
-        </div>
-        <div class="marb-form" data-marb-form hidden><label>実際に使った金額 <input type="number" min="100" step="100" inputmode="numeric" data-marb-amount> 円</label><div><button type="button" data-marb-save>この内容で記録</button><button type="button" data-marb-cancel>戻る</button></div></div>
-        <small data-marb-status>REALは自己申告です。公式サイトを開いただけでは購入扱いにしません。</small>`;
-      const anchor = raceView.querySelector(".mamo-decision-skip") || raceView.querySelector(".mamo-official-link-row") || raceView.lastElementChild;
-      anchor?.insertAdjacentElement("afterend", panel);
-    }
+    if (!panel) panel = createPanel();
+    placePanel(panel, raceView);
+
     const row = findRow(context);
     panel.dataset.raceKey = keyOf(context);
     panel.querySelector("[data-marb-summary]").textContent = airText(row);
@@ -168,11 +180,11 @@
     const airOnly = panel.querySelector("[data-marb-air]");
     if (row?.air) {
       same.hidden = false;
-      real.textContent = "内容を変えて買った";
+      real.querySelector("strong").textContent = "内容を変えて買った";
       airOnly.hidden = false;
     } else {
       same.hidden = true;
-      real.textContent = "REALだけ買った";
+      real.querySelector("strong").textContent = "REALだけ買った";
       airOnly.hidden = true;
     }
   }
@@ -209,7 +221,7 @@
       if (amount < 100) return;
       const row = markReal(context, amount, panel?.dataset.mode === "same");
       panel.querySelector("[data-marb-form]").hidden = true;
-      panel.querySelector("[data-marb-status]").textContent = `✓ ${row?.transition || "REAL"} / ${Math.round(amount).toLocaleString("ja-JP")}円を自己申告で記録しました。`;
+      panel.querySelector("[data-marb-status]").textContent = `✓ ${row?.transition || "REAL"} / ${Math.round(amount).toLocaleString("ja-JP")}円を記録しました。`;
       return;
     }
     const skip = event.target.closest?.("[data-decision-skip-reason]");
@@ -234,7 +246,15 @@
     if (document.getElementById("mamoAirRealBridgeStyle")) return;
     const style = document.createElement("style");
     style.id = "mamoAirRealBridgeStyle";
-    style.textContent = `.mamo-air-real-bridge{margin:10px 0 14px;padding:11px;border:1px solid rgba(7,27,43,.14);border-left:5px solid var(--teal,#00a8a0);background:#fff}.marb-head span{display:block;font-size:8px;font-weight:1000;letter-spacing:.12em;color:var(--teal-dark,#007c78)}.marb-head b{font-size:14px}.mamo-air-real-bridge>p{margin:7px 0;font-size:9px;line-height:1.55;color:#536970}.marb-actions{display:grid;gap:6px}.marb-actions button,.marb-form button{min-height:38px;border:1px solid rgba(7,27,43,.17);background:#f8faf9;color:#17333d;font-weight:800;border-radius:8px}.marb-form{margin-top:8px;padding:9px;background:#f5f8f8}.marb-form input{width:110px;min-height:34px}.marb-form>div{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.mamo-air-real-bridge>small{display:block;margin-top:7px;font-size:8px;line-height:1.45;color:#728287}`;
+    style.textContent = `
+      .mamo-air-real-bridge{margin:12px 0 22px;padding:16px;border:2px solid #0aa39a;border-radius:14px;background:linear-gradient(180deg,#f2fffd,#fff);box-shadow:0 8px 22px rgba(7,27,43,.10)}
+      .marb-kicker{display:inline-flex;margin-bottom:7px;padding:4px 8px;border-radius:999px;background:#0a8f88;color:#fff;font-size:9px;font-weight:1000;letter-spacing:.08em}
+      .marb-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}.marb-head b{font-size:19px;line-height:1.25;color:#071b2b}.marb-head span{font-size:9px;font-weight:800;color:#60767c}
+      .mamo-air-real-bridge>p{margin:10px 0 12px;padding:9px 10px;border-radius:9px;background:#f5f8f8;font-size:10px;line-height:1.55;color:#405a63}
+      .marb-actions{display:grid;gap:8px}.marb-actions button{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:10px 12px;border:1px solid rgba(7,27,43,.16);border-radius:10px;background:#fff;color:#17333d;text-align:left}.marb-actions button strong{font-size:13px;font-weight:1000}.marb-actions button small{font-size:9px;color:#71848a;white-space:nowrap}.marb-actions button:first-child{border-color:#0aa39a;background:#ecfffc}
+      .marb-form{margin-top:10px;padding:12px;border-radius:10px;background:#edf5f5}.marb-form label>span{display:block;margin-bottom:6px;font-size:10px;font-weight:900}.marb-form label>div{display:flex;align-items:center;gap:5px}.marb-form input{width:140px;min-height:42px;padding:0 10px;border:1px solid #9db4b8;border-radius:8px;font-size:18px;font-weight:900}.marb-form>div{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.marb-form button{min-height:42px;border:1px solid rgba(7,27,43,.16);border-radius:8px;background:#fff;font-weight:900}.marb-form button:first-child{background:#071b2b;color:#fff}
+      .mamo-air-real-bridge>small{display:block;margin-top:9px;font-size:9px;line-height:1.45;color:#728287}
+    `;
     document.head.appendChild(style);
   }
 
