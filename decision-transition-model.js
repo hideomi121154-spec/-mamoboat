@@ -112,8 +112,8 @@
     const stakeYen = Math.max(0, Math.round(Number(amount)||0));
     if (!context || stakeYen < 100) return null;
     const row = update(context, (x) => {
-      x.real = { stakeYen, sameTicket:sameTicket === true, at:new Date().toISOString() };
-      x.actions.push({ kind:"real", at:x.real.at, stakeYen, sameTicket:sameTicket === true });
+      x.real = { stakeYen, sameTicket:sameTicket === true, at:new Date().toISOString(), source:"self_report" };
+      x.actions.push({ kind:"real", at:x.real.at, stakeYen, sameTicket:sameTicket === true, source:"self_report" });
       x.final = "real";
     });
     if (row) emit("decision_real_confirmed", {
@@ -123,6 +123,7 @@
       had_air_before:!!row.air,
       air_stake_b:Number(row.air?.stakeB)||0,
       transition:row.transition,
+      source:"self_report",
     }, context);
     return row;
   }
@@ -130,7 +131,7 @@
   function findRow(context) { return rows().find((x) => x.key === keyOf(context)) || null; }
 
   function airText(row) {
-    if (!row?.air) return "このレースのAIR BET記録はありません。";
+    if (!row?.air) return "このレースはAIR BETなし。REALだけ買った場合は自己申告で残せます。";
     const lines = (row.air.lines || []).slice(0, 4).map((line) => {
       const combo = Array.isArray(line.combo) ? line.combo.join("-") : String(line.combo || "—");
       return `${combo} ${Math.round(Number(line.stake)||0).toLocaleString("ja-JP")}B`;
@@ -147,14 +148,14 @@
       panel = document.createElement("section");
       panel.id = "mamoAirRealBridge";
       panel.className = "mamo-air-real-bridge";
-      panel.innerHTML = `<div class="marb-head"><span>AIR / REAL</span><b>この勝負をどう残す？</b></div>
+      panel.innerHTML = `<div class="marb-head"><span>REAL SELF REPORT</span><b>実際の舟券はどうした？</b></div>
         <p data-marb-summary></p>
         <div class="marb-actions">
-          <button type="button" data-marb-same>AIRと同じ舟券でREAL</button>
-          <button type="button" data-marb-real>REALを記録</button>
-          <button type="button" data-marb-air>AIRのままにする</button>
+          <button type="button" data-marb-same>AIRと同じ舟券で買った</button>
+          <button type="button" data-marb-real>内容を変えて買った</button>
+          <button type="button" data-marb-air>買わなかった（AIRのみ）</button>
         </div>
-        <div class="marb-form" data-marb-form hidden><label>実際に使った金額 <input type="number" min="100" step="100" inputmode="numeric" data-marb-amount> 円</label><div><button type="button" data-marb-save>記録する</button><button type="button" data-marb-cancel>戻る</button></div></div>
+        <div class="marb-form" data-marb-form hidden><label>実際に使った金額 <input type="number" min="100" step="100" inputmode="numeric" data-marb-amount> 円</label><div><button type="button" data-marb-save>この内容で記録</button><button type="button" data-marb-cancel>戻る</button></div></div>
         <small data-marb-status>REALは自己申告です。公式サイトを開いただけでは購入扱いにしません。</small>`;
       const anchor = raceView.querySelector(".mamo-decision-skip") || raceView.querySelector(".mamo-official-link-row") || raceView.lastElementChild;
       anchor?.insertAdjacentElement("afterend", panel);
@@ -162,8 +163,18 @@
     const row = findRow(context);
     panel.dataset.raceKey = keyOf(context);
     panel.querySelector("[data-marb-summary]").textContent = airText(row);
-    panel.querySelector("[data-marb-same]").hidden = !row?.air;
-    panel.querySelector("[data-marb-air]").hidden = !row?.air;
+    const same = panel.querySelector("[data-marb-same]");
+    const real = panel.querySelector("[data-marb-real]");
+    const airOnly = panel.querySelector("[data-marb-air]");
+    if (row?.air) {
+      same.hidden = false;
+      real.textContent = "内容を変えて買った";
+      airOnly.hidden = false;
+    } else {
+      same.hidden = true;
+      real.textContent = "REALだけ買った";
+      airOnly.hidden = true;
+    }
   }
 
   function openForm(mode) {
@@ -175,6 +186,7 @@
     const input = panel.querySelector("[data-marb-amount]");
     input.value = mode === "same" && row?.air?.stakeB ? String(Math.round(row.air.stakeB)) : "";
     panel.querySelector("[data-marb-form]").hidden = false;
+    input?.focus();
   }
 
   function onClick(event) {
@@ -197,7 +209,7 @@
       if (amount < 100) return;
       const row = markReal(context, amount, panel?.dataset.mode === "same");
       panel.querySelector("[data-marb-form]").hidden = true;
-      panel.querySelector("[data-marb-status]").textContent = `✓ ${row?.transition || "REAL"} / ${Math.round(amount).toLocaleString("ja-JP")}円を記録しました。`;
+      panel.querySelector("[data-marb-status]").textContent = `✓ ${row?.transition || "REAL"} / ${Math.round(amount).toLocaleString("ja-JP")}円を自己申告で記録しました。`;
       return;
     }
     const skip = event.target.closest?.("[data-decision-skip-reason]");
