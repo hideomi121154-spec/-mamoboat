@@ -1,12 +1,27 @@
-/* MAMO BOAT Race Layout Refresh v2 — tap-only race UI, stronger hierarchy, no horizontal swipe/rails. */
+/* MAMO BOAT Race Layout Refresh v3 — tap-only race UI + approved home hero/date bridge. */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_LAYOUT_REFRESH_V2__) return;
-  window.__MAMO_RACE_LAYOUT_REFRESH_V2__ = true;
+  if (window.__MAMO_RACE_LAYOUT_REFRESH_V3__) return;
+  window.__MAMO_RACE_LAYOUT_REFRESH_V3__ = true;
 
   const s = document.createElement("style");
-  s.id = "mamoRaceLayoutRefreshV2";
+  s.id = "mamoRaceLayoutRefreshV3";
   s.textContent = `
+    /* Home: approved Mamoru framing. This module is known to reach the iPhone/PWA. */
+    #home .home-masthead .masthead-character{
+      position:absolute!important;
+      left:-22%!important;
+      right:auto!important;
+      top:-22%!important;
+      bottom:auto!important;
+      width:145%!important;
+      height:145%!important;
+      max-width:none!important;
+      object-fit:cover!important;
+      object-position:67% 22%!important;
+      transform:none!important;
+    }
+
     #raceView{--r-navy:#082238;--r-teal:#0c8f88;--r-gold:#d3a23a;--r-paper:#fffdf8;--r-line:#dde3e4;overflow-x:hidden!important;}
 
     /* Event/race header */
@@ -67,6 +82,12 @@
     #raceView *,#race .betdesk *{scroll-snap-type:none!important;scroll-snap-align:none!important;}
 
     @media(max-width:520px){
+      #home .home-masthead .masthead-character{
+        left:-24%!important;
+        top:-24%!important;
+        width:148%!important;
+        height:148%!important;
+      }
       #raceView .boat{grid-template-columns:48px minmax(0,1fr) 76px;gap:8px;padding:8px 8px 8px 7px;min-height:68px;}
       #raceView .num{width:46px;height:46px;font-size:21px;}
       #raceView .boat>div:nth-child(2)>b{font-size:15px;}
@@ -76,4 +97,21 @@
     }
   `;
   document.head.appendChild(s);
+
+  const currentJstLabel=()=>{
+    const parts=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{
+      timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"
+    }).formatToParts(new Date()).map(p=>[p.type,p.value]));
+    const y=Number(parts.year),m=Number(parts.month),d=Number(parts.day);
+    const weekday=["SUN","MON","TUE","WED","THU","FRI","SAT"][new Date(Date.UTC(y,m-1,d)).getUTCDay()];
+    return `${parts.year}.${parts.month}.${parts.day} ${weekday}`;
+  };
+  const syncHomeToday=()=>{
+    const el=document.getElementById("homeDateText");
+    if(el) el.textContent=currentJstLabel();
+  };
+  syncHomeToday();
+  [250,800,1800,4000,8000].forEach(ms=>setTimeout(syncHomeToday,ms));
+  setInterval(syncHomeToday,60000);
+  window.addEventListener("pageshow",syncHomeToday);
 })();
