@@ -7,6 +7,14 @@
   const s = document.createElement("style");
   s.id = "mamoRaceLayoutRefreshV2";
   s.textContent = `
+    /* Home only: make Mamoru clearly larger without moving any other UI. */
+    #home.active .home-masthead .masthead-character,
+    body[data-screen="home"] .home-masthead .masthead-character{
+      transform:translateX(11%) scale(1.58)!important;
+      transform-origin:72% 52%!important;
+      object-position:58% 24%!important;
+    }
+
     #raceView{--r-navy:#082238;--r-teal:#0c8f88;--r-gold:#d3a23a;--r-paper:#fffdf8;--r-line:#dde3e4;overflow-x:hidden!important;}
 
     /* Event/race header */
@@ -71,6 +79,8 @@
     #raceView *,#race .betdesk *{scroll-snap-type:none!important;scroll-snap-align:none!important;}
 
     @media(max-width:520px){
+      #home.active .home-masthead .masthead-character,
+      body[data-screen="home"] .home-masthead .masthead-character{transform:translateX(12%) scale(1.58)!important;transform-origin:72% 52%!important;}
       #raceView .boat{grid-template-columns:48px minmax(0,1fr) 76px;gap:8px;padding:8px 8px 8px 7px;min-height:68px;}
       #raceView .num{width:46px;height:46px;font-size:21px;}
       #raceView .boat>div:nth-child(2)>b{font-size:15px;}
