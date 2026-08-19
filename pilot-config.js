@@ -37,6 +37,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
   .catch(()=>false);
 
 const MAMO_SCRIPTS = [
+  ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["ai-safe.js?v=20260818-3","ai-safe"],
   ["period-trigger-summary.js?v=20260818-3","period-trigger-summary"],
   ["official-link.js?v=20260816-1","official-link"],
