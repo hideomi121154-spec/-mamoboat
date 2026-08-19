@@ -272,14 +272,26 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
   .catch(()=>false);
 
 const MAMO_SCRIPTS = [
+  ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
+  ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
+  ["decision-event-api-compat.js?v=20260819-1","decision-event-api-compat"],
+  ["decision-transition-model.js?v=20260819-2","decision-transition-model"],
+  ["intervention-history.js?v=20260819-1","intervention-history"],
+  ["baseline-intervention.js?v=20260819-1","baseline-intervention"],
   ["ai-safe.js?v=20260818-3","ai-safe"],
   ["period-trigger-summary.js?v=20260818-3","period-trigger-summary"],
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260818-3","decision-intel"],
   ["baseline-intelligence.js?v=20260818-3","baseline-intel"],
+  ["decision-state-score.js?v=20260819-1","decision-state-score"],
   ["trigger-intelligence.js?v=20260818-3","trigger-intel"],
+  ["behavior-pattern-profile.js?v=20260819-1","behavior-pattern-profile"],
+  ["compound-pattern-intelligence.js?v=20260819-1","compound-pattern-intel"],
+  ["compound-pattern-realtime.js?v=20260819-1","compound-pattern-realtime"],
   ["press-intelligence.js?v=20260818-3","press-intel"],
   ["morning-insight-bridge.js?v=20260818-3","morning-insight-bridge"],
+  ["morning-intervention-insight.js?v=20260819-1","morning-intervention-insight"],
+  ["period-intervention-insight.js?v=20260819-1","period-intervention-insight"],
   // Plan selection is owned by app.js. Do not load plan wrappers or scroll fixes.
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
