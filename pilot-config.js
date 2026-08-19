@@ -38,40 +38,75 @@ function installMamoPlanTierStyles() {
   const style = document.createElement("style");
   style.id = "mamoPlanTierStyles";
   style.textContent = `
-    #analysis.active { display:flex; flex-direction:column; }
-    #analysis.active > * { order:45; min-width:0; }
-    #analysis.active > .analysis-intro { order:0; }
-    #analysis.active > .section-head:has(+ .newsroom-cast) { order:10; }
-    #analysis.active > .newsroom-cast { order:11; }
-    #analysis.active > .section-head:has(+ #analysisCards) { order:20; }
-    #analysis.active > #analysisCards { order:21; }
-    #analysis.active > .section-head:has(+ #analysisList) { order:22; }
-    #analysis.active > #analysisList { order:23; }
-    #analysis.active > #mamoAiSafeReport { order:30; }
-    #analysis.active > #mamoDecisionPanel { order:40; }
-    #analysis.active > #mamoBaselinePanel { order:41; }
-    #analysis.active > #mamoTriggerPanel { order:42; }
-    #analysis.active > #mamoPeriodTriggerSummary { order:43; }
-    #analysis.active > .section-head:has(+ .paper-tabs) { order:50; }
-    #analysis.active > .paper-tabs { order:51; }
-    #analysis.active > #pressPaper { order:52; }
-    #analysis.active > #mamoPressIntel { order:53; }
-    #analysis.active > .section-head:has(+ #membershipPanel) { order:60; }
-    #analysis.active > #membershipPanel { order:61; }
-    #analysis.active > .analysis-tools { order:62; }
-    #mamoAiSafeReport { --mamo-plan-title:"前の自分との比較"; --mamo-tier-frame-height:176px; }
-    #mamoDecisionPanel { --mamo-plan-title:"勝負の選び方"; --mamo-tier-frame-height:176px; }
-    #mamoBaselinePanel { --mamo-plan-title:"個人ベースライン"; --mamo-tier-frame-height:176px; }
-    #mamoTriggerPanel { --mamo-plan-title:"あなたの勝負トリガー"; --mamo-tier-frame-height:176px; }
-    #mamoPeriodTriggerSummary { --mamo-plan-title:"週間分析"; --mamo-tier-frame-height:176px; }
-    #pressPaper { --mamo-plan-title:"あなた専用の新聞"; --mamo-tier-frame-height:220px; }
-    #mamoPressIntel { --mamo-plan-title:"編集部の深掘り分析"; --mamo-tier-frame-height:200px; }
-    #homePressTeaser { --mamo-plan-title:"MAMO BOAT PRESS"; --mamo-tier-frame-height:112px; }
-    #mamoAiSafeReport,#mamoDecisionPanel,#mamoBaselinePanel,#mamoTriggerPanel,#mamoPeriodTriggerSummary,#pressPaper,#mamoPressIntel,#homePressTeaser {
-      height:var(--mamo-tier-frame-height)!important; max-height:var(--mamo-tier-frame-height)!important; box-sizing:border-box;
-      overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    /* Keep the pressroom visually ordered by value: FREE → BRONZE → SILVER → GOLD. */
+    #analysis.active {
+      display: flex;
+      flex-direction: column;
     }
-    body[data-mamo-plan="free"] #mamoAiSafeReport { --mamo-plan-lock:"BRONZEで開放"; }
+    #analysis.active > * {
+      order: 45;
+      min-width: 0;
+    }
+    #analysis.active > .analysis-intro { order: 0; }
+    #analysis.active > .section-head:has(+ .newsroom-cast) { order: 10; }
+    #analysis.active > .newsroom-cast { order: 11; }
+
+    /* FREE */
+    #analysis.active > .section-head:has(+ #analysisCards) { order: 20; }
+    #analysis.active > #analysisCards { order: 21; }
+    #analysis.active > .section-head:has(+ #analysisList) { order: 22; }
+    #analysis.active > #analysisList { order: 23; }
+
+    /* BRONZE */
+    #analysis.active > #mamoAiSafeReport { order: 30; }
+
+    /* SILVER */
+    #analysis.active > #mamoDecisionPanel { order: 40; }
+    #analysis.active > #mamoBaselinePanel { order: 41; }
+    #analysis.active > #mamoTriggerPanel { order: 42; }
+    #analysis.active > #mamoPeriodTriggerSummary { order: 43; }
+
+    /* GOLD */
+    #analysis.active > .section-head:has(+ .paper-tabs) { order: 50; }
+    #analysis.active > .paper-tabs { order: 51; }
+    #analysis.active > #pressPaper { order: 52; }
+    #analysis.active > #mamoPressIntel { order: 53; }
+
+    /* Subscription choice always comes last. */
+    #analysis.active > .section-head:has(+ #membershipPanel) { order: 60; }
+    #analysis.active > #membershipPanel { order: 61; }
+    #analysis.active > .analysis-tools { order: 62; }
+
+    #mamoAiSafeReport { --mamo-plan-title: "前の自分との比較"; --mamo-tier-frame-height: 176px; }
+    #mamoDecisionPanel { --mamo-plan-title: "勝負の選び方"; --mamo-tier-frame-height: 176px; }
+    #mamoBaselinePanel { --mamo-plan-title: "個人ベースライン"; --mamo-tier-frame-height: 176px; }
+    #mamoTriggerPanel { --mamo-plan-title: "あなたの勝負トリガー"; --mamo-tier-frame-height: 176px; }
+    #mamoPeriodTriggerSummary { --mamo-plan-title: "週間分析"; --mamo-tier-frame-height: 176px; }
+    #pressPaper { --mamo-plan-title: "あなた専用の新聞"; --mamo-tier-frame-height: 220px; }
+    #mamoPressIntel { --mamo-plan-title: "編集部の深掘り分析"; --mamo-tier-frame-height: 200px; }
+    #homePressTeaser { --mamo-plan-title: "MAMO BOAT PRESS"; --mamo-tier-frame-height: 112px; }
+
+    #mamoAiSafeReport,
+    #mamoDecisionPanel,
+    #mamoBaselinePanel,
+    #mamoTriggerPanel,
+    #mamoPeriodTriggerSummary,
+    #pressPaper,
+    #mamoPressIntel,
+    #homePressTeaser {
+      height: var(--mamo-tier-frame-height) !important;
+      max-height: var(--mamo-tier-frame-height) !important;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport {
+      --mamo-plan-lock: "BRONZEで開放";
+    }
+
     body[data-mamo-plan="free"] #mamoDecisionPanel,
     body[data-mamo-plan="free"] #mamoBaselinePanel,
     body[data-mamo-plan="free"] #mamoTriggerPanel,
@@ -79,10 +114,113 @@ function installMamoPlanTierStyles() {
     body[data-mamo-plan="bronze"] #mamoDecisionPanel,
     body[data-mamo-plan="bronze"] #mamoBaselinePanel,
     body[data-mamo-plan="bronze"] #mamoTriggerPanel,
-    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary { --mamo-plan-lock:"SILVERで開放"; }
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary {
+      --mamo-plan-lock: "SILVERで開放";
+    }
+
     body:not([data-mamo-plan="gold"]) #pressPaper,
     body:not([data-mamo-plan="gold"]) #mamoPressIntel,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser { --mamo-plan-lock:"GOLDで開放"; }
+    body:not([data-mamo-plan="gold"]) #homePressTeaser {
+      --mamo-plan-lock: "GOLDで開放";
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport,
+    body[data-mamo-plan="free"] #mamoDecisionPanel,
+    body[data-mamo-plan="free"] #mamoBaselinePanel,
+    body[data-mamo-plan="free"] #mamoTriggerPanel,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary,
+    body:not([data-mamo-plan="gold"]) #pressPaper,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser {
+      position: relative !important;
+      isolation: isolate;
+      overflow: hidden !important;
+      pointer-events: none;
+      color: transparent !important;
+      text-shadow: none !important;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport > *,
+    body[data-mamo-plan="free"] #mamoDecisionPanel > *,
+    body[data-mamo-plan="free"] #mamoBaselinePanel > *,
+    body[data-mamo-plan="free"] #mamoTriggerPanel > *,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary > *,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel > *,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel > *,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel > *,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary > *,
+    body:not([data-mamo-plan="gold"]) #pressPaper > *,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel > *,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser > * {
+      visibility: hidden !important;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::before,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::before,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::before,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::before,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::before,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::before,
+    body:not([data-mamo-plan="gold"]) #pressPaper::before,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::before {
+      content: "🔒  " var(--mamo-plan-title);
+      position: absolute;
+      z-index: 21;
+      left: 18px;
+      right: 18px;
+      top: 24px;
+      color: var(--navy, #071b2b);
+      font-size: clamp(18px, 4.8vw, 25px);
+      line-height: 1.35;
+      font-weight: 1000;
+      letter-spacing: -0.02em;
+      text-align: left;
+      white-space: normal;
+    }
+
+    body[data-mamo-plan="free"] #mamoAiSafeReport::after,
+    body[data-mamo-plan="free"] #mamoDecisionPanel::after,
+    body[data-mamo-plan="free"] #mamoBaselinePanel::after,
+    body[data-mamo-plan="free"] #mamoTriggerPanel::after,
+    body[data-mamo-plan="free"] #mamoPeriodTriggerSummary::after,
+    body[data-mamo-plan="bronze"] #mamoDecisionPanel::after,
+    body[data-mamo-plan="bronze"] #mamoBaselinePanel::after,
+    body[data-mamo-plan="bronze"] #mamoTriggerPanel::after,
+    body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::after,
+    body:not([data-mamo-plan="gold"]) #pressPaper::after,
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::after,
+    body:not([data-mamo-plan="gold"]) #homePressTeaser::after {
+      content: var(--mamo-plan-lock);
+      position: absolute;
+      z-index: 21;
+      left: 18px;
+      top: 76px;
+      padding: 5px 10px;
+      border: 1px solid rgba(7, 27, 43, 0.16);
+      border-radius: 999px;
+      background: #fffdf7;
+      color: #765615;
+      box-shadow: 0 4px 12px rgba(7, 27, 43, 0.06);
+      font-size: 10px;
+      line-height: 1.4;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    body:not([data-mamo-plan="gold"]) .paper-tabs button {
+      pointer-events: none;
+      opacity: 0.62;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -90,18 +228,25 @@ function installMamoPlanTierStyles() {
 function bootMamoPlanTierUI() {
   installMamoPlanTierStyles();
   syncMamoPlanMarker();
+
   document.addEventListener("click", (event) => {
     const target = event.target?.closest?.("[data-pilot-plan], .plan-option");
     if (!target) return;
     Promise.resolve().then(syncMamoPlanMarker);
   }, false);
+
   window.addEventListener("mamo:analysis-rendered", syncMamoPlanMarker);
   window.addEventListener("pageshow", syncMamoPlanMarker);
-  window.addEventListener("storage", (event) => { if (event.key === MAMO_PLAN_STATE_KEY) syncMamoPlanMarker(); });
+  window.addEventListener("storage", (event) => {
+    if (event.key === MAMO_PLAN_STATE_KEY) syncMamoPlanMarker();
+  });
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootMamoPlanTierUI, { once:true });
-else bootMamoPlanTierUI();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootMamoPlanTierUI, { once: true });
+} else {
+  bootMamoPlanTierUI();
+}
 
 function loadMamoModule([src,key]) {
   if (document.querySelector(`script[data-mamo-module="${key}"]`)) return Promise.resolve(true);
@@ -147,6 +292,7 @@ const MAMO_SCRIPTS = [
   ["morning-insight-bridge.js?v=20260818-3","morning-insight-bridge"],
   ["morning-intervention-insight.js?v=20260819-1","morning-intervention-insight"],
   ["period-intervention-insight.js?v=20260819-1","period-intervention-insight"],
+  // Plan selection is owned by app.js. Do not load plan wrappers or scroll fixes.
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
