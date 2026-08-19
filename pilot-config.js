@@ -46,6 +46,7 @@ const MAMO_SCRIPTS = [
   ["official-link.js?v=20260816-1","official-link"],
   ["decision-intelligence.js?v=20260818-3","decision-intel"],
   ["baseline-intelligence.js?v=20260818-3","baseline-intel"],
+  ["decision-state-score.js?v=20260819-1","decision-state-score"],
   ["trigger-intelligence.js?v=20260818-3","trigger-intel"],
   ["behavior-pattern-profile.js?v=20260819-1","behavior-pattern-profile"],
   ["compound-pattern-intelligence.js?v=20260819-1","compound-pattern-intel"],
