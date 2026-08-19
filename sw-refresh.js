@@ -1,26 +1,6 @@
-/* MAMO BOAT Service Worker refresh v4 — lightweight post-load brand module + SW refresh. */
+/* MAMO BOAT Service Worker refresh v5 — lightweight post-load brand module + SW refresh. */
 (()=>{
   "use strict";
-
-  const installHomeMamoruScale=()=>{
-    if(document.getElementById("mamoHomeMamoruScale")) return;
-    const style=document.createElement("style");
-    style.id="mamoHomeMamoruScale";
-    style.textContent=`
-      /* Home only: enlarge Mamoru without changing masthead/card/layout dimensions. */
-      .home-masthead .masthead-character{
-        transform:translateX(14%) scale(1.55)!important;
-        transform-origin:68% 56%!important;
-      }
-      @media (max-width:390px){
-        .home-masthead .masthead-character{
-          transform:translateX(16%) scale(1.55)!important;
-          transform-origin:68% 56%!important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  };
 
   const loadMamokamo=()=>{
     if(document.querySelector('script[data-mamo-mamokamo="1"]')) return;
@@ -32,7 +12,6 @@
   };
 
   const register=async()=>{
-    installHomeMamoruScale();
     loadMamokamo();
     if(!("serviceWorker" in navigator)) return;
     try{
