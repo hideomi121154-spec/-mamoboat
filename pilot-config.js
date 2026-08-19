@@ -39,6 +39,8 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
 const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
+  ["decision-event-api-compat.js?v=20260819-1","decision-event-api-compat"],
+  ["decision-transition-model.js?v=20260819-1","decision-transition-model"],
   ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],
   ["ai-safe.js?v=20260818-3","ai-safe"],
