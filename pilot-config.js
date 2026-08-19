@@ -39,6 +39,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
 const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
+  ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],
   ["ai-safe.js?v=20260818-3","ai-safe"],
   ["period-trigger-summary.js?v=20260818-3","period-trigger-summary"],
@@ -48,6 +49,7 @@ const MAMO_SCRIPTS = [
   ["trigger-intelligence.js?v=20260818-3","trigger-intel"],
   ["press-intelligence.js?v=20260818-3","press-intel"],
   ["morning-insight-bridge.js?v=20260818-3","morning-insight-bridge"],
+  ["morning-intervention-insight.js?v=20260819-1","morning-intervention-insight"],
   // Plan selection is owned by app.js. Do not load plan wrappers or scroll fixes.
   ["visual-refresh.js?v=20260816-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
