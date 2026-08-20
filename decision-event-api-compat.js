@@ -10,7 +10,6 @@
 (() => {
   "use strict";
   const SYSTEM_ONLY_LABELS = new Set(["結果の反映時間"]);
-
   function removeSystemOnlyBehaviorCards() {
     const list = document.getElementById("analysisList");
     if (!list) return;
@@ -19,26 +18,19 @@
       if (SYSTEM_ONLY_LABELS.has(label)) card.remove();
     });
   }
-
   function boot() {
     removeSystemOnlyBehaviorCards();
     const list = document.getElementById("analysisList");
-    if (list) {
-      new MutationObserver(() => queueMicrotask(removeSystemOnlyBehaviorCards))
-        .observe(list, { childList: true, subtree: false });
-    }
+    if (list) new MutationObserver(() => queueMicrotask(removeSystemOnlyBehaviorCards)).observe(list, { childList: true, subtree: false });
     window.addEventListener("mamo:analysis-rendered", removeSystemOnlyBehaviorCards);
     window.addEventListener("pageshow", removeSystemOnlyBehaviorCards);
     document.addEventListener("click", (event) => {
       if (event.target?.closest?.("#nav-analysis")) setTimeout(removeSystemOnlyBehaviorCards, 0);
     }, false);
   }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
-  else boot();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true }); else boot();
 })();
 
-/* Develop-only commerce prototype loader. */
 (() => {
   "use strict";
   if (document.querySelector('script[data-mamo-shop="pilot"]')) return;
@@ -49,18 +41,16 @@
   document.head.appendChild(script);
 })();
 
-/* Develop-only MAMO RECORD Phase 1 loader. */
 (() => {
   "use strict";
   if (document.querySelector('script[data-mamo-record="phase1"]')) return;
   const script = document.createElement("script");
-  script.src = "mamo-record.js?v=20260820-1";
+  script.src = "mamo-record.js?v=20260821-3";
   script.async = true;
   script.dataset.mamoRecord = "phase1";
   document.head.appendChild(script);
 })();
 
-/* Mobile bottom navigation: one row with horizontal swipe. */
 (() => {
   "use strict";
   if (document.querySelector('script[data-mamo-bottom-nav="horizontal"]')) return;
@@ -68,5 +58,16 @@
   script.src = "bottom-nav-horizontal.js?v=20260820-1";
   script.async = true;
   script.dataset.mamoBottomNav = "horizontal";
+  document.head.appendChild(script);
+})();
+
+/* Phase 4: connect MAMO RECORD psychology to PRESS. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-record-insights="phase4"]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-record-insights.js?v=20260821-1";
+  script.async = true;
+  script.dataset.mamoRecordInsights = "phase4";
   document.head.appendChild(script);
 })();
