@@ -1,0 +1,2550 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import tempfile
+import time
+import unicodedata
+from collections import defaultdict
+from datetime import date, datetime, timedelta, timezone
+from html.parser import HTMLParser
+from pathlib import Path
+from typing import Any, Mapping
+from urllib.request import Request, urlopen
+
+
+JST = timezone(timedelta(hours=9))
+
+VENUES = [
+    ("01", "桐生"), ("02", "戸田"), ("03", "江戸川"), ("04", "平和島"),
+    ("05", "多摩川"), ("06", "浜名湖"), ("07", "蒲郡"), ("08", "常滑"),
+    ("09", "津"), ("10", "三国"), ("11", "びわこ"), ("12", "住之江"),
+    ("13", "尼崎"), ("14", "鳴門"), ("15", "丸亀"), ("16", "児島"),
+    ("17", "宮島"), ("18", "徳山"), ("19", "下関"), ("20", "若松"),
+    ("21", "芦屋"), ("22", "福岡"), ("23", "唐津"), ("24", "大村"),
+]
+NAME_TO_CODE = {name: code for code, name in VENUES}
+CODE_TO_NAME = dict(VENUES)
+
+PAYOUT_TYPES = (
+    "win", "place", "exacta", "quinella", "wide", "trifecta", "trio",
+)
+PAYOUT_LABEL_TO_TYPE = {
+    "単勝": "win",
+    "複勝": "place",
+    "2連単": "exacta",
+    "2連複": "quinella",
+    "拡連複": "wide",
+    "3連単": "trifecta",
+    "3連複": "trio",
+}
+
+CONTROL_RE = re.compile(r"^\s*([0-9]{2})([BK])(BGN|END)\s*$")
+RESULT_STATUS_RE = re.compile(
+    r"^(?:0[1-6]|[FLSK][0-9]?|転|転覆|落|落水|沈|沈没|失|失格|"
+    r"妨|妨害|欠|欠場|不|不完走|エ|エンスト|返|返還|除|除外)$"
+)
+
+GRADE_PAGE_URL = "https://www.boatrace.jp/owpc/pc/race/gradesch"
+GRADE_PAGE_CATEGORIES = ("01", "02", "03")
+GRADE_LABELS = {
+    "SG": "SG",
+    "PG1": "PG1",
+    "G1": "GⅠ",
+    "G2": "GⅡ",
+    "G3": "GⅢ",
+    "GENERAL": "一般",
+}
+TIME_ZONE_CLASSES = {
+    "is-morning": "morning",
+    "is-summer": "summer",
+    "is-nighter": "night",
+    "is-midnight": "midnight",
+}
+
+ODDS_PAGE_TYPES = {
+    "odds3t": ("trifecta",),
+    "odds3f": ("trio",),
+    "odds2tf": ("exacta", "quinella"),
+    "oddsk": ("wide",),
+    "oddstf": ("win", "place"),
+}
+ODDS_EXPECTED_COUNTS = {
+    "trifecta": 120,
+    "trio": 20,
+    "exacta": 30,
+    "quinella": 15,
+    "wide": 15,
+    "win": 6,
+    "place": 6,
+}
+ODDS_VALUE_RE = re.compile(
+    r"^(?:[0-9]+(?:\.[0-9]+)?)(?:-(?:[0-9]+(?:\.[0-9]+)?))?$"
+)
+
+
+def normalized(value: Any) -> str:
+    return unicodedata.normalize("NFKC", str(value))
+
+
+def number(value: Any, typ=int):
+    try:
+        text = normalized(value).strip().replace(",", "")
+        return typ(text) if text else None
+    except (TypeError, ValueError):
+        return None
+
+
+def iso(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=JST)
+    return value.isoformat()
+
+
+def ensure_text(content: str | bytes) -> str:
+    if isinstance(content, str):
+        return content
+    for encoding in ("utf-8-sig", "utf-8", "cp932", "shift_jis"):
+        try:
+            return content.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return content.decode("cp932", errors="replace")
+
+
+def compact_text(value: Any) -> str:
+    """公式公開テキストの全角英数・全角空白を表示用に整える。"""
+    return re.sub(r"\s+", " ", normalized(value)).strip()
+
+
+class OfficialGradeScheduleParser(HTMLParser):
+    """
+    公式グレード日程の表から事実データだけを取り出す。
+
+    画像・CSS・公式ロゴは保存せず、開催期間、場、グレード、
+    大会名、時間帯のみを取り出す。
+    """
+
+    def __init__(self, year: int, category: str):
+        super().__init__(convert_charrefs=True)
+        self.year = year
+        self.category = category
+        self.events: list[dict[str, Any]] = []
+        self._row: list[dict[str, Any]] | None = None
+        self._cell: dict[str, Any] | None = None
+
+    def handle_starttag(self, tag: str, attrs):
+        attributes = dict(attrs)
+        if tag == "tr":
+            self._row = []
+            self._cell = None
+        elif tag == "td" and self._row is not None:
+            self._cell = {
+                "classes": set((attributes.get("class") or "").split()),
+                "text": [],
+                "imageAlt": None,
+            }
+            self._row.append(self._cell)
+        elif tag == "img" and self._cell is not None:
+            alt = compact_text(attributes.get("alt") or "")
+            if alt:
+                self._cell["imageAlt"] = alt
+
+    def handle_data(self, data: str):
+        if self._cell is not None:
+            self._cell["text"].append(data)
+
+    def handle_endtag(self, tag: str):
+        if tag == "td":
+            self._cell = None
+        elif tag == "tr" and self._row is not None:
+            event = self._parse_row(self._row)
+            if event:
+                self.events.append(event)
+            self._row = None
+            self._cell = None
+
+    def _parse_row(self, cells: list[dict[str, Any]]):
+        date_text = ""
+        venue_name = ""
+        title = ""
+        grade = None
+        time_zone = None
+
+        for cell in cells:
+            classes = cell["classes"]
+            text = compact_text("".join(cell["text"]))
+            if "td_date" in classes:
+                date_text = text
+            if cell.get("imageAlt") in NAME_TO_CODE:
+                venue_name = cell["imageAlt"]
+            if "is-alignL" in classes and text:
+                title = text
+            for class_name in classes:
+                match = re.fullmatch(r"is-(SG|G1|G2|G3)([ab])", class_name)
+                if not match:
+                    continue
+                raw_grade, group = match.groups()
+                if raw_grade == "G1" and group == "a" and self.category == "01":
+                    grade = "PG1"
+                else:
+                    grade = raw_grade
+                break
+            for class_name, zone in TIME_ZONE_CLASSES.items():
+                if class_name in classes:
+                    time_zone = zone
+
+        dates = parse_grade_date_range(date_text, self.year)
+        if not dates or not venue_name or not grade or not title:
+            return None
+        start_date, end_date = dates
+        return {
+            "venueCode": NAME_TO_CODE[venue_name],
+            "venueName": venue_name,
+            "startDate": start_date.isoformat(),
+            "endDate": end_date.isoformat(),
+            "grade": grade,
+            "gradeLabel": GRADE_LABELS[grade],
+            "title": title,
+            "timeZone": time_zone,
+        }
+
+
+class OfficialOddsHTMLParser(HTMLParser):
+    """公式オッズ画面の表を、結合セルを保ったまま読み取る。"""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tables: list[list[list[dict[str, Any]]]] = []
+        self.document_text: list[str] = []
+        self._table: list[list[dict[str, Any]]] | None = None
+        self._row: list[dict[str, Any]] | None = None
+        self._cell: dict[str, Any] | None = None
+
+    def handle_starttag(self, tag: str, attrs):
+        attributes = dict(attrs)
+        if tag == "table" and self._table is None:
+            self._table = []
+        elif tag == "tr" and self._table is not None:
+            self._row = []
+        elif tag in {"td", "th"} and self._row is not None:
+            self._cell = {
+                "classes": set((attributes.get("class") or "").split()),
+                "rowspan": max(1, number(attributes.get("rowspan")) or 1),
+                "colspan": max(1, number(attributes.get("colspan")) or 1),
+                "text": [],
+            }
+            self._row.append(self._cell)
+
+    def handle_data(self, data: str):
+        self.document_text.append(data)
+        if self._cell is not None:
+            self._cell["text"].append(data)
+
+    def handle_endtag(self, tag: str):
+        if tag in {"td", "th"}:
+            self._cell = None
+        elif tag == "tr" and self._table is not None and self._row is not None:
+            self._table.append(self._row)
+            self._row = None
+            self._cell = None
+        elif tag == "table" and self._table is not None:
+            self.tables.append(self._table)
+            self._table = None
+            self._row = None
+            self._cell = None
+
+
+def _odds_cell_text(cell: dict[str, Any] | None) -> str:
+    if not cell:
+        return ""
+    return compact_text("".join(cell.get("text", [])))
+
+
+def _expand_odds_table(rows: list[list[dict[str, Any]]]):
+    """rowspan/colspanを展開して、公式表を通常の二次元表へ直す。"""
+    grid: list[list[dict[str, Any] | None]] = []
+    for row_index, cells in enumerate(rows):
+        while len(grid) <= row_index:
+            grid.append([])
+        column = 0
+        for cell in cells:
+            while column < len(grid[row_index]) and grid[row_index][column] is not None:
+                column += 1
+            rowspan = int(cell.get("rowspan") or 1)
+            colspan = int(cell.get("colspan") or 1)
+            for row_offset in range(rowspan):
+                target_row = row_index + row_offset
+                while len(grid) <= target_row:
+                    grid.append([])
+                needed = column + colspan
+                if len(grid[target_row]) < needed:
+                    grid[target_row].extend([None] * (needed - len(grid[target_row])))
+                for column_offset in range(colspan):
+                    grid[target_row][column + column_offset] = cell
+            column += colspan
+    width = max((len(row) for row in grid), default=0)
+    for row in grid:
+        row.extend([None] * (width - len(row)))
+    return grid
+
+
+def _official_odds_value(cell: dict[str, Any] | None) -> str | None:
+    if not cell or "oddsPoint" not in cell.get("classes", set()):
+        return None
+    value = normalized(_odds_cell_text(cell)).replace(" ", "")
+    return value if ODDS_VALUE_RE.fullmatch(value) else None
+
+
+def _parse_grouped_odds(
+    rows: list[list[dict[str, Any]]],
+    width: int,
+    parts: int,
+    *,
+    ordered: bool,
+):
+    grid = _expand_odds_table(rows)
+    if len(grid) < 2 or len(grid[0]) < width * 6:
+        return {}
+    values: dict[str, str] = {}
+    for group in range(6):
+        first = number(_odds_cell_text(grid[0][group * width]))
+        if first not in range(1, 7):
+            continue
+        for row in grid[1:]:
+            if group * width + width > len(row):
+                continue
+            if parts == 3:
+                second = number(_odds_cell_text(row[group * width]))
+                third = number(_odds_cell_text(row[group * width + 1]))
+                odds = _official_odds_value(row[group * width + 2])
+                combo = [first, second, third]
+            else:
+                second = number(_odds_cell_text(row[group * width]))
+                odds = _official_odds_value(row[group * width + 1])
+                combo = [first, second]
+            if odds is None or any(item not in range(1, 7) for item in combo):
+                continue
+            if len(set(combo)) != len(combo):
+                continue
+            if not ordered:
+                combo = sorted(combo)
+            values["-".join(map(str, combo))] = odds
+    return values
+
+
+def _parse_single_boat_odds(rows: list[list[dict[str, Any]]]):
+    grid = _expand_odds_table(rows)
+    values: dict[str, str] = {}
+    for row in grid[1:]:
+        if len(row) < 3:
+            continue
+        boat = number(_odds_cell_text(row[0]))
+        odds = _official_odds_value(row[2])
+        if boat in range(1, 7) and odds is not None:
+            values[str(boat)] = odds
+    return values
+
+
+def parse_official_odds_html(
+    content: str | bytes,
+    page: str,
+    target: date,
+    fetched_at: datetime | None = None,
+):
+    """公式5画面を7舟券種の買い目→倍率へ正規化する。"""
+    if page not in ODDS_PAGE_TYPES:
+        raise ValueError(f"unknown odds page: {page}")
+    parser = OfficialOddsHTMLParser()
+    parser.feed(ensure_text(content))
+    odds_tables = [
+        table for table in parser.tables
+        if any(
+            "oddsPoint" in cell.get("classes", set())
+            for row in table for cell in row
+        )
+    ]
+    document = compact_text(" ".join(parser.document_text))
+    update_match = re.search(
+        r"オッズ更新時間\s*([0-9]{1,2}):([0-9]{2})",
+        document,
+    )
+    fetched_at = fetched_at or datetime.now(JST)
+    updated_at = None
+    if update_match:
+        updated_at = datetime(
+            target.year,
+            target.month,
+            target.day,
+            int(update_match.group(1)),
+            int(update_match.group(2)),
+            tzinfo=JST,
+        )
+
+    parsed: dict[str, dict[str, Any]] = {}
+    if page == "odds3t" and odds_tables:
+        parsed["trifecta"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 3, 3, ordered=True
+            )
+        }
+    elif page == "odds3f" and odds_tables:
+        parsed["trio"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 3, 3, ordered=False
+            )
+        }
+    elif page == "odds2tf" and len(odds_tables) >= 2:
+        parsed["exacta"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 2, 2, ordered=True
+            )
+        }
+        parsed["quinella"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[1], 2, 2, ordered=False
+            )
+        }
+    elif page == "oddsk" and odds_tables:
+        parsed["wide"] = {
+            "values": _parse_grouped_odds(
+                odds_tables[0], 2, 2, ordered=False
+            )
+        }
+    elif page == "oddstf" and len(odds_tables) >= 2:
+        parsed["win"] = {"values": _parse_single_boat_odds(odds_tables[0])}
+        parsed["place"] = {"values": _parse_single_boat_odds(odds_tables[1])}
+
+    output: dict[str, dict[str, Any]] = {}
+    for bet_type, item in parsed.items():
+        values = item.get("values") or {}
+        if not values:
+            continue
+        output[bet_type] = {
+            "updatedAt": iso(updated_at or fetched_at),
+            "timeSource": "official" if updated_at else "fetched",
+            "fetchedAt": iso(fetched_at),
+            "values": values,
+            "entries": len(values),
+            "expectedEntries": ODDS_EXPECTED_COUNTS[bet_type],
+            "complete": len(values) == ODDS_EXPECTED_COUNTS[bet_type],
+        }
+    return output
+
+
+
+def _result_table_grid(rows: list[list[dict[str, Any]]]):
+    return [
+        [compact_text(_odds_cell_text(cell)) for cell in row]
+        for row in _expand_odds_table(rows)
+    ]
+
+
+def _normalize_result_status(value: str) -> tuple[str | None, int | None]:
+    status = normalized(value).strip().replace("着", "")
+    if re.fullmatch(r"[1-6]", status):
+        position = int(status)
+        return f"{position:02d}", position
+    aliases = {
+        "F": "F", "L": "L", "S": "S", "K": "K",
+        "転覆": "転", "転": "転",
+        "落水": "落", "落": "落",
+        "沈没": "沈", "沈": "沈",
+        "失格": "失", "失": "失",
+        "妨害": "妨", "妨": "妨",
+        "欠場": "欠", "欠": "欠",
+        "不完走": "不", "不": "不",
+        "エンスト": "エ", "エ": "エ",
+        "返還": "返", "返": "返",
+        "除外": "除", "除": "除",
+    }
+    if status in aliases:
+        return aliases[status], None
+    if re.fullmatch(r"[FLSK][0-9]?", status):
+        return status, None
+    return None, None
+
+
+def _parse_result_finish_table(tables: list[list[list[dict[str, Any]]]]):
+    statuses: list[dict[str, Any]] = []
+    finish: list[dict[str, Any]] = []
+    for table in tables:
+        grid = _result_table_grid(table)
+        header_index = None
+        for index, row in enumerate(grid):
+            joined = "|".join(row)
+            if "着" in joined and "枠" in joined and "ボートレーサー" in joined:
+                header_index = index
+                break
+        if header_index is None:
+            continue
+
+        for row in grid[header_index + 1:]:
+            if len(row) < 3:
+                continue
+            status, position = _normalize_result_status(row[0])
+            boat_number = number(row[1])
+            racer_match = re.search(r"(\d{4})\s*(.*)", normalized(row[2]))
+            if status is None or boat_number not in range(1, 7) or not racer_match:
+                continue
+            racer_number = int(racer_match.group(1))
+            name = re.sub(r"\s+", "", racer_match.group(2)).strip() or None
+            item = {
+                "position": position,
+                "status": status,
+                "boatNumber": int(boat_number),
+                "racerNumber": racer_number,
+                "name": name,
+            }
+            statuses.append(item)
+            if position is not None:
+                finish.append(item)
+        if statuses:
+            break
+
+    # rowspan展開等で同じ行が重複しても艇番ごとに1件へ正規化する。
+    by_boat = {item["boatNumber"]: item for item in statuses}
+    statuses = [by_boat[key] for key in sorted(by_boat)]
+    finish = sorted(
+        (item for item in statuses if item["position"] is not None),
+        key=lambda item: (item["position"], item["boatNumber"]),
+    )
+    return statuses, finish
+
+
+def _parse_result_payout_table(tables: list[list[list[dict[str, Any]]]]):
+    payouts = {bet_type: [] for bet_type in PAYOUT_TYPES}
+    not_established: list[str] = []
+    seen: set[tuple[str, str, int]] = set()
+
+    for table in tables:
+        grid = _result_table_grid(table)
+        header_index = None
+        for index, row in enumerate(grid):
+            joined = "|".join(row)
+            if "勝式" in joined and "組番" in joined and "払戻金" in joined:
+                header_index = index
+                break
+        if header_index is None:
+            continue
+
+        current_type: str | None = None
+        for row in grid[header_index + 1:]:
+            if len(row) < 3:
+                continue
+            label = normalized(row[0]).strip()
+            if label in PAYOUT_LABEL_TO_TYPE:
+                current_type = PAYOUT_LABEL_TO_TYPE[label]
+            elif not current_type:
+                continue
+
+            combination_text = normalized(row[1]).strip()
+            payout_text = normalized(row[2]).strip()
+            popularity_text = normalized(row[3]).strip() if len(row) > 3 else ""
+
+            if "不成立" in combination_text:
+                if current_type not in not_established:
+                    not_established.append(current_type)
+                continue
+
+            expected_parts = 3 if current_type in {"trifecta", "trio"} else 2
+            if current_type in {"win", "place"}:
+                expected_parts = 1
+            boats = re.findall(r"[1-6]", combination_text)
+            if len(boats) != expected_parts:
+                continue
+            combination = "-".join(boats)
+            payout_match = re.search(r"([0-9][0-9,]*)", payout_text)
+            if not payout_match:
+                continue
+            payout_value = int(payout_match.group(1).replace(",", ""))
+            popularity_match = re.search(r"\d+", popularity_text)
+            popularity = int(popularity_match.group(0)) if popularity_match else None
+            key = (current_type, combination, payout_value)
+            if key in seen:
+                continue
+            seen.add(key)
+            payouts[current_type].append({
+                "combination": combination,
+                "payout": payout_value,
+                "popularity": popularity,
+            })
+        break
+
+    return payouts, not_established
+
+
+def _parse_result_refund_boats(document_text: str):
+    """公式結果画面の「返還」欄から返還対象の艇番だけを抽出する。"""
+    text = compact_text(document_text)
+    # 公式画面は「返還 6」「返還 1 4」のように表示する。
+    # 次の項目見出しまでを狭く切り、ページ内の他の艇番を拾わない。
+    match = re.search(
+        r"返還\s*([1-6](?:\s+[1-6]){0,5})(?=\s*(?:備考|決まり手|スタート情報|$))",
+        text,
+    )
+    if not match:
+        return []
+    return sorted({int(item) for item in re.findall(r"[1-6]", match.group(1))})
+
+
+def _refund_boats_from_statuses(statuses: list[Mapping[str, Any]]):
+    """Kファイルなど返還欄がない結果では、明確な返還状態だけ補助判定する。"""
+    refund = []
+    for item in statuses or []:
+        status = normalized(item.get("status") or "").strip()
+        if status.startswith(("F", "L")) or status in {"欠", "欠場", "返", "返還", "除", "除外"}:
+            boat = number(item.get("boatNumber"))
+            if boat in range(1, 7):
+                refund.append(int(boat))
+    return sorted(set(refund))
+
+
+def parse_official_result_html(
+    content: str | bytes,
+    target: date,
+    fetched_at: datetime | None = None,
+):
+    """
+    公式の1レース結果画面から、着順・艇別状態・7舟券種払戻を抽出する。
+
+    結果画面がまだ未確定の場合はNoneを返し、日次Kファイルや次回確認を待つ。
+    """
+    parser = OfficialOddsHTMLParser()
+    parser.feed(ensure_text(content))
+    document_text = compact_text(" ".join(parser.document_text))
+    fetched_at = fetched_at or datetime.now(JST)
+
+    if "レース中止" in document_text:
+        return {
+            "finish": [],
+            "sanrensho": [],
+            "payouts": {bet_type: [] for bet_type in PAYOUT_TYPES},
+            "statuses": [],
+            "refundBoats": [],
+            "payoutStatus": "notEstablished",
+            "notEstablishedTypes": list(PAYOUT_TYPES),
+            "settleable": True,
+            "source": "official-web-result",
+            "fetchedAt": fetched_at.isoformat(),
+        }
+
+    statuses, finish = _parse_result_finish_table(parser.tables)
+    payouts, not_established = _parse_result_payout_table(parser.tables)
+    refund_boats = _parse_result_refund_boats(document_text)
+    if not refund_boats:
+        refund_boats = _refund_boats_from_statuses(statuses)
+    resolved_types = {
+        bet_type for bet_type in PAYOUT_TYPES
+        if payouts[bet_type] or bet_type in not_established
+    }
+    # 中途半端な表示を精算へ使わない。7舟券種すべてが確定してから採用する。
+    if len(resolved_types) != len(PAYOUT_TYPES):
+        return None
+    if not statuses and not not_established:
+        return None
+
+    has_payouts = any(payouts.values())
+    payout_status = (
+        "partial" if has_payouts and not_established
+        else "notEstablished" if not_established
+        else "paid"
+    )
+    return {
+        "finish": [
+            {
+                "position": item["position"],
+                "boatNumber": item["boatNumber"],
+                "racerNumber": item["racerNumber"],
+                "name": item.get("name"),
+            }
+            for item in finish
+        ],
+        "sanrensho": [dict(item) for item in payouts["trifecta"]],
+        "payouts": payouts,
+        "statuses": [
+            {
+                "boatNumber": item["boatNumber"],
+                "racerNumber": item["racerNumber"],
+                "status": item["status"],
+            }
+            for item in statuses
+        ],
+        "refundBoats": refund_boats,
+        "payoutStatus": payout_status,
+        "notEstablishedTypes": not_established,
+        "settleable": True,
+        "source": "official-web-result",
+        "fetchedAt": fetched_at.isoformat(),
+    }
+
+def parse_grade_date_range(value: str, year: int):
+    match = re.fullmatch(
+        r"\s*(\d{1,2})/(\d{1,2})\s*-\s*(\d{1,2})/(\d{1,2})\s*",
+        normalized(value),
+    )
+    if not match:
+        return None
+    start_month, start_day, end_month, end_day = map(int, match.groups())
+    end_year = year + 1 if end_month < start_month else year
+    try:
+        return (
+            date(year, start_month, start_day),
+            date(end_year, end_month, end_day),
+        )
+    except ValueError:
+        return None
+
+
+def parse_grade_schedule_html(content: str | bytes, year: int, category: str):
+    parser = OfficialGradeScheduleParser(year, category)
+    parser.feed(ensure_text(content))
+    return parser.events
+
+
+def fetch_official_grade_schedule(year: int):
+    """公式の年間グレード日程を3ページ、直列・低頻度で取得する。"""
+    events: list[dict[str, Any]] = []
+    pages: list[str] = []
+    for index, category in enumerate(GRADE_PAGE_CATEGORIES):
+        url = f"{GRADE_PAGE_URL}?year={year}&hcd={category}"
+        request = Request(
+            url,
+            headers={
+                "User-Agent": "mamoboat-personal/3.2 (+official-grade-cache)",
+                "Accept": "text/html,application/xhtml+xml",
+                "Accept-Language": "ja",
+            },
+        )
+        with urlopen(request, timeout=60) as response:
+            html = response.read()
+        parsed = parse_grade_schedule_html(html, year, category)
+        if not parsed:
+            raise RuntimeError(
+                f"公式グレード日程を解析できません: year={year} hcd={category}"
+            )
+        events.extend(parsed)
+        pages.append(url)
+        if index + 1 < len(GRADE_PAGE_CATEGORIES):
+            time.sleep(1.0)
+    events.sort(key=lambda item: (item["startDate"], item["venueCode"], item["grade"]))
+    return {
+        "schemaVersion": 1,
+        "year": year,
+        "generatedAt": datetime.now(JST).isoformat(),
+        "source": {
+            "type": "official-grade-schedule",
+            "pages": pages,
+            "policy": "weekly-cache",
+        },
+        "events": events,
+    }
+
+
+def read_grade_schedule(path: Path | None):
+    if not path or not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return None
+    if payload.get("source", {}).get("type") != "official-grade-schedule":
+        return None
+    if not isinstance(payload.get("events"), list):
+        return None
+    return payload
+
+
+def event_for_date(
+    events: list[dict[str, Any]] | None,
+    target: date,
+    venue_code: str,
+):
+    for event in events or []:
+        if event.get("venueCode") != venue_code:
+            continue
+        try:
+            start = date.fromisoformat(event["startDate"])
+            end = date.fromisoformat(event["endDate"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if start <= target <= end:
+            return event
+    return None
+
+
+def control_marker(line: str, expected_kind: str | None = None):
+    match = CONTROL_RE.fullmatch(normalized(line))
+    if not match:
+        return None
+    code, kind, phase = match.groups()
+    if expected_kind and kind != expected_kind:
+        return None
+    return code, phase
+
+
+def detect_venue_header(line: str) -> str | None:
+    """会場見出しを検出する。BBGN/KBGNがない異常ファイル用の補助判定。"""
+    compact = re.sub(r"\s+", "", normalized(line).replace("\u3000", ""))
+    if "ボートレース" not in compact:
+        return None
+    for name in sorted(NAME_TO_CODE, key=len, reverse=True):
+        if f"ボートレース{name}" in compact:
+            return NAME_TO_CODE[name]
+    return None
+
+
+def race_header(line: str, target: date):
+    """Bファイル見出しからR番号、名称、電話投票締切予定を得る。"""
+    text = normalized(line)
+    match = re.match(r"^\s*([0-9]{1,2})R\s+(.*)$", text)
+    if not match:
+        return None
+
+    race_no = int(match.group(1))
+    if not 1 <= race_no <= 12:
+        return None
+
+    rest = match.group(2)
+    raw_name = re.split(
+        r"H\s*[0-9]+\s*m|電話投票締切予定",
+        rest,
+        maxsplit=1,
+    )[0]
+    # 「進入固定戦隊 進入固定」のような場合は末尾の区分だけを除く。
+    raw_name = re.sub(r"\s+進入固定\s*$", "", raw_name)
+    race_name = re.sub(r"\s+", "", raw_name).strip()
+
+    close_time = None
+    close_match = re.search(
+        r"電話投票締切予定\s*([0-9]{1,2})\s*:\s*([0-9]{2})",
+        text,
+    )
+    if close_match:
+        close_time = datetime(
+            target.year,
+            target.month,
+            target.day,
+            int(close_match.group(1)),
+            int(close_match.group(2)),
+            tzinfo=JST,
+        )
+
+    return race_no, race_name, close_time
+
+
+def parse_entry(line: str):
+    """公式Bファイルの固定幅選手行を解析する。"""
+    row = line.lstrip("\ufeff \t")
+    ascii_row = normalized(row)
+    match = re.match(r"^([1-6])\s*(\d{4})", ascii_row)
+    if not match:
+        return None
+
+    boat_no = int(match.group(1))
+    racer_no = int(match.group(2))
+
+    # 公式Bファイルの固定幅（文字位置）。
+    # 艇[0] 登番[2:6] 氏名[6:10] 年齢[10:12] 支部[12:14]
+    # 体重[14:16] 級別[16:18] モーター[41:43] ボート[50:52]
+    name = row[6:10].strip().replace("\u3000", " ")
+    age = number(row[10:12])
+    branch = row[12:14].strip().replace("\u3000", " ") or None
+    weight = number(row[14:16], float)
+    racer_class = normalized(row[16:18]).strip() or None
+    motor = number(row[41:43])
+    boat_part = number(row[50:52])
+
+    if not name:
+        fallback = re.match(
+            r"^[1-6]\s*\d{4}\s*([^\d]{2,12}?)\s*[0-9]{2}",
+            ascii_row,
+        )
+        if fallback:
+            name = fallback.group(1).strip().replace("\u3000", " ")
+
+    return {
+        "boatNumber": boat_no,
+        "racerNumber": racer_no,
+        "name": name,
+        "class": racer_class,
+        "branch": branch,
+        "age": age,
+        "weight": weight,
+        "motorNumber": motor,
+        "boatPart": boat_part,
+    }
+
+
+def collect_entries_after_header(lines: list[str], header_index: int):
+    """次のR見出しまたはB制御行までから、1〜6号艇を取得する。"""
+    found: list[dict[str, Any]] = []
+    seen_boats: set[int] = set()
+
+    for line in lines[header_index + 1:]:
+        if control_marker(line, "B") or race_header(line, date(2000, 1, 1)):
+            break
+        entry = parse_entry(line)
+        if not entry:
+            continue
+        boat_no = entry["boatNumber"]
+        if boat_no not in seen_boats:
+            found.append(entry)
+            seen_boats.add(boat_no)
+        if len(found) == 6:
+            break
+
+    return sorted(found, key=lambda item: item["boatNumber"])
+
+
+def parse_b_event_block(
+    lines: list[str],
+    marker_index: int,
+    venue_code: str,
+    target: date,
+):
+    """BBGN直後の実際の見出しから大会名・開催日数を取得する。"""
+    block: list[str] = []
+    for line in lines[marker_index + 1:marker_index + 24]:
+        if control_marker(line, "B") or race_header(line, target):
+            break
+        block.append(line)
+
+    day_number = None
+    event_date = None
+    title = ""
+    after_program_heading = False
+
+    for line in block:
+        text = compact_text(line)
+        if not text:
+            continue
+
+        if day_number is None:
+            day_match = re.search(r"第\s*([0-9]+)\s*日", text)
+            if day_match:
+                day_number = int(day_match.group(1))
+
+        if event_date is None:
+            date_match = re.search(
+                r"([0-9]{4})\s*年\s*([0-9]{1,2})\s*月\s*([0-9]{1,2})\s*日",
+                text,
+            )
+            if date_match:
+                try:
+                    event_date = date(*map(int, date_match.groups()))
+                except ValueError:
+                    event_date = None
+
+        if "*** 番組表 ***" in text or "***番組表***" in text:
+            after_program_heading = True
+            continue
+
+        if after_program_heading and not title:
+            excluded = (
+                "ボートレース" in text
+                or "内容について" in text
+                or bool(re.fullmatch(r"-+", text))
+                or bool(re.match(r"^第\s*[0-9]+\s*日\s+[0-9]{4}年", text))
+            )
+            if not excluded:
+                title = text
+
+    start_date = None
+    effective_date = event_date or target
+    if day_number and day_number > 0:
+        start_date = effective_date - timedelta(days=day_number - 1)
+
+    return {
+        "title": title,
+        "dayNumber": day_number,
+        "dayLabel": f"{day_number}日目" if day_number else None,
+        "eventDate": effective_date.isoformat(),
+        "startDate": start_date.isoformat() if start_date else None,
+        "endDate": None,
+        "grade": "GENERAL",
+        "gradeLabel": GRADE_LABELS["GENERAL"],
+        "gradeSource": "default",
+        "timeZone": None,
+    }
+
+
+def _parse_schedule(files: Mapping[str, str | bytes], target: date):
+    races: dict[tuple[str, int], dict[str, Any]] = {}
+    entries: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+    events: dict[str, dict[str, Any]] = {}
+    debug: list[str] = []
+    warnings: list[str] = []
+    venue_race_counts: dict[str, int] = defaultdict(int)
+    venue_entry_counts: dict[str, int] = defaultdict(int)
+
+    for filename, raw_content in files.items():
+        lines = ensure_text(raw_content).splitlines()
+        current_venue: str | None = None
+        marker_open = False
+        file_headers = 0
+        file_entries = 0
+        file_begins = 0
+        file_ends = 0
+        file_fallbacks = 0
+
+        for index, line in enumerate(lines):
+            marker = control_marker(line, "B")
+            if marker:
+                code, phase = marker
+                if code not in CODE_TO_NAME:
+                    warnings.append(f"{filename}:{index + 1} unknown B venue code={code}")
+                    current_venue = None
+                    marker_open = False
+                    continue
+                if phase == "BGN":
+                    if marker_open:
+                        warnings.append(
+                            f"{filename}:{index + 1} BGN before previous BEND "
+                            f"previous={current_venue} next={code}"
+                        )
+                    current_venue = code
+                    marker_open = True
+                    file_begins += 1
+                    block_event = parse_b_event_block(lines, index, code, target)
+                    previous_event = events.get(code)
+                    if previous_event and previous_event != block_event:
+                        warnings.append(
+                            f"{filename}:{index + 1} duplicate event metadata "
+                            f"venue={code}"
+                        )
+                    else:
+                        events[code] = block_event
+                    debug.append(
+                        f"{filename}:{index + 1} begin {code} {CODE_TO_NAME[code]}"
+                    )
+                else:
+                    if current_venue and current_venue != code:
+                        warnings.append(
+                            f"{filename}:{index + 1} BEND mismatch "
+                            f"open={current_venue} end={code}"
+                        )
+                    current_venue = None
+                    marker_open = False
+                    file_ends += 1
+                continue
+
+            header_venue = detect_venue_header(line)
+            if header_venue:
+                if current_venue and current_venue != header_venue:
+                    if marker_open:
+                        warnings.append(
+                            f"{filename}:{index + 1} venue header mismatch "
+                            f"marker={current_venue} header={header_venue}"
+                        )
+                    else:
+                        current_venue = header_venue
+                        file_fallbacks += 1
+                elif current_venue is None:
+                    # 制御行欠損時だけ見出しをフォールバックとして使う。
+                    current_venue = header_venue
+                    file_fallbacks += 1
+                    warnings.append(
+                        f"{filename}:{index + 1} venue fallback={header_venue}"
+                    )
+
+            header = race_header(line, target)
+            if not header:
+                continue
+            if not current_venue:
+                warnings.append(
+                    f"{filename}:{index + 1} race header without venue: "
+                    f"{normalized(line).strip()}"
+                )
+                continue
+
+            race_no, race_name, close_time = header
+            key = (current_venue, race_no)
+            race_entries = collect_entries_after_header(lines, index)
+
+            if key in races:
+                warnings.append(
+                    f"{filename}:{index + 1} duplicate race "
+                    f"{current_venue}-{race_no}R"
+                )
+                continue
+
+            races[key] = {
+                "number": race_no,
+                "name": race_name,
+                "closeTime": close_time,
+            }
+            entries[key] = race_entries
+            venue_race_counts[current_venue] += 1
+            venue_entry_counts[current_venue] += len(race_entries)
+            file_headers += 1
+            file_entries += len(race_entries)
+
+        if marker_open:
+            warnings.append(f"{filename}: missing BEND for venue={current_venue}")
+        if file_begins != file_ends:
+            warnings.append(
+                f"{filename}: B marker count begins={file_begins} ends={file_ends}"
+            )
+        debug.append(
+            f"{filename}: {file_begins} venue blocks / {file_headers} races / "
+            f"{file_entries} entries / fallbacks={file_fallbacks}"
+        )
+
+    for code, name in VENUES:
+        if venue_race_counts[code]:
+            debug.append(
+                f"{code} {name}: {venue_race_counts[code]} races / "
+                f"{venue_entry_counts[code]} entries"
+            )
+
+    return races, entries, events, debug, warnings
+
+
+def parse_schedule(files: Mapping[str, str | bytes], target: date):
+    """後方互換用。従来どおり races, entries, debug の3値を返す。"""
+    races, entries, _events, debug, warnings = _parse_schedule(files, target)
+    debug.extend(f"warning: {message}" for message in warnings)
+    return races, entries, debug
+
+
+def validate_schedule(
+    races: Mapping[tuple[str, int], Mapping[str, Any]],
+    entries: Mapping[tuple[str, int], list[dict[str, Any]]],
+    events: Mapping[str, Mapping[str, Any]] | None = None,
+):
+    errors: list[str] = []
+    active_codes = sorted({code for code, _ in races})
+
+    if not active_codes:
+        errors.append("no active venues")
+
+    for code in active_codes:
+        if events is not None:
+            event = events.get(code) or {}
+            if not event.get("title"):
+                errors.append(f"{code} event title missing")
+            if not event.get("dayNumber"):
+                errors.append(f"{code} event day missing")
+            if not event.get("startDate"):
+                errors.append(f"{code} event start date missing")
+
+        race_numbers = sorted(no for venue, no in races if venue == code)
+        if race_numbers != list(range(1, 13)):
+            errors.append(f"{code} race_numbers={race_numbers}")
+
+        for race_no in race_numbers:
+            key = (code, race_no)
+            race = races[key]
+            race_entries = entries.get(key, [])
+            boats = [item.get("boatNumber") for item in race_entries]
+            racers = [item.get("racerNumber") for item in race_entries]
+
+            if len(race_entries) != 6 or boats != list(range(1, 7)):
+                errors.append(
+                    f"{code}-{race_no}R entries={len(race_entries)} boats={boats}"
+                )
+            if len(set(racers)) != len(racers) or any(not item for item in racers):
+                errors.append(f"{code}-{race_no}R invalid racer numbers={racers}")
+            if any(not item.get("name") for item in race_entries):
+                errors.append(f"{code}-{race_no}R racer name missing")
+            if race.get("closeTime") is None:
+                errors.append(f"{code}-{race_no}R closeTime missing")
+
+    return errors
+
+
+def performance_race_header(line: str):
+    text = normalized(line)
+    match = re.match(r"^\s*([0-9]{1,2})R\s+(.*?)\s+H\s*[0-9]+\s*m\b", text)
+    if not match:
+        return None
+    race_no = int(match.group(1))
+    if not 1 <= race_no <= 12:
+        return None
+    name = re.sub(r"\s+", "", match.group(2)).strip()
+    name = re.sub(r"進入固定$", "", name)
+    return race_no, name
+
+
+def parse_result_row(line: str):
+    text = normalized(line)
+    match = re.match(r"^\s*(\S{1,3})\s+([1-6])\s+(\d{4})\s+", text)
+    if not match or not RESULT_STATUS_RE.fullmatch(match.group(1)):
+        return None
+
+    status = match.group(1)
+    position = int(status) if re.fullmatch(r"0[1-6]", status) else None
+    official_name = line[13:20].replace("\u3000", "").replace(" ", "").strip()
+    return {
+        "position": position,
+        "status": status,
+        "boatNumber": int(match.group(2)),
+        "racerNumber": int(match.group(3)),
+        "name": official_name or None,
+    }
+
+
+def parse_sanrensho_line(line: str):
+    text = normalized(line)
+    match = re.match(
+        r"^\s*(?:3連単\s+)?([1-6]\s*-\s*[1-6]\s*-\s*[1-6])"
+        r"\s+([0-9,]+)\s+人気\s+([0-9]+)",
+        text,
+    )
+    if not match:
+        return None
+    combination = re.sub(r"\s+", "", match.group(1))
+    return {
+        "combination": combination,
+        "payout": int(match.group(2).replace(",", "")),
+        "popularity": int(match.group(3)),
+    }
+
+
+def parse_payout_line(line: str, continuation_type: str | None = None):
+    """競走詳細の7舟券種の払戻行を解析する。"""
+    text = normalized(line)
+    labeled = re.match(
+        r"^\s*(単勝|複勝|2連単|2連複|拡連複|3連単|3連複)\s+(.*)$",
+        text,
+    )
+    if labeled:
+        bet_type = PAYOUT_LABEL_TO_TYPE[labeled.group(1)]
+        remainder = labeled.group(2).strip()
+    elif continuation_type == "wide":
+        bet_type = "wide"
+        remainder = text.strip()
+    else:
+        return None
+
+    if re.match(r"^不成立(?:\s|$)", remainder):
+        return bet_type, [], True
+
+    payouts: list[dict[str, Any]] = []
+    if bet_type in {"win", "place"}:
+        for match in re.finditer(r"(?:^|\s)([1-6])\s+([0-9][0-9,]*)", remainder):
+            payouts.append({
+                "combination": match.group(1),
+                "payout": int(match.group(2).replace(",", "")),
+                "popularity": None,
+            })
+        if bet_type == "win" and payouts:
+            payouts = payouts[:1]
+    else:
+        parts = 3 if bet_type in {"trifecta", "trio"} else 2
+        combo_pattern = r"[1-6](?:\s*-\s*[1-6]){" + str(parts - 1) + r"}"
+        match = re.match(
+            rf"^({combo_pattern})\s+([0-9][0-9,]*)(?:\s+人気\s+([0-9]+))?",
+            remainder,
+        )
+        if match:
+            payouts.append({
+                "combination": re.sub(r"\s+", "", match.group(1)),
+                "payout": int(match.group(2).replace(",", "")),
+                "popularity": int(match.group(3)) if match.group(3) else None,
+            })
+
+    return (bet_type, payouts, False) if payouts else None
+
+
+def parse_summary_sanrensho(line: str):
+    text = normalized(line)
+    match = re.match(
+        r"^\s*([0-9]{1,2})R\s+"
+        r"([1-6]\s*-\s*[1-6]\s*-\s*[1-6])\s+([0-9,]+)",
+        text,
+    )
+    if match:
+        return {
+            "raceNumber": int(match.group(1)),
+            "combination": re.sub(r"\s+", "", match.group(2)),
+            "payout": int(match.group(3).replace(",", "")),
+            "popularity": None,
+        }
+    not_established = re.match(r"^\s*([0-9]{1,2})R\s+不成立", text)
+    if not_established:
+        return {
+            "raceNumber": int(not_established.group(1)),
+            "notEstablished": True,
+        }
+    return None
+
+
+def parse_performance(files: Mapping[str, str | bytes]):
+    results: dict[tuple[str, int], dict[str, Any]] = {}
+    debug: list[str] = []
+    warnings: list[str] = []
+    summary_payouts: dict[tuple[str, int], dict[str, Any]] = {}
+    venue_race_counts: dict[str, int] = defaultdict(int)
+    venue_row_counts: dict[str, int] = defaultdict(int)
+    venue_payout_counts: dict[str, int] = defaultdict(int)
+    venue_all_payout_counts: dict[str, int] = defaultdict(int)
+
+    for filename, raw_content in files.items():
+        lines = ensure_text(raw_content).splitlines()
+        current_venue: str | None = None
+        current_key: tuple[str, int] | None = None
+        marker_open = False
+        file_begins = 0
+        file_ends = 0
+        file_races = 0
+        file_rows = 0
+        file_payouts = 0
+        file_all_payouts = 0
+        file_fallbacks = 0
+        current_payout_type: str | None = None
+
+        for index, line in enumerate(lines):
+            marker = control_marker(line, "K")
+            if marker:
+                code, phase = marker
+                current_key = None
+                current_payout_type = None
+                if code not in CODE_TO_NAME:
+                    warnings.append(f"{filename}:{index + 1} unknown K venue code={code}")
+                    current_venue = None
+                    marker_open = False
+                    continue
+                if phase == "BGN":
+                    current_venue = code
+                    marker_open = True
+                    file_begins += 1
+                    debug.append(
+                        f"{filename}:{index + 1} begin {code} {CODE_TO_NAME[code]}"
+                    )
+                else:
+                    if current_venue and current_venue != code:
+                        warnings.append(
+                            f"{filename}:{index + 1} KEND mismatch "
+                            f"open={current_venue} end={code}"
+                        )
+                    current_venue = None
+                    marker_open = False
+                    file_ends += 1
+                continue
+
+            header_venue = detect_venue_header(line)
+            if header_venue:
+                if current_venue and current_venue != header_venue:
+                    if marker_open:
+                        warnings.append(
+                            f"{filename}:{index + 1} result venue mismatch "
+                            f"marker={current_venue} header={header_venue}"
+                        )
+                    else:
+                        current_venue = header_venue
+                        current_key = None
+                        file_fallbacks += 1
+                elif current_venue is None:
+                    current_venue = header_venue
+                    file_fallbacks += 1
+                    warnings.append(
+                        f"{filename}:{index + 1} result venue fallback={header_venue}"
+                    )
+
+            if current_venue:
+                summary = parse_summary_sanrensho(line)
+                if summary:
+                    summary_payouts[(current_venue, summary["raceNumber"])] = summary
+
+            header = performance_race_header(line)
+            if header:
+                if not current_venue:
+                    warnings.append(
+                        f"{filename}:{index + 1} result race without venue"
+                    )
+                    current_key = None
+                    continue
+                race_no, race_name = header
+                current_key = (current_venue, race_no)
+                current_payout_type = None
+                if current_key in results:
+                    warnings.append(
+                        f"{filename}:{index + 1} duplicate result "
+                        f"{current_venue}-{race_no}R"
+                    )
+                    continue
+                payouts = {bet_type: [] for bet_type in PAYOUT_TYPES}
+                results[current_key] = {
+                    "name": race_name,
+                    "finish": [],
+                    "statuses": [],
+                    "payouts": payouts,
+                    "sanrensho": payouts["trifecta"],
+                    "notEstablishedTypes": [],
+                    "payoutStatus": "pending",
+                }
+                venue_race_counts[current_venue] += 1
+                file_races += 1
+                continue
+
+            if current_key is None:
+                continue
+
+            row = parse_result_row(line)
+            if row:
+                results[current_key]["statuses"].append(row)
+                if row["position"] is not None:
+                    results[current_key]["finish"].append(row)
+                venue_row_counts[current_key[0]] += 1
+                file_rows += 1
+                continue
+
+            payout_line = parse_payout_line(line, current_payout_type)
+            if payout_line:
+                bet_type, payouts, not_established = payout_line
+                current_payout_type = bet_type
+                if not_established:
+                    results[current_key]["notEstablishedTypes"].append(bet_type)
+                    continue
+                results[current_key]["payouts"][bet_type].extend(payouts)
+                results[current_key]["payoutStatus"] = "paid"
+                venue_all_payout_counts[current_key[0]] += len(payouts)
+                file_all_payouts += len(payouts)
+                if bet_type == "trifecta":
+                    venue_payout_counts[current_key[0]] += len(payouts)
+                    file_payouts += len(payouts)
+                continue
+
+            if re.match(r"^\s*3連単\s+不成立", normalized(line)):
+                results[current_key]["payoutStatus"] = "notEstablished"
+
+        if marker_open:
+            warnings.append(f"{filename}: missing KEND for venue={current_venue}")
+        if file_begins != file_ends:
+            warnings.append(
+                f"{filename}: K marker count begins={file_begins} ends={file_ends}"
+            )
+        debug.append(
+            f"{filename}: {file_begins} venue blocks / {file_races} races / "
+            f"{file_rows} result rows / {file_payouts} sanrensho / "
+            f"{file_all_payouts} all payouts / "
+            f"fallbacks={file_fallbacks}"
+        )
+
+    # 詳細欄が欠けた場合だけ、冒頭の払戻一覧をフォールバックにする。
+    for key, summary in summary_payouts.items():
+        race_result = results.get(key)
+        if not race_result:
+            continue
+        if summary.get("notEstablished"):
+            if "trifecta" not in race_result["notEstablishedTypes"]:
+                race_result["notEstablishedTypes"].append("trifecta")
+            continue
+        if not race_result["sanrensho"]:
+            race_result["sanrensho"].append({
+                "combination": summary["combination"],
+                "payout": summary["payout"],
+                "popularity": summary["popularity"],
+            })
+            race_result["payoutStatus"] = "paid"
+            venue_payout_counts[key[0]] += 1
+
+    for race_result in results.values():
+        has_payouts = any(race_result["payouts"].values())
+        if race_result["notEstablishedTypes"]:
+            race_result["payoutStatus"] = "partial" if has_payouts else "notEstablished"
+        elif has_payouts:
+            race_result["payoutStatus"] = "paid"
+        else:
+            race_result["payoutStatus"] = "pending"
+        race_result["finish"].sort(
+            key=lambda item: (item["position"], item["boatNumber"])
+        )
+
+    for code, name in VENUES:
+        if venue_race_counts[code]:
+            debug.append(
+                f"{code} {name}: {venue_race_counts[code]} result races / "
+                f"{venue_row_counts[code]} rows / "
+                f"{venue_payout_counts[code]} sanrensho / "
+                f"{venue_all_payout_counts[code]} all payouts"
+            )
+
+    return results, debug, warnings
+
+
+def validate_performance(
+    results: Mapping[tuple[str, int], Mapping[str, Any]],
+):
+    warnings: list[str] = []
+    for (code, race_no), race_result in sorted(results.items()):
+        statuses = race_result["statuses"]
+        boats = [item["boatNumber"] for item in statuses]
+        racers = [item["racerNumber"] for item in statuses]
+        payout_status = race_result["payoutStatus"]
+
+        if payout_status != "pending" and len(statuses) != 6:
+            warnings.append(
+                f"{code}-{race_no}R performance rows={len(statuses)}"
+            )
+        if len(boats) != len(set(boats)):
+            warnings.append(f"{code}-{race_no}R duplicate result boats={boats}")
+        if len(racers) != len(set(racers)):
+            warnings.append(f"{code}-{race_no}R duplicate result racers={racers}")
+        if payout_status == "paid" and len(race_result["finish"]) < 3:
+            warnings.append(
+                f"{code}-{race_no}R paid but finish rows="
+                f"{len(race_result['finish'])}"
+            )
+
+    return warnings
+
+
+def build_payload_from_files(
+    target: date,
+    schedule_files: Mapping[str, str | bytes],
+    performance_files: Mapping[str, str | bytes] | None = None,
+    grade_events: list[dict[str, Any]] | None = None,
+    *,
+    strict: bool = True,
+):
+    races, entries, events, schedule_debug, schedule_warnings = _parse_schedule(
+        schedule_files, target
+    )
+    schedule_errors = validate_schedule(races, entries, events)
+    schedule_failures = [*schedule_warnings, *schedule_errors]
+    if strict and schedule_failures:
+        preview = "; ".join(schedule_failures[:12])
+        raise RuntimeError(
+            f"番組表の構造検証に失敗しました ({len(schedule_failures)}件): "
+            f"{preview}"
+        )
+
+    performance_results: dict[tuple[str, int], dict[str, Any]] = {}
+    performance_debug: list[str] = []
+    performance_warnings: list[str] = []
+    if performance_files:
+        (
+            performance_results,
+            performance_debug,
+            performance_warnings,
+        ) = parse_performance(performance_files)
+        performance_warnings.extend(
+            validate_performance(performance_results)
+        )
+
+    performance_loaded = bool(performance_results)
+    matched_result_count = sum(key in performance_results for key in races)
+    completed_result_count = sum(
+        key in performance_results
+        and performance_results[key]["payoutStatus"] != "pending"
+        for key in races
+    )
+    performance_complete = (
+        bool(races) and completed_result_count == len(races)
+    )
+    result_row_count = sum(
+        len(item["statuses"]) for item in performance_results.values()
+    )
+    payout_count = sum(
+        len(item["sanrensho"]) for item in performance_results.values()
+    )
+    payouts_by_type = {
+        bet_type: sum(
+            len(item.get("payouts", {}).get(bet_type, []))
+            for item in performance_results.values()
+        )
+        for bet_type in PAYOUT_TYPES
+    }
+    all_payout_count = sum(payouts_by_type.values())
+
+    warnings = [
+        *schedule_warnings,
+        *schedule_errors,
+        *performance_warnings,
+    ]
+    if performance_files and not performance_results:
+        warnings.append("performance files were present but no result races parsed")
+
+    active_codes = {code for code, _ in races}
+    payload: dict[str, Any] = {
+        "schemaVersion": 10,
+        "date": target.isoformat(),
+        "generatedAt": datetime.now(JST).isoformat(),
+        "source": {
+            "type": "official-lzh",
+            "schedule": "BOAT RACE 番組表ダウンロード",
+            "performance": "BOAT RACE 競走成績ダウンロード",
+            "performanceLoaded": performance_loaded,
+            "performanceComplete": performance_complete,
+            "gradeSchedule": "BOAT RACE グレードスケジュール週次キャッシュ",
+            "gradeScheduleLoaded": bool(grade_events),
+            "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
+            "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
+            "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
+            "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
+        },
+        "venues": [],
+        "quality": {
+            "warnings": warnings,
+            "debug": schedule_debug,
+            "performanceDebug": (
+                f"{len(performance_results)} races / "
+                f"{result_row_count} entries / {payout_count} trifecta / "
+                f"{all_payout_count} all payouts"
+                if performance_results
+                else "performance pending"
+            ),
+            "performanceDetails": performance_debug,
+            "scheduleFiles": [str(name) for name in schedule_files],
+            "performanceFiles": [str(name) for name in (performance_files or {})],
+            "stats": {
+                "scheduleVenues": len(active_codes),
+                "scheduleRaces": len(races),
+                "scheduleEntries": sum(len(items) for items in entries.values()),
+                "performanceRaces": len(performance_results),
+                "matchedResultRaces": matched_result_count,
+                "completedResultRaces": completed_result_count,
+                "resultRows": result_row_count,
+                "sanrenshoPayouts": payout_count,
+                "totalPayoutEntries": all_payout_count,
+                "payoutsByType": payouts_by_type,
+                "gradedVenues": sum(
+                    event_for_date(grade_events, target, code) is not None
+                    for code in active_codes
+                ),
+            },
+        },
+    }
+
+    for code, venue_name in VENUES:
+        venue_races: list[dict[str, Any]] = []
+        keys = sorted(
+            (key for key in races if key[0] == code),
+            key=lambda key: key[1],
+        )
+
+        for key in keys:
+            race_no = key[1]
+            race = races[key]
+            race_entries = entries.get(key, [])
+            performance = performance_results.get(key)
+            result = None
+
+            if performance:
+                schedule_by_boat = {
+                    item["boatNumber"]: item for item in race_entries
+                }
+                statuses = []
+                for item in performance["statuses"]:
+                    scheduled = schedule_by_boat.get(item["boatNumber"])
+                    if scheduled and scheduled["racerNumber"] != item["racerNumber"]:
+                        payload["quality"]["warnings"].append(
+                            f"{code}-{race_no}R boat={item['boatNumber']} "
+                            f"racer mismatch schedule={scheduled['racerNumber']} "
+                            f"performance={item['racerNumber']}"
+                        )
+                    statuses.append({
+                        "boatNumber": item["boatNumber"],
+                        "racerNumber": item["racerNumber"],
+                        "status": item["status"],
+                    })
+
+                finish = []
+                for item in performance["finish"]:
+                    scheduled = schedule_by_boat.get(item["boatNumber"], {})
+                    finish.append({
+                        "position": item["position"],
+                        "boatNumber": item["boatNumber"],
+                        "racerNumber": item["racerNumber"],
+                        "name": scheduled.get("name") or item.get("name"),
+                    })
+
+                payouts = {
+                    bet_type: [dict(item) for item in performance.get("payouts", {}).get(bet_type, [])]
+                    for bet_type in PAYOUT_TYPES
+                }
+                sanrensho = payouts["trifecta"]
+                result = {
+                    "finish": finish,
+                    "sanrensho": sanrensho,
+                    "payouts": payouts,
+                    "statuses": statuses,
+                    "refundBoats": _refund_boats_from_statuses(statuses),
+                    "payoutStatus": performance["payoutStatus"],
+                    "notEstablishedTypes": performance.get("notEstablishedTypes", []),
+                    "settleable": bool(any(payouts.values()) or performance.get("notEstablishedTypes")),
+                }
+
+            venue_races.append({
+                "number": race_no,
+                "name": race.get("name", ""),
+                "closeTime": iso(race.get("closeTime")),
+                "entries": race_entries,
+                "result": result,
+            })
+
+        event = dict(events.get(code) or {})
+        grade_event = event_for_date(grade_events, target, code)
+        if grade_event:
+            event.update({
+                "grade": grade_event["grade"],
+                "gradeLabel": grade_event.get("gradeLabel")
+                    or GRADE_LABELS.get(grade_event["grade"], grade_event["grade"]),
+                "gradeSource": "official-grade-schedule",
+                "scheduleTitle": grade_event.get("title"),
+                "startDate": grade_event.get("startDate") or event.get("startDate"),
+                "endDate": grade_event.get("endDate"),
+                "timeZone": grade_event.get("timeZone"),
+            })
+
+        final_race = venue_races[-1] if venue_races else None
+        final_name = compact_text(final_race.get("name", "")) if final_race else ""
+        is_final_day = bool(
+            final_name and "優勝" in final_name and "準優勝" not in final_name
+        )
+        if event:
+            if event.get("endDate") == target.isoformat() or is_final_day:
+                event["dayLabel"] = "最終日"
+                event["isFinalDay"] = True
+                if not event.get("endDate"):
+                    event["endDate"] = target.isoformat()
+            else:
+                event["isFinalDay"] = False
+            event["officialUrl"] = (
+                "https://www.boatrace.jp/owpc/pc/race/raceindex"
+                f"?hd={target.strftime('%Y%m%d')}&jcd={code}"
+            )
+            schedule_debug.append(
+                f"{code} {venue_name} event: grade={event.get('gradeLabel')} "
+                f"day={event.get('dayLabel')} title={event.get('title')}"
+            )
+
+        payload["venues"].append({
+            "code": code,
+            "name": venue_name,
+            "active": code in active_codes,
+            "event": event or None,
+            "races": venue_races,
+            "boatcast": f"https://race.boatcast.jp/?jo={code}",
+        })
+
+    return payload
+
+
+def build_payload(
+    target: date,
+    cache_dir: Path,
+    grade_events: list[dict[str, Any]] | None = None,
+    *,
+    strict: bool = True,
+):
+    # 取得処理は既存のLzhDownloaderを維持し、解析だけを実構造に合わせる。
+    try:
+        from boatrace_lzh import LzhDownloader
+    except ImportError as error:
+        raise RuntimeError(
+            "boatrace_lzh.LzhDownloaderを読み込めません。"
+            "既存モジュールを配置してください"
+        ) from error
+
+    downloader = LzhDownloader(
+        cache_dir=cache_dir,
+        max_workers=1,
+        request_delay=0.5,
+    )
+    schedule_files = downloader.download(target, "schedule")
+    if not schedule_files:
+        raise RuntimeError(f"番組表を取得できませんでした: {target}")
+
+    performance_files = None
+    performance_download_message = None
+    try:
+        performance_files = downloader.download(target, "performance")
+    except Exception as error:  # 当日未公開・一時障害でも番組表は更新する。
+        performance_download_message = f"performance pending: {error}"
+
+    payload = build_payload_from_files(
+        target,
+        schedule_files,
+        performance_files,
+        grade_events,
+        strict=strict,
+    )
+    if performance_download_message:
+        payload["quality"]["performanceDebug"] = performance_download_message
+        payload["quality"]["performanceDetails"].insert(
+            0, performance_download_message
+        )
+    return payload
+
+
+def _payload_race_index(payload: Mapping[str, Any]):
+    return {
+        (str(venue.get("code") or "").zfill(2), int(race.get("number") or 0)): race
+        for venue in payload.get("venues", [])
+        for race in venue.get("races", [])
+        if race.get("number")
+    }
+
+
+def merge_cached_odds(
+    payload: dict[str, Any],
+    previous: Mapping[str, Any] | None,
+):
+    """同じ開催日の直前倍率を維持し、更新失敗時にも表示を残す。"""
+    if not previous or previous.get("date") != payload.get("date"):
+        return 0
+    previous_races = _payload_race_index(previous)
+    merged = 0
+    for key, race in _payload_race_index(payload).items():
+        cached = previous_races.get(key, {}).get("odds")
+        if isinstance(cached, dict) and isinstance(cached.get("types"), dict):
+            race["odds"] = cached
+            merged += 1
+    return merged
+
+
+def odds_refresh_due(
+    odds: Mapping[str, Any] | None,
+    now: datetime,
+    min_interval_minutes: int = 10,
+):
+    """手動再実行などによる短時間の重複取得を防ぐ。"""
+    if not isinstance(odds, Mapping) or not odds.get("lastFetchedAt"):
+        return True
+    try:
+        fetched_at = datetime.fromisoformat(str(odds["lastFetchedAt"]))
+        if fetched_at.tzinfo is None:
+            fetched_at = fetched_at.replace(tzinfo=JST)
+    except (TypeError, ValueError):
+        return True
+    return (now - fetched_at).total_seconds() >= max(1, min_interval_minutes) * 60
+
+
+def official_odds_page_url(target: date, venue_code: str, race_no: int, page: str):
+    return (
+        f"https://www.boatrace.jp/owpc/pc/race/{page}"
+        f"?hd={target.strftime('%Y%m%d')}&jcd={venue_code}&rno={race_no}"
+    )
+
+
+def fetch_official_odds_page(
+    target: date,
+    venue_code: str,
+    race_no: int,
+    page: str,
+):
+    """公式画面を1ページだけ取得する。並列化はしない。"""
+    url = official_odds_page_url(target, venue_code, race_no, page)
+    request = Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; mamoboat-personal/3.9.1; "
+                "+scheduled-odds-snapshot)"
+            ),
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "ja-JP,ja;q=0.9",
+            "Cache-Control": "no-cache",
+        },
+    )
+    fetched_at = datetime.now(JST)
+    with urlopen(request, timeout=25) as response:
+        content = response.read()
+    return parse_official_odds_html(content, page, target, fetched_at), url
+
+
+def refresh_official_odds(
+    payload: dict[str, Any],
+    target: date,
+    previous: Mapping[str, Any] | None = None,
+    *,
+    window_minutes: int = 45,
+    max_races: int = 16,
+    time_budget_seconds: int = 360,
+    min_refresh_interval_minutes: int = 10,
+):
+    """
+    締切が近い各場の次レースを、GitHub Actionsの15分周期で更新する。
+
+    5画面を直列取得して7舟券種へ展開する。短時間の重複実行を抑止し、
+    連続障害時は早期終了する。失敗した画面は直前値を維持する。
+    """
+    cached_count = merge_cached_odds(payload, previous)
+    now = datetime.now(JST)
+    stats = {
+        "cachedRaces": cached_count,
+        "candidateRaces": 0,
+        "fetchedRaces": 0,
+        "skippedRecent": 0,
+        "requests": 0,
+        "entries": 0,
+        "errors": [],
+    }
+    if target != now.date():
+        return stats
+
+    candidates: list[tuple[datetime, str, str, dict[str, Any]]] = []
+    for venue in payload.get("venues", []):
+        if not venue.get("active"):
+            continue
+        for race in venue.get("races", []):
+            try:
+                close_at = datetime.fromisoformat(str(race.get("closeTime")))
+            except (TypeError, ValueError):
+                continue
+            seconds = (close_at - now).total_seconds()
+            if 0 < seconds <= max(5, window_minutes) * 60:
+                candidates.append(
+                    (close_at, str(venue.get("code")).zfill(2), str(venue.get("name")), race)
+                )
+                break
+
+    candidates.sort(key=lambda item: item[0])
+    candidates = candidates[:max_races]
+    stats["candidateRaces"] = len(candidates)
+    started = time.monotonic()
+    consecutive_errors = 0
+
+    for close_at, venue_code, venue_name, race in candidates:
+        if time.monotonic() - started >= time_budget_seconds:
+            stats["errors"].append("odds time budget reached")
+            break
+        odds = race.setdefault("odds", {
+            "source": "official-web-snapshot",
+            "policy": "scheduled-15-minute-refresh",
+            "refreshIntervalMinutes": 15,
+            "types": {},
+        })
+        odds.setdefault("types", {})
+        odds["policy"] = "scheduled-15-minute-refresh"
+        odds["refreshIntervalMinutes"] = 15
+        if not odds_refresh_due(odds, now, min_refresh_interval_minutes):
+            stats["skippedRecent"] += 1
+            continue
+        race_fetched = False
+        for page in ODDS_PAGE_TYPES:
+            if time.monotonic() - started >= time_budget_seconds:
+                break
+            try:
+                parsed, url = fetch_official_odds_page(
+                    target, venue_code, int(race["number"]), page
+                )
+                stats["requests"] += 1
+                if not parsed:
+                    raise RuntimeError("倍率データなし")
+                odds["types"].update(parsed)
+                odds["officialUrl"] = url
+                race_fetched = True
+                consecutive_errors = 0
+            except Exception as error:
+                stats["requests"] += 1
+                consecutive_errors += 1
+                stats["errors"].append(
+                    f"{venue_code} {venue_name} {race.get('number')}R "
+                    f"{page}: {error}"
+                )
+                if consecutive_errors >= 3:
+                    break
+            time.sleep(0.7)
+        if race_fetched:
+            odds["lastFetchedAt"] = datetime.now(JST).isoformat()
+            stats["fetchedRaces"] += 1
+        if consecutive_errors >= 3:
+            stats["errors"].append("odds circuit breaker opened")
+            break
+
+    odds_races = 0
+    odds_entries = 0
+    for race in _payload_race_index(payload).values():
+        types = race.get("odds", {}).get("types", {})
+        if types:
+            odds_races += 1
+            odds_entries += sum(
+                len(item.get("values", {}))
+                for item in types.values() if isinstance(item, dict)
+            )
+    stats["storedRaces"] = odds_races
+    stats["entries"] = odds_entries
+    payload["quality"]["stats"]["oddsRaces"] = odds_races
+    payload["quality"]["stats"]["oddsEntries"] = odds_entries
+    payload["quality"]["oddsDebug"] = (
+        f"cached={cached_count} candidates={stats['candidateRaces']} "
+        f"fetched={stats['fetchedRaces']} recent={stats['skippedRecent']} "
+        f"requests={stats['requests']} "
+        f"stored={odds_races} entries={odds_entries}"
+    )
+    if stats["errors"]:
+        payload["quality"]["warnings"].extend(stats["errors"])
+    return stats
+
+
+
+def merge_cached_results(
+    payload: dict[str, Any],
+    previous: Mapping[str, Any] | None,
+):
+    """日次Kファイルがまだ未更新でも、直前に取得済みの公式結果を維持する。"""
+    if not previous or previous.get("date") != payload.get("date"):
+        return 0
+    previous_races = _payload_race_index(previous)
+    merged = 0
+    for key, race in _payload_race_index(payload).items():
+        current = race.get("result")
+        if isinstance(current, Mapping) and current.get("settleable") is True:
+            continue
+
+        cached_race = previous_races.get(key, {})
+        cached_check = cached_race.get("resultCheck")
+        if isinstance(cached_check, Mapping) and not isinstance(race.get("resultCheck"), Mapping):
+            race["resultCheck"] = dict(cached_check)
+
+        cached = cached_race.get("result")
+        if not isinstance(cached, Mapping):
+            continue
+        if cached.get("settleable") is not True:
+            continue
+        race["result"] = dict(cached)
+        merged += 1
+    return merged
+
+
+def official_result_page_url(target: date, venue_code: str, race_no: int):
+    return (
+        "https://www.boatrace.jp/owpc/pc/race/raceresult"
+        f"?hd={target.strftime('%Y%m%d')}&jcd={venue_code}&rno={race_no}"
+    )
+
+
+def fetch_official_result_page(
+    target: date,
+    venue_code: str,
+    race_no: int,
+):
+    """終了済みの1レースだけ公式結果画面を取得する。"""
+    url = official_result_page_url(target, venue_code, race_no)
+    request = Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; mamoboat-personal/3.9.1; "
+                "+scheduled-result-check)"
+            ),
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "ja-JP,ja;q=0.9",
+            "Cache-Control": "no-cache",
+        },
+    )
+    fetched_at = datetime.now(JST)
+    with urlopen(request, timeout=25) as response:
+        content = response.read()
+    result = parse_official_result_html(content, target, fetched_at)
+    if result is not None:
+        result["officialUrl"] = url
+    return result, url
+
+
+def _refresh_result_quality(payload: dict[str, Any], cached_web_results: int = 0):
+    all_races = list(_payload_race_index(payload).values())
+    completed = sum(
+        1 for race in all_races
+        if isinstance(race.get("result"), Mapping)
+        and race["result"].get("settleable") is True
+    )
+    web_results = sum(
+        1 for race in all_races
+        if isinstance(race.get("result"), Mapping)
+        and race["result"].get("source") == "official-web-result"
+    )
+    stats = payload.setdefault("quality", {}).setdefault("stats", {})
+    stats.setdefault("lzhCompletedResultRaces", int(stats.get("completedResultRaces") or 0))
+    stats["completedResultRaces"] = completed
+    stats["webResultRaces"] = web_results
+    stats["cachedWebResultRaces"] = cached_web_results
+    source = payload.setdefault("source", {})
+    source["fastResults"] = "BOAT RACE 公式レース結果画面の終了レース限定チェック"
+    source["fastResultPolicy"] = "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得"
+    return completed, web_results
+
+
+def refresh_official_results(
+    payload: dict[str, Any],
+    target: date,
+    previous: Mapping[str, Any] | None = None,
+    *,
+    grace_minutes: int = 5,
+    max_races: int = 16,
+    time_budget_seconds: int = 180,
+):
+    """
+    終了した未確定レースだけを公式結果画面で低頻度確認する。
+
+    1レース1ページ、直列取得、最大件数・時間上限つき。
+    日次Kファイルが後から来た場合はKファイル側のresultを優先する。
+    """
+    cached_count = merge_cached_results(payload, previous)
+    now = datetime.now(JST)
+    stats = {
+        "cachedRaces": cached_count,
+        "candidateRaces": 0,
+        "requests": 0,
+        "fetchedRaces": 0,
+        "pendingRaces": 0,
+        "errors": [],
+    }
+    _refresh_result_quality(payload, cached_count)
+    if target != now.date():
+        return stats
+
+    candidates: list[tuple[datetime, str, str, dict[str, Any]]] = []
+    for venue in payload.get("venues", []):
+        if not venue.get("active"):
+            continue
+        for race in venue.get("races", []):
+            result = race.get("result")
+            if isinstance(result, Mapping) and result.get("settleable") is True:
+                continue
+            try:
+                close_at = datetime.fromisoformat(str(race.get("closeTime")))
+                if close_at.tzinfo is None:
+                    close_at = close_at.replace(tzinfo=JST)
+            except (TypeError, ValueError):
+                continue
+            if now < close_at + timedelta(minutes=max(1, grace_minutes)):
+                continue
+            candidates.append((
+                close_at,
+                str(venue.get("code") or "").zfill(2),
+                str(venue.get("name") or ""),
+                race,
+            ))
+
+    # 開催場が多い日でも特定場の「中間レース」が候補外に残らないよう、
+    # 各場の古い未確定レースから1件ずつラウンドロビンで選ぶ。
+    # 通常は各場で10分の間に増える終了レースは1件程度なので、
+    # 1巡目で各場を公平に確認し、残り枠で各場の2件目以降を順番に処理する。
+    limit = max(1, max_races)
+    by_venue: dict[str, list[tuple[datetime, str, str, dict[str, Any]]]] = defaultdict(list)
+    for item in sorted(candidates, key=lambda entry: entry[0]):
+        by_venue[item[1]].append(item)
+
+    selected: list[tuple[datetime, str, str, dict[str, Any]]] = []
+    depth = 0
+    while len(selected) < limit:
+        round_items = [
+            items[depth]
+            for items in by_venue.values()
+            if depth < len(items)
+        ]
+        if not round_items:
+            break
+        round_items.sort(key=lambda item: item[0])
+        for item in round_items:
+            selected.append(item)
+            if len(selected) >= limit:
+                break
+        depth += 1
+    candidates = selected
+    stats["candidateRaces"] = len(candidates)
+    started = time.monotonic()
+    consecutive_errors = 0
+
+    for close_at, venue_code, venue_name, race in candidates:
+        if time.monotonic() - started >= time_budget_seconds:
+            stats["errors"].append("result time budget reached")
+            break
+        race_no = int(race.get("number") or 0)
+        expected_url = official_result_page_url(target, venue_code, race_no)
+        try:
+            result, url = fetch_official_result_page(
+                target, venue_code, race_no
+            )
+            stats["requests"] += 1
+            check_state = "confirmed" if result is not None else "waiting"
+            previous_check = race.get("resultCheck")
+            if (
+                not isinstance(previous_check, Mapping)
+                or previous_check.get("state") != check_state
+                or previous_check.get("officialUrl") != url
+            ):
+                race["resultCheck"] = {
+                    "state": check_state,
+                    "checkedAt": datetime.now(JST).isoformat(),
+                    "officialUrl": url,
+                }
+            if result is None:
+                stats["pendingRaces"] += 1
+            else:
+                race["result"] = result
+                stats["fetchedRaces"] += 1
+            consecutive_errors = 0
+        except Exception as error:
+            stats["requests"] += 1
+            consecutive_errors += 1
+            previous_check = race.get("resultCheck")
+            if (
+                not isinstance(previous_check, Mapping)
+                or previous_check.get("state") != "error"
+                or previous_check.get("officialUrl") != expected_url
+            ):
+                race["resultCheck"] = {
+                    "state": "error",
+                    "checkedAt": datetime.now(JST).isoformat(),
+                    "officialUrl": expected_url,
+                }
+            stats["errors"].append(
+                f"{venue_code} {venue_name} {race.get('number')}R: {error}"
+            )
+            if consecutive_errors >= 3:
+                stats["errors"].append("result circuit breaker opened")
+                break
+        time.sleep(0.8)
+
+    completed, web_results = _refresh_result_quality(payload, cached_count)
+    payload.setdefault("quality", {})["fastResultDebug"] = (
+        f"cached={cached_count} candidates={stats['candidateRaces']} "
+        f"fetched={stats['fetchedRaces']} pending={stats['pendingRaces']} "
+        f"requests={stats['requests']} selection=venue-round-robin "
+        f"storedWeb={web_results} total={completed}"
+    )
+    return stats
+
+def atomic_write_text(path: Path, text: str):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_name = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_name = handle.name
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_name, path)
+        temp_name = None
+    finally:
+        if temp_name:
+            Path(temp_name).unlink(missing_ok=True)
+
+
+def reuse_generated_at_when_unchanged(payload: dict[str, Any], path: Path):
+    """実データに変化がない定期実行では不要なコミットを作らない。"""
+    try:
+        previous = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return
+
+    current_content = {
+        key: value for key, value in payload.items() if key != "generatedAt"
+    }
+    previous_content = {
+        key: value for key, value in previous.items() if key != "generatedAt"
+    }
+    if current_content == previous_content and previous.get("generatedAt"):
+        payload["generatedAt"] = previous["generatedAt"]
+
+
+def build_result_archive(payload: dict[str, Any]) -> dict[str, Any]:
+    """検索・長期保存用に、確定した成績と払戻だけを小さく残す。"""
+    venues = []
+    race_count = 0
+    payout_count = 0
+    for venue in payload.get("venues", []):
+        races = []
+        for race in venue.get("races", []):
+            result = race.get("result")
+            if not result:
+                continue
+            races.append(
+                {
+                    "number": race.get("number"),
+                    "name": race.get("name"),
+                    "closeTime": race.get("closeTime"),
+                    "result": result,
+                }
+            )
+            race_count += 1
+            payout_count += sum(
+                len(items) for items in result.get("payouts", {}).values()
+                if isinstance(items, list)
+            )
+        if races:
+            venues.append(
+                {
+                    "code": venue.get("code"),
+                    "name": venue.get("name"),
+                    "event": venue.get("event"),
+                    "races": races,
+                }
+            )
+    return {
+        "schemaVersion": 1,
+        "date": payload.get("date"),
+        "generatedAt": payload.get("generatedAt"),
+        "source": {"type": "official-result-archive", "inputs": ["official-lzh", "official-web-result"]},
+        "venues": venues,
+        "stats": {
+            "venues": len(venues),
+            "races": race_count,
+            "payouts": payout_count,
+        },
+    }
+
+
+def write_result_archive(payload: dict[str, Any], output_dir: Path):
+    """日別アーカイブと、GitHub Pagesから参照できる日付索引を更新する。"""
+    archive_dir = output_dir / "results"
+    archive_path = archive_dir / f"{payload['date']}.json"
+    archive = build_result_archive(payload)
+    reuse_generated_at_when_unchanged(archive, archive_path)
+    atomic_write_text(
+        archive_path,
+        json.dumps(archive, ensure_ascii=False, indent=2),
+    )
+
+    dates = []
+    for path in sorted(archive_dir.glob("????-??-??.json"), reverse=True):
+        try:
+            item = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            continue
+        stats = item.get("stats", {})
+        dates.append(
+            {
+                "date": item.get("date") or path.stem,
+                "venues": int(stats.get("venues") or 0),
+                "races": int(stats.get("races") or 0),
+                "payouts": int(stats.get("payouts") or 0),
+                "generatedAt": item.get("generatedAt"),
+            }
+        )
+    index_payload = {
+        "schemaVersion": 1,
+        "generatedAt": payload.get("generatedAt"),
+        "dates": dates,
+    }
+    index_path = archive_dir / "index.json"
+    reuse_generated_at_when_unchanged(index_payload, index_path)
+    atomic_write_text(
+        index_path,
+        json.dumps(index_payload, ensure_ascii=False, indent=2),
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date")
+    parser.add_argument("--output", default="data/today.json")
+    parser.add_argument("--cache-dir", default=".cache/boatrace_lzh")
+    parser.add_argument(
+        "--grade-cache",
+        default="",
+        help="公式グレード日程の低頻度キャッシュJSON",
+    )
+    parser.add_argument(
+        "--refresh-grade-cache",
+        action="store_true",
+        help="公式グレード日程3ページを再取得する（週次用）",
+    )
+    parser.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help="構造不完全な番組表でもデバッグ用JSONを出力する",
+    )
+    parser.add_argument(
+        "--require-performance",
+        action="store_true",
+        help="競走成績が未取得なら失敗させる（夜間確認用）",
+    )
+    parser.add_argument(
+        "--skip-odds",
+        action="store_true",
+        help="締切前の参考オッズ取得を省略する（解析テスト用）",
+    )
+    parser.add_argument(
+        "--odds-window-minutes",
+        type=int,
+        default=45,
+        help="参考オッズを15分周期で取得する締切前の時間幅（既定45分）",
+    )
+    parser.add_argument(
+        "--fast-results-only",
+        action="store_true",
+        help="既存JSONを読み、終了済み未確定レースの公式結果だけ確認する",
+    )
+    parser.add_argument(
+        "--skip-fast-results",
+        action="store_true",
+        help="通常同期時の公式結果画面チェックを省略する",
+    )
+    parser.add_argument(
+        "--result-grace-minutes",
+        type=int,
+        default=5,
+        help="締切後、結果画面の確認を始めるまでの待機分（既定5分）",
+    )
+    parser.add_argument(
+        "--result-max-races",
+        type=int,
+        default=16,
+        help="1回に確認する終了済み未確定レース数の上限（既定16）",
+    )
+    args = parser.parse_args()
+
+    raw_date = (args.date or "").strip()
+    target = date.fromisoformat(raw_date) if raw_date else datetime.now(JST).date()
+    output = Path(args.output)
+    dated = output.parent / f"{target.isoformat()}.json"
+
+    if args.fast_results_only:
+        source_path = output if target == datetime.now(JST).date() else dated
+        try:
+            payload = json.loads(source_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            print(f"fast results skipped: base JSON not available: {source_path}")
+            return
+        if payload.get("date") != target.isoformat():
+            print(
+                f"fast results skipped: JSON date={payload.get('date')} "
+                f"target={target.isoformat()}"
+            )
+            return
+        before = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        stats = refresh_official_results(
+            payload,
+            target,
+            None,
+            grace_minutes=max(1, args.result_grace_minutes),
+            max_races=max(1, args.result_max_races),
+        )
+        if stats["fetchedRaces"] <= 0:
+            print(
+                "---- fast results ----\n"
+                f"candidates={stats['candidateRaces']} requests={stats['requests']} "
+                f"fetched=0 pending={stats['pendingRaces']} "
+                f"errors={len(stats['errors'])}"
+            )
+            for message in stats["errors"]:
+                print(message)
+            return
+        payload["generatedAt"] = datetime.now(JST).isoformat()
+        text_out = json.dumps(payload, ensure_ascii=False, indent=2)
+        atomic_write_text(dated, text_out)
+        if target == datetime.now(JST).date():
+            atomic_write_text(output, text_out)
+        write_result_archive(payload, output.parent)
+        print(
+            "---- fast results ----\n"
+            f"candidates={stats['candidateRaces']} requests={stats['requests']} "
+            f"fetched={stats['fetchedRaces']} pending={stats['pendingRaces']} "
+            f"errors={len(stats['errors'])}"
+        )
+        for message in stats["errors"]:
+            print(message)
+        return
+
+    grade_cache = Path(args.grade_cache) if args.grade_cache else Path(
+        f"data/grade_schedule_{target.year}.json"
+    )
+    grade_payload = read_grade_schedule(grade_cache)
+    grade_error = None
+    if (
+        args.refresh_grade_cache
+        or grade_payload is None
+        or int(grade_payload.get("year") or 0) != target.year
+    ):
+        try:
+            refreshed = fetch_official_grade_schedule(target.year)
+            atomic_write_text(
+                grade_cache,
+                json.dumps(refreshed, ensure_ascii=False, indent=2),
+            )
+            grade_payload = refreshed
+        except Exception as error:
+            grade_error = f"grade schedule cache pending: {error}"
+
+    payload = build_payload(
+        target,
+        Path(args.cache_dir),
+        (grade_payload or {}).get("events", []),
+        strict=not args.allow_partial,
+    )
+    if grade_error:
+        payload["quality"]["warnings"].append(grade_error)
+    if args.require_performance and not payload["source"]["performanceLoaded"]:
+        raise RuntimeError(f"競走成績を取得できませんでした: {target}")
+
+    # 検証済みJSONだけを原子的に置換する。
+    # 失敗時は直前のtoday.jsonを維持する。
+    previous_payload = None
+    try:
+        previous_payload = json.loads(dated.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        pass
+    if args.skip_odds:
+        merge_cached_odds(payload, previous_payload)
+    else:
+        refresh_official_odds(
+            payload,
+            target,
+            previous_payload,
+            window_minutes=max(5, args.odds_window_minutes),
+        )
+
+    if args.skip_fast_results:
+        cached_results = merge_cached_results(payload, previous_payload)
+        _refresh_result_quality(payload, cached_results)
+        result_stats = None
+    else:
+        result_stats = refresh_official_results(
+            payload,
+            target,
+            previous_payload,
+            grace_minutes=max(1, args.result_grace_minutes),
+            max_races=max(1, args.result_max_races),
+        )
+    reuse_generated_at_when_unchanged(payload, dated)
+    text = json.dumps(payload, ensure_ascii=False, indent=2)
+    atomic_write_text(dated, text)
+    if target == datetime.now(JST).date():
+        atomic_write_text(output, text)
+    write_result_archive(payload, output.parent)
+
+    active = sum(venue["active"] for venue in payload["venues"])
+    race_count = sum(len(venue["races"]) for venue in payload["venues"])
+    entry_count = sum(
+        len(race["entries"])
+        for venue in payload["venues"]
+        for race in venue["races"]
+    )
+    warning_count = len(payload["quality"]["warnings"])
+
+    print(
+        f"{target}: {active} venues / {race_count} races / "
+        f"{entry_count} entries / warnings={warning_count}"
+    )
+    print("---- schedule ----")
+    for message in payload["quality"]["debug"]:
+        print(message)
+    print("---- performance ----")
+    print(payload["quality"]["performanceDebug"])
+    for message in payload["quality"]["performanceDetails"]:
+        print(message)
+    print("---- delayed odds ----")
+    print(payload["quality"].get("oddsDebug", "odds fetch skipped"))
+    print("---- fast results ----")
+    print(payload["quality"].get("fastResultDebug", "result fetch skipped"))
+    if result_stats and result_stats.get("errors"):
+        for message in result_stats["errors"]:
+            print(message)
+    if payload["quality"]["warnings"]:
+        print("---- warnings ----")
+        for message in payload["quality"]["warnings"]:
+            print(message)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,113 @@
+name: Publish MAMO BOAT dev preview
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mamoboat-dev-preview
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          path: source
+          fetch-depth: 0
+
+      - name: Check out production main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: publish
+          fetch-depth: 0
+
+      - name: Build isolated dev preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf publish/dev
+          mkdir -p publish/dev
+          rsync -a --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'dev' \
+            source/ publish/dev/
+
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('publish/dev')
+
+          app = root / 'app.js'
+          text = app.read_text(encoding='utf-8')
+          text = text.replace('const KEY = "mamoboat_v40_personal";', 'const KEY = "mamoboat_v40_personal_dev";', 1)
+          text = text.replace('const LEGACY_KEYS = [', 'const LEGACY_KEYS = [];\
+  const DEV_UNUSED_LEGACY_KEYS = [', 1)
+          text = text.replace('const basePath = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;', 'const basePath = date === C.jstDate() ? "../data/today.json" : `../data/${date}.json`;', 1)
+          app.write_text(text, encoding='utf-8')
+
+          pilot = root / 'pilot-config.js'
+          text = pilot.read_text(encoding='utf-8')
+          text = text.replace('enabled: true,', 'enabled: false,', 1)
+          text = text.replace('const MAMO_PLAN_STATE_KEY = "mamoboat_v40_personal";', 'const MAMO_PLAN_STATE_KEY = "mamoboat_v40_personal_dev";', 1)
+          pilot.write_text(text, encoding='utf-8')
+
+          sw = root / 'sw.js'
+          text = sw.read_text(encoding='utf-8')
+          text = text.replace('const CACHE = "mamoboat-v401-central-pilot-17";', 'const CACHE = "mamoboat-v401-central-pilot-17-dev";', 1)
+          sw.write_text(text, encoding='utf-8')
+
+          manifest = root / 'manifest.webmanifest'
+          data = json.loads(manifest.read_text(encoding='utf-8'))
+          data['name'] = 'MAMO BOAT DEV'
+          data['short_name'] = 'MAMO DEV'
+          manifest.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          index = root / 'index.html'
+          text = index.read_text(encoding='utf-8')
+          text = text.replace('<title>MAMO BOAT v4.0.1</title>', '<title>MAMO BOAT DEV v4.0.1</title>', 1)
+          badge = '''\n  <div id="mamoDevBadge" aria-label="開発版">DEV</div>\n  <style>\n    #mamoDevBadge{position:fixed;top:max(8px,env(safe-area-inset-top));right:10px;z-index:99999;background:#b42318;color:#fff;font:800 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.08em;padding:7px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none}\n  </style>\n'''
+          text = text.replace('</body>', badge + '</body>', 1)
+          index.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate dev preview syntax
+        run: |
+          node --check publish/dev/app.js
+          node --check publish/dev/pilot-config.js
+          node --check publish/dev/sw.js
+
+      - name: Publish dev folder to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd publish
+          git config user.name "mamoboat-dev-preview-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add dev
+          if git diff --cached --quiet; then
+            echo "No dev preview changes"
+            exit 0
+          fi
+          git commit -m "Publish develop preview"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          exit 1
