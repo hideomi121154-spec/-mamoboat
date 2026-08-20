@@ -1,24 +1,24 @@
-/* MAMO BOAT Race Layout Refresh v3 — tap-only race UI + approved home hero/date bridge. */
+/* MAMO BOAT Race Layout Refresh v4 — tap-only race UI + approved home hero/date bridge. */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_LAYOUT_REFRESH_V3__) return;
-  window.__MAMO_RACE_LAYOUT_REFRESH_V3__ = true;
+  if (window.__MAMO_RACE_LAYOUT_REFRESH_V4__) return;
+  window.__MAMO_RACE_LAYOUT_REFRESH_V4__ = true;
 
   const s = document.createElement("style");
-  s.id = "mamoRaceLayoutRefreshV3";
+  s.id = "mamoRaceLayoutRefreshV4";
   s.textContent = `
-    /* Home: approved Mamoru framing. This module is known to reach the iPhone/PWA. */
+    /* Home: large Mamoru, but keep the whole face inside the masthead. */
     #home .home-masthead .masthead-character{
       position:absolute!important;
-      left:-22%!important;
+      left:-10%!important;
       right:auto!important;
-      top:-22%!important;
+      top:-4%!important;
       bottom:auto!important;
-      width:145%!important;
-      height:145%!important;
+      width:128%!important;
+      height:128%!important;
       max-width:none!important;
       object-fit:cover!important;
-      object-position:67% 22%!important;
+      object-position:67% 28%!important;
       transform:none!important;
     }
 
@@ -83,10 +83,11 @@
 
     @media(max-width:520px){
       #home .home-masthead .masthead-character{
-        left:-24%!important;
-        top:-24%!important;
-        width:148%!important;
-        height:148%!important;
+        left:-12%!important;
+        top:-6%!important;
+        width:132%!important;
+        height:132%!important;
+        object-position:67% 29%!important;
       }
       #raceView .boat{grid-template-columns:48px minmax(0,1fr) 76px;gap:8px;padding:8px 8px 8px 7px;min-height:68px;}
       #raceView .num{width:46px;height:46px;font-size:21px;}
