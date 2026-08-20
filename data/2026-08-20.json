@@ -1,7 +1,7 @@
 {
   "schemaVersion": 10,
   "date": "2026-08-20",
-  "generatedAt": "2026-08-20T11:11:14.816747+09:00",
+  "generatedAt": "2026-08-20T12:10:14.537309+09:00",
   "source": {
     "type": "official-lzh",
     "schedule": "Boatrace Open API fallback (非公式・当日公開データ)",
@@ -12,8 +12,8 @@
     "gradeScheduleLoaded": false,
     "odds": "未取得",
     "oddsPolicy": "自前同期復旧後に通常取得へ戻す",
-    "fastResults": "Boatrace Open API fallback",
-    "fastResultPolicy": "自前同期が前日止まりの場合のみ利用",
+    "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
+    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
     "fallback": true,
     "fallbackUrl": "https://boatraceopenapi.github.io/api/v1/2026/20260820.json"
   },
@@ -340,22 +340,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 3,
+                "racerNumber": 4551,
+                "name": "三川昂暁"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 4066,
+                "name": "東本勝利"
+              },
+              {
+                "position": 3,
+                "boatNumber": 1,
+                "racerNumber": 3294,
+                "name": "野中義生"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 4472,
+                "name": "尾嶋一広"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 3445,
+                "name": "加藤高史"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5405,
+                "name": "竹内来"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "3-2-1",
+                "payout": 7380,
+                "popularity": 43
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "3",
+                  "payout": 370,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "3",
+                  "payout": 220,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 270,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "3-2",
+                  "payout": 1510,
+                  "popularity": 9
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "2-3",
+                  "payout": 510,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "2-3",
+                  "payout": 300,
+                  "popularity": 6
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 420,
+                  "popularity": 7
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 270,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "3-2-1",
+                  "payout": 7380,
+                  "popularity": 43
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 880,
+                  "popularity": 5
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3294,
+                "status": "03"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4066,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4551,
+                "status": "01"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3445,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4472,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5405,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:01.882268+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=02&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:02.244725+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=02&rno=2"
           }
         },
         {
@@ -1371,22 +1510,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3790,
+                "name": "佐口達也"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 4252,
+                "name": "松下哲也"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 5125,
+                "name": "高井雄基"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 3461,
+                "name": "渡邊哲也"
+              },
+              {
+                "position": 5,
+                "boatNumber": 3,
+                "racerNumber": 3982,
+                "name": "福田理"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 4095,
+                "name": "福来剛"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-5",
+                "payout": 4020,
+                "popularity": 12
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 210,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 200,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 250,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 1230,
+                  "popularity": 4
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 580,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 190,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-5",
+                  "payout": 450,
+                  "popularity": 8
+                },
+                {
+                  "combination": "4-5",
+                  "payout": 480,
+                  "popularity": 9
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-5",
+                  "payout": 4020,
+                  "popularity": 12
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-4-5",
+                  "payout": 860,
+                  "popularity": 3
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3790,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3461,
+                "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3982,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4252,
+                "status": "02"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5125,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4095,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:05.623198+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=04&rno=1"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:06.016016+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=04&rno=1"
           }
         },
         {
@@ -2485,22 +2763,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 2,
+                "racerNumber": 4883,
+                "name": "岡部大輝"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 5006,
+                "name": "久保原秀人"
+              },
+              {
+                "position": 3,
+                "boatNumber": 6,
+                "racerNumber": 3467,
+                "name": "森弘行"
+              },
+              {
+                "position": 4,
+                "boatNumber": 4,
+                "racerNumber": 4863,
+                "name": "三浦裕貴"
+              },
+              {
+                "position": 5,
+                "boatNumber": 1,
+                "racerNumber": 3377,
+                "name": "塚田修二"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 4177,
+                "name": "萬正嗣"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "2-3-6",
+                "payout": 5230,
+                "popularity": 21
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "2",
+                  "payout": 160,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "2",
+                  "payout": 210,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 210,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "2-3",
+                  "payout": 1030,
+                  "popularity": 4
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "2-3",
+                  "payout": 730,
+                  "popularity": 3
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "2-3",
+                  "payout": 380,
+                  "popularity": 5
+                },
+                {
+                  "combination": "2-6",
+                  "payout": 390,
+                  "popularity": 6
+                },
+                {
+                  "combination": "3-6",
+                  "payout": 11070,
+                  "popularity": 15
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "2-3-6",
+                  "payout": 5230,
+                  "popularity": 21
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "2-3-6",
+                  "payout": 3230,
+                  "popularity": 13
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3377,
+                "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4883,
+                "status": "01"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5006,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4863,
+                "status": "04"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4177,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3467,
+                "status": "03"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:04.471507+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=05&rno=1"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:04.822927+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=05&rno=1"
           }
         },
         {
@@ -3845,22 +4262,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 6,
+                "racerNumber": 4357,
+                "name": "田中和也"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 4229,
+                "name": "市川美宏"
+              },
+              {
+                "position": 3,
+                "boatNumber": 1,
+                "racerNumber": 3842,
+                "name": "星野太郎"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 5204,
+                "name": "宇恵有香"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 5010,
+                "name": "宇留田翔平"
+              },
+              {
+                "position": 6,
+                "boatNumber": 2,
+                "racerNumber": 3904,
+                "name": "森貴洋"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "6-3-1",
+                "payout": 41100,
+                "popularity": 81
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "6",
+                  "payout": 360,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "6",
+                  "payout": 280,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 900,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "6-3",
+                  "payout": 8930,
+                  "popularity": 20
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "3-6",
+                  "payout": 6830,
+                  "popularity": 12
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "3-6",
+                  "payout": 1130,
+                  "popularity": 10
+                },
+                {
+                  "combination": "1-6",
+                  "payout": 290,
+                  "popularity": 4
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 710,
+                  "popularity": 7
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "6-3-1",
+                  "payout": 41100,
+                  "popularity": 81
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-6",
+                  "payout": 760,
+                  "popularity": 4
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3842,
+                "status": "03"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3904,
+                "status": "06"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4229,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5010,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5204,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4357,
+                "status": "01"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:09:56.875571+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=09&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:09:57.392510+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=09&rno=2"
           }
         },
         {
@@ -3936,22 +4492,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4962,
+                "name": "畑竜生"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 3392,
+                "name": "小森信雄"
+              },
+              {
+                "position": 3,
+                "boatNumber": 3,
+                "racerNumber": 2878,
+                "name": "富山弘幸"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 4579,
+                "name": "中嶋健一郎"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 3582,
+                "name": "吉川昭男"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 3605,
+                "name": "中村守成"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-2-3",
+                "payout": 2040,
+                "popularity": 10
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 130,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 240,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-2",
+                  "payout": 790,
+                  "popularity": 4
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 550,
+                  "popularity": 4
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 320,
+                  "popularity": 5
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 250,
+                  "popularity": 3
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 870,
+                  "popularity": 11
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 2040,
+                  "popularity": 10
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 720,
+                  "popularity": 5
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4962,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3392,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 2878,
+                "status": "03"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3582,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4579,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3605,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:10.709074+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=09&rno=3"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:11.387938+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=09&rno=3"
           }
         },
         {
@@ -5098,22 +5793,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3606,
+                "name": "川北浩貴"
+              },
+              {
+                "position": 2,
+                "boatNumber": 2,
+                "racerNumber": 3761,
+                "name": "山本光雄"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 3951,
+                "name": "石川吉鎬"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 5229,
+                "name": "吉川晴人"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 4448,
+                "name": "青木玄太"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5471,
+                "name": "田中結"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-2-5",
+                "payout": 7070,
+                "popularity": 24
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 140,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "2",
+                  "payout": 200,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-2",
+                  "payout": 780,
+                  "popularity": 5
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 460,
+                  "popularity": 3
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 260,
+                  "popularity": 4
+                },
+                {
+                  "combination": "1-5",
+                  "payout": 390,
+                  "popularity": 6
+                },
+                {
+                  "combination": "2-5",
+                  "payout": 470,
+                  "popularity": 8
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-2-5",
+                  "payout": 7070,
+                  "popularity": 24
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-5",
+                  "payout": 2540,
+                  "popularity": 8
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3606,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3761,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5229,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4448,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 3951,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5471,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:09:55.752592+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=11&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:09:56.075265+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=11&rno=2"
           }
         },
         {
@@ -5189,22 +6023,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 5280,
+                "name": "廣瀬凜"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 5057,
+                "name": "上田紗奈"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 5050,
+                "name": "木下雄介"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 4146,
+                "name": "柳橋宏紀"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 4692,
+                "name": "酒井俊弘"
+              },
+              {
+                "position": 6,
+                "boatNumber": 4,
+                "racerNumber": 5323,
+                "name": "香川陽太"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-3-2",
+                "payout": 650,
+                "popularity": 2
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 180,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-3",
+                  "payout": 380,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 270,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 100,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 110,
+                  "popularity": 2
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 200,
+                  "popularity": 4
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-3-2",
+                  "payout": 650,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 200,
+                  "popularity": 1
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 5280,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5050,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5057,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5323,
+                "status": "06"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4692,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4146,
+                "status": "04"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:09.339598+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=11&rno=3"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:09.908765+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=11&rno=3"
           }
         },
         {
@@ -6351,22 +7324,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 2,
+                "racerNumber": 4549,
+                "name": "小林文彦"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 4368,
+                "name": "山口隆史"
+              },
+              {
+                "position": 3,
+                "boatNumber": 5,
+                "racerNumber": 3596,
+                "name": "河上年昭"
+              },
+              {
+                "position": 4,
+                "boatNumber": 1,
+                "racerNumber": 3839,
+                "name": "川合理司"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 4103,
+                "name": "山崎善庸"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5441,
+                "name": "鈴木雄登"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "2-3-5",
+                "payout": 3160,
+                "popularity": 12
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "2",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "2",
+                  "payout": 110,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 820,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "2-3",
+                  "payout": 520,
+                  "popularity": 1
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "2-3",
+                  "payout": 410,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "2-3",
+                  "payout": 140,
+                  "popularity": 1
+                },
+                {
+                  "combination": "2-5",
+                  "payout": 330,
+                  "popularity": 5
+                },
+                {
+                  "combination": "3-5",
+                  "payout": 630,
+                  "popularity": 10
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "2-3-5",
+                  "payout": 3160,
+                  "popularity": 12
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "2-3-5",
+                  "payout": 1400,
+                  "popularity": 7
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3839,
+                "status": "04"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4549,
+                "status": "01"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4368,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4103,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 3596,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5441,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:09:58.192804+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=13&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:09:58.694068+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=13&rno=2"
           }
         },
         {
@@ -6442,22 +7554,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 5345,
+                "name": "牧村俊輝"
+              },
+              {
+                "position": 2,
+                "boatNumber": 5,
+                "racerNumber": 4715,
+                "name": "村上遼"
+              },
+              {
+                "position": 3,
+                "boatNumber": 4,
+                "racerNumber": 4695,
+                "name": "尾崎雄二"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 4340,
+                "name": "土性雅也"
+              },
+              {
+                "position": 5,
+                "boatNumber": 3,
+                "racerNumber": 5154,
+                "name": "村松栄太"
+              },
+              {
+                "position": 6,
+                "boatNumber": 2,
+                "racerNumber": 5377,
+                "name": "鳥居塚嶺王"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-5-4",
+                "payout": 4090,
+                "popularity": 16
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 280,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 190,
+                  "popularity": null
+                },
+                {
+                  "combination": "5",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-5",
+                  "payout": 1800,
+                  "popularity": 11
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-5",
+                  "payout": 880,
+                  "popularity": 4
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-5",
+                  "payout": 160,
+                  "popularity": 1
+                },
+                {
+                  "combination": "1-4",
+                  "payout": 290,
+                  "popularity": 6
+                },
+                {
+                  "combination": "4-5",
+                  "payout": 260,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-5-4",
+                  "payout": 4090,
+                  "popularity": 16
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-4-5",
+                  "payout": 600,
+                  "popularity": 2
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 5345,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5377,
+                "status": "06"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5154,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4695,
+                "status": "03"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4715,
+                "status": "02"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4340,
+                "status": "04"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:06.816283+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=13&rno=3"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:07.274776+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=13&rno=3"
           }
         },
         {
@@ -8718,22 +9969,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 5188,
+                "name": "武井莉里佳"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 5180,
+                "name": "藤本紗弥香"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 4190,
+                "name": "長嶋万記"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 4965,
+                "name": "福岡泉水"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 5317,
+                "name": "長尾萌加"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 4765,
+                "name": "野田部宏子"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-3-2",
+                "payout": 1520,
+                "popularity": 4
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 320,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-3",
+                  "payout": 620,
+                  "popularity": 3
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 670,
+                  "popularity": 3
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 240,
+                  "popularity": 3
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 130,
+                  "popularity": 1
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 280,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-3-2",
+                  "payout": 1520,
+                  "popularity": 4
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 350,
+                  "popularity": 2
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 5188,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4190,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5180,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5317,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4765,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4965,
+                "status": "04"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:00.736547+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=16&rno=2"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:01.081957+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=16&rno=2"
           }
         },
         {
@@ -8809,22 +10199,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4714,
+                "name": "喜多須杏奈"
+              },
+              {
+                "position": 2,
+                "boatNumber": 6,
+                "racerNumber": 4050,
+                "name": "田口節子"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 4998,
+                "name": "中村かなえ"
+              },
+              {
+                "position": 4,
+                "boatNumber": 3,
+                "racerNumber": 4964,
+                "name": "土屋南"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 5322,
+                "name": "根岸真優"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5389,
+                "name": "恵良琴美"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-6-2",
+                "payout": 1980,
+                "popularity": 8
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 200,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 120,
+                  "popularity": null
+                },
+                {
+                  "combination": "6",
+                  "payout": 190,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-6",
+                  "payout": 580,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-6",
+                  "payout": 520,
+                  "popularity": 3
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-6",
+                  "payout": 160,
+                  "popularity": 2
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 200,
+                  "popularity": 4
+                },
+                {
+                  "combination": "2-6",
+                  "payout": 300,
+                  "popularity": 5
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-6-2",
+                  "payout": 1980,
+                  "popularity": 8
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-6",
+                  "payout": 590,
+                  "popularity": 3
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4714,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4998,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4964,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5322,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5389,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4050,
+                "status": "02"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:13.316575+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=16&rno=3"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:13.736762+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=16&rno=3"
           }
         },
         {
@@ -10859,22 +12388,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4017,
+                "name": "向井美鈴"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 3436,
+                "name": "柏野幸二"
+              },
+              {
+                "position": 3,
+                "boatNumber": 3,
+                "racerNumber": 3726,
+                "name": "桂林寛"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 5238,
+                "name": "笹木香吾"
+              },
+              {
+                "position": 5,
+                "boatNumber": 2,
+                "racerNumber": 4108,
+                "name": "吉村正明"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5406,
+                "name": "小畑楓夏"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-3",
+                "payout": 1430,
+                "popularity": 6
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 110,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 710,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 440,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 540,
+                  "popularity": 3
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 230,
+                  "popularity": 4
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 140,
+                  "popularity": 1
+                },
+                {
+                  "combination": "3-4",
+                  "payout": 480,
+                  "popularity": 8
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-3",
+                  "payout": 1430,
+                  "popularity": 6
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-4",
+                  "payout": 820,
+                  "popularity": 4
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4017,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4108,
+                "status": "05"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3726,
+                "status": "03"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3436,
+                "status": "02"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5406,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5238,
+                "status": "04"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:09:59.494350+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=18&rno=6"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:09:59.936305+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=18&rno=6"
           }
         },
         {
@@ -10950,22 +12618,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4390,
+                "name": "松本弓雄"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 5231,
+                "name": "寺田空詩"
+              },
+              {
+                "position": 3,
+                "boatNumber": 2,
+                "racerNumber": 3297,
+                "name": "藤丸光一"
+              },
+              {
+                "position": 4,
+                "boatNumber": 6,
+                "racerNumber": 4592,
+                "name": "小林孝弘"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 5375,
+                "name": "庄島潤成"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 4226,
+                "name": "村田浩司"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-3-2",
+                "payout": 1240,
+                "popularity": 2
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 140,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 140,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 190,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-3",
+                  "payout": 570,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 330,
+                  "popularity": 2
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 140,
+                  "popularity": 2
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 120,
+                  "popularity": 1
+                },
+                {
+                  "combination": "2-3",
+                  "payout": 190,
+                  "popularity": 3
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-3-2",
+                  "payout": 1240,
+                  "popularity": 2
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 220,
+                  "popularity": 1
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4390,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3297,
+                "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5231,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5375,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4226,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4592,
+                "status": "04"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:12.188214+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=18&rno=7"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:12.516337+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=18&rno=7"
           }
         },
         {
@@ -15078,22 +16885,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 2,
+                "racerNumber": 4346,
+                "name": "前田健太郎"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 3566,
+                "name": "川添英正"
+              },
+              {
+                "position": 3,
+                "boatNumber": 4,
+                "racerNumber": 3809,
+                "name": "吉田光"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 4145,
+                "name": "小澤学"
+              },
+              {
+                "position": 5,
+                "boatNumber": 3,
+                "racerNumber": 3773,
+                "name": "津留浩一郎"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5384,
+                "name": "八戸琉楓"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "2-1-4",
+                "payout": 3080,
+                "popularity": 13
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "2",
+                  "payout": 1150,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "2",
+                  "payout": 360,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "2-1",
+                  "payout": 1480,
+                  "popularity": 6
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-2",
+                  "payout": 810,
+                  "popularity": 4
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-2",
+                  "payout": 240,
+                  "popularity": 3
+                },
+                {
+                  "combination": "2-4",
+                  "payout": 500,
+                  "popularity": 6
+                },
+                {
+                  "combination": "1-4",
+                  "payout": 160,
+                  "popularity": 2
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "2-1-4",
+                  "payout": 3080,
+                  "popularity": 13
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-4",
+                  "payout": 470,
+                  "popularity": 3
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3566,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4346,
+                "status": "01"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3773,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3809,
+                "status": "03"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 4145,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5384,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:03.045019+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=21&rno=7"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:03.671227+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=21&rno=7"
           }
         },
         {
@@ -16764,22 +18710,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 5,
+                "racerNumber": 5135,
+                "name": "仲航太"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 3822,
+                "name": "平尾崇典"
+              },
+              {
+                "position": 3,
+                "boatNumber": 3,
+                "racerNumber": 5002,
+                "name": "上田健太"
+              },
+              {
+                "position": 4,
+                "boatNumber": 4,
+                "racerNumber": 4949,
+                "name": "横田貴満"
+              },
+              {
+                "position": 5,
+                "boatNumber": 2,
+                "racerNumber": 4803,
+                "name": "飯田庄吾"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 5469,
+                "name": "今泉博人"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "5-1-3",
+                "payout": 14740,
+                "popularity": 25
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "5",
+                  "payout": 2680,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "5",
+                  "payout": 370,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "5-1",
+                  "payout": 6480,
+                  "popularity": 11
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-5",
+                  "payout": 720,
+                  "popularity": 3
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-5",
+                  "payout": 230,
+                  "popularity": 4
+                },
+                {
+                  "combination": "3-5",
+                  "payout": 750,
+                  "popularity": 10
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 120,
+                  "popularity": 1
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "5-1-3",
+                  "payout": 14740,
+                  "popularity": 25
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-5",
+                  "payout": 910,
+                  "popularity": 5
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3822,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4803,
+                "status": "05"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5002,
+                "status": "03"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4949,
+                "status": "04"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5135,
+                "status": "01"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5469,
+                "status": "06"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:09:54.293444+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=23&rno=6"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:09:54.952299+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=23&rno=6"
           }
         },
         {
@@ -16855,22 +18940,161 @@
             }
           ],
           "result": {
-            "finish": [],
-            "sanrensho": [],
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 3,
+                "racerNumber": 4910,
+                "name": "中村泰平"
+              },
+              {
+                "position": 2,
+                "boatNumber": 1,
+                "racerNumber": 4375,
+                "name": "照屋厚仁"
+              },
+              {
+                "position": 3,
+                "boatNumber": 6,
+                "racerNumber": 3687,
+                "name": "花田和明"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 3577,
+                "name": "向所浩二"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 4905,
+                "name": "土井祥伍"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 5429,
+                "name": "吉川颯汰"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "3-1-6",
+                "payout": 1540,
+                "popularity": 6
+              }
+            ],
             "payouts": {
-              "win": [],
-              "place": [],
-              "exacta": [],
-              "quinella": [],
-              "wide": [],
-              "trifecta": [],
-              "trio": []
+              "win": [
+                {
+                  "combination": "3",
+                  "payout": 170,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "3",
+                  "payout": 120,
+                  "popularity": null
+                },
+                {
+                  "combination": "1",
+                  "payout": 140,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "3-1",
+                  "payout": 390,
+                  "popularity": 2
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-3",
+                  "payout": 110,
+                  "popularity": 1
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-3",
+                  "payout": 130,
+                  "popularity": 1
+                },
+                {
+                  "combination": "3-6",
+                  "payout": 310,
+                  "popularity": 5
+                },
+                {
+                  "combination": "1-6",
+                  "payout": 390,
+                  "popularity": 7
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "3-1-6",
+                  "payout": 1540,
+                  "popularity": 6
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-6",
+                  "payout": 370,
+                  "popularity": 2
+                }
+              ]
             },
-            "statuses": [],
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4375,
+                "status": "02"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3577,
+                "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4910,
+                "status": "01"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4905,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5429,
+                "status": "06"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3687,
+                "status": "03"
+              }
+            ],
             "refundBoats": [],
-            "payoutStatus": "pending",
+            "payoutStatus": "paid",
             "notEstablishedTypes": [],
-            "settleable": false
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-08-20T12:10:08.075043+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=23&rno=7"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-08-20T12:10:08.539334+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260820&jcd=23&rno=7"
           }
         },
         {
@@ -18454,8 +20678,12 @@
       "scheduleVenues": 14,
       "scheduleRaces": 168,
       "scheduleEntries": 1008,
-      "completedResultRaces": 168,
-      "oddsRaces": 0
-    }
+      "completedResultRaces": 37,
+      "oddsRaces": 0,
+      "lzhCompletedResultRaces": 168,
+      "webResultRaces": 16,
+      "cachedWebResultRaces": 0
+    },
+    "fastResultDebug": "cached=0 candidates=16 fetched=16 pending=0 requests=16 selection=venue-round-robin storedWeb=16 total=37"
   }
 }
