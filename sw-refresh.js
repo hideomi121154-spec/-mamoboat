@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v10 — SW refresh + current JST date + compact plan tiers. */
+/* MAMO BOAT Service Worker refresh v11 — SW refresh + current JST date + compact plan tiers + modal back button. */
 (()=>{
   "use strict";
 
@@ -16,7 +16,6 @@
     const style=document.createElement("style");
     style.id="mamoPlanCollapseFix";
     style.textContent=`
-      /* Do not reserve tall empty frames for features unavailable on the selected plan. */
       body[data-mamo-plan="free"] #mamoAiSafeReport,
       body[data-mamo-plan="free"] #mamoDecisionPanel,
       body[data-mamo-plan="free"] #mamoBaselinePanel,
@@ -50,6 +49,47 @@
     document.head.appendChild(style);
   };
 
+  const installBetModalBackButton=()=>{
+    if(!document.getElementById("mamoBetModalBackStyle")){
+      const style=document.createElement("style");
+      style.id="mamoBetModalBackStyle";
+      style.textContent=`
+        .mamo-bet-modal-back{
+          display:inline-flex;align-items:center;gap:6px;
+          margin:0 0 14px;padding:8px 12px;
+          border:1px solid #cfd9e1;border-radius:999px;
+          background:#fff;color:#08233d;
+          font:900 14px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          box-shadow:0 2px 7px rgba(8,35,61,.06);
+          cursor:pointer;
+        }
+        .mamo-bet-modal-back:active{transform:translateY(1px);background:#f5f8fa}
+      `;
+      document.head.appendChild(style);
+    }
+
+    const sync=()=>{
+      const bg=document.getElementById("modalBg");
+      if(!bg?.classList.contains("show")) return;
+      const modal=bg.querySelector(".modal");
+      if(!modal || modal.querySelector(".mamo-bet-modal-back")) return;
+      const text=modal.textContent||"";
+      if(!text.includes("購入内容") || !text.includes("この選択への自分の納得度")) return;
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="mamo-bet-modal-back";
+      button.textContent="← 戻る";
+      button.setAttribute("aria-label","購入確認を閉じてレース画面へ戻る");
+      button.addEventListener("click",()=>window.closeModal?.());
+      modal.prepend(button);
+    };
+
+    sync();
+    const root=document.getElementById("modalBg") || document.body;
+    const observer=new MutationObserver(sync);
+    observer.observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+  };
+
   const syncHomeToday=()=>{
     const date=document.getElementById("homeDateText");
     if(date) date.textContent=currentJstLabel();
@@ -66,6 +106,7 @@
 
   const register=async()=>{
     installPlanCollapseFix();
+    installBetModalBackButton();
     syncHomeToday();
     [250,800,1800,4000].forEach(ms=>setTimeout(syncHomeToday,ms));
     setInterval(syncHomeToday,60000);
