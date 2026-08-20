@@ -7,6 +7,11 @@ on:
         description: "YYYY-MM-DD（空欄はJST当日）"
         required: false
         type: string
+  push:
+    branches: [main]
+    paths:
+      - "scripts/fallback_openapi.py"
+      - ".github/workflows/sync-official-data.yml"
   schedule:
     # 既存の番組表・日次成績・参考オッズ同期（15分周期）
     - cron: "*/15 0-14,21-23 * * *"
@@ -50,9 +55,12 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Validate parser syntax
-        run: python -m py_compile scripts/sync_official_data.py
+        run: |
+          python -m py_compile scripts/sync_official_data.py
+          python -m py_compile scripts/fallback_openapi.py
 
       - name: Sync official data
+        continue-on-error: true
         env:
           TARGET_DATE: ${{ inputs.target_date }}
           SCHEDULE: ${{ github.event.schedule }}
@@ -81,9 +89,24 @@ jobs:
             python scripts/sync_official_data.py --date "$YESTERDAY_JST" --skip-fast-results "${GRADE_ARGS[@]}"
           else
             # 通常15分同期ではLZH・オッズを担当。結果は10分の軽量ジョブに任せる。
-            # 直前に取得済みのWeb結果はsync_official_data.py側で維持する。
             python scripts/sync_official_data.py --skip-fast-results "${GRADE_ARGS[@]}"
           fi
+
+      - name: Recover stale JST current-day data
+        env:
+          TARGET_DATE: ${{ inputs.target_date }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          # 履歴日を指定した手動実行と、前日成績の最終確認ではtoday.jsonを触らない。
+          if [ -n "$TARGET_DATE" ]; then
+            echo "Historical/manual target: skip current-day fallback"
+            exit 0
+          fi
+          if [ "$SCHEDULE" = "35 15,20 * * *" ]; then
+            echo "Yesterday-finalization cron: skip current-day fallback"
+            exit 0
+          fi
+          python scripts/fallback_openapi.py
 
       - name: Commit validated JSON
         run: |
