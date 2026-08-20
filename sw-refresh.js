@@ -1,34 +1,6 @@
-/* MAMO BOAT Service Worker refresh v7 — home hero framing + current JST date. */
+/* MAMO BOAT Service Worker refresh v8 — stable home layout + current JST date. */
 (()=>{
   "use strict";
-
-  const installApprovedHomeHero=()=>{
-    if(document.getElementById("mamoApprovedHomeHero")) return;
-    const style=document.createElement("style");
-    style.id="mamoApprovedHomeHero";
-    style.textContent=`
-      /* Home only: enlarge the actual image box instead of relying on transform. */
-      .home-masthead .masthead-character{
-        inset:auto -9% -24% auto!important;
-        width:142%!important;
-        height:142%!important;
-        max-width:none!important;
-        object-fit:cover!important;
-        object-position:67% 22%!important;
-        transform:none!important;
-      }
-      @media (max-width:520px){
-        .home-masthead .masthead-character{
-          right:-10%!important;
-          bottom:-26%!important;
-          width:145%!important;
-          height:145%!important;
-          object-position:67% 22%!important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  };
 
   const currentJstLabel=()=>{
     const parts=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{
@@ -39,9 +11,20 @@
     return `${parts.year}.${parts.month}.${parts.day} ${weekday}`;
   };
 
-  const syncHomeToday=()=>{
-    const el=document.getElementById("homeDateText");
-    if(el) el.textContent=currentJstLabel();
+  const lockHomeLayout=()=>{
+    const hero=document.querySelector("#home .home-masthead .masthead-character");
+    if(hero){
+      hero.style.setProperty("position","absolute","important");
+      hero.style.setProperty("inset","0","important");
+      hero.style.setProperty("width","100%","important");
+      hero.style.setProperty("height","100%","important");
+      hero.style.setProperty("max-width","none","important");
+      hero.style.setProperty("object-fit","cover","important");
+      hero.style.setProperty("object-position",window.matchMedia("(max-width:390px)").matches?"53% 23%":"center 24%","important");
+      hero.style.setProperty("transform",window.matchMedia("(max-width:390px)").matches?"translateX(7%)":"translateX(5%)","important");
+    }
+    const date=document.getElementById("homeDateText");
+    if(date) date.textContent=currentJstLabel();
   };
 
   const loadMamokamo=()=>{
@@ -54,11 +37,10 @@
   };
 
   const register=async()=>{
-    installApprovedHomeHero();
-    syncHomeToday();
-    [300,1200,3500,7000].forEach(ms=>setTimeout(syncHomeToday,ms));
-    setInterval(syncHomeToday,60000);
-    window.addEventListener("pageshow",syncHomeToday);
+    lockHomeLayout();
+    [250,800,1800,4000].forEach(ms=>setTimeout(lockHomeLayout,ms));
+    setInterval(lockHomeLayout,60000);
+    window.addEventListener("pageshow",lockHomeLayout);
     loadMamokamo();
     if(!("serviceWorker" in navigator)) return;
     try{
