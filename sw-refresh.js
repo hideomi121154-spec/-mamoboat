@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v9 — SW refresh + current JST date only. */
+/* MAMO BOAT Service Worker refresh v10 — SW refresh + current JST date + compact plan tiers. */
 (()=>{
   "use strict";
 
@@ -9,6 +9,45 @@
     const y=Number(parts.year),m=Number(parts.month),d=Number(parts.day);
     const weekday=["SUN","MON","TUE","WED","THU","FRI","SAT"][new Date(Date.UTC(y,m-1,d)).getUTCDay()];
     return `${parts.year}.${parts.month}.${parts.day} ${weekday}`;
+  };
+
+  const installPlanCollapseFix=()=>{
+    if(document.getElementById("mamoPlanCollapseFix")) return;
+    const style=document.createElement("style");
+    style.id="mamoPlanCollapseFix";
+    style.textContent=`
+      /* Do not reserve tall empty frames for features unavailable on the selected plan. */
+      body[data-mamo-plan="free"] #mamoAiSafeReport,
+      body[data-mamo-plan="free"] #mamoDecisionPanel,
+      body[data-mamo-plan="free"] #mamoBaselinePanel,
+      body[data-mamo-plan="free"] #mamoTriggerPanel,
+      body[data-mamo-plan="free"] #mamoPeriodTriggerSummary,
+      body[data-mamo-plan="bronze"] #mamoDecisionPanel,
+      body[data-mamo-plan="bronze"] #mamoBaselinePanel,
+      body[data-mamo-plan="bronze"] #mamoTriggerPanel,
+      body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary,
+      body:not([data-mamo-plan="gold"]) #pressPaper,
+      body:not([data-mamo-plan="gold"]) #mamoPressIntel,
+      body:not([data-mamo-plan="gold"]) #homePressTeaser {
+        display:none !important;
+        height:0 !important;
+        min-height:0 !important;
+        max-height:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+        border:0 !important;
+        overflow:hidden !important;
+      }
+
+      body:not([data-mamo-plan="gold"]) #analysis.active > .paper-tabs,
+      body:not([data-mamo-plan="gold"]) #analysis.active > .section-head:has(+ .paper-tabs) {
+        display:none !important;
+        margin:0 !important;
+        padding:0 !important;
+        min-height:0 !important;
+      }
+    `;
+    document.head.appendChild(style);
   };
 
   const syncHomeToday=()=>{
@@ -26,10 +65,14 @@
   };
 
   const register=async()=>{
+    installPlanCollapseFix();
     syncHomeToday();
     [250,800,1800,4000].forEach(ms=>setTimeout(syncHomeToday,ms));
     setInterval(syncHomeToday,60000);
-    window.addEventListener("pageshow",syncHomeToday);
+    window.addEventListener("pageshow",()=>{
+      installPlanCollapseFix();
+      syncHomeToday();
+    });
     loadMamokamo();
     if(!("serviceWorker" in navigator)) return;
     try{
@@ -40,6 +83,7 @@
     }catch(e){console.warn("MAMO SW refresh failed",e)}
   };
 
+  installPlanCollapseFix();
   if(document.readyState==="complete") register();
   else window.addEventListener("load",register,{once:true});
 })();
