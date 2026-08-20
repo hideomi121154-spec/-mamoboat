@@ -1,3 +1,40 @@
+/* MAMO BOAT public distribution gate + stable pressroom cards. */
+(() => {
+  "use strict";
+  const STATE_KEY = "mamoboat_v40_personal";
+  const TERMS_VERSION = "public-2026-08-20-v1";
+  const readState = () => {
+    try { return JSON.parse(localStorage.getItem(STATE_KEY) || "null"); }
+    catch (_) { return null; }
+  };
+  const writeState = (state) => {
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); return true; }
+    catch (_) { return false; }
+  };
+  const state = readState();
+  if (state && state.accepted === true && state.distributionTermsVersion !== TERMS_VERSION) {
+    state.accepted = false;
+    writeState(state);
+    if (!sessionStorage.getItem("mamo-public-gate-reload")) {
+      sessionStorage.setItem("mamo-public-gate-reload", "1");
+      location.reload();
+      return;
+    }
+  }
+  document.addEventListener("click", (event) => {
+    const button = event.target?.closest?.("#startBtn");
+    if (!button || button.disabled) return;
+    setTimeout(() => {
+      const latest = readState();
+      if (!latest || latest.accepted !== true) return;
+      latest.distributionTermsVersion = TERMS_VERSION;
+      latest.distributionAcceptedAt = new Date().toISOString();
+      writeState(latest);
+      sessionStorage.removeItem("mamo-public-gate-reload");
+    }, 0);
+  }, true);
+})();
+
 /* MAMO BOAT Visual Refresh v4 — stable pressroom behavior cards only. */
 (() => {
   "use strict";
