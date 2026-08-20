@@ -30,15 +30,21 @@
     window.addEventListener("mamo:analysis-rendered", removeSystemOnlyBehaviorCards);
     window.addEventListener("pageshow", removeSystemOnlyBehaviorCards);
     document.addEventListener("click", (event) => {
-      if (event.target?.closest?.("#nav-analysis")) {
-        setTimeout(removeSystemOnlyBehaviorCards, 0);
-      }
+      if (event.target?.closest?.("#nav-analysis")) setTimeout(removeSystemOnlyBehaviorCards, 0);
     }, false);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once: true });
-  } else {
-    boot();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
+})();
+
+/* Develop-only commerce prototype loader. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-shop="pilot"]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-shop.js?v=20260820-1";
+  script.async = true;
+  script.dataset.mamoShop = "pilot";
+  document.head.appendChild(script);
 })();
