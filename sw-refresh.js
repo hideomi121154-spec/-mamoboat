@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v8 — stable home layout + current JST date. */
+/* MAMO BOAT Service Worker refresh v9 — SW refresh + current JST date only. */
 (()=>{
   "use strict";
 
@@ -11,18 +11,7 @@
     return `${parts.year}.${parts.month}.${parts.day} ${weekday}`;
   };
 
-  const lockHomeLayout=()=>{
-    const hero=document.querySelector("#home .home-masthead .masthead-character");
-    if(hero){
-      hero.style.setProperty("position","absolute","important");
-      hero.style.setProperty("inset","0","important");
-      hero.style.setProperty("width","100%","important");
-      hero.style.setProperty("height","100%","important");
-      hero.style.setProperty("max-width","none","important");
-      hero.style.setProperty("object-fit","cover","important");
-      hero.style.setProperty("object-position",window.matchMedia("(max-width:390px)").matches?"53% 23%":"center 24%","important");
-      hero.style.setProperty("transform",window.matchMedia("(max-width:390px)").matches?"translateX(7%)":"translateX(5%)","important");
-    }
+  const syncHomeToday=()=>{
     const date=document.getElementById("homeDateText");
     if(date) date.textContent=currentJstLabel();
   };
@@ -37,10 +26,10 @@
   };
 
   const register=async()=>{
-    lockHomeLayout();
-    [250,800,1800,4000].forEach(ms=>setTimeout(lockHomeLayout,ms));
-    setInterval(lockHomeLayout,60000);
-    window.addEventListener("pageshow",lockHomeLayout);
+    syncHomeToday();
+    [250,800,1800,4000].forEach(ms=>setTimeout(syncHomeToday,ms));
+    setInterval(syncHomeToday,60000);
+    window.addEventListener("pageshow",syncHomeToday);
     loadMamokamo();
     if(!("serviceWorker" in navigator)) return;
     try{
