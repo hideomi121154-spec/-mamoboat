@@ -1,4 +1,4 @@
-/* MAMO BOAT v4.0.1 — character UI v5 (mobile-first)
+/* MAMO BOAT v4.0.1 — character UI v6 (mobile-first, stable home hero)
  * Visual/editorial UI only. AIR BET, B wallet, official data and settlement logic are untouched.
  */
 (() => {
@@ -40,11 +40,11 @@
   });
 
   function injectStyles() {
-    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5"]
+    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5", "mamoCharacterLayoutStyleV6"]
       .forEach((id) => document.getElementById(id)?.remove());
 
     const style = document.createElement("style");
-    style.id = "mamoCharacterLayoutStyleV5";
+    style.id = "mamoCharacterLayoutStyleV6";
     style.textContent = `
       .mamo-character-cut { image-rendering:auto !important; }
 
@@ -56,8 +56,8 @@
       #home .masthead-callout { position:absolute; z-index:4 !important; }
       #home .masthead-character.mamo-character-cut {
         position:absolute !important;
-        left:auto !important; top:auto !important; right:1.5% !important; bottom:0 !important;
-        width:auto !important; height:108% !important; max-width:49% !important;
+        left:auto !important; top:auto !important; right:-1% !important; bottom:0 !important;
+        width:auto !important; height:116% !important; max-width:61% !important;
         display:block !important;
         object-fit:contain !important; object-position:right bottom !important;
         opacity:1 !important; visibility:visible !important;
@@ -159,7 +159,7 @@
 
       @media (max-width:700px) {
         #home .masthead-character.mamo-character-cut {
-          right:-1% !important; bottom:0 !important; height:92% !important; max-width:48% !important;
+          right:-2% !important; bottom:0 !important; height:110% !important; max-width:60% !important;
         }
         #venues .page-intro,
         #records .page-intro { min-height:170px !important; padding-right:40% !important; }
@@ -192,7 +192,7 @@
       }
 
       @media (max-width:390px) {
-        #home .masthead-character.mamo-character-cut { right:-3% !important; height:90% !important; max-width:47% !important; }
+        #home .masthead-character.mamo-character-cut { right:-3% !important; height:108% !important; max-width:59% !important; }
         #venues .page-intro > img.mamo-character-cut,
         #records .page-intro > img.mamo-character-cut { right:-3% !important; height:92% !important; max-width:38% !important; }
         #analysis .analysis-intro { height:320px !important; min-height:320px !important; padding-bottom:160px !important; }
