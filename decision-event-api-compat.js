@@ -48,3 +48,14 @@
   script.dataset.mamoShop = "pilot";
   document.head.appendChild(script);
 })();
+
+/* Develop-only MAMO RECORD Phase 1 loader. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-record="phase1"]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-record.js?v=20260820-1";
+  script.async = true;
+  script.dataset.mamoRecord = "phase1";
+  document.head.appendChild(script);
+})();
