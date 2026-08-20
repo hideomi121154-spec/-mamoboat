@@ -59,3 +59,14 @@
   script.dataset.mamoRecord = "phase1";
   document.head.appendChild(script);
 })();
+
+/* Mobile bottom navigation: one row with horizontal swipe. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-bottom-nav="horizontal"]')) return;
+  const script = document.createElement("script");
+  script.src = "bottom-nav-horizontal.js?v=20260820-1";
+  script.async = true;
+  script.dataset.mamoBottomNav = "horizontal";
+  document.head.appendChild(script);
+})();
