@@ -71,3 +71,14 @@
   script.dataset.mamoRecordInsights = "phase4";
   document.head.appendChild(script);
 })();
+
+/* Phase 5: unlock SHOP benefits from MAMO RECORD milestones. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-shop-record-benefits="phase5"]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-shop-record-benefits.js?v=20260821-1";
+  script.async = true;
+  script.dataset.mamoShopRecordBenefits = "phase5";
+  document.head.appendChild(script);
+})();
