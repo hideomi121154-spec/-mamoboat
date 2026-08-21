@@ -110,7 +110,7 @@
   "use strict";
   if (document.querySelector('script[data-mamo-real-products]')) return;
   const script = document.createElement("script");
-  script.src = "mamo-shop-real-products.js?v=20260821-1";
+  script.src = "mamo-shop-real-products.js?v=20260821-2";
   script.async = true;
   script.dataset.mamoRealProducts = "1";
   document.head.appendChild(script);
