@@ -77,7 +77,7 @@
   "use strict";
   if (document.querySelector('script[data-mamo-record-insights="phase4"]')) return;
   const script = document.createElement("script");
-  script.src = "mamo-record-insights.js?v=20260821-1";
+  script.src = "mamo-record-insights.js?v=20260821-2";
   script.async = true;
   script.dataset.mamoRecordInsights = "phase4";
   document.head.appendChild(script);
