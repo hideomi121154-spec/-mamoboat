@@ -51,6 +51,17 @@
   document.head.appendChild(script);
 })();
 
+/* Respect X on post-result RECORD prompt. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-record-dismiss-fix]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-record-dismiss-fix.js?v=20260821-1";
+  script.async = true;
+  script.dataset.mamoRecordDismissFix = "1";
+  document.head.appendChild(script);
+})();
+
 (() => {
   "use strict";
   if (document.querySelector('script[data-mamo-bottom-nav="horizontal"]')) return;
