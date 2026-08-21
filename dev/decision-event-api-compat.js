@@ -93,3 +93,14 @@
   script.dataset.mamoValuePanel = "phase6";
   document.head.appendChild(script);
 })();
+
+/* Home: make cumulative MAMO RECORD always visible near the top. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-home-record-balance]')) return;
+  const script = document.createElement("script");
+  script.src = "home-record-balance.js?v=20260821-1";
+  script.async = true;
+  script.dataset.mamoHomeRecordBalance = "1";
+  document.head.appendChild(script);
+})();
