@@ -82,3 +82,14 @@
   script.dataset.mamoShopRecordBenefits = "phase5";
   document.head.appendChild(script);
 })();
+
+/* Phase 6: show factual monthly value against selected plan fee. */
+(() => {
+  "use strict";
+  if (document.querySelector('script[data-mamo-value-panel="phase6"]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-value-panel.js?v=20260821-1";
+  script.async = true;
+  script.dataset.mamoValuePanel = "phase6";
+  document.head.appendChild(script);
+})();
