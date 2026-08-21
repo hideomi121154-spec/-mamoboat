@@ -72,12 +72,12 @@
   document.head.appendChild(script);
 })();
 
-/* Phase 5: unlock SHOP benefits from MAMO RECORD milestones. */
+/* RECORD benefits: actionable 100R / 300R / 500R rewards. */
 (() => {
   "use strict";
   if (document.querySelector('script[data-mamo-shop-record-benefits="phase5"]')) return;
   const script = document.createElement("script");
-  script.src = "mamo-shop-record-benefits.js?v=20260821-1";
+  script.src = "mamo-shop-record-benefits.js?v=20260821-2";
   script.async = true;
   script.dataset.mamoShopRecordBenefits = "phase5";
   document.head.appendChild(script);
