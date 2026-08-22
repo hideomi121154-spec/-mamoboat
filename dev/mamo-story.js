@@ -1,7 +1,7 @@
-/* MAMO BOAT — MAMO STORY mobile reader v9 */
+/* MAMO BOAT — MAMO STORY mobile reader v10 */
 (()=>{"use strict";
 if(window.__MAMO_STORY__)return;window.__MAMO_STORY__=true;
-const STORY_IMAGE="https://raw.githubusercontent.com/hideomi121154-spec/-mamoboat/main/dev/assets/mamo-story.jpg?v=20260822-9";
+const STORY_IMAGE="./assets/mamo-story.jpg?v=20260822-10";
 function css(){if(document.getElementById("mamoStoryStyle"))return;const s=document.createElement("style");s.id="mamoStoryStyle";s.textContent=`
 #mamoStoryTeaser{margin:14px 0 18px;border:1px solid #d8e0e3;border-left:6px solid #d3a637;border-radius:16px;background:linear-gradient(135deg,#fffdf8,#f7fbfc);box-shadow:0 9px 24px rgba(6,35,58,.08);overflow:hidden}
 #mamoStoryTeaser button{width:100%;border:0;background:transparent;padding:15px 16px;text-align:left;color:#08233d;display:flex;align-items:center;gap:13px}
@@ -18,10 +18,13 @@ function css(){if(document.getElementById("mamoStoryStyle"))return;const s=docum
 document.head.appendChild(s)}
 function overlay(){let o=document.getElementById("mamoStoryOverlay");if(o)return o;o=document.createElement("div");o.id="mamoStoryOverlay";o.innerHTML=`<div class="story-shell"><header class="story-head"><div><small>MAMO STORY / READ FIRST</small><b>3分でわかる MAMO BOAT</b></div><button class="story-close" type="button" aria-label="閉じる">×</button></header><main class="story-scroll"><div class="story-intro"><h2>勝つ方法ではなく、<br><span>自分の勝負を知る話。</span></h2><p>記録して、あとから見る。それだけで「なんとなく」が少しずつ見えるようになる。</p></div><div class="story-full"><div class="story-loading">漫画を読み込み中…</div><img id="mamoStoryImage" src="${STORY_IMAGE}" alt="MAMO BOAT 読み切り漫画"><div class="story-img-error" id="mamoStoryError">漫画画像を読み込めませんでした。</div></div><div class="story-end"><small>MAMO BOAT</small><h2>勝負の主導権を、<br>自分に。</h2><p>予想を当てるためではなく、自分がどんな時に勝負を選ぶのかを知るために。</p></div></main><div class="story-cta"><button class="story-back" type="button">閉じる</button><button class="story-air" type="button">AIR BETを体験する →</button></div></div>`;document.body.appendChild(o);
 const img=o.querySelector("#mamoStoryImage"),loading=o.querySelector(".story-loading"),err=o.querySelector("#mamoStoryError");
-img.addEventListener("load",()=>{loading.classList.add("hide");err.classList.remove("show")},{once:true});
-img.addEventListener("error",()=>{loading.classList.add("hide");err.classList.add("show")},{once:true});
+const loaded=()=>{loading.classList.add("hide");err.classList.remove("show")};
+const failed=()=>{loading.classList.add("hide");err.classList.add("show")};
+img.addEventListener("load",loaded,{once:true});
+img.addEventListener("error",failed,{once:true});
+if(img.complete)(img.naturalWidth>0?loaded:failed)();
 o.querySelectorAll(".story-close,.story-back").forEach(b=>b.addEventListener("click",close));o.querySelector(".story-air").addEventListener("click",()=>{close();try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_airbet_cta",{source:"story"},{screen:"story"})}catch(_){ }if(typeof window.go==="function")window.go("venues")});return o}
-function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:9},{screen:"story"})}catch(_){}}
+function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:10},{screen:"story"})}catch(_){}}
 function close(){document.getElementById("mamoStoryOverlay")?.classList.remove("open");document.body.classList.remove("mamo-story-open")}
 function teaser(){const home=document.getElementById("home");if(!home||document.getElementById("mamoStoryTeaser"))return;const t=document.createElement("div");t.id="mamoStoryTeaser";t.innerHTML=`<button type="button"><span class="story-mark">読</span><span><small>MAMO STORY</small><strong>漫画でわかる「勝負の主導権」</strong></span><span class="story-arrow">›</span></button>`;t.querySelector("button").addEventListener("click",open);const record=document.getElementById("mamoRecordHero")||document.getElementById("mamoRecordSummary");const title=home.querySelector(".home-titlebar");if(record)record.insertAdjacentElement("afterend",t);else if(title)title.insertAdjacentElement("beforebegin",t);else home.prepend(t)}
 function boot(){css();overlay();teaser();setTimeout(teaser,500);setTimeout(teaser,1600);window.addEventListener("pageshow",teaser);window.MAMO_STORY=Object.freeze({open,close})}

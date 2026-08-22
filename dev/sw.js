@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-central-pilot-17-dev";
+const CACHE = "mamoboat-v401-central-pilot-18-dev";
 const SHELL = [
   "./","./index.html","./styles.css","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
