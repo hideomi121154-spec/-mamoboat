@@ -1,8 +1,8 @@
-/* MAMO BOAT Mamokamo v2 — AI behavior-analysis mascot, no race-outcome prediction. */
+/* MAMO BOAT Mamokamo v3 — AI behavior-analysis support, no race-outcome prediction. */
 (() => {
   "use strict";
-  if (window.__MAMO_MAMOKAMO_V2__) return;
-  window.__MAMO_MAMOKAMO_V2__ = true;
+  if (window.__MAMO_MAMOKAMO_V3__) return;
+  window.__MAMO_MAMOKAMO_V3__ = true;
 
   const ASSET = "assets/mamokamo-ai-v5.png?v=20260822-5";
 
@@ -11,20 +11,6 @@
     const style = document.createElement("style");
     style.id = "mamokamoStyles";
     style.textContent = `
-      .mamokamo-profile{display:grid;grid-template-columns:minmax(145px,180px) 1fr;gap:16px;align-items:stretch;margin:12px 0 18px;padding:0;overflow:hidden;border:1px solid #d9d1bd;border-top:4px solid #d8a12a;border-radius:18px;background:linear-gradient(120deg,#fffdf8 0%,#fff 52%,#f1fafb 100%);box-shadow:0 8px 22px rgba(8,35,61,.09)}
-      .mamokamo-profile__visual{position:relative;display:grid;place-items:center;min-height:210px;overflow:hidden;background:radial-gradient(circle at 48% 38%,#fff 0,#fffaf0 55%,#eaf7f8 100%)}
-      .mamokamo-profile__visual img{display:block;width:100%;height:100%;min-height:210px;box-sizing:border-box;padding:10px 7px 20px;object-fit:contain;object-position:50% 50%;filter:drop-shadow(0 7px 8px rgba(8,35,61,.16))}
-      .mamokamo-profile__visual:after{content:"MAMOKAMO / AI";position:absolute;left:10px;bottom:9px;padding:3px 7px;border-radius:999px;background:rgba(8,35,61,.9);color:#f4c95f;font-size:7px;font-weight:1000;letter-spacing:.13em}
-      .mamokamo-profile__body{padding:17px 16px 15px 0;min-width:0}
-      .mamokamo-profile__eyebrow{display:block;color:#98701d;font-size:8px;font-weight:1000;letter-spacing:.16em}
-      .mamokamo-profile h3{margin:4px 0 7px;color:#08233d;font-size:25px;line-height:1.05;letter-spacing:-.055em}
-      .mamokamo-profile p{margin:0;color:#344b5c;font-size:11px;font-weight:700;line-height:1.75}
-      .mamokamo-role{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
-      .mamokamo-role b{padding:4px 8px;border:1px solid #dacb9f;border-radius:999px;background:#fffaf0;color:#765615;font-size:8px;letter-spacing:.05em}
-      .mamokamo-profile__quote{display:block;padding-top:8px;border-top:1px solid #ece6d9;color:#087d77;font-size:9px;font-weight:900;line-height:1.55}
-      .cast-card.mamokamo{border-top-color:#d8a12a!important;background:linear-gradient(135deg,#fffdf7,#fff)!important}
-      .cast-card.mamokamo .cast-avatar{overflow:hidden;padding:0!important;background:#fffdf8!important;border-color:#d8a12a!important}
-      .cast-card.mamokamo .cast-avatar img{display:block;width:100%;height:100%;box-sizing:border-box;padding:4px;object-fit:contain;object-position:50% 50%;filter:drop-shadow(0 3px 4px rgba(8,35,61,.13))}
       .mamokamo-home{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;margin:10px 0;padding:10px 12px;border:1px solid #e0d7c2;border-left:4px solid #d8a12a;border-radius:15px;background:linear-gradient(110deg,#fffdf7,#fff,#f1fafb);box-shadow:0 5px 14px rgba(8,35,61,.06)}
       .mamokamo-home img{width:84px;height:84px;box-sizing:border-box;padding:3px;object-fit:contain;object-position:50% 50%;border-radius:14px;background:radial-gradient(circle,#fff,#fff8e8);filter:drop-shadow(0 4px 5px rgba(8,35,61,.13))}
       .mamokamo-home small{display:block;color:#98701d;font-size:7px;font-weight:1000;letter-spacing:.13em}
@@ -58,32 +44,9 @@
       #analysisList .behavior-mamokamo b{display:block;color:#08233d;font-size:13px;line-height:1.45}
       #analysisList .behavior-mamokamo span{display:block;margin-top:2px;color:#6e7980;font-size:10px;font-weight:700;line-height:1.45}
 
-      @media(max-width:520px){.mamokamo-profile{grid-template-columns:140px 1fr;gap:12px}.mamokamo-profile__visual,.mamokamo-profile__visual img{min-height:206px}.mamokamo-profile__body{padding:14px 12px 13px 0}.mamokamo-profile h3{font-size:21px}.mamokamo-profile p{font-size:10px}.mamokamo-role b{font-size:7px;padding:4px 6px}#analysisList .behavior-intro{grid-template-columns:1fr 86px}#analysisList .behavior-intro img{width:86px;height:76px}#analysisList .card.behavior-card{grid-template-columns:46px minmax(0,1fr) auto;gap:10px;padding:12px 12px!important}#analysisList .behavior-card .behavior-icon{width:42px;height:42px;font-size:20px}#analysisList .behavior-copy b{font-size:15px!important}#analysisList .behavior-metric{min-width:58px;font-size:19px}}
+      @media(max-width:520px){#analysisList .behavior-intro{grid-template-columns:1fr 86px}#analysisList .behavior-intro img{width:86px;height:76px}#analysisList .card.behavior-card{grid-template-columns:46px minmax(0,1fr) auto;gap:10px;padding:12px 12px!important}#analysisList .behavior-card .behavior-icon{width:42px;height:42px;font-size:20px}#analysisList .behavior-copy b{font-size:15px!important}#analysisList .behavior-metric{min-width:58px;font-size:19px}}
     `;
     document.head.appendChild(style);
-  }
-
-  function installNewsroomMascot() {
-    const cast = document.querySelector("#analysis .newsroom-cast");
-    if (!cast) return;
-
-    const heading = cast.previousElementSibling?.querySelector?.("h2");
-    if (heading && heading.textContent.includes("編集部の3人")) heading.textContent = "編集部とAI分析担当";
-
-    if (!cast.querySelector(".cast-card.mamokamo")) {
-      const card = document.createElement("article");
-      card.className = "cast-card mamokamo";
-      card.innerHTML = `<span class="cast-avatar"><img src="${ASSET}" alt="マモカモ"></span><div><small>MAMO BOAT AI分析担当</small><h3>マモカモ</h3><p>AIR BETと記録から、勝敗ではなく行動のクセを見つけるマスコット。</p></div>`;
-      cast.appendChild(card);
-    }
-
-    if (!document.getElementById("mamokamoProfile")) {
-      const profile = document.createElement("article");
-      profile.id = "mamokamoProfile";
-      profile.className = "mamokamo-profile";
-      profile.innerHTML = `<div class="mamokamo-profile__visual"><img src="${ASSET}" alt="MAMO BOATのAI分析担当マモカモ"></div><div class="mamokamo-profile__body"><span class="mamokamo-profile__eyebrow">MAMO BOAT / AI ANALYST</span><h3>マモカモ</h3><p>AIR BETとMAMO RECORDの記録を読み解き、参加のタイミングや金額の変化を整理するAI分析担当。レースの勝敗は予想せず、「いつもの自分」との違いを分かりやすく届けます。</p><div class="mamokamo-role"><b>記録を読む</b><b>クセを見つける</b><b>気づきを届ける</b></div><span class="mamokamo-profile__quote">「ここ、いつもと違うカモ！」　「数字から一緒に見てみるカモ！」</span></div>`;
-      cast.insertAdjacentElement("afterend", profile);
-    }
   }
 
   function installHomeMascot() {
@@ -167,7 +130,6 @@
 
   function boot() {
     installStyle();
-    installNewsroomMascot();
     installHomeMascot();
     decorateBehaviorPatterns();
   }

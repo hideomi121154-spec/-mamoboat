@@ -1,4 +1,4 @@
-/* MAMO BOAT v4.0.1 — character UI v6 (mobile-first, stable home hero)
+/* MAMO BOAT v4.0.1 — character UI v7 (shared member cards and profiles)
  * Visual/editorial UI only. AIR BET, B wallet, official data and settlement logic are untouched.
  */
 (() => {
@@ -8,6 +8,7 @@
     mamoru: "assets/mamoru.png?v=20260815-9",
     miru: "assets/miru.png?v=20260815-9",
     shun: "assets/shun.png?v=20260815-9",
+    mamokamo: "assets/mamokamo-ai-v5.png?v=20260822-5",
     editorial: "assets/482089DF-4357-438E-8721-A6EFC38F4891.png?v=20260815-9",
     cover: "assets/EFE288D7-4C85-4906-A6E9-1590E55E7070.png?v=20260815-10",
   });
@@ -37,14 +38,22 @@
       intro: "第一ターンマークを一瞬で切るような走りを見せるトップレーサー。",
       detail: "勝利を約束する存在ではなく、準備・集中・自己管理を体現する競技者。MAMO BOAT PRESSでは、結果だけでは見えない競技者側の準備や判断の世界を伝える役割を持ちます。",
     }),
+    mamokamo: Object.freeze({
+      name: "マモカモ",
+      reading: "MAMOKAMO",
+      role: "MAMO BOAT AI分析担当",
+      image: ART.mamokamo,
+      intro: "AIR BETとMAMO RECORDの記録から、勝敗ではなく行動のクセを見つけるAIマスコット。",
+      detail: "参加のタイミングや金額の変化を読み解き、『いつもの自分』との違いを分かりやすく届けます。レースの勝敗は予想せず、記録を比較・整理し、自分で選ぶための気づきを支えます。",
+    }),
   });
 
   function injectStyles() {
-    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5", "mamoCharacterLayoutStyleV6"]
+    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5", "mamoCharacterLayoutStyleV6", "mamoCharacterLayoutStyleV7"]
       .forEach((id) => document.getElementById(id)?.remove());
 
     const style = document.createElement("style");
-    style.id = "mamoCharacterLayoutStyleV6";
+    style.id = "mamoCharacterLayoutStyleV7";
     style.textContent = `
       .mamo-character-cut { image-rendering:auto !important; }
 
@@ -120,7 +129,7 @@
         object-fit:cover !important; object-position:center center !important;
       }
 
-      .newsroom-cast { display:grid !important; grid-template-columns:1.08fr .96fr 1fr !important; gap:10px !important; }
+      .newsroom-cast { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px !important; }
       .cast-profile-card {
         appearance:none; width:100%; min-width:0; min-height:118px; padding:10px;
         border:1px solid var(--soft-line); border-top:4px solid var(--teal); background:#fff; color:var(--ink);
@@ -129,8 +138,11 @@
       }
       .cast-profile-card.miru { border-top-color:#d5a73b; }
       .cast-profile-card.shun { border-top-color:var(--coral); }
+      .cast-profile-card.mamokamo { border-top-color:#d8a12a; background:linear-gradient(135deg,#fffdf7,#fff); }
       .cast-profile-card .cast-thumb { width:78px; height:94px; display:grid; place-items:end center; overflow:hidden; border-radius:6px; background:#f4fbfc; }
       .cast-profile-card .cast-thumb img { width:100%; height:100%; display:block; object-fit:contain; object-position:center bottom; }
+      .cast-profile-card.mamokamo .cast-thumb { place-items:center; background:radial-gradient(circle at 50% 42%,#fff 0,#fff9e9 58%,#eaf7f8 100%); }
+      .cast-profile-card.mamokamo .cast-thumb img { object-position:center; transform:scale(1.18); filter:drop-shadow(0 4px 5px rgba(8,35,61,.16)); }
       .cast-profile-card small { display:block; color:var(--muted); font-size:8px; font-weight:900; line-height:1.35; }
       .cast-profile-card h3 { margin:4px 0 0; font-size:17px; letter-spacing:-.04em; }
       .cast-profile-card .cast-open-hint { display:block; margin-top:6px; color:var(--teal-dark); font-size:8px; font-weight:900; }
@@ -148,6 +160,10 @@
       }
       .cast-profile-visual { min-height:390px; display:grid; place-items:end center; overflow:hidden; background:#f3fbfc; }
       .cast-profile-visual img { width:100%; height:390px; display:block; object-fit:contain; object-position:center bottom; }
+      .cast-profile-overlay[data-cast-profile="mamokamo"] .cast-profile-dialog { border-top-color:#d8a12a; }
+      .cast-profile-overlay[data-cast-profile="mamokamo"] .cast-profile-visual { place-items:center; background:radial-gradient(circle at 50% 42%,#fff 0,#fff9e9 58%,#eaf7f8 100%); }
+      .cast-profile-overlay[data-cast-profile="mamokamo"] .cast-profile-visual img { object-position:center; transform:scale(1.08); filter:drop-shadow(0 9px 12px rgba(8,35,61,.16)); }
+      .cast-profile-overlay[data-cast-profile="mamokamo"] .profile-kicker { color:#98701d; }
       .cast-profile-copy { padding:34px 32px; align-self:center; }
       .cast-profile-copy .profile-kicker { color:var(--teal-dark); font-size:9px; font-weight:1000; letter-spacing:.14em; }
       .cast-profile-copy h2 { margin:8px 0 1px; font-size:34px; letter-spacing:-.06em; }
@@ -253,6 +269,7 @@
     const p = PROFILES[key];
     if (!p) return;
     const overlay = ensureProfileOverlay();
+    overlay.dataset.castProfile = key;
     const image = overlay.querySelector("#castProfileImage");
     image.src = p.image;
     image.alt = p.name;
@@ -280,7 +297,7 @@
     const cast = analysis?.querySelector(".newsroom-cast");
     if (!cast) return;
     const heading = analysis.querySelector(".section-head h2");
-    if (heading) heading.textContent = "MAMO BOAT PRESSの3人";
+    if (heading) heading.textContent = "編集部とAI分析担当";
 
     const card = (key, cls) => {
       const p = PROFILES[key];
@@ -291,7 +308,7 @@
       </button>`;
     };
 
-    cast.innerHTML = card("mamoru", "mamoru") + card("miru", "miru") + card("shun", "shun");
+    cast.innerHTML = card("mamoru", "mamoru") + card("miru", "miru") + card("shun", "shun") + card("mamokamo", "mamokamo");
     cast.querySelectorAll("[data-cast-profile]").forEach((button) => {
       button.addEventListener("click", () => openCastProfile(button.dataset.castProfile));
     });
