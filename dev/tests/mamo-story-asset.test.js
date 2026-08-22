@@ -14,8 +14,8 @@ test("MAMO STORY uses 16 same-origin panel images", () => {
   assert.match(source, /\.\/assets\/mamo-story\/mamo-story-/);
   assert.match(source, /class="story-panel"/);
   assert.doesNotMatch(source, /raw\.githubusercontent\.com|mamo-story-image(?:-v9)?\.txt|createObjectURL|atob\(/);
-  assert.match(pilotSource, /sw-refresh\.js\?v=20260822-20/);
-  assert.match(refreshSource, /mamo-story\.js\?v=20260822-12/);
+  assert.match(pilotSource, /sw-refresh\.js\?v=20260822-21/);
+  assert.match(refreshSource, /mamo-story\.js\?v=20260822-13/);
 });
 
 test("all 16 MAMO STORY PNG panels are valid and readable", () => {
@@ -30,7 +30,7 @@ test("all 16 MAMO STORY PNG panels are valid and readable", () => {
     assert.deepEqual([...image.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], `${panel} has an invalid PNG signature`);
     const width = image.readUInt32BE(16);
     const height = image.readUInt32BE(20);
-    if (["mamo-story-04.png", "mamo-story-08.png", "mamo-story-09.png", "mamo-story-15.png"].includes(panel)) {
+    if (["mamo-story-04.png", "mamo-story-06.png", "mamo-story-07.png", "mamo-story-08.png", "mamo-story-09.png", "mamo-story-15.png"].includes(panel)) {
       assert.ok(width >= 990, `${panel} width ${width} is lower than the high-resolution target`);
       assert.ok(height >= 1490, `${panel} height ${height} is lower than the high-resolution target`);
     } else {
