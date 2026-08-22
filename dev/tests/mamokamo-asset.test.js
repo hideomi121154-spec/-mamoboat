@@ -1,18 +1,32 @@
 const fs = require('fs');
 
 const js = fs.readFileSync('mamokamo.js', 'utf8');
-const svg = fs.readFileSync('assets/mamokamo-card-v4.svg', 'utf8');
+const html = fs.readFileSync('index.html', 'utf8');
+const refresh = fs.readFileSync('sw-refresh.js', 'utf8');
+const png = fs.readFileSync('assets/mamokamo-ai-v5.png');
 
-if (!js.includes('assets/mamokamo-card-v4.svg?v=20260818-4')) {
-  throw new Error('mamokamo.js must reference the compact v4 SVG asset');
+if (!js.includes('assets/mamokamo-ai-v5.png?v=20260822-5')) {
+  throw new Error('mamokamo.js must reference the AI analyst v5 PNG asset');
 }
-if (!svg.startsWith('<svg') && !svg.startsWith('<?xml')) {
-  throw new Error('Mamokamo asset is not valid SVG text');
+if (!refresh.includes('mamokamo.js?v=20260822-2')) {
+  throw new Error('sw-refresh.js must load the current Mamokamo script');
 }
-if (!svg.includes('マモカモ')) {
-  throw new Error('Mamokamo SVG title marker missing');
+if (!js.includes('MAMO BOAT AI分析担当') || !js.includes('MAMO BOAT / AI ANALYST')) {
+  throw new Error('Mamokamo must be presented as the AI analysis specialist');
 }
-if (!svg.includes('viewBox="0 0 290 230"')) {
-  throw new Error('Mamokamo compact card aspect ratio changed unexpectedly');
+if (!html.includes('AI分析：マモカモ')) {
+  throw new Error('The newsroom must visibly name Mamokamo as its AI analyst');
 }
-console.log('mamokamo compact asset test OK');
+if (![0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((byte, index) => png[index] === byte)) {
+  throw new Error('Mamokamo asset is not a valid PNG');
+}
+const width = png.readUInt32BE(16);
+const height = png.readUInt32BE(20);
+const colorType = png[25];
+if (width < 1000 || height < 1000 || width !== height) {
+  throw new Error(`Mamokamo asset must be a high-resolution square, got ${width}x${height}`);
+}
+if (colorType !== 6) {
+  throw new Error(`Mamokamo asset must preserve transparent RGBA, got PNG color type ${colorType}`);
+}
+console.log('mamokamo AI analyst asset test OK');

@@ -1,20 +1,20 @@
-/* MAMO BOAT Mamokamo v1 — static brand mascot, no prediction logic. */
+/* MAMO BOAT Mamokamo v2 — AI behavior-analysis mascot, no race-outcome prediction. */
 (() => {
   "use strict";
-  if (window.__MAMO_MAMOKAMO_V1__) return;
-  window.__MAMO_MAMOKAMO_V1__ = true;
+  if (window.__MAMO_MAMOKAMO_V2__) return;
+  window.__MAMO_MAMOKAMO_V2__ = true;
 
-  const ASSET = "assets/mamokamo-card-v4.svg?v=20260818-4";
+  const ASSET = "assets/mamokamo-ai-v5.png?v=20260822-5";
 
   function installStyle() {
     if (document.getElementById("mamokamoStyles")) return;
     const style = document.createElement("style");
     style.id = "mamokamoStyles";
     style.textContent = `
-      .mamokamo-profile{display:grid;grid-template-columns:minmax(112px,150px) 1fr;gap:16px;align-items:stretch;margin:12px 0 18px;padding:0;overflow:hidden;border:1px solid #d9d1bd;border-top:4px solid #d8a12a;border-radius:16px;background:linear-gradient(120deg,#fffdf8 0%,#fff 52%,#f3f7f8 100%);box-shadow:0 7px 20px rgba(8,35,61,.08)}
-      .mamokamo-profile__visual{position:relative;min-height:188px;overflow:hidden;background:#fffdf8}
-      .mamokamo-profile__visual img{display:block;width:100%;height:100%;min-height:188px;object-fit:cover;object-position:50% 50%}
-      .mamokamo-profile__visual:after{content:"MAMOKAMO";position:absolute;left:10px;bottom:9px;padding:3px 7px;border-radius:999px;background:rgba(8,35,61,.86);color:#f4c95f;font-size:7px;font-weight:1000;letter-spacing:.13em}
+      .mamokamo-profile{display:grid;grid-template-columns:minmax(145px,180px) 1fr;gap:16px;align-items:stretch;margin:12px 0 18px;padding:0;overflow:hidden;border:1px solid #d9d1bd;border-top:4px solid #d8a12a;border-radius:18px;background:linear-gradient(120deg,#fffdf8 0%,#fff 52%,#f1fafb 100%);box-shadow:0 8px 22px rgba(8,35,61,.09)}
+      .mamokamo-profile__visual{position:relative;display:grid;place-items:center;min-height:210px;overflow:hidden;background:radial-gradient(circle at 48% 38%,#fff 0,#fffaf0 55%,#eaf7f8 100%)}
+      .mamokamo-profile__visual img{display:block;width:100%;height:100%;min-height:210px;box-sizing:border-box;padding:10px 7px 20px;object-fit:contain;object-position:50% 50%;filter:drop-shadow(0 7px 8px rgba(8,35,61,.16))}
+      .mamokamo-profile__visual:after{content:"MAMOKAMO / AI";position:absolute;left:10px;bottom:9px;padding:3px 7px;border-radius:999px;background:rgba(8,35,61,.9);color:#f4c95f;font-size:7px;font-weight:1000;letter-spacing:.13em}
       .mamokamo-profile__body{padding:17px 16px 15px 0;min-width:0}
       .mamokamo-profile__eyebrow{display:block;color:#98701d;font-size:8px;font-weight:1000;letter-spacing:.16em}
       .mamokamo-profile h3{margin:4px 0 7px;color:#08233d;font-size:25px;line-height:1.05;letter-spacing:-.055em}
@@ -24,9 +24,9 @@
       .mamokamo-profile__quote{display:block;padding-top:8px;border-top:1px solid #ece6d9;color:#087d77;font-size:9px;font-weight:900;line-height:1.55}
       .cast-card.mamokamo{border-top-color:#d8a12a!important;background:linear-gradient(135deg,#fffdf7,#fff)!important}
       .cast-card.mamokamo .cast-avatar{overflow:hidden;padding:0!important;background:#fffdf8!important;border-color:#d8a12a!important}
-      .cast-card.mamokamo .cast-avatar img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
-      .mamokamo-home{display:grid;grid-template-columns:74px 1fr;gap:12px;align-items:center;margin:10px 0;padding:10px 12px;border:1px solid #e0d7c2;border-left:4px solid #d8a12a;border-radius:13px;background:linear-gradient(110deg,#fffdf7,#fff);box-shadow:0 4px 12px rgba(8,35,61,.055)}
-      .mamokamo-home img{width:74px;height:74px;object-fit:cover;object-position:50% 50%;border-radius:12px;background:#fffdf8}
+      .cast-card.mamokamo .cast-avatar img{display:block;width:100%;height:100%;box-sizing:border-box;padding:4px;object-fit:contain;object-position:50% 50%;filter:drop-shadow(0 3px 4px rgba(8,35,61,.13))}
+      .mamokamo-home{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;margin:10px 0;padding:10px 12px;border:1px solid #e0d7c2;border-left:4px solid #d8a12a;border-radius:15px;background:linear-gradient(110deg,#fffdf7,#fff,#f1fafb);box-shadow:0 5px 14px rgba(8,35,61,.06)}
+      .mamokamo-home img{width:84px;height:84px;box-sizing:border-box;padding:3px;object-fit:contain;object-position:50% 50%;border-radius:14px;background:radial-gradient(circle,#fff,#fff8e8);filter:drop-shadow(0 4px 5px rgba(8,35,61,.13))}
       .mamokamo-home small{display:block;color:#98701d;font-size:7px;font-weight:1000;letter-spacing:.13em}
       .mamokamo-home strong{display:block;margin-top:2px;color:#08233d;font-size:14px}
       .mamokamo-home p{margin:4px 0 0;color:#566873;font-size:9px;font-weight:750;line-height:1.55}
@@ -36,7 +36,7 @@
       #analysisList .behavior-intro small{display:block;color:#0b8a82;font-size:9px;font-weight:1000;letter-spacing:.13em}
       #analysisList .behavior-intro strong{display:block;margin-top:3px;color:#08233d;font-size:20px;line-height:1.25;letter-spacing:-.035em}
       #analysisList .behavior-intro p{margin:4px 0 0;color:#60717b;font-size:12px;font-weight:700;line-height:1.55}
-      #analysisList .behavior-intro img{width:92px;height:78px;object-fit:cover;object-position:50% 42%;justify-self:end;filter:drop-shadow(0 4px 6px rgba(8,35,61,.12))}
+      #analysisList .behavior-intro img{width:98px;height:88px;object-fit:contain;object-position:50% 50%;justify-self:end;filter:drop-shadow(0 5px 6px rgba(8,35,61,.14))}
 
       #analysisList .card.behavior-card{--bc:#0aa49a;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:88px;margin:0!important;padding:13px 14px!important;border:1px solid #e0e5e3!important;border-left:5px solid var(--bc)!important;border-radius:18px!important;background:#fff!important;box-shadow:0 5px 14px rgba(8,35,61,.055)!important}
       #analysisList .behavior-card .behavior-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--bc) 14%,white);color:var(--bc);font-size:24px;font-weight:1000;line-height:1;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bc) 28%,white)}
@@ -54,11 +54,11 @@
       #analysisList .behavior-card[data-tone="green"]{--bc:#2da66c}
       #analysisList .behavior-card[data-tone="navy"]{--bc:#173b5a}
       #analysisList .behavior-mamokamo{display:grid;grid-template-columns:74px 1fr;gap:10px;align-items:center;margin-top:3px;padding:10px 13px;border:1px solid #e0c98e;border-radius:15px;background:linear-gradient(110deg,#fffaf0,#fff);box-shadow:0 5px 14px rgba(8,35,61,.05)}
-      #analysisList .behavior-mamokamo img{width:74px;height:62px;object-fit:cover;object-position:50% 43%}
+      #analysisList .behavior-mamokamo img{width:78px;height:70px;object-fit:contain;object-position:50% 50%;filter:drop-shadow(0 4px 5px rgba(8,35,61,.12))}
       #analysisList .behavior-mamokamo b{display:block;color:#08233d;font-size:13px;line-height:1.45}
       #analysisList .behavior-mamokamo span{display:block;margin-top:2px;color:#6e7980;font-size:10px;font-weight:700;line-height:1.45}
 
-      @media(max-width:520px){.mamokamo-profile{grid-template-columns:108px 1fr;gap:12px}.mamokamo-profile__visual,.mamokamo-profile__visual img{min-height:174px}.mamokamo-profile__body{padding:14px 12px 13px 0}.mamokamo-profile h3{font-size:21px}.mamokamo-profile p{font-size:10px}#analysisList .behavior-intro{grid-template-columns:1fr 78px}#analysisList .behavior-intro img{width:78px;height:66px}#analysisList .card.behavior-card{grid-template-columns:46px minmax(0,1fr) auto;gap:10px;padding:12px 12px!important}#analysisList .behavior-card .behavior-icon{width:42px;height:42px;font-size:20px}#analysisList .behavior-copy b{font-size:15px!important}#analysisList .behavior-metric{min-width:58px;font-size:19px}}
+      @media(max-width:520px){.mamokamo-profile{grid-template-columns:140px 1fr;gap:12px}.mamokamo-profile__visual,.mamokamo-profile__visual img{min-height:206px}.mamokamo-profile__body{padding:14px 12px 13px 0}.mamokamo-profile h3{font-size:21px}.mamokamo-profile p{font-size:10px}.mamokamo-role b{font-size:7px;padding:4px 6px}#analysisList .behavior-intro{grid-template-columns:1fr 86px}#analysisList .behavior-intro img{width:86px;height:76px}#analysisList .card.behavior-card{grid-template-columns:46px minmax(0,1fr) auto;gap:10px;padding:12px 12px!important}#analysisList .behavior-card .behavior-icon{width:42px;height:42px;font-size:20px}#analysisList .behavior-copy b{font-size:15px!important}#analysisList .behavior-metric{min-width:58px;font-size:19px}}
     `;
     document.head.appendChild(style);
   }
@@ -68,12 +68,12 @@
     if (!cast) return;
 
     const heading = cast.previousElementSibling?.querySelector?.("h2");
-    if (heading && heading.textContent.includes("編集部の3人")) heading.textContent = "編集部とマモカモ";
+    if (heading && heading.textContent.includes("編集部の3人")) heading.textContent = "編集部とAI分析担当";
 
     if (!cast.querySelector(".cast-card.mamokamo")) {
       const card = document.createElement("article");
       card.className = "cast-card mamokamo";
-      card.innerHTML = `<span class="cast-avatar"><img src="${ASSET}" alt="マモカモ"></span><div><small>MAMO BOAT マスコット</small><h3>マモカモ</h3><p>熱くなりすぎた時に、そっと「ちょっと待って」を届ける見守り役。</p></div>`;
+      card.innerHTML = `<span class="cast-avatar"><img src="${ASSET}" alt="マモカモ"></span><div><small>MAMO BOAT AI分析担当</small><h3>マモカモ</h3><p>AIR BETと記録から、勝敗ではなく行動のクセを見つけるマスコット。</p></div>`;
       cast.appendChild(card);
     }
 
@@ -81,7 +81,7 @@
       const profile = document.createElement("article");
       profile.id = "mamokamoProfile";
       profile.className = "mamokamo-profile";
-      profile.innerHTML = `<div class="mamokamo-profile__visual"><img src="${ASSET}" alt="MAMO BOATのマスコット マモカモ"></div><div class="mamokamo-profile__body"><span class="mamokamo-profile__eyebrow">MAMO BOAT / WATCH PARTNER</span><h3>マモカモ</h3><p>勝負を止めるためではなく、自分で選べる状態を守るための相棒。予想はせず、熱くなった時や連続参加が続いた時に、いったん自分を見るきっかけをつくります。</p><div class="mamokamo-role"><b>守る</b><b>見張る</b><b>導く</b></div><span class="mamokamo-profile__quote">「それでいいカモ！」　「ちょっと待ってカモ！」</span></div>`;
+      profile.innerHTML = `<div class="mamokamo-profile__visual"><img src="${ASSET}" alt="MAMO BOATのAI分析担当マモカモ"></div><div class="mamokamo-profile__body"><span class="mamokamo-profile__eyebrow">MAMO BOAT / AI ANALYST</span><h3>マモカモ</h3><p>AIR BETとMAMO RECORDの記録を読み解き、参加のタイミングや金額の変化を整理するAI分析担当。レースの勝敗は予想せず、「いつもの自分」との違いを分かりやすく届けます。</p><div class="mamokamo-role"><b>記録を読む</b><b>クセを見つける</b><b>気づきを届ける</b></div><span class="mamokamo-profile__quote">「ここ、いつもと違うカモ！」　「数字から一緒に見てみるカモ！」</span></div>`;
       cast.insertAdjacentElement("afterend", profile);
     }
   }
@@ -92,7 +92,7 @@
     const card = document.createElement("aside");
     card.id = "mamokamoHome";
     card.className = "mamokamo-home";
-    card.innerHTML = `<img src="${ASSET}" alt="マモカモ"><div><small>MAMOKAMO / WATCHING</small><strong>今日も、勝負の主導権は自分に。</strong><p>マモカモは予想をしません。熱くなりすぎた時に、自分のペースへ戻るきっかけを届けます。</p></div>`;
+    card.innerHTML = `<img src="${ASSET}" alt="AI分析担当マモカモ"><div><small>MAMOKAMO / AI ANALYST</small><strong>AI分析は、マモカモにおまかせ。</strong><p>AIR BETとMAMO RECORDを整理し、勝敗ではなくあなたの行動のクセを伝えます。</p></div>`;
     note.insertAdjacentElement("afterend", card);
   }
 
@@ -153,14 +153,14 @@
     if (!list.querySelector(".behavior-intro")) {
       const intro = document.createElement("div");
       intro.className = "behavior-intro";
-      intro.innerHTML = `<div><small>MAMO AI / BEHAVIOR MAP</small><strong>あなたの行動を、ひと目で。</strong><p>勝敗ではなく、参加の仕方や金額の動きを整理しています。</p></div><img src="${ASSET}" alt="マモカモ">`;
+      intro.innerHTML = `<div><small>MAMO AI / BEHAVIOR MAP</small><strong>マモカモが、あなたの行動を分析。</strong><p>AIR BETと記録から、参加の仕方や金額の動きを整理します。</p></div><img src="${ASSET}" alt="AI分析担当マモカモ">`;
       list.prepend(intro);
     }
 
     if (!list.querySelector(".behavior-mamokamo")) {
       const note = document.createElement("div");
       note.className = "behavior-mamokamo";
-      note.innerHTML = `<img src="${ASSET}" alt="マモカモ"><div><b>「数字が動いたところが、いつもの自分との違いカモ。」</b><span>この画面は勝率や次のレースを予想せず、あなた自身の行動だけを整理します。</span></div>`;
+      note.innerHTML = `<img src="${ASSET}" alt="AI分析担当マモカモ"><div><b>「数字が動いたところ、マモカモが見つけたカモ！」</b><span>AIが勝敗を予想するのではなく、あなた自身の行動記録を比較・整理します。</span></div>`;
       list.appendChild(note);
     }
   }
