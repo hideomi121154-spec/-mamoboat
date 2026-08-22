@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v12 — SW refresh + current JST date + compact plan tiers + modal back button + MAMO STORY. */
+/* MAMO BOAT Service Worker refresh v13 — SW refresh + current JST date + compact plan tiers + modal back button + MAMO STORY. */
 (()=>{
   "use strict";
 
@@ -107,7 +107,7 @@
   const loadMamoStory=()=>{
     if(document.querySelector('script[data-mamo-story="1"]')) return;
     const script=document.createElement("script");
-    script.src="mamo-story.js?v=20260822-1";
+    script.src="mamo-story.js?v=20260822-4";
     script.async=true;
     script.dataset.mamoStory="1";
     document.head.appendChild(script);
