@@ -1,17 +1,20 @@
-/* MAMO BOAT — MAMO STORY mobile reader v7 */
+/* MAMO BOAT — MAMO STORY mobile reader v8 */
 (()=>{"use strict";
 if(window.__MAMO_STORY__)return;window.__MAMO_STORY__=true;
-const DATA_URL="mamo-story-image.txt?v=20260822-7";
-const PAGES=[[0,0,"01–02","好きだからこそ、つい参加する。"],[1,0,"03–04","モヤモヤの正体を、まず知る。"],[0,1,"05–06","AIR BETで、もし賭けていたらを残す。"],[1,1,"07–08","数字と気持ちを、あとから見る。"],[0,2,"09–10","答えをもらうより、自分で気づく。"],[1,2,"11–12","なんとなく100円を、見送れる日が来る。"],[0,3,"13–14","勝つ日も負ける日も、自分の型が残る。"],[1,3,"15–16","勝負の主導権を、自分に。"]];
-let storySrcPromise=null;
-function getStorySrc(){
-  if(storySrcPromise)return storySrcPromise;
-  storySrcPromise=fetch(DATA_URL,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(`story-data ${r.status}`);return r.text()}).then(t=>{
-    const b64=t.replace(/\s+/g,"").trim();
-    if(!b64.startsWith("/9j/"))throw new Error("invalid jpeg base64");
-    return `data:image/jpeg;base64,${b64}`;
-  });
-  return storySrcPromise;
+const DATA_URL="mamo-story-image.txt?v=20260822-8";
+let srcPromise=null;
+function getSrc(){
+  if(srcPromise)return srcPromise;
+  srcPromise=fetch(DATA_URL,{cache:"no-store"})
+    .then(r=>{if(!r.ok)throw new Error(`story-data ${r.status}`);return r.text()})
+    .then(t=>{
+      const b64=t.replace(/\s+/g,"").trim();
+      if(!b64.startsWith("/9j/"))throw new Error("invalid jpeg base64");
+      const bin=atob(b64);const bytes=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      return URL.createObjectURL(new Blob([bytes],{type:"image/jpeg"}));
+    });
+  return srcPromise;
 }
 function css(){if(document.getElementById("mamoStoryStyle"))return;const s=document.createElement("style");s.id="mamoStoryStyle";s.textContent=`
 #mamoStoryTeaser{margin:14px 0 18px;border:1px solid #d8e0e3;border-left:6px solid #d3a637;border-radius:16px;background:linear-gradient(135deg,#fffdf8,#f7fbfc);box-shadow:0 9px 24px rgba(6,35,58,.08);overflow:hidden}
@@ -19,26 +22,19 @@ function css(){if(document.getElementById("mamoStoryStyle"))return;const s=docum
 #mamoStoryTeaser .story-mark{width:48px;height:48px;flex:0 0 48px;border-radius:50%;display:grid;place-items:center;background:#08233d;color:#fff;font-weight:1000;font-size:20px}
 #mamoStoryTeaser small{display:block;color:#9a7419;font-size:9px;font-weight:1000;letter-spacing:.11em;margin-bottom:3px}
 #mamoStoryTeaser strong{display:block;font-size:18px;line-height:1.25}.story-arrow{margin-left:auto;font-size:24px;color:#0a9fa8}
-#mamoStoryOverlay{position:fixed;inset:0;z-index:12000;background:#eef2f4;display:none;overflow:hidden;color:#08233d}
-#mamoStoryOverlay.open{display:block}.story-shell{height:100%;display:flex;flex-direction:column}
-.story-head{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:rgba(255,255,255,.96);border-bottom:1px solid #d8e0e3}
-.story-head small{display:block;color:#9a7419;font-size:8px;font-weight:1000;letter-spacing:.13em}.story-head b{font-size:17px}.story-close{width:40px;height:40px;border:0;border-radius:50%;background:#edf0f2;color:#08233d;font-size:22px}
-.story-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px calc(125px + env(safe-area-inset-bottom))}
-.story-intro{padding:7px 5px 14px}.story-intro h2{margin:0 0 6px;font-size:28px;line-height:1.16}.story-intro h2 span{color:#0aa8ad}.story-intro p{margin:0;color:#647782;font-size:12px;line-height:1.65}
-.story-page{margin:0 0 16px;background:#fff;border:1px solid #d9dfe1;border-radius:15px;box-shadow:0 8px 18px rgba(6,35,58,.07);overflow:hidden}
-.story-crop{position:relative;width:100%;aspect-ratio:2/1;overflow:hidden;background:#eee}.story-crop img{position:absolute;display:block;width:200%;max-width:none;height:auto;left:var(--story-x);top:var(--story-y)}
-.story-meta{padding:10px 12px 12px;display:flex;gap:10px;align-items:flex-start}.story-no{flex:0 0 auto;color:#a57916;font-size:9px;font-weight:1000;letter-spacing:.1em}.story-copy{font-size:13px;font-weight:900;line-height:1.45}
+#mamoStoryOverlay{position:fixed;inset:0;z-index:12000;background:#eef2f4;display:none;overflow:hidden;color:#08233d}#mamoStoryOverlay.open{display:block}.story-shell{height:100%;display:flex;flex-direction:column}
+.story-head{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:rgba(255,255,255,.97);border-bottom:1px solid #d8e0e3}.story-head small{display:block;color:#9a7419;font-size:8px;font-weight:1000;letter-spacing:.13em}.story-head b{font-size:17px}.story-close{width:40px;height:40px;border:0;border-radius:50%;background:#edf0f2;color:#08233d;font-size:22px}
+.story-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px calc(125px + env(safe-area-inset-bottom))}.story-intro{padding:7px 5px 14px}.story-intro h2{margin:0 0 6px;font-size:28px;line-height:1.16}.story-intro h2 span{color:#0aa8ad}.story-intro p{margin:0;color:#647782;font-size:12px;line-height:1.65}
+.story-full{background:#fff;border:1px solid #d9dfe1;border-radius:15px;box-shadow:0 8px 18px rgba(6,35,58,.07);overflow:hidden}.story-full img{display:block;width:100%;height:auto;background:#eee}.story-loading,.story-img-error{padding:24px 16px;text-align:center;color:#6f7e86}.story-img-error{display:none;background:#fff5f2}.story-img-error.show{display:block}.story-loading.hide{display:none}
 .story-end{margin-top:20px;padding:24px 18px 22px;border-radius:17px;background:#08233d;color:#fff;text-align:center}.story-end small{color:#dcb655;font-size:9px;font-weight:1000;letter-spacing:.14em}.story-end h2{margin:8px 0 7px;font-size:30px;line-height:1.2}.story-end p{margin:0;color:#cbd9df;font-size:11px;line-height:1.65}
-.story-cta{position:fixed;z-index:4;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:8px}.story-cta button{min-height:54px;border-radius:13px;font-weight:1000;font-size:15px;box-shadow:0 8px 20px rgba(6,35,58,.18)}.story-back{flex:0 0 88px;border:1px solid #a9b8be;background:#fff;color:#08233d}.story-air{flex:1;border:0;background:#08adb6;color:#fff}
-.story-img-error{display:none;padding:20px;color:#6f7e86;text-align:center;background:#fff5f2}.story-img-error.show{display:block}body.mamo-story-open{overflow:hidden!important}
+.story-cta{position:fixed;z-index:4;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:8px}.story-cta button{min-height:54px;border-radius:13px;font-weight:1000;font-size:15px;box-shadow:0 8px 20px rgba(6,35,58,.18)}.story-back{flex:0 0 88px;border:1px solid #a9b8be;background:#fff;color:#08233d}.story-air{flex:1;border:0;background:#08adb6;color:#fff}body.mamo-story-open{overflow:hidden!important}
 @media(min-width:650px){#mamoStoryOverlay{left:50%;right:auto;width:min(620px,100%);transform:translateX(-50%);box-shadow:0 0 40px rgba(0,0,0,.25)}}`;
 document.head.appendChild(s)}
-function cropVars(x,y){return `--story-x:${x?'-100%':'0%'};--story-y:-${y*100}%`}
-function overlay(){let o=document.getElementById("mamoStoryOverlay");if(o)return o;o=document.createElement("div");o.id="mamoStoryOverlay";o.innerHTML=`<div class="story-shell"><header class="story-head"><div><small>MAMO STORY / READ FIRST</small><b>3分でわかる MAMO BOAT</b></div><button class="story-close" type="button">×</button></header><main class="story-scroll"><div class="story-intro"><h2>勝つ方法ではなく、<br><span>自分の勝負を知る話。</span></h2><p>記録して、あとから見る。それだけで「なんとなく」が少しずつ見えるようになる。</p></div><div id="mamoStoryPages"></div><div class="story-img-error" id="mamoStoryError">漫画画像を読み込めませんでした。再読み込みしてください。</div><div class="story-end"><small>MAMO BOAT</small><h2>勝負の主導権を、<br>自分に。</h2><p>予想を当てるためではなく、自分がどんな時に勝負を選ぶのかを知るために。</p></div></main><div class="story-cta"><button class="story-back" type="button">閉じる</button><button class="story-air" type="button">AIR BETを体験する →</button></div></div>`;document.body.appendChild(o);
-const box=o.querySelector("#mamoStoryPages");box.innerHTML=PAGES.map(([x,y,no,copy])=>`<article class="story-page"><div class="story-crop" style="${cropVars(x,y)}"><img alt="MAMO STORY ${no}"></div><div class="story-meta"><span class="story-no">${no}</span><span class="story-copy">${copy}</span></div></article>`).join("");
-getStorySrc().then(src=>{box.querySelectorAll("img").forEach(img=>img.src=src);o.querySelector("#mamoStoryError")?.classList.remove("show")}).catch(err=>{console.warn("MAMO STORY image load failed",err);o.querySelector("#mamoStoryError")?.classList.add("show")});
+function overlay(){let o=document.getElementById("mamoStoryOverlay");if(o)return o;o=document.createElement("div");o.id="mamoStoryOverlay";o.innerHTML=`<div class="story-shell"><header class="story-head"><div><small>MAMO STORY / READ FIRST</small><b>3分でわかる MAMO BOAT</b></div><button class="story-close" type="button" aria-label="閉じる">×</button></header><main class="story-scroll"><div class="story-intro"><h2>勝つ方法ではなく、<br><span>自分の勝負を知る話。</span></h2><p>記録して、あとから見る。それだけで「なんとなく」が少しずつ見えるようになる。</p></div><div class="story-full"><div class="story-loading">漫画を読み込み中…</div><img id="mamoStoryImage" alt="MAMO BOAT 読み切り漫画" hidden><div class="story-img-error" id="mamoStoryError">漫画画像を読み込めませんでした。</div></div><div class="story-end"><small>MAMO BOAT</small><h2>勝負の主導権を、<br>自分に。</h2><p>予想を当てるためではなく、自分がどんな時に勝負を選ぶのかを知るために。</p></div></main><div class="story-cta"><button class="story-back" type="button">閉じる</button><button class="story-air" type="button">AIR BETを体験する →</button></div></div>`;document.body.appendChild(o);
+const img=o.querySelector("#mamoStoryImage"),loading=o.querySelector(".story-loading"),err=o.querySelector("#mamoStoryError");
+getSrc().then(src=>{img.onload=()=>{img.hidden=false;loading.classList.add("hide");err.classList.remove("show")};img.onerror=()=>{loading.classList.add("hide");err.classList.add("show")};img.src=src}).catch(e=>{console.warn("MAMO STORY image load failed",e);loading.classList.add("hide");err.classList.add("show")});
 o.querySelectorAll(".story-close,.story-back").forEach(b=>b.addEventListener("click",close));o.querySelector(".story-air").addEventListener("click",()=>{close();try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_airbet_cta",{source:"story"},{screen:"story"})}catch(_){ }if(typeof window.go==="function")window.go("venues")});return o}
-function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:7},{screen:"story"})}catch(_){}}
+function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:8},{screen:"story"})}catch(_){}}
 function close(){document.getElementById("mamoStoryOverlay")?.classList.remove("open");document.body.classList.remove("mamo-story-open")}
 function teaser(){const home=document.getElementById("home");if(!home||document.getElementById("mamoStoryTeaser"))return;const t=document.createElement("div");t.id="mamoStoryTeaser";t.innerHTML=`<button type="button"><span class="story-mark">読</span><span><small>MAMO STORY</small><strong>漫画でわかる「勝負の主導権」</strong></span><span class="story-arrow">›</span></button>`;t.querySelector("button").addEventListener("click",open);const record=document.getElementById("mamoRecordHero")||document.getElementById("mamoRecordSummary");const title=home.querySelector(".home-titlebar");if(record)record.insertAdjacentElement("afterend",t);else if(title)title.insertAdjacentElement("beforebegin",t);else home.prepend(t)}
 function boot(){css();overlay();teaser();setTimeout(teaser,500);setTimeout(teaser,1600);window.addEventListener("pageshow",teaser);window.MAMO_STORY=Object.freeze({open,close})}
