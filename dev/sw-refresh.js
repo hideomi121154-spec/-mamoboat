@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v15 — SW refresh + current JST date + compact plan tiers + modal back button + MAMO STORY. */
+/* MAMO BOAT Service Worker refresh v16 — SW refresh + current JST date + compact plan tiers + modal back button + MAMO STORY. */
 (()=>{
   "use strict";
 
@@ -66,7 +66,7 @@
 
   const syncHomeToday=()=>{const date=document.getElementById("homeDateText");if(date) date.textContent=currentJstLabel();};
   const loadMamokamo=()=>{if(document.querySelector('script[data-mamo-mamokamo="1"]')) return;const script=document.createElement("script");script.src="mamokamo.js?v=20260818-1";script.async=true;script.dataset.mamoMamokamo="1";document.head.appendChild(script);};
-  const loadMamoStory=()=>{if(document.querySelector('script[data-mamo-story="1"]')) return;const script=document.createElement("script");script.src="mamo-story.js?v=20260822-6";script.async=true;script.dataset.mamoStory="1";document.head.appendChild(script);};
+  const loadMamoStory=()=>{if(document.querySelector('script[data-mamo-story="1"]')) return;const script=document.createElement("script");script.src="mamo-story.js?v=20260822-7";script.async=true;script.dataset.mamoStory="1";document.head.appendChild(script);};
 
   const register=async()=>{
     installPlanCollapseFix();installBetModalBackButton();syncHomeToday();
