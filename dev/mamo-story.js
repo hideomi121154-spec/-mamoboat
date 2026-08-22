@@ -1,7 +1,7 @@
-/* MAMO BOAT — MAMO STORY mobile reader v6 */
+/* MAMO BOAT — MAMO STORY mobile reader v7 */
 (()=>{"use strict";
 if(window.__MAMO_STORY__)return;window.__MAMO_STORY__=true;
-const DATA_URL="assets/mamo-story-image.txt?v=20260822-6";
+const DATA_URL="mamo-story-image.txt?v=20260822-7";
 const PAGES=[[0,0,"01–02","好きだからこそ、つい参加する。"],[1,0,"03–04","モヤモヤの正体を、まず知る。"],[0,1,"05–06","AIR BETで、もし賭けていたらを残す。"],[1,1,"07–08","数字と気持ちを、あとから見る。"],[0,2,"09–10","答えをもらうより、自分で気づく。"],[1,2,"11–12","なんとなく100円を、見送れる日が来る。"],[0,3,"13–14","勝つ日も負ける日も、自分の型が残る。"],[1,3,"15–16","勝負の主導権を、自分に。"]];
 let storySrcPromise=null;
 function getStorySrc(){
@@ -38,7 +38,7 @@ function overlay(){let o=document.getElementById("mamoStoryOverlay");if(o)return
 const box=o.querySelector("#mamoStoryPages");box.innerHTML=PAGES.map(([x,y,no,copy])=>`<article class="story-page"><div class="story-crop" style="${cropVars(x,y)}"><img alt="MAMO STORY ${no}"></div><div class="story-meta"><span class="story-no">${no}</span><span class="story-copy">${copy}</span></div></article>`).join("");
 getStorySrc().then(src=>{box.querySelectorAll("img").forEach(img=>img.src=src);o.querySelector("#mamoStoryError")?.classList.remove("show")}).catch(err=>{console.warn("MAMO STORY image load failed",err);o.querySelector("#mamoStoryError")?.classList.add("show")});
 o.querySelectorAll(".story-close,.story-back").forEach(b=>b.addEventListener("click",close));o.querySelector(".story-air").addEventListener("click",()=>{close();try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_airbet_cta",{source:"story"},{screen:"story"})}catch(_){ }if(typeof window.go==="function")window.go("venues")});return o}
-function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:6},{screen:"story"})}catch(_){}}
+function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:7},{screen:"story"})}catch(_){}}
 function close(){document.getElementById("mamoStoryOverlay")?.classList.remove("open");document.body.classList.remove("mamo-story-open")}
 function teaser(){const home=document.getElementById("home");if(!home||document.getElementById("mamoStoryTeaser"))return;const t=document.createElement("div");t.id="mamoStoryTeaser";t.innerHTML=`<button type="button"><span class="story-mark">読</span><span><small>MAMO STORY</small><strong>漫画でわかる「勝負の主導権」</strong></span><span class="story-arrow">›</span></button>`;t.querySelector("button").addEventListener("click",open);const record=document.getElementById("mamoRecordHero")||document.getElementById("mamoRecordSummary");const title=home.querySelector(".home-titlebar");if(record)record.insertAdjacentElement("afterend",t);else if(title)title.insertAdjacentElement("beforebegin",t);else home.prepend(t)}
 function boot(){css();overlay();teaser();setTimeout(teaser,500);setTimeout(teaser,1600);window.addEventListener("pageshow",teaser);window.MAMO_STORY=Object.freeze({open,close})}
