@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v11 — SW refresh + current JST date + compact plan tiers + modal back button. */
+/* MAMO BOAT Service Worker refresh v12 — SW refresh + current JST date + compact plan tiers + modal back button + MAMO STORY. */
 (()=>{
   "use strict";
 
@@ -104,6 +104,15 @@
     document.head.appendChild(script);
   };
 
+  const loadMamoStory=()=>{
+    if(document.querySelector('script[data-mamo-story="1"]')) return;
+    const script=document.createElement("script");
+    script.src="mamo-story.js?v=20260822-1";
+    script.async=true;
+    script.dataset.mamoStory="1";
+    document.head.appendChild(script);
+  };
+
   const register=async()=>{
     installPlanCollapseFix();
     installBetModalBackButton();
@@ -115,6 +124,7 @@
       syncHomeToday();
     });
     loadMamokamo();
+    loadMamoStory();
     if(!("serviceWorker" in navigator)) return;
     try{
       const reg=await navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"});
@@ -125,6 +135,7 @@
   };
 
   installPlanCollapseFix();
+  loadMamoStory();
   if(document.readyState==="complete") register();
   else window.addEventListener("load",register,{once:true});
 })();
