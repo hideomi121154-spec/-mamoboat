@@ -1,10 +1,11 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-central-pilot-24-dev";
+const CACHE = "mamoboat-v401-central-pilot-25-dev";
 const SHELL = [
   "./","./index.html","./styles.css","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
   "./decision-transition-model.js","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
-  "./mamokamo.js?v=20260822-3","./assets/mamokamo-ai-v5.png?v=20260822-5"
+  "./mamokamo.js?v=20260822-3","./assets/mamokamo-ai-v5.png?v=20260822-5",
+  "./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260822-1"
 ];
 
 self.addEventListener("install",event=>{

@@ -40,13 +40,23 @@
 (() => {"use strict";if(document.querySelector('script[data-mamo-value-panel="phase6"]'))return;const script=document.createElement("script");script.src="mamo-value-panel.js?v=20260821-1";script.async=true;script.dataset.mamoValuePanel="phase6";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-home-record-balance]'))return;const script=document.createElement("script");script.src="home-record-balance.js?v=20260821-2";script.async=true;script.dataset.mamoHomeRecordBalance="1";document.head.appendChild(script);})();
 
-/* Live Rakuten marketplace: products, images, prices, reviews and outbound affiliate-ready URLs. */
+/* MAMO VALUE marketplace: factual AIR BET amount comparison + live or fallback market links. */
 (() => {
   "use strict";
-  if (document.querySelector('script[data-mamo-real-products]')) return;
-  const script = document.createElement("script");
-  script.src = "mamo-shop-real-products.js?v=20260821-4";
-  script.async = true;
-  script.dataset.mamoRealProducts = "1";
-  document.head.appendChild(script);
+  if (document.querySelector('script[data-mamo-shop-marketplace]')) return;
+  const marketplace = () => {
+    if (document.querySelector('script[data-mamo-shop-marketplace]')) return;
+    const script = document.createElement("script");
+    script.src = "mamo-shop-marketplace.js?v=20260822-1";
+    script.async = true;
+    script.dataset.mamoShopMarketplace = "1";
+    document.head.appendChild(script);
+  };
+  if (window.MamoShopValueCore) return marketplace();
+  const core = document.createElement("script");
+  core.src = "mamo-shop-value-core.js?v=20260822-1";
+  core.async = true;
+  core.dataset.mamoShopValueCore = "1";
+  core.onload = marketplace;
+  document.head.appendChild(core);
 })();

@@ -274,7 +274,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-s
 const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
-  ["decision-event-api-compat.js?v=20260819-1","decision-event-api-compat"],
+  ["decision-event-api-compat.js?v=20260822-1","decision-event-api-compat"],
   ["decision-transition-model.js?v=20260819-2","decision-transition-model"],
   ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],
@@ -298,7 +298,7 @@ const MAMO_SCRIPTS = [
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
   ["morning-delivery.js?v=20260818-1","morning-delivery"],
   ["push-notifications.js?v=20260818-1","push-notifications"],
-  ["sw-refresh.js?v=20260822-24","sw-refresh"],
+  ["sw-refresh.js?v=20260822-25","sw-refresh"],
 ];
 
 async function loadMamoEnhancements() {

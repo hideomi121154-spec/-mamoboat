@@ -2,6 +2,7 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const C = require("../core.js");
+const ShopValue = require("../mamo-shop-value-core.js");
 
 function resultDataset(payouts, payoutStatus = "paid") {
   return {
@@ -349,7 +350,7 @@ assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=
 assert.match(indexSource, /onboard-cover-art/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /pilot-config\.js\?v=20260822-16/);
+assert.match(indexSource, /pilot-config\.js\?v=20260822-17/);
 assert.match(indexSource, /app\.js\?v=20260818-3/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
@@ -362,7 +363,7 @@ assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v401-central-pilot-24/);
+assert.match(serviceWorkerSource, /mamoboat-v401-central-pilot-25/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
@@ -533,5 +534,31 @@ assert.equal(
   ).changed,
   false
 );
+
+// MAMO VALUE compares factual AIR BET replacement records with product prices.
+const valueNow = new Date("2026-08-22T12:00:00+09:00");
+const valueTotals = ShopValue.periodTotals([
+  { raceDate: "2026-08-22", saved: 2000 },
+  { raceDate: "2026-08-20", intendedYen: 500 },
+  { raceDate: "2026-07-31", saved: 900 },
+], valueNow);
+assert.deepEqual(valueTotals, { today: 2000, week: 2500, month: 2500, all: 3400 });
+assert.deepEqual(ShopValue.comparePrice(1800, valueTotals.month), {
+  state: "within", remaining: 0, ratio: 100,
+});
+assert.deepEqual(ShopValue.comparePrice(3000, valueTotals.month), {
+  state: "remaining", remaining: 500, ratio: 83,
+});
+
+const shopMarketplaceSource = fs.readFileSync(
+  path.join(__dirname, "..", "mamo-shop-marketplace.js"),
+  "utf8"
+);
+assert.match(shopMarketplaceSource, /これは値引き額ではありません/);
+assert.match(shopMarketplaceSource, /実際の損失・貯金を補填するものではなく/);
+assert.doesNotMatch(shopMarketplaceSource, /損失を取り返|実質無料|MAMO BOATのおかげ/);
+assert.equal(fs.existsSync(path.join(__dirname, "..", "mamo-shop-real-products.js")), false);
+assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260822-1/);
+assert.match(swRefreshSource, /Service Worker refresh v25/);
 
 console.log("logic tests OK");

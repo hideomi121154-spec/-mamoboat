@@ -1,0 +1,405 @@
+/* MAMO BOAT — marketplace feed + MAMO VALUE price guide. */
+(() => {
+  "use strict";
+  if (window.__MAMO_SHOP_MARKETPLACE_V1__) return;
+  window.__MAMO_SHOP_MARKETPLACE_V1__ = true;
+
+  const API = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/shop-rakuten";
+  const APP_KEY = "mamoboat_v40_personal";
+  const FAV_KEY = "mamo_shop_favs";
+  const PREF_KEY = "mamoboat_shop_value_preferences_v1";
+  const VALUE = window.MamoShopValueCore;
+  const PERIOD_LABELS = { today: "今日", week: "7日", month: "今月" };
+  const MARKET_LINKS = [
+    { icon: "日", title: "生活必需品", desc: "洗剤・紙製品・消耗品", query: "日用品 消耗品" },
+    { icon: "食", title: "食品・飲料", desc: "水・米・保存食品", query: "食品 飲料 日用品" },
+    { icon: "休", title: "休息とケア", desc: "睡眠・入浴・セルフケア", query: "睡眠 入浴 セルフケア" },
+    { icon: "欲", title: "欲しかった物", desc: "趣味・家電・身の回り品", query: "家電 趣味 生活" },
+  ];
+
+  let filter = "all";
+  let items = [];
+  let loading = false;
+  let fallbackReason = "";
+  let lastQuery = "";
+  let searchTimer = null;
+  let requestController = null;
+  const preferences = readJson(PREF_KEY, { period: "month" });
+  let period = PERIOD_LABELS[preferences.period] ? preferences.period : "month";
+  const favorites = new Set(readJson(FAV_KEY, []));
+
+  function readJson(key, fallback) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "null");
+      return value == null ? fallback : value;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  function saveJson(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+  }
+
+  function money(value) {
+    return `¥${Math.max(0, Math.round(Number(value) || 0)).toLocaleString("ja-JP")}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[character]);
+  }
+
+  function safeUrl(value) {
+    try {
+      const url = new URL(String(value || ""), location.href);
+      return ["https:", "http:"].includes(url.protocol) ? url.href : "#";
+    } catch (_) {
+      return "#";
+    }
+  }
+
+  function currentTotals() {
+    const state = readJson(APP_KEY, {});
+    const records = Array.isArray(state.records) ? state.records : [];
+    return VALUE?.periodTotals?.(records) || { today: 0, week: 0, month: 0, all: 0 };
+  }
+
+  function guideAmount() {
+    return Math.max(0, Number(currentTotals()[period]) || 0);
+  }
+
+  function comparePrice(price) {
+    return VALUE?.comparePrice?.(price, guideAmount()) || { state: "none", remaining: 0, ratio: 0 };
+  }
+
+  function installStyle() {
+    if (document.getElementById("mamoShopMarketplaceStyle")) return;
+    const style = document.createElement("style");
+    style.id = "mamoShopMarketplaceStyle";
+    style.textContent = `
+      #shop{background:#f5f8fa!important}
+      #shop .shop-head{padding:13px 14px 9px!important;background:#fff!important}
+      #shop .shop-brand h1{font-size:25px!important}
+      #shop .shop-search{height:42px!important;border-radius:22px!important}
+      #shop #shopCartOpen{display:none!important}
+      #shop #shopFavToggle{display:block!important;border:0!important;font-size:25px!important}
+      #shop .shop-cats{padding:7px 9px!important;gap:0!important;justify-content:space-around;background:#fff!important;border-bottom:1px solid #e7ecee!important}
+      #shop .shop-cats button{border:0!important;border-radius:0!important;padding:10px 14px!important;color:#8a969c!important;background:#fff!important;box-shadow:none!important}
+      #shop .shop-cats button.active{color:#0b9198!important;border-bottom:3px solid #0fb1b7!important}
+      #shop .shop-cats button[data-shop-cat="mamo"],#shop .shop-cats button[data-shop-cat="race"]{display:none!important}
+      #shop .shop-hero{margin:10px 10px 0!important;min-height:92px!important;border:0!important;border-radius:16px 16px 5px 5px!important;padding:17px!important;background:linear-gradient(125deg,#062944,#0b5268)!important;color:#fff!important;box-shadow:0 7px 18px rgba(8,35,61,.12)!important}
+      #shop .shop-hero:after{display:none!important}
+      #shop .shop-hero small{color:#f1bd3f!important;letter-spacing:.15em!important}
+      #shop .shop-hero h2{font-size:20px!important;margin:4px 0!important;color:#fff!important}
+      #shop .shop-hero p{font-size:10px!important;line-height:1.55!important;color:#d7e8ed!important}
+      #shop .shop-note{display:block!important;margin:0 10px 10px!important;padding:8px 11px!important;border-radius:0 0 9px 9px!important;background:#e8f2f3!important;color:#49656e!important;font-size:8px!important;text-align:left!important}
+      #mamoShopValue{margin:10px;border:1px solid #d8e3e6;border-top:5px solid #d4a329;border-radius:16px;background:#fff;box-shadow:0 7px 18px rgba(8,35,61,.07);overflow:hidden}
+      .msv-head{padding:15px 15px 10px;background:linear-gradient(135deg,#fffdf7,#f4fbfb)}
+      .msv-head small{display:block;color:#977116;font-size:9px;font-weight:1000;letter-spacing:.14em}
+      .msv-head h3{margin:4px 0;color:#08233d;font-size:20px;line-height:1.35}
+      .msv-head p{margin:0;color:#6d7f88;font-size:10px;line-height:1.6}
+      .msv-periods{display:flex;gap:6px;padding:0 15px 10px}
+      .msv-periods button{flex:1;border:1px solid #dce4e6;border-radius:999px;background:#fff;color:#687b84;padding:8px 6px;font-size:10px;font-weight:900}
+      .msv-periods button.active{border-color:#0aa8ae;background:#eafafa;color:#087f84}
+      .msv-amount{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:0 15px;padding:12px 0;border-top:1px solid #edf1f2}
+      .msv-amount span{display:block;color:#72828a;font-size:9px;font-weight:900}
+      .msv-amount strong{display:block;color:#08233d;font-size:31px;line-height:1.05;letter-spacing:-.04em}
+      .msv-amount em{color:#0a969b;font-size:10px;font-style:normal;font-weight:1000;text-align:right}
+      .msv-explain{margin:0;padding:10px 15px;background:#08233d;color:#dce9ed;font-size:9px;line-height:1.65}
+      .msv-explain b{color:#f4c04b}
+      #shop .shop-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;padding:5px 9px 30px!important}
+      .mp-card{position:relative;min-width:0;border:1px solid #e1e7e9;border-radius:13px;background:#fff;overflow:hidden;box-shadow:0 4px 11px rgba(8,35,61,.045)}
+      .mp-img-link{display:block;background:#fff}
+      .mp-img{aspect-ratio:1/1;width:100%;display:block;object-fit:contain;background:#fff}
+      .mp-fav{position:absolute;right:7px;top:7px;z-index:3;width:35px;height:35px;border:0;border-radius:50%;background:rgba(244,247,248,.94);color:#89959b;font-size:19px}
+      .mp-fav.on{color:#e34843}
+      .mp-body{padding:9px 9px 11px}
+      .mp-shop{font-size:8px;color:#89969c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .mp-name{font-size:12px;line-height:1.42;color:#25333a;height:35px;overflow:hidden;margin:3px 0 4px;font-weight:800}
+      .mp-rating{font-size:9px;color:#d99e10;white-space:nowrap}
+      .mp-rating span{color:#68767d;margin-left:3px}
+      .mp-price{font-size:20px;color:#d9342d;font-weight:1000;line-height:1.2;margin-top:5px}
+      .mp-ship{font-size:8px;color:#74828a;font-weight:800;margin-top:2px}
+      .mp-value{margin-top:7px;padding:7px 8px;border-radius:8px;background:#f1f5f6;color:#51666f;font-size:9px;font-weight:900}
+      .mp-value.within{background:#e6f8ef;color:#14734c}
+      .mp-value.remaining{background:#fff6df;color:#8a6310}
+      .mp-value i{display:block;height:4px;margin-top:5px;border-radius:999px;background:#d9e2e5;overflow:hidden}
+      .mp-value i:after{content:"";display:block;width:var(--ratio);height:100%;background:#0aabb0;border-radius:inherit}
+      .mp-link{display:block;margin-top:8px;border-radius:8px;background:#08233d;color:#fff!important;padding:9px 7px;font-size:9px;font-weight:1000;text-align:center;text-decoration:none}
+      .mp-status{grid-column:1/-1;padding:28px 18px;text-align:center;color:#687b84;background:#fff;border:1px solid #e1e7e9;border-radius:14px}
+      .mp-status b{display:block;color:#08233d;font-size:17px;margin-bottom:7px}
+      .mp-status small{display:block;line-height:1.65}
+      .mp-retry{margin-top:12px;border:0;border-radius:9px;background:#08233d;color:#fff;padding:10px 16px;font-weight:900}
+      .mp-market-intro{grid-column:1/-1;padding:14px;border:1px solid #e0e7e9;border-radius:13px;background:#fff;color:#61747d;font-size:9px;line-height:1.65}
+      .mp-market-intro b{display:block;color:#08233d;font-size:14px;margin-bottom:3px}
+      .mp-market-card{display:flex;flex-direction:column;min-height:145px;padding:13px;border:1px solid #e0e7e9;border-radius:13px;background:#fff;text-decoration:none;box-shadow:0 4px 11px rgba(8,35,61,.045)}
+      .mp-market-icon{display:grid;place-items:center;width:39px;height:39px;border-radius:50%;background:#e9f7f7;color:#087f84;font-size:14px;font-weight:1000}
+      .mp-market-card b{display:block;margin-top:10px;color:#08233d;font-size:14px}
+      .mp-market-card small{display:block;margin-top:3px;color:#71828a;font-size:9px;line-height:1.45}
+      .mp-market-card em{display:block;margin-top:auto;padding-top:8px;color:#0a9298;font-size:9px;font-style:normal;font-weight:1000}
+      .mp-provider{grid-column:1/-1;padding:4px 8px 12px;color:#8a979d;font-size:8px;text-align:right}
+      @media(max-width:370px){.msv-amount strong{font-size:27px}.mp-price{font-size:18px}#shop .shop-grid{gap:7px!important;padding-left:7px!important;padding-right:7px!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function prepareShop() {
+    const shop = document.getElementById("shop");
+    if (!shop) return false;
+    installStyle();
+    const hero = shop.querySelector(".shop-hero");
+    if (hero) {
+      hero.querySelector("small").textContent = "MAMO VALUE × MARKET";
+      hero.querySelector("h2").textContent = "守れた選択を、生活の価値へ。";
+      hero.querySelector("p").textContent = "AIR BETへ置き換えた現金予定額と、今必要なものの価格を並べて見ます。";
+    }
+    const note = shop.querySelector(".shop-note");
+    if (note) note.textContent = "価格比較と購入先への案内です。販売・決済・配送・実際の値引きは各販売店が行います。";
+    ensureCategories();
+    renderValuePanel();
+    return Boolean(document.getElementById("shopGrid"));
+  }
+
+  function ensureCategories() {
+    const categories = document.querySelector("#shop .shop-cats");
+    if (!categories) return;
+    const all = categories.querySelector('[data-shop-cat="all"]');
+    const life = categories.querySelector('[data-shop-cat="life"]');
+    if (all) all.textContent = "おすすめ";
+    if (life) {
+      life.textContent = "生活用品";
+      life.dataset.marketFilter = "daily";
+    }
+    let food = categories.querySelector('[data-market-filter="food"]');
+    if (!food) {
+      food = document.createElement("button");
+      food.type = "button";
+      food.dataset.marketFilter = "food";
+      food.textContent = "食品";
+      categories.insertBefore(food, life || null);
+    }
+    if (all) all.dataset.marketFilter = "all";
+    [all, food, life].filter(Boolean).forEach((button) => {
+      button.classList.toggle("active", button.dataset.marketFilter === filter);
+    });
+  }
+
+  function renderValuePanel() {
+    const shop = document.getElementById("shop");
+    const hero = shop?.querySelector(".shop-hero");
+    if (!shop || !hero) return;
+    let panel = document.getElementById("mamoShopValue");
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "mamoShopValue";
+    }
+    hero.insertAdjacentElement("afterend", panel);
+    const amount = guideAmount();
+    const label = PERIOD_LABELS[period];
+    panel.innerHTML = `
+      <div class="msv-head">
+        <small>MAMO VALUE / PERSONAL GUIDE</small>
+        <h3>仮想置換額を、商品の価格と比べる。</h3>
+        <p>勝ち負けではなく、現金投票をAIR BETへ置き換えた記録から見ます。</p>
+      </div>
+      <div class="msv-periods" role="group" aria-label="比較する期間">
+        ${Object.entries(PERIOD_LABELS).map(([key, text]) => `<button type="button" class="${key === period ? "active" : ""}" data-value-period="${key}">${text}</button>`).join("")}
+      </div>
+      <div class="msv-amount">
+        <div><span>${label}の仮想置換額</span><strong>${money(amount)}</strong></div>
+        <em>${amount ? "商品カードに比較結果を表示" : "AIR BET記録後に比較できます"}</em>
+      </div>
+      <p class="msv-explain"><b>これは値引き額ではありません。</b> 実際の損失・貯金を補填するものではなく、AIR BETへ置き換えた現金予定額と商品価格を比べる目安です。</p>
+    `;
+  }
+
+  function valueMarkup(price) {
+    const comparison = comparePrice(price);
+    const label = PERIOD_LABELS[period];
+    if (comparison.state === "within") {
+      return `<div class="mp-value within">${label}の比較額の範囲内<i style="--ratio:${comparison.ratio}%"></i></div>`;
+    }
+    if (comparison.state === "remaining") {
+      return `<div class="mp-value remaining">比較額まで あと ${money(comparison.remaining)}<i style="--ratio:${comparison.ratio}%"></i></div>`;
+    }
+    return `<div class="mp-value">AIR BET記録後に価格比較<i style="--ratio:0%"></i></div>`;
+  }
+
+  function renderProducts() {
+    const grid = document.getElementById("shopGrid");
+    if (!grid) return;
+    renderValuePanel();
+    if (loading) {
+      grid.innerHTML = '<div class="mp-status"><b>商品を取得中…</b><small>最新の商品情報を確認しています。</small></div>';
+      return;
+    }
+    if (fallbackReason || !items.length) {
+      renderFallback(grid);
+      return;
+    }
+
+    grid.innerHTML = items.map((product) => {
+      const id = String(product.id || product.url || product.name || "");
+      const url = safeUrl(product.url);
+      const image = safeUrl(product.image);
+      const name = escapeHtml(product.name || "商品");
+      const shopName = escapeHtml(product.shopName || "楽天市場");
+      const favorite = favorites.has(id);
+      return `
+        <article class="mp-card">
+          <a class="mp-img-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">
+            <img class="mp-img" src="${escapeHtml(image)}" alt="${name}" loading="lazy">
+          </a>
+          <button type="button" class="mp-fav ${favorite ? "on" : ""}" data-market-fav="${escapeHtml(id)}" aria-label="お気に入り">${favorite ? "♥" : "♡"}</button>
+          <div class="mp-body">
+            <div class="mp-shop">${shopName}</div>
+            <div class="mp-name">${name}</div>
+            <div class="mp-rating">${product.reviewAverage ? `★ ${Number(product.reviewAverage).toFixed(1)}` : "レビュー"}<span>(${Number(product.reviewCount || 0).toLocaleString("ja-JP")})</span></div>
+            <div class="mp-price">${money(product.price)}</div>
+            <div class="mp-ship">${Number(product.postageFlag) === 0 ? "送料無料" : "送料は商品ページで確認"}</div>
+            ${valueMarkup(product.price)}
+            <a class="mp-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">楽天市場で見る →</a>
+          </div>
+        </article>`;
+    }).join("") + `<div class="mp-provider">商品情報：楽天市場 / ${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}取得</div>`;
+  }
+
+  function renderFallback(grid) {
+    const reason = fallbackReason === "setup"
+      ? "実商品一覧は連携設定中です。"
+      : fallbackReason === "error"
+        ? "商品一覧へ接続できなかったため、売場への直接リンクを表示しています。"
+        : "商品を探す売場を選んでください。";
+    grid.innerHTML = `
+      <div class="mp-market-intro"><b>まずは、生活に回したいものから。</b>${reason} 移動先で現在価格・送料・実際の割引を確認できます。${fallbackReason === "error" ? '<br><button type="button" class="mp-retry" data-market-retry>商品一覧を再読み込み</button>' : ""}</div>
+      ${MARKET_LINKS.map((entry) => {
+        const url = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(entry.query)}/`;
+        return `<a class="mp-market-card" href="${url}" target="_blank" rel="noopener noreferrer"><span class="mp-market-icon">${entry.icon}</span><b>${entry.title}</b><small>${entry.desc}</small><em>楽天市場で探す →</em></a>`;
+      }).join("")}
+      <div class="mp-provider">購入・決済・配送は移動先の販売店が行います。</div>`;
+  }
+
+  function clientHeaders() {
+    const key = String(window.MAMOBOAT_PILOT?.collector?.publishableKey || window.MAMOBOAT_PILOT?.collector?.anonKey || "").trim();
+    if (!/^sb_publishable_|^eyJ/.test(key)) return {};
+    const headers = { apikey: key };
+    if (/^eyJ/.test(key)) headers.Authorization = `Bearer ${key}`;
+    return headers;
+  }
+
+  async function load(force = false) {
+    if (!prepareShop()) return;
+    const input = document.getElementById("shopSearch");
+    const query = String(input?.value || "").trim();
+    const requestKey = `${filter}|${query}`;
+    if (!force && requestKey === lastQuery && (items.length || fallbackReason)) {
+      renderProducts();
+      return;
+    }
+    lastQuery = requestKey;
+    fallbackReason = "";
+    loading = true;
+    renderProducts();
+    requestController?.abort();
+    requestController = new AbortController();
+
+    try {
+      const url = new URL(API);
+      url.searchParams.set("cat", filter);
+      url.searchParams.set("hits", "20");
+      if (query) url.searchParams.set("q", query);
+      const response = await fetch(url, {
+        headers: clientHeaders(),
+        cache: "no-store",
+        signal: requestController.signal,
+      });
+      const data = await response.json();
+      if (data?.setup_required) {
+        items = [];
+        fallbackReason = "setup";
+      } else if (!response.ok || !data?.ok) {
+        throw new Error(data?.message || data?.error || `HTTP ${response.status}`);
+      } else {
+        items = Array.isArray(data.items) ? data.items.filter((item) => Number(item?.price) > 0 && item?.url) : [];
+        if (!items.length) fallbackReason = "empty";
+      }
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+      items = [];
+      fallbackReason = "error";
+      console.warn("MAMO SHOP product feed unavailable", error);
+    } finally {
+      loading = false;
+      renderProducts();
+    }
+  }
+
+  function handleClick(event) {
+    const periodButton = event.target?.closest?.("[data-value-period]");
+    if (periodButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      period = PERIOD_LABELS[periodButton.dataset.valuePeriod] ? periodButton.dataset.valuePeriod : "month";
+      saveJson(PREF_KEY, { period });
+      renderProducts();
+      return;
+    }
+
+    const categoryButton = event.target?.closest?.("#shop .shop-cats [data-market-filter]");
+    if (categoryButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      filter = categoryButton.dataset.marketFilter || "all";
+      ensureCategories();
+      load(true);
+      return;
+    }
+
+    const favoriteButton = event.target?.closest?.("[data-market-fav]");
+    if (favoriteButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = favoriteButton.dataset.marketFav;
+      favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+      saveJson(FAV_KEY, [...favorites]);
+      renderProducts();
+      return;
+    }
+
+    if (event.target?.closest?.("[data-market-retry]")) {
+      event.preventDefault();
+      event.stopPropagation();
+      load(true);
+      return;
+    }
+
+    if (event.target?.closest?.("#nav-shop")) setTimeout(() => load(false), 80);
+  }
+
+  function handleInput(event) {
+    if (event.target?.id !== "shopSearch") return;
+    event.stopPropagation();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => load(true), 450);
+  }
+
+  function boot() {
+    installStyle();
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("input", handleInput, true);
+    [0, 250, 700, 1500, 3000].forEach((delay) => setTimeout(() => {
+      if (prepareShop()) load(false);
+    }, delay));
+    window.addEventListener("pageshow", () => {
+      if (prepareShop()) load(false);
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key === APP_KEY) renderProducts();
+    });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
+})();
