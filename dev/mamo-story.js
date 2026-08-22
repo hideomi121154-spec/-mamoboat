@@ -1,7 +1,7 @@
-/* MAMO BOAT — MAMO STORY mobile reader v11 */
+/* MAMO BOAT — MAMO STORY mobile reader v12 */
 (()=>{"use strict";
 if(window.__MAMO_STORY__)return;window.__MAMO_STORY__=true;
-const STORY_IMAGES=Array.from({length:16},(_,index)=>`./assets/mamo-story/mamo-story-${String(index+1).padStart(2,"0")}.png?v=20260822-11`);
+const STORY_IMAGES=Array.from({length:16},(_,index)=>`./assets/mamo-story/mamo-story-${String(index+1).padStart(2,"0")}.png?v=20260822-12`);
 function css(){if(document.getElementById("mamoStoryStyle"))return;const s=document.createElement("style");s.id="mamoStoryStyle";s.textContent=`
 #mamoStoryTeaser{margin:14px 0 18px;border:1px solid #d8e0e3;border-left:6px solid #d3a637;border-radius:16px;background:linear-gradient(135deg,#fffdf8,#f7fbfc);box-shadow:0 9px 24px rgba(6,35,58,.08);overflow:hidden}
 #mamoStoryTeaser button{width:100%;border:0;background:transparent;padding:15px 16px;text-align:left;color:#08233d;display:flex;align-items:center;gap:13px}
@@ -22,7 +22,7 @@ let settled=0,loaded=0;const finished=new WeakSet();
 const finish=(img,ok)=>{if(finished.has(img))return;finished.add(img);settled+=1;if(ok)loaded+=1;if(loaded>0){loading.classList.add("hide");err.classList.remove("show")}if(settled===images.length&&loaded===0){loading.classList.add("hide");err.classList.add("show")}};
 images.forEach(img=>{img.addEventListener("load",()=>finish(img,true),{once:true});img.addEventListener("error",()=>finish(img,false),{once:true});if(img.complete)finish(img,img.naturalWidth>0)});
 o.querySelectorAll(".story-close,.story-back").forEach(b=>b.addEventListener("click",close));o.querySelector(".story-air").addEventListener("click",()=>{close();try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_airbet_cta",{source:"story"},{screen:"story"})}catch(_){ }if(typeof window.go==="function")window.go("venues")});return o}
-function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:11},{screen:"story"})}catch(_){}}
+function open(){const o=overlay();o.classList.add("open");document.body.classList.add("mamo-story-open");o.querySelector(".story-scroll").scrollTop=0;try{window.MAMO_DECISION_EVENTS?.track?.("mamo_story_opened",{version:12},{screen:"story"})}catch(_){}}
 function close(){document.getElementById("mamoStoryOverlay")?.classList.remove("open");document.body.classList.remove("mamo-story-open")}
 function teaser(){const home=document.getElementById("home");if(!home||document.getElementById("mamoStoryTeaser"))return;const t=document.createElement("div");t.id="mamoStoryTeaser";t.innerHTML=`<button type="button"><span class="story-mark">読</span><span><small>MAMO STORY</small><strong>漫画でわかる「勝負の主導権」</strong></span><span class="story-arrow">›</span></button>`;t.querySelector("button").addEventListener("click",open);const record=document.getElementById("mamoRecordHero")||document.getElementById("mamoRecordSummary");const title=home.querySelector(".home-titlebar");if(record)record.insertAdjacentElement("afterend",t);else if(title)title.insertAdjacentElement("beforebegin",t);else home.prepend(t)}
 function boot(){css();overlay();teaser();setTimeout(teaser,500);setTimeout(teaser,1600);window.addEventListener("pageshow",teaser);window.MAMO_STORY=Object.freeze({open,close})}
