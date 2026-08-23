@@ -9,7 +9,7 @@ const png = fs.readFileSync('assets/mamokamo-ai-v5.png');
 if (!js.includes('assets/mamokamo-ai-v5.png?v=20260822-5')) {
   throw new Error('mamokamo.js must reference the AI analyst v5 PNG asset');
 }
-if (!refresh.includes('mamokamo.js?v=20260822-3')) {
+if (!refresh.includes('mamokamo.js?v=20260823-4')) {
   throw new Error('sw-refresh.js must load the current Mamokamo script');
 }
 if (!cast.includes('MAMO BOAT AI分析担当') || !js.includes('MAMOKAMO / AI ANALYST')) {

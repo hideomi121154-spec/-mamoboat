@@ -361,6 +361,11 @@
     pressroom.morningEnabled = pressroom.morningEnabled === true;
     pressroom.weeklyEnabled = pressroom.weeklyEnabled === true;
     pressroom.monthlyEnabled = pressroom.monthlyEnabled === true;
+    if (pressroom.plan !== "gold") {
+      pressroom.morningEnabled = false;
+      pressroom.weeklyEnabled = false;
+      pressroom.monthlyEnabled = false;
+    }
     pressroom.displayMode = ["editorial", "simple"].includes(pressroom.displayMode)
       ? pressroom.displayMode
       : "editorial";
@@ -2506,10 +2511,10 @@ const reference = liveValue != null
   }
 
   const PRESS_PLANS = {
-    free: { label: "FREE", name: "無料", rank: 0, price: "0円" },
-    bronze: { label: "BRONZE", name: "ブロンズ", rank: 1, price: "390円/月" },
-    silver: { label: "SILVER", name: "シルバー", rank: 2, price: "690円/月" },
-    gold: { label: "GOLD", name: "ゴールド", rank: 3, price: "1,190円/月" },
+    free: { label: "FREE", name: "基本機能", rank: 0, price: "0円" },
+    bronze: { label: "BRONZE", name: "MAMO RECORD", rank: 1, price: "390円/月" },
+    silver: { label: "SILVER", name: "MAMO INSIGHT", rank: 2, price: "690円/月" },
+    gold: { label: "GOLD", name: "MAMO PRESS", rank: 3, price: "1,190円/月" },
   };
 
   function pressPlan() {
@@ -2517,7 +2522,7 @@ const reference = liveValue != null
   }
 
   function reportRequiredRank(type) {
-    return type === "morning" ? 1 : 2;
+    return 3;
   }
 
   function reportUnlocked(type) {
@@ -2532,7 +2537,7 @@ const reference = liveValue != null
     const target = $("homePressTeaser");
     if (!target) return;
     const report = C.editorialReport(S.records, "morning");
-    if (S.pressroom.plan === "free") {
+    if (S.pressroom.plan !== "gold") {
       target.innerHTML = `<article class="press-teaser-card preview"><span>MAMO BOAT PRESS</span><h3>賭けた翌朝、自分だけの朝刊を。</h3><p>加音 守が、勝敗ではなく選択の過程を記事にします。</p><button type="button" onclick="go('analysis')">編集部を見る →</button></article>`;
       return;
     }
@@ -2585,11 +2590,11 @@ const reference = liveValue != null
     if (!target) return;
     const type = S.pressroom.reportType;
     if (!reportUnlocked(type)) {
-      const required = type === "morning" ? PRESS_PLANS.bronze : PRESS_PLANS.silver;
+      const required = PRESS_PLANS.gold;
       target.innerHTML = `<div class="paper-locked">
         <span>PREMIUM EDITION</span><h3>${type === "morning" ? "MAMO朝刊" : type === "weekly" ? "MAMO週間" : "MAMO月刊"}</h3>
         <p>勝敗予想ではなく、本人の記録を「事実→傾向→問い」の順で記事にします。</p>
-        <small>${required.label}・${required.name}以上の発行内容です。</small>
+        <small>${required.label} / ${required.name}の発行内容です。</small>
         <button class="btn primary full" type="button" onclick="openMembershipPlans()">PILOTで紙面を試す</button>
       </div>`;
     } else {
@@ -2603,10 +2608,10 @@ const reference = liveValue != null
     if (target.dataset.planUiReady === "true") return;
     target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3 id="membershipCurrentTitle"></h3><b id="membershipCurrentPrice"></b><p>PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。</p></div>
       <div class="membership-points membership-selectable" role="group" aria-label="PILOTプラン">
-        <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本記録・AIR BET総額・回数・平均</span></button>
-        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="selectPilotPlan('bronze')"><b>BRONZE</b><span>前期間比較・時間帯・100B率・基本グラフ</span></button>
-        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER</b><span>行動指数・勝負トリガー・個人ベースライン・週間分析</span></button>
-        <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="selectPilotPlan('gold')"><b>GOLD</b><span>MAMO朝刊・週間・月刊・理由・長期トレンド分析</span></button>
+        <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本5項目・安全機能・今日の小さな気づき1件</span></button>
+        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="selectPilotPlan('bronze')"><b>BRONZE / MAMO RECORD</b><span>7日・30日比較、100Bや参加理由ごとの単独パターン</span></button>
+        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER / MAMO INSIGHT</b><span>勝敗直後・納得度・衝動を組み合わせた週間分析</span></button>
+        <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="selectPilotPlan('gold')"><b>GOLD / MAMO PRESS</b><span>朝刊・週間・月刊、長期変化、選んだテーマの深掘り</span></button>
       </div>
       <button id="membershipDeepInterview" class="btn secondary full membership-deep-action" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ（GOLD）</button>
       <button class="btn primary full" type="button" onclick="openMembershipPlans()">プラン設計を確認する</button>`;
@@ -2645,7 +2650,11 @@ const reference = liveValue != null
     };
     Object.entries(settingControls).forEach(([id, checked]) => {
       const control = $(id);
-      if (control) control.checked = checked;
+      if (control) {
+        control.checked = checked;
+        control.disabled = planKey !== "gold";
+        control.setAttribute("aria-disabled", planKey === "gold" ? "false" : "true");
+      }
     });
 
     updateReportTabsUI();
@@ -2677,7 +2686,7 @@ const reference = liveValue != null
   window.openMembershipPlans = () => {
     openModal(`<div class="plan-modal"><span class="kicker">MAMO BOAT PRESS</span><h2>FREE / BRONZE / SILVER / GOLD</h2><p>価格は検証中です。PILOT版では料金は発生せず、分析の深さだけを4段階で確認します。</p>
       <div class="plan-modal-grid">
-        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}');closeModal()"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本機能と安全介入" : key === "bronze" ? "比較・時間帯・基本グラフ" : key === "silver" ? "行動指数・トリガー・週間分析" : "朝刊・週間・月刊・長期分析"}</small></button>`).join("")}
+        ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}');closeModal()"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本5項目・安全機能・小さな気づき1件" : key === "bronze" ? "7日・30日と単独条件の比較" : key === "silver" ? "複数条件を組み合わせた週間分析" : "朝刊・週間・月刊・長期変化"}</small></button>`).join("")}
       </div>
       <div class="notice editorial-safety"><b>課金で変わるのは分析の深さです。</b><br>安全介入、データ削除、基本記録は無料のままです。</div>
       <button class="btn secondary full" type="button" onclick="closeModal()">閉じる</button>
@@ -2687,19 +2696,10 @@ const reference = liveValue != null
   window.selectPilotPlan = (key) => {
     if (!PRESS_PLANS[key]) return;
     S.pressroom.plan = key;
-    if (key === "free") {
-      S.pressroom.morningEnabled = false;
-      S.pressroom.weeklyEnabled = false;
-      S.pressroom.monthlyEnabled = false;
-    } else if (key === "bronze") {
-      S.pressroom.morningEnabled = true;
-      S.pressroom.weeklyEnabled = false;
-      S.pressroom.monthlyEnabled = false;
-    } else {
-      S.pressroom.morningEnabled = true;
-      S.pressroom.weeklyEnabled = true;
-      S.pressroom.monthlyEnabled = true;
-    }
+    const pressEnabled = key === "gold";
+    S.pressroom.morningEnabled = pressEnabled;
+    S.pressroom.weeklyEnabled = pressEnabled;
+    S.pressroom.monthlyEnabled = pressEnabled;
     trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
     save();
     updatePlanUI();
@@ -2722,40 +2722,10 @@ const reference = liveValue != null
   };
 
   function renderAnalysis() {
-    const stats = C.behaviorStats(S.records);
-    const total = C.savedTotals(S.records).all;
-    const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
-    const fomo = S.records.filter((item) => Number(item.cashWouldHaveWonUrge) >= 7).length;
-    const settled = S.records.filter((item) => item.settled).length;
-    const resultLatency = C.resultLatencyStats(S.records);
-    $("analysisCards").innerHTML = [
-      ["仮想投票へ置換", `${fmt(total)}円`],
-      ["参加記録", `${fmt(S.records.length)}件`],
-      ["予定額の増加", `${stats.escalation}回`],
-      ["公式投票への移動", `${S.realBetExits.length}回`],
-    ].map(([label, value]) => `<div class="stat-card"><div class="eyebrow">${label}</div><div class="metric">${value}</div></div>`).join("");
-    const items = [
-      ["B投票と結果", `${S.records.length}件中 ${settled}件反映・B的中 ${stats.virtualHits}件`],
-      ["結果の反映時間", resultLatency.samples
-        ? `締切→MAMO BOAT反映 中央値 ${latencyMinuteText(resultLatency.medianMinutes)}（実測${resultLatency.samples}件）`
-        : "次のB精算から自動測定"],
-      ["仮想投票総額", `${fmt(stats.replacedTotal)}円相当`],
-      ["低い納得度×高い衝動", `${low}件（納得度4以下・現金衝動7以上）`],
-      ["取り返したい参加", `${stats.declaredChase}件`],
-      ["短時間の金額増加", `${stats.escalation}件（30分以内に予定額が増加）`],
-      ["外れ後の追い上げ", `${stats.postLossChase}件（30分以内・予定額増加）`],
-      ["短時間連投", `${stats.rapid}件（30分以内に3レース参加）`],
-      ["衝動の変化", stats.urgeDrop == null
-        ? "レース後データ待ち"
-        : `B投票後、平均 ${stats.urgeDrop >= 0 ? "−" : "＋"}${Math.abs(stats.urgeDrop).toFixed(1)}`],
-      ["B的中後の『現金なら』", `${fomo}件（強さ7以上）`],
-      ["多い参加理由", stats.topReason ? `${stats.topReason[0]}：${stats.topReason[1]}件` : "データ待ち"],
-      ["置換額が多い場", stats.topVenue ? `${stats.topVenue[0]}：${fmt(stats.topVenue[1])}円` : "データ待ち"],
-      ["公式投票への移動", `${S.realBetExits.length}回`],
-    ];
-    $("analysisList").innerHTML = items.map(([label, value]) =>
-      `<div class="card"><b>${esc(label)}</b><p class="muted">${esc(value)}</p></div>`
-    ).join("");
+    $("analysisCards").dataset.insightVersion = "2";
+    $("analysisCards").innerHTML = '<div class="stat-card behavior-loading"><div class="eyebrow">直近30日</div><div class="metric">集計中…</div></div>';
+    $("analysisList").dataset.insightVersion = "2";
+    $("analysisList").innerHTML = '<div class="behavior-insight-loading">マモカモが、普段の自分との差を確認しています…</div>';
     renderPressroom();
     if (
       document.body.dataset.screen === "analysis"
@@ -2767,28 +2737,36 @@ const reference = liveValue != null
   }
 
   function analysisSummary() {
+    const profile = window.MAMO_BEHAVIOR_INSIGHTS_V2?.build?.();
+    if (profile) {
+      const metrics = profile.metrics;
+      const observations = profile.candidates.slice(0, 8).map((item) =>
+        `- ${item.title}\n  ${item.observation}\n  根拠: ${item.evidence}`
+      ).join("\n");
+      return `MAMO BOAT行動分析用データ（直近30日）
+テスター番号: ${S.pilot.participantId}
+参加記録: ${profile.currentRecords}件 / 参加日 ${metrics.activeDays}日
+参加日あたり: ${metrics.dailyAverage == null ? "未集計" : metrics.dailyAverage.toFixed(1) + "レース"}
+「なんとなく」参加: ${metrics.casualCount}回
+1レース平均買い目数: ${metrics.averageLines == null ? "未集計" : metrics.averageLines.toFixed(1) + "点"}
+1レース平均AIR BET額: ${metrics.averageStake == null ? "未集計" : Math.round(metrics.averageStake) + "B"}
+公式投票サイトへの移動: ${metrics.officialExits}回（購入回数ではありません）
+購読プラン（PILOT）: ${profile.plan}
+
+本人の普段との比較:
+${observations || "比較できる条件を蓄積中"}
+
+勝敗・艇・買い目・賭け金を推奨せず、記録された事実、本人の過去との比較、短い問いだけを作成してください。診断・説教・因果の断定は禁止です。`;
+    }
     const stats = C.behaviorStats(S.records);
-    const fomo = S.records.filter((item) => Number(item.cashWouldHaveWonUrge) >= 7).length;
     return `MAMO BOAT行動分析用データ
 テスター番号: ${S.pilot.participantId}
 記録数: ${S.records.length}
 仮想投票へ置き換えた金額: ${C.savedTotals(S.records).all}円
 B残高: ${S.coins}B
 B的中: ${stats.virtualHits}件
-低い納得度×高い現金衝動: ${S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length}件
-追い上げ傾向: ${stats.chase}件
-取り返したい参加: ${stats.declaredChase}件
-短時間の金額増加: ${stats.escalation}件
-外れ後の追い上げ: ${stats.postLossChase}件
-短時間連投: ${stats.rapid}件
-B的中後の「現金なら」強度7以上: ${fomo}件
-平均衝動変化: ${stats.urgeDrop == null ? "未集計" : stats.urgeDrop.toFixed(2)}
-主な理由: ${stats.topReason ? stats.topReason.join(" / ") : "未集計"}
-場別最大セーブ: ${stats.topVenue ? stats.topVenue.join(" / ") : "未集計"}
 公式投票への移動: ${S.realBetExits.length}回
 購読プラン（PILOT）: ${S.pressroom.plan}
-新聞への回答: ${S.pressroom.feedback.length}件
-匿名イベント: ${S.pilot.events.length}件（未送信 ${S.pilot.events.filter((item) => !item.sent_at).length}件）
 
 勝敗・艇・買い目・賭け金を推奨せず、記録された事実、本人の過去との比較、短い問いだけを作成してください。診断・説教・現金を守ったという断定は禁止です。`;
   }
@@ -2815,22 +2793,34 @@ B的中後の「現金なら」強度7以上: ${fomo}件
   }
 
   function renderPressSettings() {
-    if (!$("pressMorningEnabled")) return;
-    $("pressMorningEnabled").checked = S.pressroom.morningEnabled;
-    $("pressWeeklyEnabled").checked = S.pressroom.weeklyEnabled;
-    $("pressMonthlyEnabled").checked = S.pressroom.monthlyEnabled;
-    $("pressDisplayMode").value = S.pressroom.displayMode;
-    const plan = pressPlan();
-    $("pressSettingsStatus").innerHTML = `<b>現在：${esc(plan.label)}・${esc(plan.name)}</b><br>端末内発行のみ。レース名・選手名・今日の開催は新聞通知へ載せません。`;
+    updatePlanUI();
   }
 
+  window.togglePressSetting = (key, checked) => {
+    if (!["morningEnabled", "weeklyEnabled", "monthlyEnabled"].includes(key)) return;
+    if (S.pressroom.plan !== "gold") {
+      S.pressroom[key] = false;
+      updatePlanUI();
+      alert("朝刊・週間・月刊の発行設定はGOLD / MAMO PRESSで利用できます。");
+      return;
+    }
+    S.pressroom[key] = checked === true;
+    trackEvent("press_preferences_saved", {
+      morning_enabled: S.pressroom.morningEnabled,
+      weekly_enabled: S.pressroom.weeklyEnabled,
+      monthly_enabled: S.pressroom.monthlyEnabled,
+      display_mode: S.pressroom.displayMode,
+    });
+    save();
+    updatePlanUI();
+    renderHomePressTeaser();
+  };
+
   window.savePressSettings = () => {
-    S.pressroom.morningEnabled = $("pressMorningEnabled").checked;
-    S.pressroom.weeklyEnabled = $("pressWeeklyEnabled").checked;
-    S.pressroom.monthlyEnabled = $("pressMonthlyEnabled").checked;
-    S.pressroom.displayMode = $("pressDisplayMode").value === "simple"
-      ? "simple"
-      : "editorial";
+    if (S.pressroom.plan !== "gold") return;
+    S.pressroom.morningEnabled = $("morningToggle")?.checked === true;
+    S.pressroom.weeklyEnabled = $("weeklyToggle")?.checked === true;
+    S.pressroom.monthlyEnabled = $("monthlyToggle")?.checked === true;
     trackEvent("press_preferences_saved", {
       morning_enabled: S.pressroom.morningEnabled,
       weekly_enabled: S.pressroom.weeklyEnabled,

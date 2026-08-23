@@ -96,6 +96,9 @@
   function decorateBehaviorPatterns() {
     const list = document.getElementById("analysisList");
     if (!list) return;
+    // Behavior Insights v2 owns this entire surface. Keep Mamokamo's home card,
+    // but never rewrite the evidence cards created by the v2 renderer.
+    if (list.dataset.insightVersion === "2") return;
     list.classList.add("behavior-pattern-grid");
 
     const cards = [...list.querySelectorAll(":scope > .card")];
