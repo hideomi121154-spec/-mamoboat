@@ -224,10 +224,10 @@ vm.runInContext(
 
 assert.match(elements.get("pressPlanBadge").textContent, /SILVER/);
 assert.match(elements.get("pressPaper").innerHTML, /MAMO朝刊/);
-assert.match(elements.get("pressPaper").innerHTML, /B的中後の「現金なら」/);
+assert.match(elements.get("pressPaper").innerHTML, /GOLD \/ MAMO PRESS/);
 assert.doesNotMatch(elements.get("pressPaper").innerHTML, /勝率|おすすめ艇|公式投票/);
 assert.match(elements.get("membershipPanel").innerHTML, /PILOT版では決済されません/);
-assert.match(elements.get("homePressTeaser").innerHTML, /最新号を読む/);
+assert.match(elements.get("homePressTeaser").innerHTML, /編集部を見る/);
 
 const stableTargets = ["pressPaper", "analysisCards", "analysisList", "membershipPanel"];
 const writesBeforePlanChanges = Object.fromEntries(
@@ -235,8 +235,8 @@ const writesBeforePlanChanges = Object.fromEntries(
 );
 const expectedPlanState = {
   free: [false, false, false],
-  bronze: [true, false, false],
-  silver: [true, true, true],
+  bronze: [false, false, false],
+  silver: [false, false, false],
   gold: [true, true, true],
 };
 
@@ -255,10 +255,11 @@ for (const key of ["bronze", "silver", "gold", "free", "bronze"]) {
     assert.equal(button.getAttribute("aria-pressed"), selected ? "true" : "false");
   });
   assert.equal(elements.get("membershipDeepInterview").disabled, key !== "gold");
+  ["morningToggle", "weeklyToggle", "monthlyToggle"].forEach((id) => {
+    assert.equal(elements.get(id).disabled, key !== "gold");
+  });
   reportButtons.forEach((button) => {
-    const unlocked = button.dataset.reportType === "morning"
-      ? key !== "free"
-      : ["silver", "gold"].includes(key);
+    const unlocked = key === "gold";
     assert.equal(button.classList.contains("locked"), !unlocked);
   });
   stableTargets.forEach((id) => {
@@ -267,23 +268,32 @@ for (const key of ["bronze", "silver", "gold", "free", "bronze"]) {
 }
 assert.equal(scrollCalls.length, 0);
 
+context.selectPilotPlan("bronze");
+context.togglePressSetting("morningEnabled", true);
+assert.equal(JSON.parse(storage.get("mamoboat_v40_personal")).pressroom.morningEnabled, false);
+context.selectPilotPlan("gold");
+context.togglePressSetting("morningEnabled", false);
+assert.equal(JSON.parse(storage.get("mamoboat_v40_personal")).pressroom.morningEnabled, false);
+
 const pilotConfigSource = fs.readFileSync(
   path.join(__dirname, "..", "pilot-config.js"),
   "utf8"
 );
 assert.match(pilotConfigSource, /MAMO_PLAN_STATE_KEY/);
 assert.match(pilotConfigSource, /data-mamo-plan|dataset\.mamoPlan/);
-assert.match(pilotConfigSource, /--mamo-plan-lock: "BRONZEで開放"/);
-assert.match(pilotConfigSource, /--mamo-plan-lock: "SILVERで開放"/);
-assert.match(pilotConfigSource, /--mamo-plan-lock: "GOLDで開放"/);
-assert.match(pilotConfigSource, /--mamo-plan-title: "あなたの勝負トリガー"/);
-assert.match(pilotConfigSource, /--mamo-plan-title: "あなた専用の新聞"/);
-assert.match(pilotConfigSource, /visibility: hidden !important/);
-assert.doesNotMatch(pilotConfigSource, /opacity:\s*0\.24/);
+assert.match(pilotConfigSource, /Safety never becomes paid or blurred/);
+assert.match(pilotConfigSource, /Older parallel analysis panels/);
 assert.match(pilotConfigSource, /#mamoAiSafeReport/);
+assert.match(pilotConfigSource, /height: auto !important/);
+assert.match(pilotConfigSource, /visibility: visible !important/);
+assert.doesNotMatch(pilotConfigSource, /--mamo-plan-lock/);
+assert.doesNotMatch(pilotConfigSource, /opacity:\s*0\.24/);
 assert.match(pilotConfigSource, /#mamoBaselinePanel/);
 assert.match(pilotConfigSource, /#mamoTriggerPanel/);
 assert.match(pilotConfigSource, /#pressPaper/);
+assert.match(pilotConfigSource, /#mamoCompoundPatternPanel/);
+assert.match(pilotConfigSource, /#mamoDecisionStateScore/);
+assert.match(pilotConfigSource, /body:not\(\[data-mamo-plan="gold"\]\) #mamoPressIntel/);
 const tierUiSource = pilotConfigSource.slice(
   pilotConfigSource.indexOf("const MAMO_PLAN_STATE_KEY"),
   pilotConfigSource.indexOf("function loadMamoModule")
@@ -292,7 +302,7 @@ assert.doesNotMatch(tierUiSource, /scrollTo|scrollBy|visualViewport|MutationObse
 assert.doesNotMatch(tierUiSource, /selectPilotPlan\s*=/);
 assert.doesNotMatch(tierUiSource, /localStorage\.setItem/);
 
-console.log("app smoke, stable plan UI, and title-only plan lock tests OK");
+console.log("app smoke, stable plan UI, free safety, and GOLD press tests OK");
 
 (async () => {
   await context.sendPilotDataNow();
