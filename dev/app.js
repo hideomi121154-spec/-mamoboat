@@ -20,6 +20,23 @@
   const SESSION_ID = window.crypto?.randomUUID
     ? window.crypto.randomUUID()
     : `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  function marketingAttribution() {
+    try {
+      const url = new URL(String(window.location?.href || "https://mamoboat.local/"));
+      const clean = (value, max = 60) => String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, "-")
+        .slice(0, max);
+      return {
+        source: clean(url.searchParams.get("utm_source") || url.searchParams.get("from") || url.searchParams.get("source")),
+        medium: clean(url.searchParams.get("utm_medium")),
+        campaign: clean(url.searchParams.get("utm_campaign")),
+      };
+    } catch (_) {
+      return { source: "", medium: "", campaign: "" };
+    }
+  }
+  window.MAMO_ATTRIBUTION = Object.freeze(marketingAttribution());
   const VENUES = [
     ["01", "桐生"], ["02", "戸田"], ["03", "江戸川"], ["04", "平和島"],
     ["05", "多摩川"], ["06", "浜名湖"], ["07", "蒲郡"], ["08", "常滑"],
@@ -537,6 +554,7 @@
     save();
     schedulePilotFlush();
   }
+  window.MAMO_TRACK_EVENT = trackEvent;
 
   async function flushPilotEvents() {
     if (pilotFlushPromise) return pilotFlushPromise;
@@ -952,7 +970,14 @@
   };
   window.startApp = () => {
     S.accepted = true;
-    trackEvent("onboarding_completed", { age_confirmed: true, b_medal_terms_confirmed: true });
+    const consent = $("pilotConsentOnboard");
+    if (consent) S.pilot.consent = consent.checked === true;
+    trackEvent("onboarding_completed", {
+      age_confirmed: true,
+      b_medal_terms_confirmed: true,
+      analytics_consent: S.pilot.consent,
+      ...window.MAMO_ATTRIBUTION,
+    });
     save();
     renderAll();
     window.scrollTo(0, 0);
@@ -2964,6 +2989,7 @@ B的中後の「現金なら」強度7以上: ${fomo}件
     if (!document.body.dataset.screen) document.body.dataset.screen = "home";
     document.body.classList.toggle("simple-press", S.pressroom.displayMode === "simple");
     $("onboard").classList.toggle("show", !S.accepted);
+    if ($("pilotConsentOnboard")) $("pilotConsentOnboard").checked = S.pilot.consent;
     renderOnboard();
     $("topCoins").textContent = `${fmt(S.coins)} B`;
     renderHome();
@@ -2978,6 +3004,7 @@ B的中後の「現金なら」強度7以上: ${fomo}件
     returning_user: S.accepted === true,
     local_records: S.records.length,
     collector_configured: collectorReady(),
+    ...window.MAMO_ATTRIBUTION,
   });
   renderAll();
   loadOfficialData().finally(() => autoRefreshPendingResults());
