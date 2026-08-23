@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#05233e">
-  <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
+  <meta name="description" content="勝ち方ではなく、勝負の選び方を。現金を使わないAIR BETで、賭けたい気持ちを記録して振り返る自己管理ツール。">
   <link rel="manifest" href="manifest.webmanifest?v=401">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css?v=20260818-3">
@@ -186,6 +186,17 @@
           <label class="check"><input id="weeklyToggle" type="checkbox" onchange="togglePressSetting('weeklyEnabled', this.checked)"><span><b>MAMO週間</b><small>直近7日を前の7日と比較</small></span></label>
           <label class="check"><input id="monthlyToggle" type="checkbox" onchange="togglePressSetting('monthlyEnabled', this.checked)"><span><b>MAMO月刊</b><small>長期傾向を月単位で確認</small></span></label>
         </div>
+        <div class="section-head small"><div><span class="section-number">DATA</span><h2>匿名の利用状況</h2></div><span class="section-meta">任意</span></div>
+        <div class="panel settings-panel">
+          <p>サービス改善のため、画面遷移・漫画の読了・AIR BETの利用状況を匿名テスター番号で集計できます。氏名・メールアドレス・自由記述・決済情報は送信しません。</p>
+          <label class="field"><span>匿名テスター番号</span><input id="pilotParticipantId" type="text" maxlength="40" autocomplete="off" spellcheck="false"></label>
+          <label class="check"><input id="pilotConsent" type="checkbox"><span><b>匿名データの送信に同意する</b><small>OFFでもAIR BETと端末内記録は利用できます</small></span></label>
+          <div id="pilotStatus" class="sync-detail"></div>
+          <div class="action-stack">
+            <button class="btn primary full" type="button" onclick="savePilotSettings()">計測設定を保存</button>
+            <button class="btn secondary full" type="button" onclick="sendPilotDataNow(this)">未送信データを送る</button>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -219,6 +230,7 @@
         <div class="onboard-copy"><span class="kicker">FINAL CHECK</span><h1>これは現金ではなく、<br><em>Bメダルです。</em></h1><p>初回残高は100,000Bです。任意追加・自動復活・換金はできません。AIR BETで減り、的中時は公式確定払戻と同額のBが加算されます。返還時は対象Bだけ戻り、記録は原則この端末内に保存されます。</p></div>
         <label class="check"><input id="age" type="checkbox" onchange="checkStart()"><span><b>私は20歳以上です</b><small>成人向けの自己管理ツールとして利用します</small></span></label>
         <label class="check"><input id="value" type="checkbox" onchange="checkStart()"><span><b>Bメダルに金銭的価値がないことを理解しました</b><small>換金・購入・入出金・譲渡はできません</small></span></label>
+        <label class="check"><input id="pilotConsentOnboard" type="checkbox"><span><b>匿名の利用状況を送信する（任意）</b><small>氏名・メール・自由記述は送信せず、画面遷移やAIR BETの利用状況だけを改善に使います</small></span></label>
         <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button id="startBtn" class="btn coral-btn" disabled onclick="startApp()">航海を始める</button></div>
       </div>
       <div class="onboard-dots"><i class="active"></i><i></i><i></i></div>
@@ -228,7 +240,8 @@
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
   <script src="core.js?v=401"></script>
   <script src="pilot-config.js?v=20260822-17"></script>
-  <script src="app.js?v=20260818-3"></script>
+  <script src="app.js?v=20260823-1"></script>
+  <script src="growth-entry.js?v=20260823-1"></script>
   <script src="cast-ui.js?v=20260822-2"></script>
 </body>
 </html>
