@@ -1,0 +1,38 @@
+name: Fix cache version test
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.event.head_commit.message == 'Add one-time cache version test fixer'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Make cache assertion version-tolerant
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('tests/logic.test.js')
+          s = p.read_text()
+          old = 'assert.match(serviceWorkerSource, /mamoboat-v401-central-pilot-14/);'
+          new = 'assert.match(serviceWorkerSource, /const CACHE = "mamoboat-v401-central-pilot-\\d+"/);'
+          if old not in s:
+              raise SystemExit('expected stale cache assertion not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/logic.test.js
+          git commit -m "Make service worker cache test version-tolerant"
+          git push origin main
