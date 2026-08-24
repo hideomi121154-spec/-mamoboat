@@ -1,0 +1,47 @@
+name: Fix stale test asset versions
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.event.head_commit.message == 'Add one-time fixer for stale asset version assertions'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update stale test expectations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tests/logic.test.js')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              r'cast-ui\.js\?v=20260815-11': r'cast-ui\.js\?v=20260820-1',
+              r'pilot-config\.js\?v=20260818-3': r'pilot-config\.js\?v=20260819-4',
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'Expected stale assertion not found: {old}')
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/logic.test.js
+          git commit -m "Fix stale asset version assertions"
+          git pull --rebase origin main
+          git push origin HEAD:main
