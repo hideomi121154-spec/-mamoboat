@@ -70,8 +70,8 @@
         width:100% !important; height:100% !important; max-width:none !important;
         display:block !important; pointer-events:none !important;
         object-fit:cover !important; object-position:center 8% !important;
-        opacity:.34 !important; visibility:visible !important;
-        filter:saturate(.52) brightness(1.15) contrast(.92) !important;
+        opacity:.82 !important; visibility:visible !important;
+        filter:saturate(.88) brightness(1.04) contrast(.98) !important;
         transform:none !important;
         z-index:0 !important;
       }
@@ -180,7 +180,7 @@
           inset:0 !important;
           width:100% !important; height:100% !important; max-width:none !important;
           object-fit:cover !important; object-position:center 8% !important;
-          opacity:.34 !important;
+          opacity:.82 !important;
         }
         #venues .page-intro,
         #records .page-intro { min-height:170px !important; padding-right:40% !important; }
@@ -213,7 +213,7 @@
       }
 
       @media (max-width:390px) {
-        #home .masthead-character.mamo-character-cut { inset:0 !important; width:100% !important; height:100% !important; max-width:none !important; object-fit:cover !important; object-position:center 8% !important; opacity:.34 !important; }
+        #home .masthead-character.mamo-character-cut { inset:0 !important; width:100% !important; height:100% !important; max-width:none !important; object-fit:cover !important; object-position:center 8% !important; opacity:.82 !important; }
         #venues .page-intro > img.mamo-character-cut,
         #records .page-intro > img.mamo-character-cut { right:-3% !important; height:92% !important; max-width:38% !important; }
         #analysis .analysis-intro { height:320px !important; min-height:320px !important; padding-bottom:160px !important; }
