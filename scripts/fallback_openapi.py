@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 JST = timezone(timedelta(hours=9))
@@ -119,7 +120,13 @@ def main():
         return
 
     url = f"https://boatraceopenapi.github.io/api/v1/{now.year}/{now.strftime('%Y%m%d')}.json"
-    source = fetch_json(url)
+    try:
+        source = fetch_json(url)
+    except HTTPError as error:
+        if error.code == 404:
+            print(f"fallback source is not published yet for {target}; keeping existing data")
+            return
+        raise
     stadiums = (((source or {}).get("programs") or {}).get("stadiums") or {})
     if not stadiums:
         raise RuntimeError(f"fallback source has no programs for {target}")
