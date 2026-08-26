@@ -6,6 +6,7 @@
   const WALLET_VERSION = 3;
   const LEGACY_BONUS_TYPES = new Set(["login_bonus", "defense_bonus"]);
   const KEY = "mamoboat_v40_personal";
+  const ACCEPTED_KEY = "mamoboat_onboarding_accepted_v1";
   const LEGACY_KEYS = [
     "mamoboat_v39_personal",
     "mamoboat_v38_personal",
@@ -423,14 +424,40 @@
     return state;
   }
 
+  function hasAcceptedOnboarding() {
+    try {
+      if (localStorage.getItem(ACCEPTED_KEY) === "1") return true;
+    } catch (_) {}
+    return String(document.cookie || "")
+      .split(";")
+      .some((item) => item.trim() === `${ACCEPTED_KEY}=1`);
+  }
+
+  function rememberAcceptedOnboarding() {
+    try {
+      localStorage.setItem(ACCEPTED_KEY, "1");
+    } catch (_) {}
+    try {
+      document.cookie = `${ACCEPTED_KEY}=1; Max-Age=31536000; Path=/; SameSite=Lax; Secure`;
+    } catch (_) {}
+  }
+
+  function preserveAcceptedState(state) {
+    if (state?.accepted === true || hasAcceptedOnboarding()) {
+      state.accepted = true;
+      rememberAcceptedOnboarding();
+    }
+    return state;
+  }
+
   function load() {
     try {
       const current = localStorage.getItem(KEY);
-      if (current) return normalizeState(JSON.parse(current));
+      if (current) return preserveAcceptedState(normalizeState(JSON.parse(current)));
       for (const key of LEGACY_KEYS) {
         const raw = localStorage.getItem(key);
         if (raw) {
-          const migrated = normalizeState(JSON.parse(raw));
+          const migrated = preserveAcceptedState(normalizeState(JSON.parse(raw)));
           localStorage.setItem(KEY, JSON.stringify(migrated));
           return migrated;
         }
@@ -438,12 +465,20 @@
     } catch (error) {
       console.warn("記録データの読み込みに失敗しました", error);
     }
-    return fresh();
+    return preserveAcceptedState(fresh());
   }
 
   let S = load();
 
-  const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+  const save = () => {
+    if (S.accepted === true) rememberAcceptedOnboarding();
+    else if (hasAcceptedOnboarding()) S.accepted = true;
+    try {
+      localStorage.setItem(KEY, JSON.stringify(S));
+    } catch (error) {
+      console.warn("記録データの保存に失敗しました", error);
+    }
+  };
 
   function postLedger(type, amount, uniqueKey, details = {}) {
     const value = Math.round(Number(amount) || 0);
@@ -952,10 +987,16 @@
   };
   window.startApp = () => {
     S.accepted = true;
-    trackEvent("onboarding_completed", { age_confirmed: true, b_medal_terms_confirmed: true });
+    const consent = $("pilotConsentOnboard");
+    if (consent) S.pilot.consent = consent.checked === true;
+    trackEvent("onboarding_completed", {
+      age_confirmed: true,
+      b_medal_terms_confirmed: true,
+      analytics_consent: S.pilot.consent,
+    });
     save();
     renderAll();
-    window.scrollTo(0, 0);
+    window.go("home");
   };
 
   function renderCurrent(id) {
@@ -2964,6 +3005,7 @@ B的中後の「現金なら」強度7以上: ${fomo}件
     if (!document.body.dataset.screen) document.body.dataset.screen = "home";
     document.body.classList.toggle("simple-press", S.pressroom.displayMode === "simple");
     $("onboard").classList.toggle("show", !S.accepted);
+    if ($("pilotConsentOnboard")) $("pilotConsentOnboard").checked = S.pilot.consent;
     renderOnboard();
     $("topCoins").textContent = `${fmt(S.coins)} B`;
     renderHome();
