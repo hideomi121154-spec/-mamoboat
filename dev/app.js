@@ -965,7 +965,7 @@
   }
   window.openAirBetOnboarding = (sourceDetail = "campaign") => {
     airBetOnboarding = true;
-    onboardStep = 2;
+    onboardStep = 0;
     if ($("age")) $("age").checked = false;
     if ($("value")) $("value").checked = false;
     if ($("startBtn")) $("startBtn").disabled = true;
