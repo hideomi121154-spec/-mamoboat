@@ -1506,3 +1506,39 @@ body { background: #e8dfd2; }
   .home-masthead { height: 315px; }
   .masthead-character { object-position: 57% 16%; transform: none; }
 }
+
+
+/* v4.0.2 — pale full-width Mamoru watermark */
+.home-masthead {
+  background: #fffdf8;
+}
+.masthead-character {
+  opacity: .46;
+  filter: saturate(.76) brightness(1.12);
+  object-fit: cover;
+  object-position: center 16%;
+}
+.home-masthead::before {
+  background:
+    linear-gradient(90deg, rgba(255,253,248,.68) 0%, rgba(255,253,248,.42) 42%, rgba(255,253,248,.18) 100%),
+    linear-gradient(0deg, rgba(255,253,248,.56) 0%, rgba(255,253,248,.08) 42%, rgba(255,253,248,0) 72%);
+}
+.masthead-brand {
+  color: var(--navy);
+  text-shadow: 0 1px 0 rgba(255,255,255,.9);
+}
+.masthead-brand > div b {
+  border-color: var(--coral);
+  background: rgba(255,253,248,.78);
+  color: var(--coral);
+}
+.masthead-callout {
+  background: rgba(255,253,248,.84);
+  border-color: rgba(216,208,194,.88);
+}
+@media (max-width: 620px) {
+  .masthead-character { object-position: 56% 15%; }
+}
+@media (max-width: 390px) {
+  .masthead-character { object-position: 57% 14%; }
+}
