@@ -1352,3 +1352,91 @@ body { padding-right: 0; }
 .membership-selectable button.selected{border-color:var(--teal);background:var(--mint);box-shadow:inset 0 0 0 1px var(--teal)}
 .membership-selectable button.selected b{color:var(--navy)}
 .membership-deep-action:disabled{opacity:.52;transform:none;box-shadow:none}
+
+
+/* v4.0.0 — warm editorial palette */
+:root {
+  --navy: #102b3a;
+  --navy-2: #1b3e4b;
+  --teal: #2a9c98;
+  --teal-dark: #1e7471;
+  --mint: #e8f2ed;
+  --coral: #de6652;
+  --gold: #d7a43a;
+  --gold-dark: #9a6d13;
+  --paper: #f5efe4;
+  --ink: #172d36;
+  --muted: #6f7979;
+  --line: #d8d0c2;
+  --soft-line: #ece5da;
+  --shadow: 0 2px 9px rgba(54, 40, 19, .10);
+}
+body { background: #e8dfd2; }
+.app-shell { background: rgba(250, 247, 240, .99); }
+.topbar { background: rgba(255, 253, 248, .98); box-shadow: 0 3px 14px rgba(54,40,19,.08); }
+.brand-copy small { color: var(--gold-dark); }
+.wallet { border-left-color: var(--gold); }
+.wallet span { color: #f3cf75; }
+
+.home-masthead { background: #fffdf8; border-bottom-color: #ddd4c7; }
+.home-masthead::before {
+  background: linear-gradient(90deg, rgba(255,253,248,.99) 0%, rgba(255,253,248,.89) 26%, rgba(255,253,248,.12) 62%, rgba(255,253,248,0) 100%);
+}
+.home-masthead::after { background: var(--gold); opacity: .22; }
+.masthead-brand > div span { background: var(--gold); color: var(--navy); }
+.masthead-brand > div b { background: rgba(255,253,248,.88); }
+.masthead-wallet {
+  background: linear-gradient(135deg, var(--navy), var(--navy-2));
+  border-color: #52606a;
+  box-shadow: 0 5px 14px rgba(54,40,19,.18);
+}
+.masthead-wallet > small { color: #f3cf75; }
+.masthead-callout { background: rgba(255,253,248,.96); border-color: #ddd4c7; box-shadow: 0 3px 9px rgba(54,40,19,.12); }
+.masthead-callout::after { border-left-color: #fffdf8; }
+.masthead-callout em { color: var(--gold-dark); }
+
+.home-titlebar,
+.home-command,
+.home-command button,
+.home-command a { background: #fffdf8; }
+.home-titlebar h1 span { color: var(--gold-dark); }
+.home-command button.active { background: var(--navy); color: white; }
+.home-command button.active b { color: #f3cf75; }
+.filter.active { border-color: var(--navy); background: var(--navy); color: white; box-shadow: 0 3px 0 rgba(215,164,58,.38); }
+.venue-card.compact,
+.card,
+.panel,
+.stat-card { background-color: #fffdf8; }
+
+.page-intro { background: #fffdf8; border-bottom-color: var(--gold); box-shadow: 0 4px 12px rgba(54,40,19,.08); }
+.page-intro::after { background: repeating-linear-gradient(160deg, transparent 0 20px, var(--gold) 21px 22px, transparent 23px 40px); }
+.page-intro .kicker { color: var(--gold-dark); }
+.record-intro { border-bottom-color: var(--coral); }
+.analysis-intro,
+.settings-intro { background: #fffdf8; border-bottom-color: var(--gold); }
+
+.bottom-nav { background: rgba(16,43,58,.99); box-shadow: 0 -5px 18px rgba(54,40,19,.18); }
+.nav.active { background: var(--gold); color: var(--navy); }
+.nav.active b { color: var(--navy); }
+
+.onboard { background: #eee5d8; color: var(--navy); }
+.onboard-shell { border-color: #d8cfbf; background: #fffdf8; box-shadow: 0 8px 26px rgba(54,40,19,.16); }
+.onboard-shell::before { opacity: .09; background: repeating-linear-gradient(158deg, transparent 0 18px, var(--gold) 19px 20px, transparent 21px 39px); }
+.onboard-top,
+.onboard-copy h1 em,
+.onboard .kicker { color: var(--gold-dark); }
+.check { background: #faf5eb; border-color: #d8cfbf; }
+.onboard-route div { background: #faf5eb; border-left-color: var(--gold); }
+.onboard-route b { color: var(--gold-dark); }
+.onboard-editorial { border-left-color: var(--gold); background: #fff6dc; }
+.onboard-dots i { background: #d8cfbf; }
+.onboard-dots i.active { background: var(--gold); }
+.onboard .btn.primary { background: var(--navy); color: white; box-shadow: 0 4px 0 var(--gold); }
+.onboard .coral-btn { border-color: var(--gold); background: var(--gold); color: var(--navy); box-shadow: 0 4px 0 var(--gold-dark); }
+#onboard .onboard-panel[data-onboard="0"] img.onboard-cover-art {
+  filter: drop-shadow(0 10px 18px rgba(54,40,19,.18)) !important;
+}
+
+.paper-mast span { color: var(--gold-dark); }
+.paper-question { background: rgba(215,164,58,.07); }
+.paper-question > small { color: var(--gold-dark); }
