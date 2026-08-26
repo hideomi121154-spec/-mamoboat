@@ -1,4 +1,4 @@
-/* MAMO BOAT v4.0.1 — character UI v6 (mobile-first, stable home hero)
+/* MAMO BOAT v4.0.2 — character UI v7 (mobile-first, stable home hero)
  * Visual/editorial UI only. AIR BET, B wallet, official data and settlement logic are untouched.
  */
 (() => {
@@ -40,15 +40,15 @@
   });
 
   function injectStyles() {
-    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5", "mamoCharacterLayoutStyleV6"]
+    ["mamoCharacterLayoutStyle", "mamoCharacterLayoutStyleV3", "mamoCharacterLayoutStyleV4", "mamoCharacterLayoutStyleV5", "mamoCharacterLayoutStyleV6", "mamoCharacterLayoutStyleV7"]
       .forEach((id) => document.getElementById(id)?.remove());
 
     const style = document.createElement("style");
-    style.id = "mamoCharacterLayoutStyleV6";
+    style.id = "mamoCharacterLayoutStyleV7";
     style.textContent = `
       .mamo-character-cut { image-rendering:auto !important; }
 
-      #home .home-masthead { position:relative !important; isolation:isolate !important; background:#fff !important; }
+      #home .home-masthead { position:relative !important; isolation:isolate !important; background:#fffdf8 !important; }
       #home .home-masthead::before,
       #home .home-masthead::after { z-index:1 !important; pointer-events:none !important; }
       #home .masthead-brand,
@@ -56,13 +56,15 @@
       #home .masthead-callout { position:absolute; z-index:4 !important; }
       #home .masthead-character.mamo-character-cut {
         position:absolute !important;
-        left:auto !important; top:auto !important; right:-1% !important; bottom:0 !important;
-        width:auto !important; height:116% !important; max-width:61% !important;
-        display:block !important;
-        object-fit:contain !important; object-position:right bottom !important;
-        opacity:1 !important; visibility:visible !important;
-        filter:none !important; transform:none !important;
-        z-index:2 !important;
+        inset:0 !important;
+        left:0 !important; top:0 !important; right:0 !important; bottom:0 !important;
+        width:100% !important; height:100% !important; max-width:none !important;
+        display:block !important; pointer-events:none !important;
+        object-fit:cover !important; object-position:center 8% !important;
+        opacity:.34 !important; visibility:visible !important;
+        filter:saturate(.52) brightness(1.15) contrast(.92) !important;
+        transform:none !important;
+        z-index:0 !important;
       }
 
       #venues .page-intro,
@@ -159,7 +161,10 @@
 
       @media (max-width:700px) {
         #home .masthead-character.mamo-character-cut {
-          right:-2% !important; bottom:0 !important; height:110% !important; max-width:60% !important;
+          inset:0 !important;
+          width:100% !important; height:100% !important; max-width:none !important;
+          object-fit:cover !important; object-position:center 8% !important;
+          opacity:.34 !important;
         }
         #venues .page-intro,
         #records .page-intro { min-height:170px !important; padding-right:40% !important; }
@@ -192,7 +197,7 @@
       }
 
       @media (max-width:390px) {
-        #home .masthead-character.mamo-character-cut { right:-3% !important; height:108% !important; max-width:59% !important; }
+        #home .masthead-character.mamo-character-cut { inset:0 !important; width:100% !important; height:100% !important; max-width:none !important; object-fit:cover !important; object-position:center 8% !important; opacity:.34 !important; }
         #venues .page-intro > img.mamo-character-cut,
         #records .page-intro > img.mamo-character-cut { right:-3% !important; height:92% !important; max-width:38% !important; }
         #analysis .analysis-intro { height:320px !important; min-height:320px !important; padding-bottom:160px !important; }
