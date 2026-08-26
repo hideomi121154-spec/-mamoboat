@@ -6,7 +6,23 @@
   const params = new URL(String(window.location?.href || "https://mamoboat.local/")).searchParams;
   const source = attribution.source || String(params.get("from") || "").toLowerCase();
   const enabled = ["x", "twitter"].includes(source) || params.get("mamo_entry") === "x";
-  if (!enabled || document.getElementById("mamoGrowthEntry")) return;
+  const DISMISSED_KEY = "mamoboat_growth_entry_dismissed_v1";
+
+  function wasDismissed() {
+    try {
+      return sessionStorage.getItem(DISMISSED_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function rememberDismissal() {
+    try {
+      sessionStorage.setItem(DISMISSED_KEY, "1");
+    } catch (_) {}
+  }
+
+  if (!enabled || wasDismissed() || document.getElementById("mamoGrowthEntry")) return;
 
   const track = (destination, details = {}) => {
     try {
@@ -50,6 +66,11 @@
     document.body.classList.remove("mamo-growth-open");
   }
 
+  function dismiss() {
+    rememberDismissal();
+    close();
+  }
+
   function openStory() {
     close();
     if (window.MAMO_STORY?.open) return window.MAMO_STORY.open();
@@ -76,6 +97,7 @@
 
   function openAirBet() {
     track("air_bet_entry", { source_detail: "growth_landing" });
+    rememberDismissal();
     close();
     if (typeof window.openAirBetOnboarding === "function") {
       window.openAirBetOnboarding("growth_landing");
@@ -128,10 +150,10 @@
       </div>`;
     document.body.appendChild(overlay);
     document.body.classList.add("mamo-growth-open");
-    overlay.querySelector(".mge-close").addEventListener("click", close);
+    overlay.querySelector(".mge-close").addEventListener("click", dismiss);
     overlay.querySelector(".mge-story-button").addEventListener("click", openStory);
     overlay.querySelectorAll(".mge-air-button").forEach(button => button.addEventListener("click", openAirBet));
-    overlay.querySelector(".mge-skip").addEventListener("click", close);
+    overlay.querySelector(".mge-skip").addEventListener("click", dismiss);
     track("growth_landing", { entry: "x" });
   }
 
