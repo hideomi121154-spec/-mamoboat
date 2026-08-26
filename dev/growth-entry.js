@@ -56,7 +56,7 @@
     let script = document.querySelector('script[data-mamo-story="1"]');
     if (!script) {
       script = document.createElement("script");
-      script.src = "mamo-story.js?v=20260823-15";
+      script.src = "mamo-story.js?v=20260826-1";
       script.async = true;
       script.dataset.mamoStory = "1";
       document.head.appendChild(script);
@@ -77,7 +77,11 @@
   function openAirBet() {
     track("air_bet_entry", { source_detail: "growth_landing" });
     close();
-    window.go?.("venues");
+    if (typeof window.openAirBetOnboarding === "function") {
+      window.openAirBetOnboarding("growth_landing");
+      return;
+    }
+    window.go?.("home");
   }
 
   function render() {
