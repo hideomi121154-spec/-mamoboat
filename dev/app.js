@@ -225,6 +225,7 @@
   let form = [new Set(), new Set(), new Set()];
   let cart = [];
   let onboardStep = 0;
+  let airBetOnboarding = false;
   let resultIndexRequested = false;
 
   function weekKey(value = new Date()) {
@@ -962,6 +963,20 @@
       dot.classList.toggle("active", index === onboardStep);
     });
   }
+  window.openAirBetOnboarding = (sourceDetail = "campaign") => {
+    airBetOnboarding = true;
+    onboardStep = 2;
+    if ($("age")) $("age").checked = false;
+    if ($("value")) $("value").checked = false;
+    if ($("startBtn")) $("startBtn").disabled = true;
+    $("onboard").classList.add("show");
+    renderOnboard();
+    trackEvent("screen_view", {
+      destination: "air_bet_onboarding",
+      source_detail: sourceDetail,
+      ...window.MAMO_ATTRIBUTION,
+    }, { screen: "onboarding" });
+  };
   window.onboardNext = () => {
     onboardStep = Math.min(2, onboardStep + 1);
     renderOnboard();
@@ -974,6 +989,8 @@
     $("startBtn").disabled = !($("age").checked && $("value").checked);
   };
   window.startApp = () => {
+    const shouldReturnHome = airBetOnboarding;
+    airBetOnboarding = false;
     S.accepted = true;
     const consent = $("pilotConsentOnboard");
     if (consent) S.pilot.consent = consent.checked === true;
@@ -985,7 +1002,8 @@
     });
     save();
     renderAll();
-    window.scrollTo(0, 0);
+    if (shouldReturnHome) window.go("home");
+    else window.scrollTo(0, 0);
   };
 
   function renderCurrent(id) {
