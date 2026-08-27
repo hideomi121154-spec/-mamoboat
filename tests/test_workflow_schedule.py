@@ -11,6 +11,10 @@ class WorkflowScheduleTests(unittest.TestCase):
         source = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('cron: "5 15-20 * * *"', source)
 
+    def test_downloader_uses_jst_for_current_day_validation(self):
+        source = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("TZ: Asia/Tokyo", source)
+
     def test_fallback_failure_does_not_block_mirroring_valid_data(self):
         source = WORKFLOW.read_text(encoding="utf-8")
         start = source.index("- name: Recover stale JST current-day data")

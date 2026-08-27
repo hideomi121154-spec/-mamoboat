@@ -35,6 +35,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # The downloader rejects dates after the runner's local day. GitHub-hosted
+      # runners use UTC, so pin the whole job to JST before the date rolls over.
+      TZ: Asia/Tokyo
     steps:
       - uses: actions/checkout@v4
         with:
