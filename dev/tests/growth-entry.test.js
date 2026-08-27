@@ -28,3 +28,22 @@ test("growth funnel uses the consent-aware existing event queue", () => {
   assert.match(story, /MAMO_TRACK_EVENT/);
   assert.doesNotMatch(story, /MAMO_DECISION_EVENTS\?\.track\?\.\("mamo_story/);
 });
+
+test("returning users leave the story directly for home without reopening onboarding", () => {
+  const app = fs.readFileSync(path.join(devRoot, "app.js"), "utf8");
+  const html = fs.readFileSync(path.join(devRoot, "index.html"), "utf8");
+  const handler = app.match(
+    /window\.openAirBetOnboarding\s*=\s*\(sourceDetail = "campaign"\) => \{([\s\S]*?)\n  \};/
+  );
+
+  assert.ok(handler, "openAirBetOnboarding must exist");
+  assert.match(handler[1], /S\.accepted === true \|\| hasAcceptedOnboarding\(\)/);
+  assert.match(handler[1], /\$\("onboard"\)\.classList\.remove\("show"\)/);
+  assert.match(handler[1], /window\.go\("home"\);\s*return;/);
+  assert.match(handler[1], /\$\("onboard"\)\.classList\.add\("show"\)/);
+  assert.ok(
+    handler[1].indexOf("hasAcceptedOnboarding()") < handler[1].indexOf("airBetOnboarding = true"),
+    "returning-user check must run before first-voyage onboarding is opened"
+  );
+  assert.match(html, /app\.js\?v=20260827-5/);
+});

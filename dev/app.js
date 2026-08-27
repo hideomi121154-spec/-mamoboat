@@ -999,6 +999,14 @@
     });
   }
   window.openAirBetOnboarding = (sourceDetail = "campaign") => {
+    if (S.accepted === true || hasAcceptedOnboarding()) {
+      S.accepted = true;
+      airBetOnboarding = false;
+      $("onboard").classList.remove("show");
+      save();
+      window.go("home");
+      return;
+    }
     airBetOnboarding = true;
     onboardStep = 0;
     if ($("age")) $("age").checked = false;
