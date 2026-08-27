@@ -4,7 +4,7 @@
   const STATE_KEY = "mamoboat_v40_personal";
   const TOKEN_KEY = "mamoboat_sync_token_v1";
   const LINKED_KEY = "mamoboat_sync_linked_v1";
-  const HANDOFF_SKIP_KEY = "mamoboat_handoff_skip_v1";
+  const HANDOFF_SKIP_KEY = "mamoboat_handoff_skip_v2";
   const ACCEPTED_KEY = "mamoboat_onboarding_accepted_v1";
   const ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/device-state-sync";
 
