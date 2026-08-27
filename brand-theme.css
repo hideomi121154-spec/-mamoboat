@@ -1,0 +1,339 @@
+/* MAMO BOAT — Red / White / Blue brand system */
+:root {
+  --mamo-red: #dc2029;
+  --mamo-red-dark: #aa131c;
+  --mamo-blue: #082b4a;
+  --mamo-blue-2: #0d456f;
+  --mamo-white: #ffffff;
+  --navy: var(--mamo-blue);
+  --navy-2: var(--mamo-blue-2);
+  --teal: var(--mamo-red);
+  --teal-dark: var(--mamo-red-dark);
+  --mint: #fff0f2;
+  --coral: var(--mamo-red);
+  --gold: var(--mamo-red);
+  --gold-dark: var(--mamo-red-dark);
+  --paper: #f7f9fc;
+  --white: var(--mamo-white);
+  --ink: var(--mamo-blue);
+  --muted: #687b8d;
+  --line: #c8d5e1;
+  --soft-line: #e2e9f0;
+  --good: #eef5fb;
+  --warn: #fff1f2;
+  --bad: #fff0f1;
+  --shadow: 0 3px 11px rgba(8, 43, 74, .11);
+}
+
+html { background: var(--mamo-blue); }
+body { background: #e8eef4; color: var(--mamo-blue); }
+.app-shell { background: rgba(250, 252, 255, .99); }
+::selection { background: var(--mamo-red); color: white; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(220, 32, 41, .45);
+  outline-offset: 2px;
+}
+
+/* Wordmark: bold sports-newspaper lettering with a racing slash. */
+.masthead-brand > strong,
+.brand-copy strong,
+.mge-brand b {
+  position: relative;
+  display: inline-block;
+  color: var(--mamo-blue);
+  font-family: Impact, "Arial Black", "Avenir Next Condensed", "Helvetica Neue", sans-serif;
+  font-style: italic;
+  font-weight: 1000;
+  letter-spacing: -.075em;
+  line-height: .9;
+  text-transform: uppercase;
+}
+.masthead-brand > strong { padding-right: 13px; font-size: 32px; }
+.masthead-brand > strong::after,
+.brand-copy strong::after,
+.mge-brand b::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 2%;
+  width: 5px;
+  height: 96%;
+  background: var(--mamo-red);
+  transform: skewX(-18deg);
+}
+.masthead-brand > small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--mamo-blue);
+  font-family: "Arial Black", "Helvetica Neue", sans-serif;
+  font-weight: 1000;
+  letter-spacing: .34em;
+}
+.masthead-brand > small::before {
+  content: "";
+  width: 18px;
+  height: 3px;
+  background: var(--mamo-red);
+  transform: skewX(-25deg);
+}
+.brand-copy strong { padding-right: 9px; font-size: 19px; }
+.brand-copy strong::after, .mge-brand b::after { width: 3px; }
+.brand-copy small { color: var(--mamo-red-dark) !important; letter-spacing: .14em; }
+
+/* Global navigation and controls. */
+.topbar {
+  background: rgba(255, 255, 255, .98);
+  color: var(--mamo-blue);
+  border-bottom: 3px solid var(--mamo-red);
+  box-shadow: 0 4px 16px rgba(8, 43, 74, .1);
+}
+.brand-mark {
+  background: var(--mamo-red);
+  color: white;
+  border-color: var(--mamo-blue);
+  text-shadow: none;
+}
+.wallet { background: var(--mamo-blue); color: white; border-left-color: var(--mamo-red); }
+.wallet span, .wallet strong { color: white; }
+.bottom-nav { background: rgba(8, 43, 74, .99); box-shadow: 0 -6px 20px rgba(8, 43, 74, .24); }
+.nav { color: #dbe6ef; }
+.nav b { color: white; }
+.nav.active { background: var(--mamo-red); color: white; box-shadow: none; }
+.nav.active b { color: white; }
+
+.btn.primary, .mp-link, .msrb-action, .paper-tabs button.active { background: var(--mamo-blue); color: white; }
+.btn.teal, .coral-btn, .story-air, .mge-air-button { background: var(--mamo-red); color: white; }
+.btn.primary { box-shadow: 0 4px 0 var(--mamo-red); }
+.btn.teal, .coral-btn { box-shadow: 0 4px 0 var(--mamo-blue); }
+.filter.active, .bettypebtn.active {
+  border-color: var(--mamo-red);
+  background: var(--mamo-red);
+  color: white;
+  box-shadow: 0 3px 0 rgba(8, 43, 74, .18);
+}
+.racechip.active, .pick.sel, .plan-option.current, .membership-selectable button.selected {
+  border-color: var(--mamo-red);
+  background: #fff0f2;
+  outline-color: var(--mamo-red);
+  box-shadow: 0 2px 6px rgba(220, 32, 41, .18);
+}
+.text-action, .link, .inline-official, .racerlinkhint, .result-list-link { color: var(--mamo-red-dark); }
+.section-number { background: var(--mamo-blue); color: white; }
+
+/* Home masthead: white field, navy/red speed marks, vivid Mamoru. */
+html body #home .home-masthead {
+  background: white !important;
+  border-bottom: 6px solid var(--mamo-red) !important;
+}
+html body #home .home-masthead::before {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.99) 0%, rgba(255,255,255,.93) 27%, rgba(255,255,255,.36) 51%, rgba(255,255,255,0) 72%),
+    linear-gradient(147deg, transparent 0 68%, rgba(8,43,74,.92) 68.2% 72.5%, transparent 72.7% 76%, rgba(220,32,41,.92) 76.2% 81%, transparent 81.2%) !important;
+}
+html body #home .home-masthead::after {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 5px !important;
+  background: var(--mamo-red) !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+html body #home .masthead-character.mamo-character-cut {
+  opacity: .9 !important;
+  filter: saturate(.96) brightness(1.03) contrast(1.03) !important;
+}
+.masthead-brand { color: var(--mamo-blue) !important; text-shadow: 0 1px 0 white !important; }
+.masthead-brand > div span { background: var(--mamo-red); color: white; }
+.masthead-brand > div b { border-color: var(--mamo-red); background: rgba(255,255,255,.9); color: var(--mamo-red-dark); }
+.masthead-callout { background: rgba(255,255,255,.94); border-color: #d5e0e9; }
+.masthead-callout::after { border-left-color: white; }
+.masthead-callout em { color: var(--mamo-red-dark); }
+.masthead-wallet {
+  background: linear-gradient(135deg, var(--mamo-blue), var(--mamo-blue-2));
+  border-color: rgba(255,255,255,.48);
+  box-shadow: 0 8px 24px rgba(8,43,74,.25);
+}
+.masthead-wallet > span, .masthead-wallet > strong { color: white; }
+.masthead-wallet > small { color: #ff8f96; }
+.mini-medal {
+  border-color: #8b1018;
+  background: radial-gradient(circle at 35% 30%, #ff8e94, var(--mamo-red) 58%, #861018 100%);
+  color: white;
+}
+.home-titlebar, .home-command, .home-command button, .home-command a { background: white; }
+.home-titlebar h1 { color: var(--mamo-blue); }
+.home-titlebar h1 span { color: var(--mamo-red) !important; }
+.home-command button.active { background: var(--mamo-red); color: white; }
+.home-command button.active b { color: white; }
+
+/* White editorial surfaces with navy structure and red emphasis. */
+.card, .panel, .stat-card, .venue-card.compact, .official-result-card { background-color: white; }
+.stat-card.coral, .record-intro, .analysis-intro, .settings-intro { border-color: var(--mamo-red); }
+.stat-card span, .eyebrow, .venue-code, .deadline-count { color: var(--mamo-red-dark); }
+.tactical-note { border-left-color: var(--mamo-red); background: #fff2f3; }
+.page-intro {
+  background: white;
+  color: var(--mamo-blue);
+  border-bottom-color: var(--mamo-red);
+  box-shadow: 0 5px 14px rgba(8,43,74,.1);
+}
+.page-intro::after { background: repeating-linear-gradient(160deg, transparent 0 20px, rgba(8,43,74,.22) 21px 22px, transparent 23px 40px); }
+.page-intro .kicker { color: var(--mamo-red-dark); }
+.page-intro p { color: var(--muted); }
+.event-banner, .route-guide, .venue-next { background: var(--mamo-blue); }
+.event-banner { border-bottom-color: var(--mamo-red); }
+.event-banner a, .venue-next strong { color: #ff8f96; }
+.route-guide b { background: var(--mamo-red); }
+
+/* Meaningful status colors stay legible without introducing a fourth brand accent. */
+.sync-strip.good, .notice.good, .status.on, .raceclock.confirmed, .added-notice.show {
+  border-color: #9bb6cb;
+  border-left-color: var(--mamo-blue-2);
+  background: #eef5fb;
+  color: var(--mamo-blue);
+}
+.sync-strip.warn, .notice.warn, .raceclock.waiting, .added-notice.duplicate {
+  border-color: #efb8bc;
+  border-left-color: var(--mamo-red);
+  background: #fff1f2;
+  color: #84131b;
+}
+
+/* MAMO RECORD and the home progression card. */
+html body #mamoHomeRecordBalance,
+html body #mamoRecordSummary {
+  border-color: #d2dde7 !important;
+  border-left-color: var(--mamo-red) !important;
+  background: white !important;
+  box-shadow: 0 7px 18px rgba(8,43,74,.08) !important;
+}
+#mamoHomeRecordBalance .mrh-copy small,
+#mamoRecordSummary small,
+#mamoHomeRecordBalance > strong,
+#mamoRecordSummary strong { color: var(--mamo-red-dark) !important; }
+#mamoHomeRecordBalance .mrh-copy b,
+#mamoHomeRecordBalance .mrh-next b,
+#mamoRecordSummary b { color: var(--mamo-blue) !important; }
+#mamoHomeRecordBalance .mrh-next { border-top-color: #dce5ed !important; }
+#mamoHomeRecordBalance .mrh-bar { background: #e4eaf0 !important; }
+#mamoHomeRecordBalance .mrh-bar i { background: var(--mamo-red) !important; }
+.mr-scale button.sel { background: var(--mamo-blue) !important; color: white !important; }
+.mr-done strong { color: var(--mamo-red-dark) !important; }
+.mr-toast { background: var(--mamo-blue) !important; border-color: var(--mamo-red) !important; }
+
+/* MAMO STORY and campaign entry. */
+html body #mamoStoryTeaser {
+  border-color: #d1dce6 !important;
+  border-left-color: var(--mamo-red) !important;
+  background: white !important;
+}
+#mamoStoryTeaser small, #mamoStoryTeaser .story-arrow, .story-head small, .story-intro h2 span { color: var(--mamo-red-dark) !important; }
+#mamoStoryTeaser .story-mark { background: var(--mamo-blue) !important; color: white !important; }
+#mamoStoryOverlay { background: #edf2f7 !important; color: var(--mamo-blue) !important; }
+.story-head, .story-panel { background: white !important; border-color: #d2dde7 !important; }
+.story-end { background: var(--mamo-blue) !important; }
+.story-end small { color: #ff8f96 !important; }
+.story-air { background: var(--mamo-red) !important; color: white !important; }
+
+html body #mamoGrowthEntry { background: #e8eef4 !important; color: var(--mamo-blue) !important; }
+#mamoGrowthEntry .mge-shell, #mamoGrowthEntry .mge-top, #mamoGrowthEntry .mge-story { background: white !important; }
+#mamoGrowthEntry .mge-brand i { background: var(--mamo-red) !important; color: white !important; }
+#mamoGrowthEntry .mge-brand small, #mamoGrowthEntry .mge-kicker, #mamoGrowthEntry .mge-section-title small, #mamoGrowthEntry .mge-story small { color: var(--mamo-red-dark) !important; }
+#mamoGrowthEntry .mge-hero { background: linear-gradient(145deg, var(--mamo-blue), var(--mamo-blue-2)) !important; }
+#mamoGrowthEntry .mge-hero h1 em { color: #ff767e !important; }
+#mamoGrowthEntry .mge-quote { border-left-color: var(--mamo-red) !important; }
+#mamoGrowthEntry .mge-air-button { background: var(--mamo-red) !important; color: white !important; }
+#mamoGrowthEntry .mge-feature { border-top-color: var(--mamo-red) !important; background: white !important; }
+#mamoGrowthEntry .mge-feature:nth-child(2) { border-top-color: var(--mamo-blue-2) !important; }
+#mamoGrowthEntry .mge-mamokamo { border-color: #d2dde7 !important; background: #f3f7fb !important; }
+
+/* FIRST VOYAGE onboarding. */
+.onboard { background: #e8eef4; color: var(--mamo-blue); }
+.onboard-shell { border-color: #cad6e1; background: white; }
+.onboard-shell::before { background: repeating-linear-gradient(158deg, transparent 0 18px, rgba(8,43,74,.13) 19px 20px, transparent 21px 39px); }
+.onboard-top, .onboard-copy h1 em, .onboard .kicker, .onboard-route b { color: var(--mamo-red-dark); }
+.onboard-route div, .check { border-color: #d5dfe8; border-left-color: var(--mamo-red); background: #f7f9fc; }
+.onboard-editorial { border-left-color: var(--mamo-red); background: #fff1f2; }
+.onboard-dots i.active { background: var(--mamo-red); }
+.onboard .btn.primary { background: var(--mamo-blue); color: white; box-shadow: 0 4px 0 var(--mamo-red); }
+.onboard .coral-btn { border-color: var(--mamo-red); background: var(--mamo-red); color: white; box-shadow: 0 4px 0 var(--mamo-blue); }
+
+/* MAMO VALUE, SHOP and product comparisons. */
+html body #mamoShopValue {
+  border-color: #d3dee7 !important;
+  border-top-color: var(--mamo-red) !important;
+  background: white !important;
+}
+#mamoShopValue .msv-head { background: white !important; }
+#mamoShopValue .msv-head small, #mamoShopValue .msv-amount em { color: var(--mamo-red-dark) !important; }
+#mamoShopValue .msv-head h3, #mamoShopValue .msv-amount strong { color: var(--mamo-blue) !important; }
+#mamoShopValue .msv-periods button.active { border-color: var(--mamo-red) !important; background: #fff0f2 !important; color: var(--mamo-red-dark) !important; }
+#mamoShopValue .msv-explain { background: var(--mamo-blue) !important; color: #dce8f1 !important; }
+#mamoShopValue .msv-explain b { color: #ff858c !important; }
+html body #shop { background: #f5f8fb !important; }
+html body #shop .shop-cats button.active { color: var(--mamo-red-dark) !important; border-bottom-color: var(--mamo-red) !important; }
+html body #shop .shop-hero { background: linear-gradient(125deg, var(--mamo-blue), var(--mamo-blue-2)) !important; border-bottom: 5px solid var(--mamo-red) !important; }
+html body #shop .shop-hero small { color: #ff858c !important; }
+html body #shop .shop-note { background: #edf3f8 !important; color: #4f6678 !important; }
+.mp-rating, .mp-price { color: var(--mamo-red-dark) !important; }
+.mp-value.within { background: #eef5fb !important; color: var(--mamo-blue-2) !important; }
+.mp-value.remaining { background: #fff1f2 !important; color: #8d1720 !important; }
+.mp-value i::after { background: var(--mamo-red) !important; }
+.mp-market-icon { background: #fff0f2 !important; color: var(--mamo-red-dark) !important; }
+.mp-market-card em { color: var(--mamo-red-dark) !important; }
+html body #mamoShopRecordBenefits { border-color: #d3dee7 !important; background: white !important; }
+.msrb-balance, .msrb-copy em { color: var(--mamo-red-dark) !important; }
+.msrb-bar { background: #e3eaf0 !important; }
+.msrb-bar i { background: var(--mamo-red) !important; }
+.msrb-item.unlocked, #mamoSpecialAnalysis { border-color: #e7a7ac !important; background: #fff7f8 !important; }
+.msrb-coupon { border-color: var(--mamo-red) !important; background: #fff1f2 !important; }
+
+/* MAMO PRESS, behavior insights and member cards. */
+.press-teaser-card, .paper-sheet, .paper-locked, .membership-current {
+  border-color: #c9d6e1;
+  border-left-color: var(--mamo-red);
+  background: white;
+}
+.press-teaser-card > span, .paper-locked > span, .membership-current > span, .paper-mast span { color: var(--mamo-red-dark); }
+.press-teaser-card button, .membership-current > b, .membership-points b { color: var(--mamo-red-dark); }
+.paper-sheet {
+  background: linear-gradient(rgba(255,255,255,.97), rgba(255,255,255,.97)), repeating-linear-gradient(0deg, transparent 0 23px, rgba(8,43,74,.05) 24px);
+}
+.paper-question { background: #fff3f4; }
+.paper-question > small { color: var(--mamo-red-dark); }
+.paper-feedback button.selected { border-color: var(--mamo-red); background: #fff0f2; box-shadow: inset 0 0 0 1px var(--mamo-red); }
+.membership-panel, .press-settings-panel { border-top-color: var(--mamo-red); }
+.membership-current { background: #fff5f6; }
+
+.behavior-insight-intro { border-color: #cbd7e1 !important; border-top-color: var(--mamo-red) !important; background: linear-gradient(120deg, white, #f3f7fb) !important; }
+.behavior-insight-intro small, .behavior-insight-intro b { color: var(--mamo-red-dark) !important; }
+.behavior-insight.observe { --accent: var(--mamo-blue-2) !important; }
+.behavior-insight.protective { --accent: var(--mamo-blue) !important; background: #f3f7fb !important; }
+.behavior-insight.safety { --accent: var(--mamo-red) !important; background: #fff7f8 !important; }
+.behavior-question { border-left-color: var(--mamo-red) !important; background: #fff3f4 !important; }
+.behavior-question span { color: var(--mamo-red-dark) !important; }
+.behavior-next-tier { border-color: var(--mamo-red) !important; background: #fff7f8 !important; }
+.behavior-next-tier span { color: var(--mamo-red-dark) !important; }
+
+html body .mri-panel { border-top-color: var(--mamo-red) !important; background: white !important; }
+.mri-head span, .mri-lead b { color: var(--mamo-red-dark) !important; }
+.mri-lead { border-left-color: var(--mamo-red) !important; background: #fff3f4 !important; }
+html body .mamo-press-intel { border-color: #cad6e1 !important; background: #f4f7fb !important; }
+.mamo-press-intel article { border-top-color: var(--mamo-red) !important; background: white !important; }
+.mamo-press-intel article > small, .mpi-results-head > span { color: var(--mamo-red-dark) !important; }
+.mpi-mast > b, .mpi-tabs button.active { background: var(--mamo-blue) !important; color: white !important; }
+
+.cast-card { border-top-color: var(--mamo-blue); background: white; }
+.cast-card.rookie { border-top-color: var(--mamo-red); }
+.cast-card.racer { border-top-color: var(--mamo-blue-2); }
+.cast-avatar { background: var(--mamo-blue); }
+.cast-card.rookie .cast-avatar { background: var(--mamo-red); }
+.cast-card.racer .cast-avatar { background: var(--mamo-blue-2); }
+.mamokamo-home, .behavior-mamokamo { border-left-color: var(--mamo-red) !important; background: white !important; }
+
+@media (max-width: 390px) {
+  .masthead-brand > strong { font-size: 26px; }
+}
