@@ -21,7 +21,7 @@ if (!cast.includes('card("mamokamo", "mamokamo")') || !cast.includes('data-cast-
 if (js.includes('mamokamoProfile') || js.includes('installNewsroomMascot')) {
   throw new Error('Mamokamo must not render a separate persistent newsroom profile');
 }
-if (!html.includes('cast-ui.js?v=20260822-2')) {
+if (!html.includes('cast-ui.js?v=20260827-3')) {
   throw new Error('index.html must load the current shared cast UI');
 }
 if (!html.includes('AI分析：マモカモ')) {

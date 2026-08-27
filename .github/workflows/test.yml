@@ -54,6 +54,7 @@ jobs:
           node tests/app-smoke.test.js
           node tests/master-room.test.js
           node tests/mamokamo-asset.test.js
+          node --test dev/tests/editorial-layout.test.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v

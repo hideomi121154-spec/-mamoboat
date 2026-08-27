@@ -48,8 +48,8 @@ function installMamoPlanTierStyles() {
       min-width: 0;
     }
     #analysis.active > .analysis-intro { order: 0; }
-    #analysis.active > .section-head:has(+ .newsroom-cast) { order: 10; }
-    #analysis.active > .newsroom-cast { order: 11; }
+    #analysis.active > #mamoValueSectionHead { order: 10; }
+    #analysis.active > #mamoValueEditorialSlot { order: 11; }
     #analysis.active > .section-head:has(+ #analysisCards) { order: 20; }
     #analysis.active > #analysisCards { order: 21; }
     #analysis.active > .section-head:has(+ #analysisList) { order: 22; }
@@ -62,6 +62,8 @@ function installMamoPlanTierStyles() {
     #analysis.active > .section-head:has(+ #membershipPanel) { order: 60; }
     #analysis.active > #membershipPanel { order: 61; }
     #analysis.active > .analysis-tools { order: 62; }
+    #analysis.active > .section-head:has(+ .newsroom-cast) { order: 90; }
+    #analysis.active > .newsroom-cast { order: 91; }
 
     /* Safety never becomes paid or blurred. The app itself renders GOLD paper locks. */
     #mamoAiSafeReport,
@@ -165,7 +167,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260827-2","device-s
 const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
-  ["decision-event-api-compat.js?v=20260822-1","decision-event-api-compat"],
+  ["decision-event-api-compat.js?v=20260827-1","decision-event-api-compat"],
   ["decision-transition-model.js?v=20260819-2","decision-transition-model"],
   ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],

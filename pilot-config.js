@@ -48,8 +48,6 @@ function installMamoPlanTierStyles() {
       min-width: 0;
     }
     #analysis.active > .analysis-intro { order: 0; }
-    #analysis.active > .section-head:has(+ .newsroom-cast) { order: 10; }
-    #analysis.active > .newsroom-cast { order: 11; }
 
     /* FREE */
     #analysis.active > .section-head:has(+ #analysisCards) { order: 20; }
@@ -72,10 +70,12 @@ function installMamoPlanTierStyles() {
     #analysis.active > #pressPaper { order: 52; }
     #analysis.active > #mamoPressIntel { order: 53; }
 
-    /* Subscription choice always comes last. */
+    /* Subscription follows the analysis; the member guide closes the page. */
     #analysis.active > .section-head:has(+ #membershipPanel) { order: 60; }
     #analysis.active > #membershipPanel { order: 61; }
     #analysis.active > .analysis-tools { order: 62; }
+    #analysis.active > .section-head:has(+ .newsroom-cast) { order: 90; }
+    #analysis.active > .newsroom-cast { order: 91; }
 
     #mamoAiSafeReport { --mamo-plan-title: "前の自分との比較"; --mamo-tier-frame-height: 176px; }
     #mamoDecisionPanel { --mamo-plan-title: "勝負の選び方"; --mamo-tier-frame-height: 176px; }

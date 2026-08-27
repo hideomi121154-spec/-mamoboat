@@ -346,18 +346,22 @@ const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"),
 const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
 assert.match(indexSource, /styles\.css\?v=20260818-3/);
-assert.match(indexSource, /cast-ui\.js\?v=20260827-2/);
+assert.match(indexSource, /cast-ui\.js\?v=20260827-3/);
 assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=20260815-10/);
 assert.match(indexSource, /onboard-cover-art/);
 assert.match(indexSource, /匿名の利用状況を送信する（任意）/);
 assert.match(indexSource, /id="pilotConsentOnboard"/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /pilot-config\.js\?v=20260827-2/);
+assert.match(indexSource, /pilot-config\.js\?v=20260827-3/);
 assert.match(indexSource, /app\.js\?v=20260827-4/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
 assert.match(indexSource, /加音 守/);
+assert.ok(
+  indexSource.indexOf('id="membershipPanel"') < indexSource.indexOf('class="newsroom-cast"'),
+  "the member guide must be the final editorial section"
+);
 assert.doesNotMatch(indexSource, /id="realBetFloat"/);
 assert.doesNotMatch(indexSource, /ダブルWIN・防衛スタンプ/);
 assert.match(indexSource, /<\/main>\s*<nav class="bottom-nav"/);
@@ -370,6 +374,7 @@ assert.match(serviceWorkerSource, /const CACHE = "mamoboat-v401-central-pilot-\d
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 const deviceSyncSource = fs.readFileSync(path.join(__dirname, "..", "device-sync.js"), "utf8");
+const castUiSource = fs.readFileSync(path.join(__dirname, "..", "cast-ui.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
 assert.match(pilotConfigSource, /transport:\s*"rpc"/);
 assert.match(pilotConfigSource, /\/rest\/v1\/rpc\/ingest_pilot_events/);
@@ -383,6 +388,8 @@ assert.match(pilotConfigSource, /device-sync\.js\?v=20260827-2/);
 assert.match(deviceSyncSource, /const HANDOFF_SKIP_KEY = "mamoboat_handoff_skip_v2"/);
 assert.match(deviceSyncSource, /const ACCEPTED_KEY = "mamoboat_onboarding_accepted_v1"/);
 assert.match(deviceSyncSource, /function prepareFreshOnboarding\(\)/);
+assert.match(pilotConfigSource, /#analysis\.active > \.newsroom-cast \{ order: 91; \}/);
+assert.match(castUiSource, /cast\.previousElementSibling\?\.querySelector\("h2"\)/);
 const freshStartHandler = deviceSyncSource.match(
   /document\.getElementById\("mamoPwaHandoffNew"\)\.onclick = \(\) => \{([\s\S]*?)\n    \};/
 );

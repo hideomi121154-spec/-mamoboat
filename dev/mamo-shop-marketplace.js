@@ -95,7 +95,8 @@
       #shop .shop-hero h2{font-size:20px!important;margin:4px 0!important;color:#fff!important}
       #shop .shop-hero p{font-size:10px!important;line-height:1.55!important;color:#d7e8ed!important}
       #shop .shop-note{display:block!important;margin:0 10px 10px!important;padding:8px 11px!important;border-radius:0 0 9px 9px!important;background:#e8f2f3!important;color:#49656e!important;font-size:8px!important;text-align:left!important}
-      #mamoShopValue{margin:10px;border:1px solid #d8e3e6;border-top:5px solid #d4a329;border-radius:16px;background:#fff;box-shadow:0 7px 18px rgba(8,35,61,.07);overflow:hidden}
+      #mamoValueEditorialSlot{min-width:0}
+      #mamoShopValue{margin:0 0 18px;border:1px solid #d8e3e6;border-top:5px solid #d4a329;border-radius:16px;background:#fff;box-shadow:0 7px 18px rgba(8,35,61,.07);overflow:hidden}
       .msv-head{padding:15px 15px 10px;background:linear-gradient(135deg,#fffdf7,#f4fbfb)}
       .msv-head small{display:block;color:#977116;font-size:9px;font-weight:1000;letter-spacing:.14em}
       .msv-head h3{margin:4px 0;color:#08233d;font-size:20px;line-height:1.35}
@@ -187,29 +188,32 @@
   }
 
   function renderValuePanel() {
-    const shop = document.getElementById("shop");
-    const hero = shop?.querySelector(".shop-hero");
-    if (!shop || !hero) return;
+    const host = document.getElementById("mamoValueEditorialSlot");
+    if (!host) return;
     let panel = document.getElementById("mamoShopValue");
     if (!panel) {
       panel = document.createElement("section");
       panel.id = "mamoShopValue";
     }
-    hero.insertAdjacentElement("afterend", panel);
+    if (panel.parentElement !== host) host.appendChild(panel);
+    document.getElementById("mamoValuePanel")?.remove();
     const amount = guideAmount();
     const label = PERIOD_LABELS[period];
+    const renderKey = `${period}:${amount}`;
+    if (panel.dataset.renderKey === renderKey) return;
+    panel.dataset.renderKey = renderKey;
     panel.innerHTML = `
       <div class="msv-head">
-        <small>MAMO VALUE / PERSONAL GUIDE</small>
-        <h3>仮想置換額を、商品の価格と比べる。</h3>
-        <p>勝ち負けではなく、現金投票をAIR BETへ置き換えた記録から見ます。</p>
+        <small>MAMO VALUE / CORE RECORD</small>
+        <h3>現金を使わなかった選択を、最初に見る。</h3>
+        <p>勝ち負けではなく、現金投票をAIR BETへ置き換えた事実を期間別に確認します。</p>
       </div>
       <div class="msv-periods" role="group" aria-label="比較する期間">
         ${Object.entries(PERIOD_LABELS).map(([key, text]) => `<button type="button" class="${key === period ? "active" : ""}" data-value-period="${key}">${text}</button>`).join("")}
       </div>
       <div class="msv-amount">
         <div><span>${label}の仮想置換額</span><strong>${money(amount)}</strong></div>
-        <em>${amount ? "商品カードに比較結果を表示" : "AIR BET記録後に比較できます"}</em>
+        <em>${amount ? "SHOPの商品価格にも比較表示" : "AIR BET記録後に表示します"}</em>
       </div>
       <p class="msv-explain"><b>これは値引き額ではありません。</b> 実際の損失・貯金を補填するものではなく、AIR BETへ置き換えた現金予定額と商品価格を比べる目安です。</p>
     `;

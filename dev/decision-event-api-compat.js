@@ -37,7 +37,6 @@
 (() => {"use strict";if(document.querySelector('script[data-mamo-bottom-nav="horizontal"]'))return;const script=document.createElement("script");script.src="bottom-nav-horizontal.js?v=20260820-1";script.async=true;script.dataset.mamoBottomNav="horizontal";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-record-insights="phase4"]'))return;const script=document.createElement("script");script.src="mamo-record-insights.js?v=20260821-2";script.async=true;script.dataset.mamoRecordInsights="phase4";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-shop-record-benefits="phase5"]'))return;const script=document.createElement("script");script.src="mamo-shop-record-benefits.js?v=20260821-2";script.async=true;script.dataset.mamoShopRecordBenefits="phase5";document.head.appendChild(script);})();
-(() => {"use strict";if(document.querySelector('script[data-mamo-value-panel="phase6"]'))return;const script=document.createElement("script");script.src="mamo-value-panel.js?v=20260821-1";script.async=true;script.dataset.mamoValuePanel="phase6";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-home-record-balance]'))return;const script=document.createElement("script");script.src="home-record-balance.js?v=20260821-2";script.async=true;script.dataset.mamoHomeRecordBalance="1";document.head.appendChild(script);})();
 
 /* MAMO VALUE marketplace: factual AIR BET amount comparison + live or fallback market links. */
@@ -47,7 +46,7 @@
   const marketplace = () => {
     if (document.querySelector('script[data-mamo-shop-marketplace]')) return;
     const script = document.createElement("script");
-    script.src = "mamo-shop-marketplace.js?v=20260822-1";
+    script.src = "mamo-shop-marketplace.js?v=20260827-1";
     script.async = true;
     script.dataset.mamoShopMarketplace = "1";
     document.head.appendChild(script);

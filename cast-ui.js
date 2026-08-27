@@ -284,7 +284,7 @@
     const analysis = document.getElementById("analysis");
     const cast = analysis?.querySelector(".newsroom-cast");
     if (!cast) return;
-    const heading = analysis.querySelector(".section-head h2");
+    const heading = cast.previousElementSibling?.querySelector("h2");
     if (heading) heading.textContent = "MAMO BOAT PRESSの3人";
 
     const card = (key, cls) => {
