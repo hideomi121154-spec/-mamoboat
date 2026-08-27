@@ -353,7 +353,7 @@ assert.match(indexSource, /匿名の利用状況を送信する（任意）/);
 assert.match(indexSource, /id="pilotConsentOnboard"/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /pilot-config\.js\?v=20260827-3/);
+assert.match(indexSource, /pilot-config\.js\?v=20260827-4/);
 assert.match(indexSource, /app\.js\?v=20260827-4/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);

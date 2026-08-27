@@ -129,6 +129,10 @@
     installStyle();
     const list = document.getElementById("analysisList");
     if (!list || list.dataset.mamoNormalizing === "1") return;
+    // Behavior Insights v2 owns the complete card markup. Reformatting those
+    // articles as legacy metric cards would turn the header marker (↔) into
+    // the title and the first number in the observation into the main value.
+    if (list.dataset.insightVersion === "2" || list.classList.contains("behavior-insights-v2")) return;
     const sourceCards = [...list.children];
     if (!sourceCards.length) return;
     if (sourceCards.every(card => card.classList.contains("mamo-behavior-card"))) {

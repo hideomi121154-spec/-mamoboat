@@ -4,6 +4,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const source = fs.readFileSync(path.join(__dirname, "..", "behavior-pattern-profile.js"), "utf8");
+const visualRefresh = fs.readFileSync(path.join(__dirname, "..", "visual-refresh.js"), "utf8");
 const context = {
   console,
   localStorage: { getItem: () => null, setItem() {} },
@@ -102,6 +103,8 @@ assert.match(elements.get("analysisList").innerHTML, /マモカモの小さな�
 assert.match(elements.get("analysisList").innerHTML, /全プラン共通 \/ SAFETY/);
 assert.match(elements.get("analysisList").innerHTML, /この時は『本当に勝負したい』/);
 assert.equal(elements.get("analysisList").dataset.insightVersion, "2");
+assert.match(visualRefresh, /list\.dataset\.insightVersion === "2"/);
+assert.match(visualRefresh, /list\.classList\.contains\("behavior-insights-v2"\)/);
 
 assert.doesNotMatch(source, /置換額が多い場|多い参加理由|順位もスコア|mbp-bar/);
 assert.match(source, /確かに/);
