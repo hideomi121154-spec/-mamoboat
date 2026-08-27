@@ -1,7 +1,7 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-rwb-brand-30-dev";
+const CACHE = "mamoboat-v401-rwb-brand-31-dev";
 const SHELL = [
-  "./","./index.html","./styles.css","./brand-theme.css?v=20260827-1","./core.js","./pilot-config.js","./app.js",
+  "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
   "./decision-transition-model.js","./growth-entry.js?v=20260823-1","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260823-2","./assets/mamokamo-ai-v5.png?v=20260822-5",

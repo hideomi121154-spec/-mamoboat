@@ -248,3 +248,145 @@ html body .mamo-press-intel { border-color: #cad6e1 !important; background: #f4f
 .mamokamo-home, .behavior-mamokamo { border-left-color: var(--mamo-red) !important; background: white !important; }
 
 @media (max-width: 390px) { .masthead-brand > strong { font-size: 26px; } }
+
+/* Dynamic modules load after the base theme. Lock their accents to the brand palette. */
+html body #analysisList .mamo-behavior-card[data-tone="teal"],
+html body #analysisList .mamo-behavior-card[data-tone="blue"] {
+  --accent: var(--mamo-blue) !important;
+  --soft: #eef5fb !important;
+}
+html body #analysisList .mamo-behavior-card[data-tone="gold"],
+html body #analysisList .mamo-behavior-card[data-tone="coral"],
+html body #analysisList .mamo-behavior-card[data-tone="purple"],
+html body #analysisList .mamo-behavior-card[data-tone="orange"],
+html body #analysisList .mamo-behavior-card[data-tone="red"] {
+  --accent: var(--mamo-red) !important;
+  --soft: #fff0f2 !important;
+}
+html body #analysisList .mamo-behavior-card {
+  border-color: #d5e0e9 !important;
+  border-left-color: var(--accent) !important;
+  background: white !important;
+  color: var(--mamo-blue) !important;
+}
+html body #analysisList .mamo-behavior-icon,
+html body #analysisList .mamo-behavior-badge,
+html body #analysisList .mamo-behavior-value {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+html body #analysisList .mamo-behavior-icon,
+html body #analysisList .mamo-behavior-badge { background: var(--soft) !important; }
+
+html body .rx-summary {
+  border-color: #d5e0e9 !important;
+  border-top-color: var(--mamo-red) !important;
+  background: white !important;
+}
+html body .rx-summary-head small,
+html body .rx-summary-head button,
+html body .rx-record-hero > small { color: var(--mamo-red-dark) !important; }
+html body .rx-summary-grid > div { background: #f3f7fb !important; }
+
+html body .gold-editorial-desk .ged-live {
+  border-top-color: var(--mamo-red) !important;
+  background: linear-gradient(145deg, var(--mamo-blue), var(--mamo-blue-2)) !important;
+}
+html body .gold-editorial-desk .ged-mast span,
+html body .gold-editorial-desk .ged-head small,
+html body .gold-editorial-desk .ged-ring span { color: #ff9aa0 !important; }
+html body .gold-editorial-desk .ged-mast b {
+  border-color: rgba(220, 32, 41, .75) !important;
+  color: white !important;
+}
+html body .gold-editorial-desk .ged-ring {
+  background: radial-gradient(circle at center, var(--mamo-blue) 57%, transparent 58%),
+    conic-gradient(var(--mamo-red) var(--gold-understanding), rgba(255,255,255,.13) 0) !important;
+}
+html body .gold-editorial-desk .ged-status { border-left-color: var(--mamo-red) !important; }
+html body .gold-editorial-desk .ged-next { background: white !important; color: var(--mamo-blue) !important; }
+html body .gold-editorial-desk .ged-next span { color: var(--mamo-red-dark) !important; }
+html body .gold-editorial-desk .ged-lock {
+  border-color: #cbd7e1 !important;
+  border-left-color: var(--mamo-red) !important;
+  background: white !important;
+  color: var(--mamo-blue) !important;
+}
+html body .gold-editorial-desk .ged-lock > span,
+html body .gold-editorial-desk .ged-lock > b { color: var(--mamo-red-dark) !important; }
+
+html body .mamo-morning-insight {
+  border-color: #cbd7e1 !important;
+  background: #f4f7fb !important;
+  color: var(--mamo-blue) !important;
+}
+html body .mmi-edition-head { border-bottom-color: var(--mamo-blue) !important; }
+html body .mmi-edition-head span,
+html body .mmi-edition-head em,
+html body .mmi-front small,
+html body .mmi-numbers em,
+html body .mmi-section-title span { color: var(--mamo-red-dark) !important; }
+html body .mmi-front {
+  border-top-color: var(--mamo-red) !important;
+  background: white !important;
+}
+html body .mmi-numbers > div,
+html body .mmi-baseline,
+html body .mmi-result-summary,
+html body .mmi-archive {
+  border-color: #d7e1e9 !important;
+  background: white !important;
+}
+html body .mmi-voices article {
+  border-left-color: var(--mamo-blue) !important;
+  background: #eef5fb !important;
+}
+html body .mmi-voices article.mmi-miru {
+  border-left-color: var(--mamo-red) !important;
+  background: #fff1f2 !important;
+}
+html body .mmi-voices span,
+html body .mmi-voices .mmi-miru span { color: var(--mamo-red-dark) !important; }
+html body .mmi-understanding {
+  border-top-color: var(--mamo-red) !important;
+  background: linear-gradient(120deg, var(--mamo-blue), var(--mamo-blue-2)) !important;
+}
+html body .mmi-understanding span,
+html body .mmi-understanding em { color: #ff9aa0 !important; }
+html body .mmi-archive-list button.active {
+  border-color: var(--mamo-blue) !important;
+  background: var(--mamo-blue) !important;
+  color: white !important;
+}
+
+html body #analysis .cast-card,
+html body #analysis .cast-profile-card {
+  border-top-color: var(--mamo-blue) !important;
+  background: white !important;
+}
+html body #analysis .cast-card.rookie,
+html body #analysis .cast-card.mamokamo,
+html body #analysis .cast-profile-card.miru,
+html body #analysis .cast-profile-card.mamokamo { border-top-color: var(--mamo-red) !important; }
+html body #analysis .cast-card.mamokamo .cast-avatar { border-color: var(--mamo-red) !important; background: white !important; }
+
+html body .mamokamo-profile {
+  border-color: #cbd7e1 !important;
+  border-top-color: var(--mamo-red) !important;
+  background: white !important;
+}
+html body .mamokamo-profile__visual { background: #f3f7fb !important; }
+html body .mamokamo-profile__visual::after { background: var(--mamo-blue) !important; color: white !important; }
+html body .mamokamo-profile__eyebrow,
+html body .mamokamo-profile__quote { color: var(--mamo-red-dark) !important; }
+html body .mamokamo-role b {
+  border-color: #e7a7ac !important;
+  background: #fff1f2 !important;
+  color: var(--mamo-red-dark) !important;
+}
+html body .mamokamo-home {
+  border-color: #cbd7e1 !important;
+  border-left-color: var(--mamo-red) !important;
+  background: white !important;
+}
+html body .mamokamo-home small { color: var(--mamo-red-dark) !important; }

@@ -345,7 +345,7 @@ const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"),
 const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
 assert.match(indexSource, /styles\.css\?v=20260827-2/);
-assert.match(indexSource, /brand-theme\.css\?v=20260827-1/);
+assert.match(indexSource, /brand-theme\.css\?v=20260827-2/);
 assert.match(indexSource, /cast-ui\.js\?v=20260827-3/);
 assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=20260815-10/);
 assert.match(indexSource, /onboard-cover-art/);
@@ -364,7 +364,7 @@ assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v401-rwb-brand-30-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v401-rwb-brand-31-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);

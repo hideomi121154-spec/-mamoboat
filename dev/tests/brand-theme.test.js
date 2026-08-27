@@ -17,7 +17,7 @@ test("root and dev load the red white and blue brand theme", () => {
     const theme = read(base, "brand-theme.css");
 
     assert.match(html, /<meta name="theme-color" content="#082b4a">/);
-    assert.match(html, /<link rel="stylesheet" href="brand-theme\.css\?v=20260827-1">/);
+    assert.match(html, /<link rel="stylesheet" href="brand-theme\.css\?v=20260827-2">/);
     assert.equal(manifest.background_color, "#f7f9fc");
     assert.equal(manifest.theme_color, "#082b4a");
     assert.match(theme, /--mamo-red:\s*#dc2029/);
@@ -41,8 +41,8 @@ test("MAMO BOAT wordmark has a sports face and red racing slash", () => {
 
 test("app icons and offline shells use the same brand palette", () => {
   const cases = [
-    [root, "mamoboat-v401-rwb-brand-18"],
-    [devRoot, "mamoboat-v401-rwb-brand-30-dev"],
+    [root, "mamoboat-v401-rwb-brand-19"],
+    [devRoot, "mamoboat-v401-rwb-brand-31-dev"],
   ];
 
   for (const [base, cache] of cases) {
@@ -51,7 +51,7 @@ test("app icons and offline shells use the same brand palette", () => {
     assert.match(icon, /fill="#082b4a"/);
     assert.match(icon, /fill="#dc2029"/);
     assert.match(worker, new RegExp(cache));
-    assert.match(worker, /\.\/brand-theme\.css\?v=20260827-1/);
+    assert.match(worker, /\.\/brand-theme\.css\?v=20260827-2/);
   }
 });
 
@@ -60,5 +60,16 @@ test("official boat and grade color selectors are not redefined by the brand lay
     const theme = read(base, "brand-theme.css");
     assert.doesNotMatch(theme, /(?:^|[,{]\s*)\.b[1-6](?:\b|\s|[,{])/m);
     assert.doesNotMatch(theme, /(?:^|[,{]\s*)\.grade(?:\b|\s|[,{])/m);
+  }
+});
+
+test("late-loaded editorial modules are remapped without extra accent colors", () => {
+  for (const base of [root, devRoot]) {
+    const theme = read(base, "brand-theme.css");
+    assert.match(theme, /#analysisList \.mamo-behavior-card\[data-tone="purple"\][\s\S]*--accent:\s*var\(--mamo-red\) !important/);
+    assert.match(theme, /\.gold-editorial-desk \.ged-ring[\s\S]*conic-gradient\(var\(--mamo-red\)/);
+    assert.match(theme, /\.mmi-front[\s\S]*border-top-color:\s*var\(--mamo-red\) !important/);
+    assert.match(theme, /#analysis \.cast-profile-card\.mamokamo[\s\S]*border-top-color:\s*var\(--mamo-red\) !important/);
+    assert.match(theme, /\.rx-summary[\s\S]*border-top-color:\s*var\(--mamo-red\) !important/);
   }
 });
