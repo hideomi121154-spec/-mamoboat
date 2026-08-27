@@ -16,7 +16,7 @@ test("X entry is isolated behind campaign parameters", () => {
   assert.match(source, /destination/);
   assert.match(source, /mamoboat_growth_entry_dismissed_v1/);
   assert.match(source, /sessionStorage\.setItem/);
-  assert.match(html, /growth-entry\.js\?v=20260827-4/);
+  assert.match(html, /growth-entry\.js\?v=20260827-5/);
 });
 
 test("growth funnel uses the consent-aware existing event queue", () => {
