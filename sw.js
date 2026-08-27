@@ -1,9 +1,9 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-rwb-brand-19";
+const CACHE = "mamoboat-v401-motion-20";
 const SHELL = [
   "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
-  "./decision-transition-model.js","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp"
+  "./decision-transition-model.js","./motion-experience.js?v=20260827-1","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp"
 ];
 
 self.addEventListener("install",event=>{
