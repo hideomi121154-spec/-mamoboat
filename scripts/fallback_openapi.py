@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import re
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError
@@ -23,6 +25,18 @@ GRADE_MAP = {
 PAYOUT_MAP = {
     "win": "win", "place": "place", "exacta": "exacta", "quinella": "quinella",
     "quinella_place": "wide", "trifecta": "trifecta", "trio": "trio",
+}
+CLASS_MAP = {1: "A1", 2: "A2", 3: "B1", 4: "B2"}
+PREFECTURES = {
+    1: "北海道", 2: "青森", 3: "岩手", 4: "宮城", 5: "秋田", 6: "山形",
+    7: "福島", 8: "茨城", 9: "栃木", 10: "群馬", 11: "埼玉", 12: "千葉",
+    13: "東京", 14: "神奈川", 15: "新潟", 16: "富山", 17: "石川",
+    18: "福井", 19: "山梨", 20: "長野", 21: "岐阜", 22: "静岡",
+    23: "愛知", 24: "三重", 25: "滋賀", 26: "京都", 27: "大阪",
+    28: "兵庫", 29: "奈良", 30: "和歌山", 31: "鳥取", 32: "島根",
+    33: "岡山", 34: "広島", 35: "山口", 36: "徳島", 37: "香川",
+    38: "愛媛", 39: "高知", 40: "福岡", 41: "佐賀", 42: "長崎",
+    43: "熊本", 44: "大分", 45: "宮崎", 46: "鹿児島", 47: "沖縄",
 }
 
 
@@ -88,26 +102,62 @@ def convert_program(program, target_date):
     if close and "+" not in close and "T" not in close:
         close = close.replace(" ", "T") + "+09:00"
     entries = []
-    for boat_key, racer in sorted((program.get("racers") or {}).items(), key=lambda pair: int(pair[0])):
-        boat = int(boat_key)
+    if isinstance(program.get("boats"), list):
+        racers = [
+            (racer.get("racer_boat_number"), racer)
+            for racer in program.get("boats") or []
+        ]
+    else:
+        racers = list((program.get("racers") or {}).items())
+    for boat_key, racer in sorted(racers, key=lambda pair: int(pair[0] or 0)):
+        boat = int(boat_key or 0)
+        if not boat:
+            continue
+        class_number = racer.get("racer_class_number")
+        branch_number = racer.get("racer_branch_number")
         entries.append({
             "boatNumber": boat,
-            "racerNumber": racer.get("number"),
-            "name": str(racer.get("name") or "").replace(" ", ""),
-            "class": racer.get("rank_number_source") or "",
-            "branch": racer.get("branch_number_source") or "",
-            "age": racer.get("age"),
-            "weight": racer.get("weight"),
-            "motorNumber": racer.get("motor_number"),
-            "boatPart": racer.get("boat_number"),
+            "racerNumber": racer.get("racer_number") or racer.get("number"),
+            "name": str(racer.get("racer_name") or racer.get("name") or "").replace(" ", ""),
+            "class": CLASS_MAP.get(class_number, racer.get("rank_number_source") or ""),
+            "branch": PREFECTURES.get(branch_number, racer.get("branch_number_source") or ""),
+            "age": racer.get("racer_age") or racer.get("age"),
+            "weight": racer.get("racer_weight") or racer.get("weight"),
+            "motorNumber": racer.get("racer_assigned_motor_number") or racer.get("motor_number"),
+            "boatPart": racer.get("racer_assigned_boat_number") or racer.get("boat_number"),
         })
     return {
-        "number": int(program.get("race_number") or 0),
+        "number": int(program.get("number") or program.get("race_number") or 0),
         "name": program.get("subtitle") or "一般",
         "closeTime": close,
         "entries": entries,
         "result": convert_result(program.get("result")),
     }
+
+
+def grade_details(program):
+    label = unicodedata.normalize("NFKC", str(program.get("grade_label") or "")).upper()
+    compact = label.replace(" ", "")
+    if compact == "SG":
+        return "SG", "SG"
+    if compact in {"PG1", "PGI"}:
+        return "PG1", "PGⅠ"
+    if compact in {"G1", "GI"}:
+        return "G1", "GⅠ"
+    if compact in {"G2", "GII"}:
+        return "G2", "GⅡ"
+    if compact in {"G3", "GIII"}:
+        return "G3", "GⅢ"
+    grade_key = str(program.get("grade_number_source") or "ippan").lower()
+    return GRADE_MAP.get(grade_key, ("GENERAL", "一般"))
+
+
+def day_details(program):
+    label = str(program.get("day_label") or program.get("day_number_source") or "")
+    normalized = unicodedata.normalize("NFKC", label)
+    match = re.search(r"\d+", normalized)
+    number = int(match.group()) if match else program.get("day_number")
+    return number, label or (f"{number}日目" if number else "開催中")
 
 
 def main():
@@ -119,7 +169,7 @@ def main():
         print(f"today.json is already current: {target}")
         return
 
-    url = f"https://boatraceopenapi.github.io/api/v1/{now.year}/{now.strftime('%Y%m%d')}.json"
+    url = f"https://boatraceopenapi.github.io/programs/v3/{now.year}/{now.strftime('%Y%m%d')}.json"
     try:
         source = fetch_json(url)
     except HTTPError as error:
@@ -127,17 +177,23 @@ def main():
             print(f"fallback source is not published yet for {target}; keeping existing data")
             return
         raise
-    stadiums = (((source or {}).get("programs") or {}).get("stadiums") or {})
-    if not stadiums:
+    raw_programs = (source or {}).get("programs") or []
+    if not isinstance(raw_programs, list) or not raw_programs:
         raise RuntimeError(f"fallback source has no programs for {target}")
+    programs_by_stadium = {}
+    for program in raw_programs:
+        stadium_number = int(program.get("stadium_number") or 0)
+        if stadium_number:
+            programs_by_stadium.setdefault(stadium_number, []).append(program)
 
     venue_rows = []
     schedule_races = 0
     completed_results = 0
     for code, name in VENUES:
-        raw_stadium = stadiums.get(str(int(code))) or stadiums.get(code) or {}
-        raw_races = raw_stadium.get("races") or {}
-        programs = [value for _, value in sorted(raw_races.items(), key=lambda pair: int(pair[0]))]
+        programs = sorted(
+            programs_by_stadium.get(int(code), []),
+            key=lambda item: int(item.get("number") or item.get("race_number") or 0),
+        )
         races = [convert_program(item, target) for item in programs]
         races = [race for race in races if race["number"]]
         schedule_races += len(races)
@@ -145,13 +201,12 @@ def main():
         first = programs[0] if programs else None
         event = None
         if first:
-            grade_key = str(first.get("grade_number_source") or "ippan").lower()
-            grade, grade_label = GRADE_MAP.get(grade_key, ("GENERAL", "一般"))
-            day_number = first.get("day_number")
+            grade, grade_label = grade_details(first)
+            day_number, day_label = day_details(first)
             event = {
                 "title": first.get("title") or "開催情報",
                 "dayNumber": day_number,
-                "dayLabel": first.get("day_number_source") or (f"{day_number}日目" if day_number else "開催中"),
+                "dayLabel": day_label,
                 "eventDate": target,
                 "startDate": None,
                 "endDate": None,
@@ -179,15 +234,15 @@ def main():
         "source": {
             "type": "official-lzh",
             "schedule": "Boatrace Open API fallback (非公式・当日公開データ)",
-            "performance": "Boatrace Open API fallback",
-            "performanceLoaded": completed_results > 0,
+            "performance": "未取得",
+            "performanceLoaded": False,
             "performanceComplete": False,
             "gradeSchedule": "fallback",
             "gradeScheduleLoaded": False,
             "odds": "未取得",
             "oddsPolicy": "自前同期復旧後に通常取得へ戻す",
-            "fastResults": "Boatrace Open API fallback",
-            "fastResultPolicy": "自前同期が前日止まりの場合のみ利用",
+            "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
+            "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
             "fallback": True,
             "fallbackUrl": url,
         },

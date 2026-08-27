@@ -1,7 +1,7 @@
 /* MAMO BOAT — MAMO STORY mobile reader v15 */
 (()=>{"use strict";
 if(window.__MAMO_STORY__)return;window.__MAMO_STORY__=true;
-const STORY_IMAGES=Array.from({length:16},(_,index)=>`./assets/mamo-story/mamo-story-${String(index+1).padStart(2,"0")}.png?v=20260827-2`);
+const STORY_IMAGES=Array.from({length:16},(_,index)=>`./assets/mamo-story/mamo-story-${String(index+1).padStart(2,"0")}.png?v=20260827-3`);
 function css(){if(document.getElementById("mamoStoryStyle"))return;const s=document.createElement("style");s.id="mamoStoryStyle";s.textContent=`
 #mamoStoryTeaser{margin:14px 0 18px;border:1px solid #d8e0e3;border-left:6px solid #d3a637;border-radius:16px;background:linear-gradient(135deg,#fffdf8,#f4ecdf);box-shadow:0 9px 24px rgba(6,35,58,.08);overflow:hidden}
 #mamoStoryTeaser button{width:100%;border:0;background:transparent;padding:15px 16px;text-align:left;color:#08233d;display:flex;align-items:center;gap:13px}
