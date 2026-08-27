@@ -40,5 +40,5 @@ test("MAMO VALUE has one stable owner in the editorial screen", () => {
   assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260827-1/);
   assert.match(cast, /cast\.previousElementSibling\?\.querySelector\("h2"\)/);
   assert.match(serviceWorker, /mamo-shop-marketplace\.js\?v=20260827-1/);
-  assert.match(serviceWorker, /mamoboat-v401-rwb-brand-31-dev/);
+  assert.match(serviceWorker, /mamoboat-v401-motion-32-dev/);
 });

@@ -3,6 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <script>
+    (() => {
+      const current = new URL(window.location.href);
+      const latest = new URL("dev/", current);
+      latest.search = current.search;
+      latest.hash = current.hash;
+      window.location.replace(latest.href);
+    })();
+  </script>
+  <noscript><meta http-equiv="refresh" content="0;url=dev/"></noscript>
   <meta name="theme-color" content="#082b4a">
   <meta name="description" content="実際のBOAT RACEに、換金不能なBメダルだけで参加する個人用Webアプリ">
   <link rel="manifest" href="manifest.webmanifest?v=401">
