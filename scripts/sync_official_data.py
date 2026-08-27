@@ -1508,6 +1508,18 @@ def build_payload_from_files(
     races, entries, events, schedule_debug, schedule_warnings = _parse_schedule(
         schedule_files, target
     )
+
+    # 公式Bファイルは日付が変わった直後、大会名だけ空欄の状態で先に
+    # 番組・選手・締切を公開することがある。大会名は表示用メタデータなので
+    # 安全な名称で補完し、12R・6艇・選手番号・締切の厳格検証は維持する。
+    metadata_warnings: list[str] = []
+    for code, event in sorted(events.items()):
+        if not compact_text(event.get("title", "")):
+            event["title"] = "開催情報"
+            metadata_warnings.append(
+                f"{code} event title missing; using fallback title=開催情報"
+            )
+
     schedule_errors = validate_schedule(races, entries, events)
     schedule_failures = [*schedule_warnings, *schedule_errors]
     if strict and schedule_failures:
@@ -1557,6 +1569,7 @@ def build_payload_from_files(
 
     warnings = [
         *schedule_warnings,
+        *metadata_warnings,
         *schedule_errors,
         *performance_warnings,
     ]

@@ -150,6 +150,25 @@ assert payload["quality"]["warnings"] == []
 assert any("24 大村: 12 races / 72 entries" in line for line in payload["quality"]["debug"])
 assert any("07 蒲郡: 12 races / 72 entries" in line for line in payload["quality"]["debug"])
 
+# 日付変更直後は、公式Bファイルが大会名だけ空欄のまま先行公開されることが
+# ある。レース構造が完全なら安全な表示名で補完し、当日データを止めない。
+titleless_lines = b_block("01", "桐 生", 6000)
+titleless_lines.remove("桐生テスト大会")
+titleless_payload = sync.build_payload_from_files(
+    date(2026, 8, 9),
+    {"B260809-titleless.TXT": "\n".join(titleless_lines)},
+)
+kiryu = next(
+    venue for venue in titleless_payload["venues"] if venue["code"] == "01"
+)
+assert kiryu["event"]["title"] == "開催情報"
+assert len(kiryu["races"]) == 12
+assert all(len(race["entries"]) == 6 for race in kiryu["races"])
+assert any(
+    "01 event title missing; using fallback title=開催情報" in warning
+    for warning in titleless_payload["quality"]["warnings"]
+)
+
 broken_lines = b_block("08", "常 滑", 4500)
 broken_lines.pop(-2)  # 12Rの6号艇を欠落させる。
 try:
