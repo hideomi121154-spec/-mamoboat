@@ -158,7 +158,7 @@ window.MAMO_RELEASE_SYNC_GATE = () => {
 };
 window.MAMO_RELEASE_SYNC_GATE();
 
-window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260817-9","device-sync"])
+window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260827-1","device-sync"])
   .then(()=>window.MAMO_DEVICE_SYNC_READY || true)
   .catch(()=>false);
 

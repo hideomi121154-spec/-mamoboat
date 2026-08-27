@@ -5,9 +5,11 @@
   const TOKEN_KEY = "mamoboat_sync_token_v1";
   const LINKED_KEY = "mamoboat_sync_linked_v1";
   const HANDOFF_SKIP_KEY = "mamoboat_handoff_skip_v1";
+  const ACCEPTED_KEY = "mamoboat_onboarding_accepted_v1";
   const ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/device-state-sync";
 
   const nativeSetItem = Storage.prototype.setItem;
+  const nativeRemoveItem = Storage.prototype.removeItem;
   const writeLocal = (key, value) => nativeSetItem.call(localStorage, key, value);
   const token = () => localStorage.getItem(TOKEN_KEY) || "";
 
@@ -24,6 +26,18 @@
   function readState() {
     try { return JSON.parse(localStorage.getItem(STATE_KEY) || "null"); }
     catch { return null; }
+  }
+
+  function prepareFreshOnboarding() {
+    try { nativeRemoveItem.call(localStorage, ACCEPTED_KEY); } catch (_) {}
+    const state = readState();
+    if (state) {
+      state.accepted = false;
+      writeLocal(STATE_KEY, JSON.stringify(state));
+    }
+    try {
+      document.cookie = `${ACCEPTED_KEY}=; Max-Age=0; Path=/; SameSite=Lax; Secure`;
+    } catch (_) {}
   }
 
   function makeToken() {
@@ -332,7 +346,8 @@
 
     document.getElementById("mamoPwaHandoffNew").onclick = () => {
       writeLocal(HANDOFF_SKIP_KEY, "1");
-      overlay.remove();
+      prepareFreshOnboarding();
+      location.reload();
     };
   }
 

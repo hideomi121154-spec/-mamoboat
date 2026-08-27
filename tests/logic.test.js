@@ -353,7 +353,7 @@ assert.match(indexSource, /匿名の利用状況を送信する（任意）/);
 assert.match(indexSource, /id="pilotConsentOnboard"/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /pilot-config\.js\?v=20260819-4/);
+assert.match(indexSource, /pilot-config\.js\?v=20260827-1/);
 assert.match(indexSource, /app\.js\?v=20260827-4/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
@@ -369,6 +369,7 @@ assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
 assert.match(serviceWorkerSource, /const CACHE = "mamoboat-v401-central-pilot-\d+"/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
+const deviceSyncSource = fs.readFileSync(path.join(__dirname, "..", "device-sync.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
 assert.match(pilotConfigSource, /transport:\s*"rpc"/);
 assert.match(pilotConfigSource, /\/rest\/v1\/rpc\/ingest_pilot_events/);
@@ -378,6 +379,17 @@ assert.doesNotMatch(
   pilotConfigSource,
   /plan-(?:stable-controller|partial-update|selection-stable|click-stability|anchor-fix|system)|nav-stability|analysis-zoom-stability/
 );
+assert.match(pilotConfigSource, /device-sync\.js\?v=20260827-1/);
+assert.match(deviceSyncSource, /const ACCEPTED_KEY = "mamoboat_onboarding_accepted_v1"/);
+assert.match(deviceSyncSource, /function prepareFreshOnboarding\(\)/);
+const freshStartHandler = deviceSyncSource.match(
+  /document\.getElementById\("mamoPwaHandoffNew"\)\.onclick = \(\) => \{([\s\S]*?)\n    \};/
+);
+assert(freshStartHandler, "PWA fresh-start handler must exist");
+assert.match(freshStartHandler[1], /writeLocal\(HANDOFF_SKIP_KEY, "1"\)/);
+assert.match(freshStartHandler[1], /prepareFreshOnboarding\(\)/);
+assert.match(freshStartHandler[1], /location\.reload\(\)/);
+assert.doesNotMatch(freshStartHandler[1], /overlay\.remove\(\)/);
 assert.match(appSource, /collectorClientKey/);
 assert.match(appSource, /if \(\/\^eyJ\/\.test\(clientKey\)\)/);
 
