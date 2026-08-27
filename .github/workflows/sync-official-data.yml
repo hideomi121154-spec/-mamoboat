@@ -15,6 +15,9 @@ on:
   schedule:
     # 既存の番組表・日次成績・参考オッズ同期（15分周期）
     - cron: "*/15 0-14,21-23 * * *"
+    # JST 00:05〜05:05は毎時1回、日付が変わった当日データを先行確認する。
+    # 深夜はレースがないため、10分周期の結果確認は行わない。
+    - cron: "5 15-20 * * *"
     # 終了済み未確定レースの結果画面だけを軽く確認（10分周期）
     # 毎時00分を避け、GitHub Actions混雑の影響を少し減らす。
     - cron: "7,17,27,37,47,57 0-14,21-23 * * *"
@@ -93,6 +96,7 @@ jobs:
           fi
 
       - name: Recover stale JST current-day data
+        continue-on-error: true
         env:
           TARGET_DATE: ${{ inputs.target_date }}
           SCHEDULE: ${{ github.event.schedule }}
