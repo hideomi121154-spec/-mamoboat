@@ -474,6 +474,7 @@
 
     try {
       const url = new URL(API);
+      url.searchParams.set("mix", "20260828-2");
       url.searchParams.set("cat", filter);
       url.searchParams.set("hits", "20");
       if (query) url.searchParams.set("q", query);

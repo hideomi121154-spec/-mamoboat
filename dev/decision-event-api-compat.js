@@ -46,7 +46,7 @@
   const marketplace = () => {
     if (document.querySelector('script[data-mamo-shop-marketplace]')) return;
     const script = document.createElement("script");
-    script.src = "mamo-shop-marketplace.js?v=20260828-3";
+    script.src = "mamo-shop-marketplace.js?v=20260828-5";
     script.async = true;
     script.dataset.mamoShopMarketplace = "1";
     document.head.appendChild(script);

@@ -257,9 +257,10 @@ Deno.serve(async (req) => {
   const requestUrl = new URL(req.url);
   const category = requestUrl.searchParams.get("cat") || "all";
   const explicitQuery = (requestUrl.searchParams.get("q") || "").trim().slice(0, 96);
+  const mixVersion = (requestUrl.searchParams.get("mix") || "").trim().slice(0, 32);
   const page = Math.min(5, Math.max(1, Number(requestUrl.searchParams.get("page") || 1)));
   const hits = Math.min(24, Math.max(4, Number(requestUrl.searchParams.get("hits") || 20)));
-  const cacheKey = `${category}|${explicitQuery}|${page}|${hits}`;
+  const cacheKey = `${mixVersion}|${category}|${explicitQuery}|${page}|${hits}`;
   const cached = RESPONSE_CACHE.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return new Response(JSON.stringify({ ...cached.payload, cached: true }), { headers });
@@ -274,13 +275,15 @@ Deno.serve(async (req) => {
     if (!explicitQuery && category === "all") {
       mixed = true;
       query = "MAMO BOAT recommendations";
-      // Rakuten accepts a limited request rate. Run the broad searches in order
-      // so one source cannot disappear just because four requests arrived at once.
+      // Rakuten accepts a limited request rate. Space the broad searches out
+      // and retry once so one half of the catalogue does not disappear.
       const results: any[] = [];
       const sourceErrors: string[] = [];
-      for (const entry of RECOMMENDATION_QUERIES) {
+      for (const [index, entry] of RECOMMENDATION_QUERIES.entries()) {
+        if (index > 0) await new Promise((resolve) => setTimeout(resolve, 1200));
+        let result: any = null;
         try {
-          const result = await searchRakuten({
+          result = await searchRakuten({
             appId,
             accessKey,
             affiliateId,
@@ -290,10 +293,26 @@ Deno.serve(async (req) => {
             page,
             orSearch: true,
           });
+        } catch (firstError: any) {
+          await new Promise((resolve) => setTimeout(resolve, 1400));
+          try {
+            result = await searchRakuten({
+              appId,
+              accessKey,
+              affiliateId,
+              query: entry.query,
+              segment: entry.segment,
+              hits: entry.hits,
+              page,
+              orSearch: true,
+            });
+          } catch (retryError: any) {
+            sourceErrors.push(`${entry.segment}:${retryError?.rakutenStatus || firstError?.rakutenStatus || "failed"}`);
+          }
+        }
+        if (result) {
           result.quota = entry.quota;
           results.push(result);
-        } catch (error: any) {
-          sourceErrors.push(`${entry.segment}:${error?.rakutenStatus || "failed"}`);
         }
       }
       if (!results.length) throw new Error(`recommendation_search_failed:${sourceErrors.join(",")}`);
