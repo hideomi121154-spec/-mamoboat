@@ -1,10 +1,10 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v407-shop-audience-40-dev";
+const CACHE = "mamoboat-v408-feedback-language-41-dev";
 const SHELL = [
   "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
   "./decision-transition-model.js","./growth-entry.js?v=20260823-1","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
-  "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260823-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
+  "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-1","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./motion-experience.js?v=20260827-1"
 ];
 

@@ -101,15 +101,21 @@ assert.match(elements.get("analysisCards").innerHTML, /参加日あたり/);
 assert.match(elements.get("analysisCards").innerHTML, /1レース平均買い目数/);
 assert.match(elements.get("analysisList").innerHTML, /マモカモの小さな気づき/);
 assert.match(elements.get("analysisList").innerHTML, /全プラン共通 \/ SAFETY/);
-assert.match(elements.get("analysisList").innerHTML, /この時は『本当に勝負したい』/);
+assert.match(elements.get("analysisList").innerHTML, /この時は、どちらの気持ちが強かったですか/);
+assert.match(elements.get("analysisList").innerHTML, /今すぐ賭けたい気持ち/);
+assert.match(elements.get("analysisList").innerHTML, /このレースで勝負したい根拠/);
 assert.equal(elements.get("analysisList").dataset.insightVersion, "2");
 assert.match(visualRefresh, /list\.dataset\.insightVersion === "2"/);
 assert.match(visualRefresh, /list\.classList\.contains\("behavior-insights-v2"\)/);
 
 assert.doesNotMatch(source, /置換額が多い場|多い参加理由|順位もスコア|mbp-bar/);
-assert.match(source, /確かに/);
-assert.match(source, /たまたまだと思う/);
-assert.match(source, /まだ分からない/);
+assert.match(source, /100Bで参加した.*30分以内に次のレースへ進んだのは/);
+assert.match(source, /100Bを選んだときの気持ちは、どれに近いですか/);
+assert.match(source, /この1レースで終えるつもりだった/);
+assert.match(source, /様子を見て続けるつもりだった/);
+assert.match(source, /特に決めていなかった/);
+assert.match(source, /マモカモと振り返り/);
+assert.doesNotMatch(source, /たまたまだと思う/);
 assert.match(source, /安全に関わる気づき・上限機能・データ削除は無料/);
 
 console.log("behavior insights v2 personal-comparison and free-safety tests OK");

@@ -174,6 +174,7 @@
       observation: comparison,
       evidence: `直近30日 ${days.length}日・${current.length}レース`,
       question: "この参加数は、自分の感覚と合っていますか？",
+      choices: [["matches", "感覚と合っている"], ["more", "思ったより多い"], ["less", "思ったより少ない"]],
     });
   }
 
@@ -183,24 +184,21 @@
     const other = followStats(current, (record) => number(record.stake) !== 100);
     const comparable = other.count >= 2;
     const difference = comparable ? hundred.rate - other.rate : hundred.rate;
-    const title = comparable && difference >= .15
-      ? "100Bが、次の参加への入口になった場面"
-      : hundred.rate <= .3
-        ? "100Bで、その回だけにできた場面"
-        : "100Bのあとの流れを確認";
+    const title = "100Bで始めた後の流れ";
     const observation = comparable
-      ? `100Bのあと30分以内に次へ進んだ割合は${percent(hundred.rate)}。それ以外は${percent(other.rate)}でした。`
-      : `100Bで参加した${hundred.count}回のうち、${hundred.followed}回は30分以内に次へ進みました。`;
+      ? `100Bで参加した${hundred.count}回のうち、30分以内に次のレースへ進んだのは${hundred.followed}回でした。ほかの金額では${other.count}回のうち${other.followed}回でした。`
+      : `100Bで参加した${hundred.count}回のうち、30分以内に次のレースへ進んだのは${hundred.followed}回でした。`;
     return insight({
       id: "small_entry_follow",
       requiredRank: 0,
       priority: 58 + Math.round(Math.abs(difference) * 30),
       evidenceCount: hundred.count + (comparable ? other.count : 0),
-      eyebrow: "100Bのその後",
+      eyebrow: "100Bで始めた後",
       title,
       observation,
-      evidence: `100B ${hundred.count}回${comparable ? ` / その他 ${other.count}回` : ""}`,
-      question: "100Bは「この1回だけ」のつもりでしたか？",
+      evidence: `100B ${hundred.count}回${comparable ? ` / ほかの金額 ${other.count}回` : ""}`,
+      question: "100Bを選んだときの気持ちは、どれに近いですか？",
+      choices: [["stop_one", "この1レースで終えるつもりだった"], ["watch_continue", "様子を見て続けるつもりだった"], ["undecided", "特に決めていなかった"]],
     });
   }
 
@@ -225,6 +223,7 @@
       observation: `見送り記録${skips.length}回のうち、${stopped}回はそのあと同じ日にAIR BETをしていません。`,
       evidence: `自己申告した見送り ${skips.length}回`,
       question: "見送れた時、何がいちばん効いていましたか？",
+      choices: [["weak_reason", "買いたい根拠が弱かった"], ["budget", "上限や予算を意識した"], ["step_away", "いったん離れて落ち着いた"]],
     });
   }
 
@@ -247,6 +246,7 @@
       observation: `「なんとなく」の後に30分以内で次へ進んだ割合は${percent(casual.rate)}。他の理由では${percent(other.rate)}でした。`,
       evidence: `なんとなく ${casual.count}回 / その他 ${other.count}回`,
       question: "次へ進んだ時、最初の理由はまだ残っていましたか？",
+      choices: [["reason_remained", "最初の理由が残っていた"], ["new_reason", "別の理由で次へ進んだ"], ["not_remember", "覚えていない"]],
     });
   }
 
@@ -272,7 +272,8 @@
           : "納得度で、買い目数は大きく変わっていません",
       observation: `納得度が低い時は平均${one(lowLines)}点・${integer(lowStake)}B。高い時は平均${one(highLines)}点・${integer(highStake)}Bでした。`,
       evidence: `低い時 ${low.length}回 / 高い時 ${high.length}回`,
-      question: "自信がない時、買い目を増やして安心しようとしていませんか？",
+      question: "自信がない時に買い目が増える理由は、どれに近いですか？",
+      choices: [["reassurance", "増やすと安心できた"], ["not_narrowed", "狙いを絞りきれなかった"], ["not_related", "自信とは関係なかった"]],
     });
   }
 
@@ -299,6 +300,7 @@
       observation: `参加区間の1レース目は平均${integer(firstStake)}B・${one(firstLines)}点。3レース目以降は${integer(laterStake)}B・${one(laterLines)}点でした。`,
       evidence: `3レース以上続いた区間 ${groups.length}回`,
       question: "3レース目は、最初と同じ基準で選べていましたか？",
+      choices: [["same_standard", "同じ基準で選べた"], ["looser_standard", "基準が少し緩んだ"], ["not_remember", "覚えていない"]],
     });
   }
 
@@ -340,6 +342,7 @@
       observation: `${isMiss ? "不的中" : "的中"}後30分以内の次レースは平均${integer(targetStake)}B・${one(targetLines)}点。普段は${integer(baseStake)}B・${one(baseLines)}点でした。`,
       evidence: `${isMiss ? "不的中" : "的中"}後 ${targets.length}場面 / 次まで平均${integer(averageGap)}分`,
       question: `次を選んだ理由は、そのレース自体ですか。それとも直前の${isMiss ? "不的中" : "的中"}ですか？`,
+      choices: [["next_race", "次のレース自体を選んだ"], ["previous_result", `直前の${isMiss ? "不的中" : "的中"}に引っぱられた`], ["both", "両方あった"]],
     });
   }
 
@@ -366,7 +369,8 @@
         : "納得より勢いが先でも、参加量は増えていません",
       observation: `納得度が低く現金衝動が高い時は平均${integer(mismatchStake)}B・${one(mismatchLines)}点。その他は${integer(otherStake)}B・${one(otherLines)}点でした。`,
       evidence: `該当 ${mismatch.length}回 / 比較 ${other.length}回`,
-      question: "この時は『本当に勝負したい』より『今すぐ賭けたい』が強くありませんでしたか？",
+      question: "この時は、どちらの気持ちが強かったですか？",
+      choices: [["urge_now", "今すぐ賭けたい気持ち"], ["race_reason", "このレースで勝負したい根拠"], ["neither", "どちらとも言えない"]],
     });
   }
 
@@ -392,6 +396,7 @@
       observation: `参加前の納得度4〜5では、結果後に「納得した」が${percent(highSatisfied)}。納得度1〜2では${percent(lowSatisfied)}でした。`,
       evidence: `高い納得 ${high.length}回 / 低い納得 ${low.length}回`,
       question: "当たったかではなく、選び方に納得できた回はどちらでしたか？",
+      choices: [["high_conviction", "参加前の納得度が高かった回"], ["low_conviction", "参加前の納得度が低かった回"], ["neither", "どちらとも言えない"]],
     });
   }
 
@@ -416,7 +421,8 @@
         : "「なんとなく」だけが、実購入への移動理由ではなさそう",
       observation: `「なんとなく」のAIR後に実購入を自己申告した割合は${percent(casualRate)}。他の理由では${percent(otherRate)}でした。`,
       evidence: `自己申告を含むAIR ${casual.length + other.length}回`,
-      question: "AIRの後も、本当に勝負したいレースだと思えていましたか？",
+      question: "AIRの後に実購入を考えた理由は、どれに近いですか？",
+      choices: [["still_wanted", "もともと勝負したいレースだった"], ["stronger_after_air", "AIRの後に気持ちが強くなった"], ["not_remember", "覚えていない"]],
     });
   }
 
@@ -446,6 +452,7 @@
       observation: `前の30日から直近30日で、${choices.label}は${choices.value}へ変わりました。`,
       evidence: `直近 ${current.length}回 / 前期間 ${previous.length}回`,
       question: "この変化は、自分で選んだ変化ですか？",
+      choices: [["intentional", "自分で意識して変えた"], ["unnoticed", "気づかないうちに変わった"], ["unsure", "まだ分からない"]],
     });
   }
 
@@ -530,8 +537,11 @@
   }
 
   function feedbackButtons(item, selected) {
-    const choices = [["fit", "確かに"], ["chance", "たまたまだと思う"], ["unsure", "まだ分からない"]];
-    return `<div class="behavior-feedback" role="group" aria-label="この気づきへの回答">${choices.map(([value, label]) => `<button type="button" data-behavior-feedback="${value}" data-insight-id="${esc(item.id)}" class="${selected === value ? "selected" : ""}">${label}</button>`).join("")}</div><small class="behavior-feedback-status">${selected ? "回答を記録しました。いつでも選び直せます。" : "この気づきは、自分の感覚に合いますか？"}</small>`;
+    const choices = Array.isArray(item.choices) && item.choices.length
+      ? item.choices
+      : [["matches", "感覚と合っている"], ["not_matches", "感覚と違う"], ["unsure", "まだ分からない"]];
+    const hasSelection = choices.some(([value]) => selected === value);
+    return `<div class="behavior-feedback" role="group" aria-label="振り返りへの回答">${choices.map(([value, label]) => `<button type="button" data-behavior-feedback="${esc(value)}" data-insight-id="${esc(item.id)}" class="${selected === value ? "selected" : ""}">${esc(label)}</button>`).join("")}</div><small class="behavior-feedback-status">${hasSelection ? "回答を記録しました。いつでも選び直せます。" : "今の感覚に近いものを選んでください。"}</small>`;
   }
 
   function insightCard(item, selected) {
@@ -542,7 +552,7 @@
       <h3>${esc(item.title)}</h3>
       <p class="behavior-observation">${esc(item.observation)}</p>
       <p class="behavior-evidence">根拠：${esc(item.evidence)}</p>
-      <div class="behavior-question"><span>マモカモから一問</span><p>${esc(item.question)}</p></div>
+      <div class="behavior-question"><span>マモカモと振り返り</span><p>${esc(item.question)}</p></div>
       ${feedbackButtons(item, selected)}
     </article>`;
   }
@@ -596,7 +606,7 @@
     const card = button.closest("[data-behavior-insight]");
     const id = String(button.dataset.insightId || card?.dataset.behaviorInsight || "");
     const value = String(button.dataset.behaviorFeedback || "");
-    if (!id || !["fit", "chance", "unsure"].includes(value)) return;
+    if (!id || !/^[a-z0-9_:-]{1,40}$/.test(value)) return;
     const feedback = feedbackState();
     feedback[id] = { value, at: new Date().toISOString() };
     const entries = Object.entries(feedback).sort((left, right) => timeOf(right[1]?.at) - timeOf(left[1]?.at)).slice(0, 300);
