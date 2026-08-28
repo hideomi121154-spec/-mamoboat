@@ -78,7 +78,13 @@ Deno.serve(async (req) => {
 
   const endpoint = `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701?${params.toString()}`;
   try {
-    const response = await fetch(endpoint, { headers: { "User-Agent": "MAMO-BOAT/1.0" } });
+    const response = await fetch(endpoint, {
+      headers: {
+        "User-Agent": "MAMO-BOAT/1.0",
+        "Referer": "https://mamoboat.com/",
+        "Origin": "https://mamoboat.com",
+      },
+    });
     const data = await response.json();
     if (!response.ok) {
       return new Response(JSON.stringify({ ok: false, provider: "rakuten", status: response.status, error: data }), { status: 502, headers });
