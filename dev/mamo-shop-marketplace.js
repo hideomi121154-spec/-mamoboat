@@ -16,6 +16,30 @@
     { icon: "休", title: "休息とケア", desc: "睡眠・入浴・セルフケア", query: "睡眠 入浴 セルフケア" },
     { icon: "欲", title: "欲しかった物", desc: "趣味・家電・身の回り品", query: "家電 趣味 生活" },
   ];
+  const COUPON_LINKS = [
+    {
+      eyebrow: "RAKUTEN COUPON",
+      title: "楽天市場の公式クーポン",
+      desc: "現在配布中の一般公開クーポンをまとめて確認できます。",
+      action: "クーポン一覧を見る",
+      url: "https://event.rakuten.co.jp/coupon/",
+      primary: true,
+    },
+    {
+      eyebrow: "FIRST SHOP",
+      title: "初めてのショップ",
+      desc: "対象ショップで使えるWELCOMEクーポンを確認。",
+      action: "対象条件を見る",
+      url: "https://event.rakuten.co.jp/food/coupon/new/",
+    },
+    {
+      eyebrow: "FIRST RAKUTEN",
+      title: "初めてのお買い物",
+      desc: "楽天市場を初めて利用する方向けの特典を確認。",
+      action: "対象条件を見る",
+      url: "https://event.rakuten.co.jp/campaign/newpurchaser/",
+    },
+  ];
 
   let filter = "all";
   let items = [];
@@ -95,6 +119,26 @@
       #shop .shop-hero h2{font-size:20px!important;margin:4px 0!important;color:#fff!important}
       #shop .shop-hero p{font-size:10px!important;line-height:1.55!important;color:#d7e8ed!important}
       #shop .shop-note{display:block!important;margin:0 10px 10px!important;padding:8px 11px!important;border-radius:0 0 9px 9px!important;background:#e8f2f3!important;color:#49656e!important;font-size:8px!important;text-align:left!important}
+      #mamoRakutenCoupons{margin:12px 10px 8px;border:1px solid #d4dee7;border-top:5px solid #dc2029;border-radius:16px;background:#fff;box-shadow:0 7px 18px rgba(8,43,74,.08);overflow:hidden}
+      .mrc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 15px 11px}
+      .mrc-head small{display:block;color:#b11922;font-size:8px;font-weight:1000;letter-spacing:.17em}
+      .mrc-head h3{margin:4px 0 3px;color:#082b4a;font-size:20px;line-height:1.3}
+      .mrc-head p{margin:0;color:#667b8c;font-size:9px;line-height:1.55}
+      .mrc-pr{flex:0 0 auto;border:1px solid #dc2029;border-radius:999px;padding:4px 7px;color:#b11922;font-size:8px;font-weight:1000;letter-spacing:.08em}
+      .mrc-primary{display:grid;grid-template-columns:46px 1fr auto;gap:11px;align-items:center;margin:0 12px 9px;padding:13px;border-radius:13px;background:#082b4a;color:#fff!important;text-decoration:none;box-shadow:0 4px 0 #dc2029}
+      .mrc-ticket{display:grid;place-items:center;width:46px;height:46px;border-radius:11px;background:#dc2029;color:#fff;font-size:17px;font-weight:1000;transform:rotate(-2deg)}
+      .mrc-primary small,.mrc-quick small{display:block;font-size:8px;font-weight:1000;letter-spacing:.12em}
+      .mrc-primary small{color:#ff9da3}
+      .mrc-primary b{display:block;margin-top:3px;color:#fff;font-size:14px;line-height:1.35}
+      .mrc-primary em{color:#fff;font-size:18px;font-style:normal;font-weight:1000}
+      .mrc-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 12px 12px}
+      .mrc-quick{display:flex;min-width:0;min-height:112px;flex-direction:column;padding:11px;border:1px solid #dbe3ea;border-left:4px solid #dc2029;border-radius:12px;background:#f8fafc;color:#082b4a!important;text-decoration:none}
+      .mrc-quick small{color:#b11922}
+      .mrc-quick b{display:block;margin-top:5px;color:#082b4a;font-size:12px;line-height:1.35}
+      .mrc-quick span{display:block;margin-top:4px;color:#6b7d8b;font-size:8px;line-height:1.5}
+      .mrc-quick em{display:block;margin-top:auto;padding-top:7px;color:#b11922;font-size:9px;font-style:normal;font-weight:1000}
+      .mrc-note{margin:0;padding:9px 13px;background:#edf3f8;color:#536b7c;font-size:8px;line-height:1.6}
+      .mrc-note b{color:#b11922}
       #mamoValueEditorialSlot{min-width:0}
       #mamoShopValue{margin:0 0 18px;border:1px solid #d8e3e6;border-top:5px solid #d4a329;border-radius:16px;background:#fff;box-shadow:0 7px 18px rgba(8,35,61,.07);overflow:hidden}
       .msv-head{padding:15px 15px 10px;background:linear-gradient(135deg,#fffdf7,#f4fbfb)}
@@ -123,6 +167,9 @@
       .mp-rating span{color:#68767d;margin-left:3px}
       .mp-price{font-size:20px;color:#d9342d;font-weight:1000;line-height:1.2;margin-top:5px}
       .mp-ship{font-size:8px;color:#74828a;font-weight:800;margin-top:2px}
+      .mp-perks{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+      .mp-perk{display:inline-flex;align-items:center;min-height:20px;padding:3px 6px;border:1px solid #d9e2e9;border-radius:999px;background:#f4f7fa;color:#425c70;font-size:8px;font-weight:1000}
+      .mp-perk.point{border-color:#efb1b5;background:#fff1f2;color:#a51922}
       .mp-value{margin-top:7px;padding:7px 8px;border-radius:8px;background:#f1f5f6;color:#51666f;font-size:9px;font-weight:900}
       .mp-value.within{background:#e6f8ef;color:#14734c}
       .mp-value.remaining{background:#fff6df;color:#8a6310}
@@ -141,7 +188,7 @@
       .mp-market-card small{display:block;margin-top:3px;color:#71828a;font-size:9px;line-height:1.45}
       .mp-market-card em{display:block;margin-top:auto;padding-top:8px;color:#0a9298;font-size:9px;font-style:normal;font-weight:1000}
       .mp-provider{grid-column:1/-1;padding:4px 8px 12px;color:#8a979d;font-size:8px;text-align:right}
-      @media(max-width:370px){.msv-amount strong{font-size:27px}.mp-price{font-size:18px}#shop .shop-grid{gap:7px!important;padding-left:7px!important;padding-right:7px!important}}
+      @media(max-width:370px){.msv-amount strong{font-size:27px}.mp-price{font-size:18px}#shop .shop-grid{gap:7px!important;padding-left:7px!important;padding-right:7px!important}.mrc-head h3{font-size:18px}.mrc-primary{grid-template-columns:42px 1fr auto}.mrc-ticket{width:42px;height:42px}.mrc-quick-grid{gap:6px}.mrc-quick{padding:9px}}
     `;
     document.head.appendChild(style);
   }
@@ -152,15 +199,47 @@
     installStyle();
     const hero = shop.querySelector(".shop-hero");
     if (hero) {
-      hero.querySelector("small").textContent = "MAMO VALUE × MARKET";
-      hero.querySelector("h2").textContent = "守れた選択を、生活の価値へ。";
-      hero.querySelector("p").textContent = "AIR BETへ置き換えた現金予定額と、今必要なものの価格を並べて見ます。";
+      hero.querySelector("small").textContent = "MAMO BOAT SHOP / RAKUTEN";
+      hero.querySelector("h2").textContent = "暮らしに必要なものを、賢く選ぶ。";
+      hero.querySelector("p").textContent = "一般公開クーポンを確認してから、楽天市場の商品を探せます。";
     }
     const note = shop.querySelector(".shop-note");
-    if (note) note.textContent = "価格比較と購入先への案内です。販売・決済・配送・実際の値引きは各販売店が行います。";
+    if (note) note.textContent = "PR｜楽天市場への外部リンクを含みます。販売・決済・配送・クーポン適用は楽天市場と各販売店が行います。";
     ensureCategories();
+    renderCouponHub();
     renderValuePanel();
     return Boolean(document.getElementById("shopGrid"));
+  }
+
+  function renderCouponHub() {
+    const shop = document.getElementById("shop");
+    const note = shop?.querySelector(".shop-note");
+    const grid = document.getElementById("shopGrid");
+    if (!shop || !note || !grid) return;
+    let panel = document.getElementById("mamoRakutenCoupons");
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "mamoRakutenCoupons";
+      panel.setAttribute("aria-labelledby", "mamoRakutenCouponTitle");
+    }
+    if (panel.previousElementSibling !== note) note.insertAdjacentElement("afterend", panel);
+    if (panel.dataset.renderVersion === "20260828-1") return;
+    panel.dataset.renderVersion = "20260828-1";
+    const primary = COUPON_LINKS.find((entry) => entry.primary);
+    const quick = COUPON_LINKS.filter((entry) => !entry.primary);
+    panel.innerHTML = `
+      <div class="mrc-head">
+        <div><small>PUBLIC COUPON GUIDE</small><h3 id="mamoRakutenCouponTitle">今日使えるクーポンを先に確認。</h3><p>一般公開されている楽天公式の特典だけを案内します。</p></div>
+        <span class="mrc-pr">PR</span>
+      </div>
+      <a class="mrc-primary" href="${escapeHtml(primary.url)}" target="_blank" rel="noopener noreferrer sponsored">
+        <span class="mrc-ticket">%</span><span><small>${escapeHtml(primary.eyebrow)}</small><b>${escapeHtml(primary.title)}</b></span><em aria-hidden="true">→</em>
+      </a>
+      <div class="mrc-quick-grid">
+        ${quick.map((entry) => `<a class="mrc-quick" href="${escapeHtml(entry.url)}" target="_blank" rel="noopener noreferrer sponsored"><small>${escapeHtml(entry.eyebrow)}</small><b>${escapeHtml(entry.title)}</b><span>${escapeHtml(entry.desc)}</span><em>${escapeHtml(entry.action)} →</em></a>`).join("")}
+      </div>
+      <p class="mrc-note"><b>割引額・対象者・期限は楽天側で必ず確認してください。</b> 対象者限定情報は掲載せず、MAMO BOAT独自の割引ではありません。</p>
+    `;
   }
 
   function ensureCategories() {
@@ -251,6 +330,12 @@
       const name = escapeHtml(product.name || "商品");
       const shopName = escapeHtml(product.shopName || "楽天市場");
       const favorite = favorites.has(id);
+      const pointRate = Math.max(1, Number(product.pointRate) || 1);
+      const postageIncluded = product.postageFlag === 0 || product.postageFlag === "0";
+      const perks = [
+        postageIncluded ? '<span class="mp-perk">送料無料</span>' : '<span class="mp-perk">送料は商品ページで確認</span>',
+        pointRate > 1 ? `<span class="mp-perk point">ポイント${pointRate}倍</span>` : "",
+      ].filter(Boolean).join("");
       return `
         <article class="mp-card">
           <a class="mp-img-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">
@@ -262,12 +347,12 @@
             <div class="mp-name">${name}</div>
             <div class="mp-rating">${product.reviewAverage ? `★ ${Number(product.reviewAverage).toFixed(1)}` : "レビュー"}<span>(${Number(product.reviewCount || 0).toLocaleString("ja-JP")})</span></div>
             <div class="mp-price">${money(product.price)}</div>
-            <div class="mp-ship">${Number(product.postageFlag) === 0 ? "送料無料" : "送料は商品ページで確認"}</div>
+            <div class="mp-perks">${perks}</div>
             ${valueMarkup(product.price)}
             <a class="mp-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">楽天市場で見る →</a>
           </div>
         </article>`;
-    }).join("") + `<div class="mp-provider">商品情報：楽天市場 / ${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}取得</div>`;
+    }).join("") + `<div class="mp-provider">PR｜商品情報：楽天市場 / ${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}取得</div>`;
   }
 
   function renderFallback(grid) {
@@ -280,9 +365,9 @@
       <div class="mp-market-intro"><b>まずは、生活に回したいものから。</b>${reason} 移動先で現在価格・送料・実際の割引を確認できます。${fallbackReason === "error" ? '<br><button type="button" class="mp-retry" data-market-retry>商品一覧を再読み込み</button>' : ""}</div>
       ${MARKET_LINKS.map((entry) => {
         const url = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(entry.query)}/`;
-        return `<a class="mp-market-card" href="${url}" target="_blank" rel="noopener noreferrer"><span class="mp-market-icon">${entry.icon}</span><b>${entry.title}</b><small>${entry.desc}</small><em>楽天市場で探す →</em></a>`;
+        return `<a class="mp-market-card" href="${url}" target="_blank" rel="noopener noreferrer sponsored"><span class="mp-market-icon">${entry.icon}</span><b>${entry.title}</b><small>${entry.desc}</small><em>楽天市場で探す →</em></a>`;
       }).join("")}
-      <div class="mp-provider">購入・決済・配送は移動先の販売店が行います。</div>`;
+      <div class="mp-provider">PR｜購入・決済・配送は移動先の販売店が行います。</div>`;
   }
 
   function clientHeaders() {

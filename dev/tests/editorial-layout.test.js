@@ -37,8 +37,8 @@ test("MAMO VALUE has one stable owner in the editorial screen", () => {
   assert.match(marketplace, /現金を使わなかった選択を、最初に見る。/);
   assert.doesNotMatch(marketplace, /hero\.insertAdjacentElement\("afterend", panel\)/);
   assert.doesNotMatch(compatibility, /data-mamo-value-panel/);
-  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260827-1/);
+  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-1/);
   assert.match(cast, /cast\.previousElementSibling\?\.querySelector\("h2"\)/);
-  assert.match(serviceWorker, /mamo-shop-marketplace\.js\?v=20260827-1/);
-  assert.match(serviceWorker, /mamoboat-v401-motion-32-dev/);
+  assert.match(serviceWorker, /mamo-shop-marketplace\.js\?v=20260828-1/);
+  assert.match(serviceWorker, /mamoboat-v401-shop-coupon-33-dev/);
 });

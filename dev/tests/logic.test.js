@@ -364,7 +364,7 @@ assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v401-motion-32-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v401-shop-coupon-33-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
@@ -559,7 +559,7 @@ assert.match(shopMarketplaceSource, /これは値引き額ではありません/
 assert.match(shopMarketplaceSource, /実際の損失・貯金を補填するものではなく/);
 assert.doesNotMatch(shopMarketplaceSource, /損失を取り返|実質無料|MAMO BOATのおかげ/);
 assert.equal(fs.existsSync(path.join(__dirname, "..", "mamo-shop-real-products.js")), false);
-assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260827-1/);
+assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260828-1/);
 assert.match(swRefreshSource, /Service Worker refresh v27/);
 
 console.log("logic tests OK");

@@ -44,6 +44,9 @@ jobs:
           node --check pilot-config.js
           node --check master-room.js
           node --check mamokamo.js
+          node --check dev/mamo-shop-marketplace.js
+          node --check dev/mamo-shop-record-benefits.js
+          node --check dev/home-record-balance.js
           node --check tests/master-room.test.js
           node --check tests/mamokamo-asset.test.js
           python -m py_compile scripts/sync_official_data.py scripts/fallback_openapi.py tests/test_sync_transform.py tests/test_result_validation.py tests/test_fallback_openapi.py tests/smoke_live_results.py
@@ -56,6 +59,7 @@ jobs:
           node tests/mamokamo-asset.test.js
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/brand-theme.test.js
+          node --test dev/tests/shop-coupon.test.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v
