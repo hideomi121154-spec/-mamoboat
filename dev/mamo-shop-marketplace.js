@@ -110,7 +110,9 @@
   }
 
   function isAgeRestricted(product) {
-    return /ビール|発泡酒|チューハイ|ハイボール|ワイン|焼酎|日本酒/.test(String(product?.name || ""));
+    const name = String(product?.name || "");
+    if (/ノンアル|おつまみ|珍味|カルパス|ビールのお供|酒の肴|ジョッキ|グラス|サプリ|酵母/.test(name)) return false;
+    return /ビール|発泡酒|チューハイ|ハイボール|ワイン|焼酎|日本酒/.test(name);
   }
 
   function learnTaste(segment, amount = 1) {

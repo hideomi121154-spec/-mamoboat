@@ -36,7 +36,7 @@ test("member benefits are placed after the product grid", () => {
 test("coupon release uses fresh client assets", () => {
   assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260828-1/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
-  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-2/);
+  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-3/);
 });
 
 test("product cards are ready for Rakuten point multipliers", () => {
