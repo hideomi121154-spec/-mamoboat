@@ -65,6 +65,22 @@ assert(model.candidates.some((item) => item.id === "small_entry_follow"));
 assert(model.candidates.every((item) => !("score" in item)));
 assert(model.candidates.every((item) => item.visual && item.visual.type), "each insight has a presentation visual");
 
+const firstRecordModel = api.build({
+  now,
+  plan: "free",
+  records: [records[0]],
+  realBetExits: [],
+  reflections: {},
+  postReflections: {},
+  skipReflections: {},
+  journeys: [],
+});
+const firstRecordInsight = firstRecordModel.candidates.find((item) => item.id === "daily_rhythm");
+assert.equal(firstRecordInsight.visual.type, "snapshot", "one day must use an honest first-record snapshot instead of a 100% donut");
+assert.equal(firstRecordInsight.visual.headline, "1レース");
+assert.match(firstRecordInsight.observation, /まだ傾向ではなく/);
+assert.match(firstRecordInsight.question, /どこで終えるか決めてから/);
+
 const freeVisible = api.visible(model);
 assert(freeVisible.some((item) => item.id === "after_miss_change"), "safety insight must be visible on FREE");
 assert(freeVisible.filter((item) => !item.safety).length <= 1, "FREE exposes one standard small insight");
@@ -112,6 +128,14 @@ assert.match(elements.get("analysisList").innerHTML, /このレースで勝負�
 assert.equal(elements.get("analysisList").dataset.insightVersion, "2");
 assert.match(visualRefresh, /list\.dataset\.insightVersion === "2"/);
 assert.match(visualRefresh, /list\.classList\.contains\("behavior-insights-v2"\)/);
+
+storage.set("mamoboat_v40_personal", JSON.stringify({ records: [records[0]], pressroom: { plan: "free" } }));
+api.render();
+assert.match(elements.get("analysisList").innerHTML, /behavior-visual-snapshot/);
+assert.match(elements.get("analysisList").innerHTML, /ONE PAGE \/ 最初の基準/);
+assert.match(elements.get("analysisList").innerHTML, /合計AIR BET/);
+assert.match(elements.get("analysisList").innerHTML, /平均買い目/);
+assert.doesNotMatch(elements.get("analysisList").innerHTML, /behavior-visual-donut/);
 
 assert.doesNotMatch(source, /置換額が多い場|多い参加理由|順位もスコア|mbp-bar/);
 assert.match(source, /100Bで参加した.*30分以内に次のレースへ進んだのは/);

@@ -160,8 +160,13 @@
     const previousDays = groupByDay(previous);
     const previousAverage = previousDays.length ? mean(previousDays.map((day) => day.length)) : null;
     const singleDays = days.filter((day) => day.length === 1).length;
+    const firstDay = days.length === 1;
+    const totalStake = current.reduce((sum, record) => sum + number(record.stake), 0);
+    const averageLines = mean(current.map(lineCount));
     const comparison = previousAverage != null
       ? `前の30日は参加日あたり平均${one(previousAverage)}レース。直近30日は${one(activeAverage)}レースです。`
+      : firstDay
+        ? `最初の1日は${current.length}レース、合計${integer(totalStake)}Bでした。これはまだ傾向ではなく、これから比べる基準です。`
       : `${days.length}日分のうち、1レースで終えた日は${singleDays}日です。`;
     const changed = previousAverage != null && Math.abs(activeAverage - previousAverage) >= .35;
     return insight({
@@ -169,22 +174,34 @@
       requiredRank: 0,
       priority: changed ? 52 : 22,
       evidenceCount: current.length,
-      eyebrow: "参加のペース",
-      title: changed ? "1日の参加数が、前の30日から変わりました" : "参加した日の終わり方を確認",
+      eyebrow: firstDay ? "FIRST RECORD / 今日の一枚" : "参加のペース",
+      title: changed ? "1日の参加数が、前の30日から変わりました" : firstDay ? "最初の1日を、一枚で確認" : "参加した日の終わり方を確認",
       observation: comparison,
       evidence: `直近30日 ${days.length}日・${current.length}レース`,
       visual: previousAverage != null ? {
         type: "compare",
         left: { label: "前の30日", value: `${one(previousAverage)}回`, amount: previousAverage },
         right: { label: "直近30日", value: `${one(activeAverage)}回`, amount: activeAverage },
+      } : firstDay ? {
+        type: "snapshot",
+        headline: `${current.length}レース`,
+        label: "この日の参加",
+        metrics: [
+          { label: "合計AIR BET", value: `${integer(totalStake)}B` },
+          { label: "平均買い目", value: `${one(averageLines)}点` },
+        ],
+        flow: ["参加", `${current.length}レース`, "現時点"],
+        note: "まだ傾向ではありません。次の記録から、金額・理由・続け方の比較が始まります。",
       } : {
         type: "donut",
         label: "1レースで終了した日",
         value: days.length ? singleDays / days.length : 0,
         valueLabel: `${singleDays}/${days.length}日`,
       },
-      question: "この参加数は、自分の感覚と合っていますか？",
-      choices: [["matches", "感覚と合っている"], ["more", "思ったより多い"], ["less", "思ったより少ない"]],
+      question: firstDay ? "この日は、どこで終えるか決めてから参加しましたか？" : "この参加数は、自分の感覚と合っていますか？",
+      choices: firstDay
+        ? [["planned_stop", "終える場所を決めていた"], ["decided_after", "参加してから決めた"], ["not_decided", "特に決めていなかった"]]
+        : [["matches", "感覚と合っている"], ["more", "思ったより多い"], ["less", "思ったより少ない"]],
     });
   }
 
@@ -608,6 +625,18 @@
 
   function visualMarkup(item) {
     const visual = item?.visual || {};
+    if (visual.type === "snapshot") {
+      const metrics = arr(visual.metrics).slice(0, 3);
+      const flow = arr(visual.flow).slice(0, 3);
+      const aria = `${visual.label || "この日の参加"} ${visual.headline || ""}。${metrics.map((metric) => `${metric.label} ${metric.value}`).join("、")}`;
+      return `<div class="behavior-visual behavior-visual-snapshot" role="img" aria-label="${esc(aria)}">
+        <small>ONE PAGE / 最初の基準</small>
+        <div class="behavior-snapshot-hero"><span>${esc(visual.label || "この日の参加")}</span><strong>${esc(visual.headline || "—")}</strong></div>
+        <div class="behavior-snapshot-metrics">${metrics.map((metric) => `<span><small>${esc(metric.label)}</small><b>${esc(metric.value)}</b></span>`).join("")}</div>
+        <div class="behavior-snapshot-flow" aria-hidden="true">${flow.map((label, index) => `${index ? "<i>→</i>" : ""}<b>${esc(label)}</b>`).join("")}</div>
+        <p>${esc(visual.note || "次の記録から、普段の自分との比較が始まります。")}</p>
+      </div>`;
+    }
     if (visual.type === "compare" && visual.left && visual.right) {
       const leftAmount = Math.max(0, number(visual.left.amount));
       const rightAmount = Math.max(0, number(visual.right.amount));
@@ -769,6 +798,12 @@
       .behavior-insight h3{margin:8px 0 10px;color:#08233d;font-size:20px;line-height:1.32;letter-spacing:-.03em}
       .behavior-visual{overflow:hidden;margin-top:4px;border:1px solid #dce5ed;border-radius:14px;background:linear-gradient(145deg,#fff 0%,#f5f9fc 100%)}
       .behavior-visual>small{display:block;padding:10px 12px 0;color:#617784;font-size:9px;font-weight:1000;letter-spacing:.04em}
+      .behavior-visual-snapshot{padding:0 12px 12px;background:linear-gradient(150deg,#fff 0%,#f1f6fa 100%)}
+      .behavior-visual-snapshot>small{padding:11px 0 8px;color:#b51624;letter-spacing:.1em}
+      .behavior-snapshot-hero{position:relative;display:grid;align-content:center;min-height:118px;padding:18px 20px;border-radius:12px;background:linear-gradient(135deg,#08233d 0%,#0b4f7d 100%);color:#fff;box-shadow:0 8px 18px rgba(8,35,61,.16)}
+      .behavior-snapshot-hero:after{content:"";position:absolute;right:0;top:0;width:9px;height:100%;background:#e31d2b}.behavior-snapshot-hero span{font-size:10px;font-weight:1000;letter-spacing:.08em}.behavior-snapshot-hero strong{margin-top:5px;font-size:40px;font-weight:1000;line-height:1;letter-spacing:-.05em}
+      .behavior-snapshot-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}.behavior-snapshot-metrics>span{display:grid;gap:3px;min-width:0;padding:11px;border:1px solid #d8e2e9;border-radius:10px;background:#fff}.behavior-snapshot-metrics small{color:#667a85;font-size:8px;font-weight:900}.behavior-snapshot-metrics b{overflow-wrap:anywhere;color:#08233d;font-size:18px;font-weight:1000;line-height:1.1}
+      .behavior-snapshot-flow{display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;align-items:center;gap:2px;margin-top:9px;padding:9px;border-radius:10px;background:#e9f0f5;text-align:center}.behavior-snapshot-flow b{color:#123852;font-size:9px;font-weight:1000}.behavior-snapshot-flow i{color:#e31d2b;font-size:14px;font-style:normal;font-weight:1000}.behavior-visual-snapshot>p{margin:9px 1px 0;color:#536a76;font-size:9px;font-weight:800;line-height:1.55}
       .behavior-chart-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;height:160px;margin:0 13px;padding:12px 8px 10px;border-bottom:2px solid #b8c7d2}
       .behavior-chart-column{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-width:0;height:100%;justify-items:center;gap:6px}
       .behavior-chart-column strong{color:#08233d;font-size:25px;font-weight:1000;line-height:1;letter-spacing:-.04em;white-space:nowrap}
