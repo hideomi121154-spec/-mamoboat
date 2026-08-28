@@ -23,13 +23,13 @@ const RECOMMENDATION_QUERIES = [
     segment: "other",
     query: "ビール 飲料 日用品 食品",
     hits: 24,
-    quota: 10,
+    quota: 12,
   },
   {
     segment: "discover",
-    query: "家電 美容 趣味 スポーツ",
+    query: "カー用品 洗車 車載 アウトドア キャンプ 工具 家電 ゲーム ゴルフ シェーバー",
     hits: 24,
-    quota: 10,
+    quota: 8,
   },
 ];
 
@@ -56,15 +56,28 @@ function postageFlag(value: unknown): 0 | 1 | null {
 
 function inferSegment(item: any, fallback = "other") {
   const text = `${item?.itemName || item?.name || ""} ${item?.catchcopy || ""}`;
+  if (/おつまみ|ナッツ|珍味|せんべい|スナック|チョコ|カルパス/.test(text)) return "snacks";
   if (/ビール|発泡酒|チューハイ|ハイボール|ワイン|焼酎|日本酒/.test(text)) return "alcohol";
-  if (/炭酸水|緑茶|お茶|コーヒー|飲料|ドリンク|ミネラルウォーター|ペットボトル/.test(text)) return "drinks";
+  if (/炭酸水|緑茶|お茶|コーヒー|飲料|清涼飲料|栄養ドリンク|ミネラルウォーター|ペットボトル/.test(text)) return "drinks";
   if (/ティッシュ|トイレットペーパー|洗剤|タオル|日用品|消耗品/.test(text)) return "daily";
-  if (/おつまみ|ナッツ|珍味|せんべい|スナック|チョコ/.test(text)) return "snacks";
-  if (/食品|グルメ|レトルト|米|麺|肉|魚|スイーツ/.test(text)) return "food";
+  if (/食品|グルメ|レトルト|米|麺|肉|魚|スイーツ|カレー|牛丼|ラーメン|冷凍/.test(text)) return "food";
   if (/美容|コスメ|化粧|シャンプー|ケア/.test(text)) return "beauty";
-  if (/家電|キッチン|家具|生活用品/.test(text)) return "home";
-  if (/アウトドア|スポーツ|趣味|ゲーム|ゴルフ/.test(text)) return "hobby";
+  if (/家電|キッチン|家具|生活用品|調理家電/.test(text)) return "home";
+  if (/アウトドア|スポーツ|趣味|ゲーム|ゴルフ|カー用品|洗車|車載|工具|DIY|プロテイン|筋トレ/.test(text)) return "hobby";
   return fallback;
+}
+
+function audienceAffinityScore(item: any) {
+  const text = `${item.name || ""} ${item.catchcopy || ""}`;
+  // The initial audience is male-primary, but the catalogue stays broad.
+  // Explicit searches can still surface every product; this only changes the
+  // default recommendation order.
+  const mixedOrMale = /メンズ|男性用|男女兼用|ユニセックス/.test(text);
+  const stronglyFemale = /ナイトブラ|ブラジャー|フェイスパック|シートマスク|美容液|まつげ|ネイル|脱毛|ワンピース/.test(text)
+    || (!mixedOrMale && /レディース|女性用/.test(text));
+  const maleInterest = /メンズ|ビール|発泡酒|チューハイ|ハイボール|炭酸水|お茶|コーヒー|おつまみ|ナッツ|珍味|牛丼|カレー|ラーメン|冷凍食品|焼肉|カー用品|洗車|車載|工具|DIY|家電|アウトドア|キャンプ|ゴルフ|筋トレ|プロテイン|シェーバー|髭剃り|サウナ/.test(text);
+  const practical = /ティッシュ|トイレットペーパー|洗剤|タオル|ペットボトル|保存食|レトルト|日用品|消耗品/.test(text);
+  return (maleInterest ? 20 : 0) + (practical ? 10 : 0) - (stronglyFemale ? 65 : 0);
 }
 
 function recommendationScore(item: any) {
@@ -74,10 +87,10 @@ function recommendationScore(item: any) {
     drinks: 28,
     daily: 27,
     snacks: 23,
-    food: 17,
-    home: 12,
-    beauty: 10,
-    hobby: 10,
+    food: 22,
+    home: 18,
+    beauty: 5,
+    hobby: 18,
     discover: 8,
     other: 5,
   };
@@ -89,6 +102,7 @@ function recommendationScore(item: any) {
   const rating = Number(item.reviewAverage) || 0;
   const reviewCount = Number(item.reviewCount) || 0;
   return (baseBySegment[item.segment] || baseBySegment.other)
+    + audienceAffinityScore(item)
     + (limitedSale ? 18 : 0)
     + (couponMention ? 15 : 0)
     + (discountMention ? 12 : 0)
@@ -342,6 +356,7 @@ Deno.serve(async (req) => {
       items,
       mixed,
       ranking: "relevance_sale_points_shipping_reviews",
+      audience: "male_primary_broad_catalog",
       discountRateAvailable: false,
       affiliate: Boolean(affiliateId),
       fetchedAt: new Date().toISOString(),

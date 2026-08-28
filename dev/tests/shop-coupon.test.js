@@ -36,7 +36,7 @@ test("member benefits are placed after the product grid", () => {
 test("coupon release uses fresh client assets", () => {
   assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260828-1/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
-  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-5/);
+  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
 });
 
 test("product cards are ready for Rakuten point multipliers", () => {
@@ -54,12 +54,15 @@ test("recommendations stay broad while learning MAMO BOAT tastes", () => {
   assert.match(edgeFunction, /RECOMMENDATION_QUERIES/);
   assert.match(edgeFunction, /ビール 飲料 日用品 食品/);
   assert.match(edgeFunction, /selectMixedResults/);
-  assert.match(edgeFunction, /家電 美容 趣味 スポーツ/);
+  assert.match(edgeFunction, /カー用品 洗車 車載 アウトドア キャンプ 工具 家電 ゲーム ゴルフ シェーバー/);
   assert.match(edgeFunction, /discountRateAvailable: false/);
   assert.match(edgeFunction, /limitedSale/);
   assert.match(edgeFunction, /couponMention/);
-  assert.match(marketplace, /mamoboat_shop_taste_v1/);
-  assert.match(marketplace, /mix", "20260828-2/);
+  assert.match(edgeFunction, /male_primary_broad_catalog/);
+  assert.match(edgeFunction, /audienceAffinityScore/);
+  assert.match(marketplace, /mamoboat_shop_taste_v2/);
+  assert.match(marketplace, /mix", "20260828-5/);
+  assert.match(marketplace, /女性向けを含む他の商品も除外せず/);
   assert.match(marketplace, /幅広い商品を残し、好みに近いものを上へ。/);
   assert.match(marketplace, /実際の割引率・クーポン適用後価格は楽天市場で確認してください。/);
   assert.match(marketplace, /20歳以上/);

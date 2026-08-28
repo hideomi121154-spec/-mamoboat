@@ -8,7 +8,7 @@
   const APP_KEY = "mamoboat_v40_personal";
   const FAV_KEY = "mamo_shop_favs";
   const PREF_KEY = "mamoboat_shop_value_preferences_v1";
-  const TASTE_KEY = "mamoboat_shop_taste_v1";
+  const TASTE_KEY = "mamoboat_shop_taste_v2";
   const VALUE = window.MamoShopValueCore;
   const PERIOD_LABELS = { today: "今日", week: "7日", month: "今月" };
   const DEFAULT_TASTE = { alcohol: 3, drinks: 3, daily: 3, snacks: 2, food: 1, home: 0, beauty: 0, hobby: 0, other: 0 };
@@ -91,15 +91,25 @@
 
   function segmentForText(value, fallback = "other") {
     const text = String(value || "");
+    if (/おつまみ|ナッツ|珍味|せんべい|スナック|チョコ|カルパス/.test(text)) return "snacks";
     if (/ビール|発泡酒|チューハイ|ハイボール|ワイン|焼酎|日本酒/.test(text)) return "alcohol";
-    if (/炭酸水|緑茶|お茶|コーヒー|飲料|ドリンク|ミネラルウォーター|ペットボトル/.test(text)) return "drinks";
+    if (/炭酸水|緑茶|お茶|コーヒー|飲料|清涼飲料|栄養ドリンク|ミネラルウォーター|ペットボトル/.test(text)) return "drinks";
     if (/ティッシュ|トイレットペーパー|洗剤|タオル|日用品|消耗品/.test(text)) return "daily";
-    if (/おつまみ|ナッツ|珍味|せんべい|スナック|チョコ/.test(text)) return "snacks";
-    if (/食品|グルメ|レトルト|米|麺|肉|魚|スイーツ/.test(text)) return "food";
+    if (/食品|グルメ|レトルト|米|麺|肉|魚|スイーツ|カレー|牛丼|ラーメン|冷凍/.test(text)) return "food";
     if (/美容|コスメ|化粧|シャンプー|ケア/.test(text)) return "beauty";
-    if (/家電|キッチン|家具|生活用品/.test(text)) return "home";
-    if (/アウトドア|スポーツ|趣味|ゲーム|ゴルフ/.test(text)) return "hobby";
+    if (/家電|キッチン|家具|生活用品|調理家電/.test(text)) return "home";
+    if (/アウトドア|スポーツ|趣味|ゲーム|ゴルフ|カー用品|洗車|車載|工具|DIY|プロテイン|筋トレ/.test(text)) return "hobby";
     return fallback;
+  }
+
+  function audienceAffinityScore(product) {
+    const text = `${product?.name || ""} ${product?.catchcopy || ""}`;
+    const mixedOrMale = /メンズ|男性用|男女兼用|ユニセックス/.test(text);
+    const stronglyFemale = /ナイトブラ|ブラジャー|フェイスパック|シートマスク|美容液|まつげ|ネイル|脱毛|ワンピース/.test(text)
+      || (!mixedOrMale && /レディース|女性用/.test(text));
+    const maleInterest = /メンズ|ビール|発泡酒|チューハイ|ハイボール|炭酸水|お茶|コーヒー|おつまみ|ナッツ|珍味|牛丼|カレー|ラーメン|冷凍食品|焼肉|カー用品|洗車|車載|工具|DIY|家電|アウトドア|キャンプ|ゴルフ|筋トレ|プロテイン|シェーバー|髭剃り|サウナ/.test(text);
+    const practical = /ティッシュ|トイレットペーパー|洗剤|タオル|ペットボトル|保存食|レトルト|日用品|消耗品/.test(text);
+    return (maleInterest ? 16 : 0) + (practical ? 8 : 0) - (stronglyFemale ? 48 : 0);
   }
 
   function productSegment(product) {
@@ -125,8 +135,8 @@
     return products.map((product, index) => ({ product, index })).sort((a, b) => {
       const aSegment = productSegment(a.product);
       const bSegment = productSegment(b.product);
-      const aScore = Number(a.product.recommendationScore || 0) + Number(taste[aSegment] || 0) * 3 + (favorites.has(String(a.product.id || "")) ? 15 : 0);
-      const bScore = Number(b.product.recommendationScore || 0) + Number(taste[bSegment] || 0) * 3 + (favorites.has(String(b.product.id || "")) ? 15 : 0);
+      const aScore = Number(a.product.recommendationScore || 0) + audienceAffinityScore(a.product) + Number(taste[aSegment] || 0) * 3 + (favorites.has(String(a.product.id || "")) ? 15 : 0);
+      const bScore = Number(b.product.recommendationScore || 0) + audienceAffinityScore(b.product) + Number(taste[bSegment] || 0) * 3 + (favorites.has(String(b.product.id || "")) ? 15 : 0);
       return bScore - aScore || a.index - b.index;
     }).map((entry) => entry.product);
   }
@@ -265,7 +275,7 @@
     if (hero) {
       hero.querySelector("small").textContent = "MAMO BOAT SHOP / RAKUTEN";
       hero.querySelector("h2").textContent = "欲しいものを狭めず、好みに近い順へ。";
-      hero.querySelector("p").textContent = "ビール・飲料・日常品などの傾向も加味し、幅広い楽天商品からおすすめします。";
+      hero.querySelector("p").textContent = "ビール・飲料・食品・日用品・家電・カー用品・アウトドアを初期傾向に、幅広い楽天商品からおすすめします。";
     }
     const note = shop.querySelector(".shop-note");
     if (note) note.textContent = "PR｜楽天市場への外部リンクを含みます。販売・決済・配送・クーポン適用は楽天市場と各販売店が行います。";
@@ -395,7 +405,7 @@
       <div class="mp-recommendation">
         <small>MAMO PICK / PERSONAL MIX</small>
         <b>幅広い商品を残し、好みに近いものを上へ。</b>
-        ビール・飲料・日常品・おつまみを初期傾向として加味。閲覧やお気に入りから並び順が少しずつ変わります。<em>実際の割引率・クーポン適用後価格は楽天市場で確認してください。</em>
+        ビール・飲料・食品・日用品・家電・カー用品・アウトドアを初期傾向として加味。女性向けを含む他の商品も除外せず、閲覧やお気に入りから並び順が少しずつ変わります。<em>実際の割引率・クーポン適用後価格は楽天市場で確認してください。</em>
       </div>` : "";
 
     grid.innerHTML = recommendationIntro + displayedItems.map((product) => {
@@ -474,7 +484,7 @@
 
     try {
       const url = new URL(API);
-      url.searchParams.set("mix", "20260828-2");
+      url.searchParams.set("mix", "20260828-5");
       url.searchParams.set("cat", filter);
       url.searchParams.set("hits", "20");
       if (query) url.searchParams.set("q", query);
