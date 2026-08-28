@@ -8,8 +8,11 @@
   const APP_KEY = "mamoboat_v40_personal";
   const FAV_KEY = "mamo_shop_favs";
   const PREF_KEY = "mamoboat_shop_value_preferences_v1";
+  const TASTE_KEY = "mamoboat_shop_taste_v1";
   const VALUE = window.MamoShopValueCore;
   const PERIOD_LABELS = { today: "今日", week: "7日", month: "今月" };
+  const DEFAULT_TASTE = { alcohol: 3, drinks: 3, daily: 3, snacks: 2, food: 1, home: 0, beauty: 0, hobby: 0, other: 0 };
+  const SEGMENT_LABELS = { alcohol: "嗜好品", drinks: "飲料", daily: "日常品", snacks: "おつまみ", food: "食品", home: "暮らし", beauty: "ケア", hobby: "趣味", other: "おすすめ" };
   const MARKET_LINKS = [
     { icon: "日", title: "生活必需品", desc: "洗剤・紙製品・消耗品", query: "日用品 消耗品" },
     { icon: "食", title: "食品・飲料", desc: "水・米・保存食品", query: "食品 飲料 日用品" },
@@ -48,9 +51,11 @@
   let lastQuery = "";
   let searchTimer = null;
   let requestController = null;
+  let lastLearnedSearch = "";
   const preferences = readJson(PREF_KEY, { period: "month" });
   let period = PERIOD_LABELS[preferences.period] ? preferences.period : "month";
   const favorites = new Set(readJson(FAV_KEY, []));
+  const taste = { ...DEFAULT_TASTE, ...readJson(TASTE_KEY, {}) };
 
   function readJson(key, fallback) {
     try {
@@ -82,6 +87,57 @@
     } catch (_) {
       return "#";
     }
+  }
+
+  function segmentForText(value, fallback = "other") {
+    const text = String(value || "");
+    if (/ビール|発泡酒|チューハイ|ハイボール|ワイン|焼酎|日本酒/.test(text)) return "alcohol";
+    if (/炭酸水|緑茶|お茶|コーヒー|飲料|ドリンク|ミネラルウォーター|ペットボトル/.test(text)) return "drinks";
+    if (/ティッシュ|トイレットペーパー|洗剤|タオル|日用品|消耗品/.test(text)) return "daily";
+    if (/おつまみ|ナッツ|珍味|せんべい|スナック|チョコ/.test(text)) return "snacks";
+    if (/食品|グルメ|レトルト|米|麺|肉|魚|スイーツ/.test(text)) return "food";
+    if (/美容|コスメ|化粧|シャンプー|ケア/.test(text)) return "beauty";
+    if (/家電|キッチン|家具|生活用品/.test(text)) return "home";
+    if (/アウトドア|スポーツ|趣味|ゲーム|ゴルフ/.test(text)) return "hobby";
+    return fallback;
+  }
+
+  function productSegment(product) {
+    return segmentForText(
+      `${product?.name || ""} ${product?.catchcopy || ""}`,
+      product?.segment || "other",
+    );
+  }
+
+  function isAgeRestricted(product) {
+    return /ビール|発泡酒|チューハイ|ハイボール|ワイン|焼酎|日本酒/.test(String(product?.name || ""));
+  }
+
+  function learnTaste(segment, amount = 1) {
+    if (!(segment in DEFAULT_TASTE)) return;
+    taste[segment] = Math.min(20, Math.max(0, Number(taste[segment] || 0) + amount));
+    saveJson(TASTE_KEY, taste);
+  }
+
+  function personalizeProducts(products) {
+    return products.map((product, index) => ({ product, index })).sort((a, b) => {
+      const aSegment = productSegment(a.product);
+      const bSegment = productSegment(b.product);
+      const aScore = Number(a.product.recommendationScore || 0) + Number(taste[aSegment] || 0) * 3 + (favorites.has(String(a.product.id || "")) ? 15 : 0);
+      const bScore = Number(b.product.recommendationScore || 0) + Number(taste[bSegment] || 0) * 3 + (favorites.has(String(b.product.id || "")) ? 15 : 0);
+      return bScore - aScore || a.index - b.index;
+    }).map((entry) => entry.product);
+  }
+
+  function dealLabel(product) {
+    const signals = product?.dealSignals || {};
+    const pointRate = Math.max(1, Number(product?.pointRate) || 1);
+    if (signals.limitedSale) return "期間限定";
+    if (signals.couponMention) return "クーポン表記あり";
+    if (signals.discountMention) return "特価表記あり";
+    if (pointRate > 1) return `ポイント${pointRate}倍`;
+    if (signals.freeShipping && Number(product?.reviewAverage || 0) >= 4.5) return "送料無料・高評価";
+    return `MAMO USER PICK・${SEGMENT_LABELS[productSegment(product)] || "おすすめ"}`;
   }
 
   function currentTotals() {
@@ -156,12 +212,17 @@
       .msv-explain b{color:#f4c04b}
       #shop .shop-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;padding:5px 9px 30px!important}
       .mp-card{position:relative;min-width:0;border:1px solid #e1e7e9;border-radius:13px;background:#fff;overflow:hidden;box-shadow:0 4px 11px rgba(8,35,61,.045)}
+      .mp-recommendation{grid-column:1/-1;padding:13px 14px;border:1px solid #d7e2e9;border-left:5px solid #dc2029;border-radius:13px;background:#fff;color:#667b8a;font-size:9px;line-height:1.65}
+      .mp-recommendation small{display:block;color:#b11922;font-size:8px;font-weight:1000;letter-spacing:.14em}
+      .mp-recommendation b{display:block;margin:2px 0;color:#082b4a;font-size:15px;line-height:1.4}
+      .mp-recommendation em{color:#a51922;font-style:normal;font-weight:1000}
       .mp-img-link{display:block;background:#fff}
       .mp-img{aspect-ratio:1/1;width:100%;display:block;object-fit:contain;background:#fff}
       .mp-fav{position:absolute;right:7px;top:7px;z-index:3;width:35px;height:35px;border:0;border-radius:50%;background:rgba(244,247,248,.94);color:#89959b;font-size:19px}
       .mp-fav.on{color:#e34843}
       .mp-body{padding:9px 9px 11px}
       .mp-shop{font-size:8px;color:#89969c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .mp-pick{display:inline-flex;max-width:100%;margin-bottom:5px;padding:4px 6px;border-radius:999px;background:#fff0f1;color:#b11922;font-size:7px;font-weight:1000;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .mp-name{font-size:12px;line-height:1.42;color:#25333a;height:35px;overflow:hidden;margin:3px 0 4px;font-weight:800}
       .mp-rating{font-size:9px;color:#d99e10;white-space:nowrap}
       .mp-rating span{color:#68767d;margin-left:3px}
@@ -170,6 +231,7 @@
       .mp-perks{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
       .mp-perk{display:inline-flex;align-items:center;min-height:20px;padding:3px 6px;border:1px solid #d9e2e9;border-radius:999px;background:#f4f7fa;color:#425c70;font-size:8px;font-weight:1000}
       .mp-perk.point{border-color:#efb1b5;background:#fff1f2;color:#a51922}
+      .mp-perk.alcohol{border-color:#d8b46a;background:#fff8e8;color:#795814}
       .mp-value{margin-top:7px;padding:7px 8px;border-radius:8px;background:#f1f5f6;color:#51666f;font-size:9px;font-weight:900}
       .mp-value.within{background:#e6f8ef;color:#14734c}
       .mp-value.remaining{background:#fff6df;color:#8a6310}
@@ -200,8 +262,8 @@
     const hero = shop.querySelector(".shop-hero");
     if (hero) {
       hero.querySelector("small").textContent = "MAMO BOAT SHOP / RAKUTEN";
-      hero.querySelector("h2").textContent = "暮らしに必要なものを、賢く選ぶ。";
-      hero.querySelector("p").textContent = "一般公開クーポンを確認してから、楽天市場の商品を探せます。";
+      hero.querySelector("h2").textContent = "欲しいものを狭めず、好みに近い順へ。";
+      hero.querySelector("p").textContent = "ビール・飲料・日常品などの傾向も加味し、幅広い楽天商品からおすすめします。";
     }
     const note = shop.querySelector(".shop-note");
     if (note) note.textContent = "PR｜楽天市場への外部リンクを含みます。販売・決済・配送・クーポン適用は楽天市場と各販売店が行います。";
@@ -257,9 +319,10 @@
       food = document.createElement("button");
       food.type = "button";
       food.dataset.marketFilter = "food";
-      food.textContent = "食品";
+      food.textContent = "食品・飲料";
       categories.insertBefore(food, life || null);
     }
+    if (food) food.textContent = "食品・飲料";
     if (all) all.dataset.marketFilter = "all";
     [all, food, life].filter(Boolean).forEach((button) => {
       button.classList.toggle("active", button.dataset.marketFilter === filter);
@@ -323,33 +386,46 @@
       return;
     }
 
-    grid.innerHTML = items.map((product) => {
+    const query = String(document.getElementById("shopSearch")?.value || "").trim();
+    const broadRecommendation = filter === "all" && !query;
+    const displayedItems = personalizeProducts(items);
+    const recommendationIntro = broadRecommendation ? `
+      <div class="mp-recommendation">
+        <small>MAMO PICK / PERSONAL MIX</small>
+        <b>幅広い商品を残し、好みに近いものを上へ。</b>
+        ビール・飲料・日常品・おつまみを初期傾向として加味。閲覧やお気に入りから並び順が少しずつ変わります。<em>実際の割引率・クーポン適用後価格は楽天市場で確認してください。</em>
+      </div>` : "";
+
+    grid.innerHTML = recommendationIntro + displayedItems.map((product) => {
       const id = String(product.id || product.url || product.name || "");
       const url = safeUrl(product.url);
       const image = safeUrl(product.image);
       const name = escapeHtml(product.name || "商品");
       const shopName = escapeHtml(product.shopName || "楽天市場");
+      const segment = productSegment(product);
       const favorite = favorites.has(id);
       const pointRate = Math.max(1, Number(product.pointRate) || 1);
       const postageIncluded = product.postageFlag === 0 || product.postageFlag === "0";
       const perks = [
         postageIncluded ? '<span class="mp-perk">送料無料</span>' : '<span class="mp-perk">送料は商品ページで確認</span>',
         pointRate > 1 ? `<span class="mp-perk point">ポイント${pointRate}倍</span>` : "",
+        isAgeRestricted(product) ? '<span class="mp-perk alcohol">20歳以上</span>' : "",
       ].filter(Boolean).join("");
       return `
-        <article class="mp-card">
-          <a class="mp-img-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">
+        <article class="mp-card" data-market-product="${escapeHtml(id)}" data-market-segment="${escapeHtml(segment)}">
+          <a class="mp-img-link" data-market-outbound href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">
             <img class="mp-img" src="${escapeHtml(image)}" alt="${name}" loading="lazy">
           </a>
           <button type="button" class="mp-fav ${favorite ? "on" : ""}" data-market-fav="${escapeHtml(id)}" aria-label="お気に入り">${favorite ? "♥" : "♡"}</button>
           <div class="mp-body">
+            <div class="mp-pick">${escapeHtml(dealLabel(product))}</div>
             <div class="mp-shop">${shopName}</div>
             <div class="mp-name">${name}</div>
             <div class="mp-rating">${product.reviewAverage ? `★ ${Number(product.reviewAverage).toFixed(1)}` : "レビュー"}<span>(${Number(product.reviewCount || 0).toLocaleString("ja-JP")})</span></div>
             <div class="mp-price">${money(product.price)}</div>
             <div class="mp-perks">${perks}</div>
             ${valueMarkup(product.price)}
-            <a class="mp-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">楽天市場で見る →</a>
+            <a class="mp-link" data-market-outbound href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer sponsored">楽天市場で見る →</a>
           </div>
         </article>`;
     }).join("") + `<div class="mp-provider">PR｜商品情報：楽天市場 / ${new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}取得</div>`;
@@ -412,6 +488,10 @@
         throw new Error(data?.message || data?.error || `HTTP ${response.status}`);
       } else {
         items = Array.isArray(data.items) ? data.items.filter((item) => Number(item?.price) > 0 && item?.url) : [];
+        if (query && query !== lastLearnedSearch) {
+          learnTaste(segmentForText(query), 1);
+          lastLearnedSearch = query;
+        }
         if (!items.length) fallbackReason = "empty";
       }
     } catch (error) {
@@ -426,6 +506,13 @@
   }
 
   function handleClick(event) {
+    const outbound = event.target?.closest?.("[data-market-outbound]");
+    if (outbound) {
+      const card = outbound.closest("[data-market-product]");
+      learnTaste(card?.dataset.marketSegment || "other", 1);
+      return;
+    }
+
     const periodButton = event.target?.closest?.("[data-value-period]");
     if (periodButton) {
       event.preventDefault();
@@ -451,7 +538,10 @@
       event.preventDefault();
       event.stopPropagation();
       const id = favoriteButton.dataset.marketFav;
-      favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+      const wasFavorite = favorites.has(id);
+      wasFavorite ? favorites.delete(id) : favorites.add(id);
+      const card = favoriteButton.closest("[data-market-product]");
+      learnTaste(card?.dataset.marketSegment || "other", wasFavorite ? -1 : 2);
       saveJson(FAV_KEY, [...favorites]);
       renderProducts();
       return;
