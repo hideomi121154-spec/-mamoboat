@@ -45,6 +45,7 @@ test("product cards are ready for Rakuten point multipliers", () => {
   assert.match(marketplace, /送料無料/);
   assert.match(edgeFunction, /"https:\/\/mamoboat\.com"/);
   assert.match(edgeFunction, /"https:\/\/www\.mamoboat\.com"/);
+  assert.match(edgeFunction, /"Referer": "https:\/\/mamoboat\.com\/"/);
   assert.match(edgeFunction, /"pointRate"/);
   assert.match(edgeFunction, /postageFlag: postageFlag\(item\.postageFlag\)/);
 });
