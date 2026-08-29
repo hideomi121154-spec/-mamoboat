@@ -167,7 +167,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260827-2","device-s
 const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
-  ["decision-event-api-compat.js?v=20260829-2","decision-event-api-compat"],
+  ["decision-event-api-compat.js?v=20260829-3","decision-event-api-compat"],
   ["decision-transition-model.js?v=20260819-2","decision-transition-model"],
   ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],
@@ -179,6 +179,7 @@ const MAMO_SCRIPTS = [
   ["decision-state-score.js?v=20260819-1","decision-state-score"],
   ["trigger-intelligence.js?v=20260818-3","trigger-intel"],
   ["behavior-pattern-profile.js?v=20260828-3","behavior-pattern-profile"],
+  ["behavior-science.js?v=20260829-2","behavior-science"],
   ["compound-pattern-intelligence.js?v=20260819-1","compound-pattern-intel"],
   ["compound-pattern-realtime.js?v=20260819-1","compound-pattern-realtime"],
   ["press-intelligence.js?v=20260818-3","press-intel"],
@@ -192,7 +193,7 @@ const MAMO_SCRIPTS = [
   ["motion-experience.js?v=20260827-1","motion-experience"],
   ["morning-delivery.js?v=20260818-1","morning-delivery"],
   ["push-notifications.js?v=20260818-1","push-notifications"],
-  ["sw-refresh.js?v=20260823-27","sw-refresh"],
+  ["sw-refresh.js?v=20260829-29","sw-refresh"],
 ];
 
 async function loadMamoEnhancements() {

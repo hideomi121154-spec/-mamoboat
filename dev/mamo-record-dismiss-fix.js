@@ -1,8 +1,8 @@
-/* MAMO RECORD: remember an intentional X dismiss for a settled result reflection. */
+/* MAMO RECORD: remember an intentional X dismiss for a settled result check. */
 (()=>{
   "use strict";
-  if(window.__MAMO_RECORD_DISMISS_V3__)return;
-  window.__MAMO_RECORD_DISMISS_V3__=true;
+  if(window.__MAMO_RECORD_DISMISS_V4__)return;
+  window.__MAMO_RECORD_DISMISS_V4__=true;
 
   const AK="mamoboat_v40_personal",RK="mamoboat_record_v1";
   const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||f}catch(_){return f}};
@@ -22,14 +22,13 @@
   document.addEventListener("click",e=>{
     const close=e.target.closest?.("#mamoRecordSheetBg [data-close]");
     if(!close)return;
-    const title=document.querySelector("#mamoRecordSheetBody .mr-top h2")?.textContent||"";
-    if(!title.includes("結果を見"))return;
+    if(!document.querySelector("#mamoRecordSheetBody .mr-result"))return;
     const r=eligible();
     if(!r)return;
     const id=rid(r),s=read(RK,{});
     s.postReflections=s.postReflections||{};
     if(!s.postReflections[id]){
-      s.postReflections[id]={recordId:id,dismissed:true,recordedAt:new Date().toISOString(),status:r.status||null};
+      s.postReflections[id]={recordId:id,dismissed:true,recordedAt:new Date().toISOString(),status:r.status||null,source:"result_sheet_dismissed"};
       write(RK,s);
     }
   },true);

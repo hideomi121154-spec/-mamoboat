@@ -418,11 +418,17 @@
           : [],
         stake: stake || lines.reduce((sum, line) => sum + line.stake, 0),
         intendedYen: stake || intended,
-        conf: Number(record.conf ?? 5),
-        urge: Number(record.urge ?? record.before ?? 5),
-        reason: ["まあ100円だけ", "まぁ100円だけ"].includes(record.reason)
-          ? "とりあえず賭けたい"
-          : record.reason,
+        conf: Number(record.observationVersion) >= 1
+          ? null
+          : Number(record.conf ?? 5),
+        urge: Number(record.observationVersion) >= 1
+          ? null
+          : Number(record.urge ?? record.before ?? 5),
+        reason: Number(record.observationVersion) >= 1
+          ? ""
+          : ["まあ100円だけ", "まぁ100円だけ"].includes(record.reason)
+            ? "とりあえず賭けたい"
+            : record.reason,
         afterUrge: record.afterUrge ?? record.after ?? null,
         status,
         settled: record.settled === true || ["hit", "miss", "refunded"].includes(status),
@@ -1258,14 +1264,7 @@
           <button class="btn secondary full" style="margin-top:8px" onclick="jumpRace('${item.venue.code}',${item.race.number})">${item.race.number}Rへ進む →</button>
         </article>`).join("")
       : `<div class="card muted">${isFresh() ? "この後の締切はありません。" : "今日の実データ同期待ちです。"}</div>`;
-    const unreviewed = S.records.filter(
-      (record) => (record.settled || canReviewAfter(record)) && !record.behaviorReviewed
-    ).length;
-    const notices = [];
-    if (unreviewed) {
-      notices.push(`<div class="notice good" style="margin-top:10px"><b>${unreviewed}件のレース後振り返りがあります。</b> 任意で衝動の変化を記録できます。</div>`);
-    }
-    $("settledNotice").innerHTML = notices.join("");
+    $("settledNotice").innerHTML = "";
   }
 
   window.setFilter = (filter) => {
@@ -1858,13 +1857,7 @@ const reference = liveValue != null
     openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
       <div class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
-      <div class="notice editorial-safety"><b>AIは勝敗を判断しません。</b><br>ここから記録するのは、艇の強さではなく、今の自分の状態です。</div>
-      <h3>この買い目への自信は？</h3>
-      <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
-      <h3>今、現金で買いたい気持ち</h3>
-      <input id="urge" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('uv').textContent=this.value"><div id="uv" class="big">5</div>
-      <div class="field"><label>参加理由</label><select id="reason"><option>とりあえず賭けたい</option><option>なんとなく</option><option>レースがあるから</option><option>自分なりの根拠がある</option><option>取り返したい</option><option>推し選手</option><option>その他</option></select></div>
-      <div class="field"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="なぜ買いたくなったか等"></textarea></div>
+      <div class="notice editorial-safety"><b>気持ちの採点はしません。</b><br>結果確認後の「次のレースを見るまで」「次のAIR BETまで」「公式サイトへ移動して戻るまで」を自動でつなぎ、普段の自分と比較します。</div>
       <button class="btn teal full" onclick="placeBet()">AIR BETを確定する</button>`);
   };
 
@@ -1919,10 +1912,7 @@ const reference = liveValue != null
       })),
       stake: total,
       intendedYen: total,
-      conf: Number($("conf").value),
-      urge: Number($("urge").value),
-      reason: $("reason").value,
-      memo: $("memo").value.slice(0, 500),
+      observationVersion: 1,
       status: "pending",
       settled: false,
       payoutStatus: "pending",
@@ -1931,8 +1921,6 @@ const reference = liveValue != null
       resultPayout: null,
       resultPayouts: [],
       refundC: 0,
-      behaviorReviewed: false,
-      afterUrge: null,
       saved: total,
       rewardChallenge,
       rewardOutcome: null,
@@ -1977,9 +1965,7 @@ const reference = liveValue != null
       bet_mode: record.betMode,
       stake_b: record.stake,
       intended_yen: record.intendedYen,
-      confidence: record.conf,
-      urge_before: record.urge,
-      reason: record.reason,
+      observation_version: record.observationVersion,
       reward_challenge: record.rewardChallenge,
       seconds_to_close: record.closeTime
         ? Math.max(0, Math.round((new Date(record.closeTime).getTime() - Date.now()) / 1000))
@@ -1993,61 +1979,6 @@ const reference = liveValue != null
     save();
     window.closeModal();
     resetBuilder();
-    renderAll();
-    window.go("records");
-  };
-
-  function canReviewAfter(record) {
-    if (record.behaviorReviewed) return false;
-    if (record.settled) return true;
-    return !!record.closeTime && Date.now() > new Date(record.closeTime).getTime();
-  }
-
-  window.reviewAfter = (id) => {
-    const record = S.records.find((item) => item.id === id);
-    if (!record || !canReviewAfter(record)) return;
-    const fomoQuestion = record.status === "hit"
-      ? `<h3>「現金ならよかった」と感じる強さは？</h3>
-        <input id="cashWouldHaveWon" class="slider" type="range" min="0" max="10" value="3" oninput="document.getElementById('cwv').textContent=this.value"><div id="cwv" class="big">3</div>`
-      : "";
-    openModal(`<h2>${esc(record.venue)} ${record.raceNo}R</h2>
-      <h3>レース後、現金で買いたい気持ちは？</h3>
-      <input id="after" class="slider" type="range" min="0" max="10" value="3" oninput="document.getElementById('av').textContent=this.value"><div id="av" class="big">3</div>
-      ${fomoQuestion}
-      <h3>取り返すため、次も買いたい気持ちは？</h3>
-      <input id="chaseAfter" class="slider" type="range" min="0" max="10" value="2" oninput="document.getElementById('cav').textContent=this.value"><div id="cav" class="big">2</div>
-      <p class="muted">現金購入の自己申告は不要です。この入力は衝動変化の分析だけに使用します。</p>
-      <button class="btn teal full" onclick="saveAfter('${record.id}')">振り返りを保存する</button>`);
-  };
-
-  window.saveAfter = (id) => {
-    const record = S.records.find((item) => item.id === id);
-    if (!record || record.behaviorReviewed) return;
-    record.afterUrge = Number($("after").value);
-    record.chaseUrge = Number($("chaseAfter").value);
-    record.cashWouldHaveWonUrge = $("cashWouldHaveWon")
-      ? Number($("cashWouldHaveWon").value)
-      : null;
-    record.behaviorReviewed = true;
-    record.reviewedAt = new Date().toISOString();
-    trackEvent("post_race_urge_recorded", {
-      record_id: record.id,
-      replaced_yen: Number(record.saved) || 0,
-      urge_before: Number(record.urge) || 0,
-      urge_after: record.afterUrge,
-      chase_urge_after: record.chaseUrge,
-      cash_would_have_won_urge: record.cashWouldHaveWonUrge,
-      confidence: Number(record.conf) || 0,
-      reason: record.reason || "未入力",
-      result_status: record.settled ? record.status : "pending",
-      reward_challenge: record.rewardChallenge === true,
-    }, {
-      raceDate: record.raceDate,
-      venueCode: record.venueCode,
-      raceNo: record.raceNo,
-    });
-    save();
-    window.closeModal();
     renderAll();
     window.go("records");
   };
@@ -2418,10 +2349,7 @@ const reference = liveValue != null
       <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
       ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}${resultTimingHtml(record)}
       ${record.settled && officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果と払戻を照合 ↗</a>` : ""}
-      <div class="recgrid"><span>参加前の自信</span><b>${record.conf}/10</b><span>参加前の現金衝動</span><b>${record.urge}/10</b>
-      <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>仮想投票へ置換</span><b>${fmt(record.saved)}円</b>
-      ${record.behaviorReviewed ? `<span>参加後の現金衝動</span><b>${record.afterUrge ?? "—"}/10</b><span>追い上げ衝動</span><b>${record.chaseUrge ?? "—"}/10</b>${record.cashWouldHaveWonUrge == null ? "" : `<span>「現金なら」の強さ</span><b>${record.cashWouldHaveWonUrge}/10</b>`}` : ""}</div>
-      ${canReviewAfter(record) ? `<button class="btn secondary full" onclick="reviewAfter('${record.id}')">レース後の行動を記録</button>` : ""}
+      <div class="recgrid"><span>記録方式</span><b>${Number(record.observationVersion) >= 1 ? "行動を自動観測" : "旧・自己記録"}</b><span>仮想投票へ置換</span><b>${fmt(record.saved)}円</b></div>
       ${record.saved ? `<div class="reward"><span class="manga-label">VIRTUAL SHIFT</span> ${fmt(record.saved)}円分をB投票へ置き換えました。</div>` : ""}</div>`;
   }
 
@@ -2670,8 +2598,8 @@ const reference = liveValue != null
     target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3 id="membershipCurrentTitle"></h3><b id="membershipCurrentPrice"></b><p>PILOT版では決済されません。AIR BET・実レース結果・B精算・安全機能は全プラン共通で無料です。</p></div>
       <div class="membership-points membership-selectable" role="group" aria-label="PILOTプラン">
         <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本5項目・安全機能・今日の小さな気づき1件</span></button>
-        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="selectPilotPlan('bronze')"><b>BRONZE / MAMO RECORD</b><span>7日・30日比較、100Bや参加理由ごとの単独パターン</span></button>
-        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER / MAMO INSIGHT</b><span>結果後の感情・参加前の自信・衝動を組み合わせた週間分析</span></button>
+        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="selectPilotPlan('bronze')"><b>BRONZE / MAMO RECORD</b><span>7日・30日の行動時間、予定と実際、結果後の動き</span></button>
+        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER / MAMO INSIGHT</b><span>結果・次の閲覧・AIR BET額・公式移動を組み合わせた週間分析</span></button>
         <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="selectPilotPlan('gold')"><b>GOLD / MAMO PRESS</b><span>朝刊・週間・月刊、長期変化、選んだテーマの深掘り</span></button>
       </div>
       <button id="membershipDeepInterview" class="btn secondary full membership-deep-action" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ（GOLD）</button>
@@ -2768,7 +2696,7 @@ const reference = liveValue != null
 
   window.openDeepInterview = () => {
     if (S.pressroom.plan !== "gold") return;
-    const themes = ["軽い気持ちから続く場面", "予定額が変わる場面", "勝敗後の気持ち", "自分で決めた上限", "参加しない選択"];
+    const themes = ["結果後に次へ進む速さ", "参加額が増える場面", "予定と実際のずれ", "公式サイトへ移動する流れ", "参加しない選択"];
     openModal(`<div class="deep-interview"><span class="kicker">SPECIAL INTERVIEW</span><h2>何を深く知りたいですか？</h2><p>質問数ではなく、本人が選んだテーマだけを詳しく取材します。</p>
       <div class="deep-theme-list">${themes.map((theme) => `<button class="${S.pressroom.deepTheme === theme ? "selected" : ""}" type="button" onclick="saveDeepTheme('${theme}')">${theme}</button>`).join("")}</div>
       <button class="btn secondary full" type="button" onclick="closeModal()">今は選ばない</button></div>`);
@@ -2798,6 +2726,39 @@ const reference = liveValue != null
   }
 
   function analysisSummary() {
+    const science = window.MAMO_BEHAVIOR_SCIENCE?.build?.();
+    if (science) {
+      const durationLabel = (seconds) => {
+        if (!Number.isFinite(seconds)) return "未計測";
+        if (seconds < 60) return `${Math.max(1, Math.round(seconds))}秒`;
+        if (seconds < 3600) return `${Math.round(seconds / 60)}分`;
+        return `${(seconds / 3600).toFixed(1)}時間`;
+      };
+      const planLine = (key, label) => {
+        const item = science.plan[key];
+        return `${label}: ${item.count}日 / 初閲覧 ${durationLabel(item.firstRaceMedian)} / 初AIR ${durationLabel(item.firstAirMedian)} / AIR実行 ${item.firstAirCount}日`;
+      };
+      return `MAMO BOAT受動行動分析（本人内比較）
+テスター番号: ${S.pilot.participantId}
+結果起点: ${science.episodes.length}件（的中 ${science.hit.count} / 不的中 ${science.miss.count}）
+次レース閲覧までの中央値: 的中後 ${durationLabel(science.hit.nextRaceMedian)} / 不的中後 ${durationLabel(science.miss.nextRaceMedian)}
+次のAIR BETまでの中央値: 的中後 ${durationLabel(science.hit.nextAirMedian)} / 不的中後 ${durationLabel(science.miss.nextAirMedian)}
+次のAIR BET額倍率: 的中後 ${Number.isFinite(science.hit.nextStakeRatioMedian) ? science.hit.nextStakeRatioMedian.toFixed(2) + "倍" : "未計測"} / 不的中後 ${Number.isFinite(science.miss.nextStakeRatioMedian) ? science.miss.nextStakeRatioMedian.toFixed(2) + "倍" : "未計測"}
+公式投票導線: 的中後 ${science.hit.officialCount}回 / 不的中後 ${science.miss.officialCount}回（購入回数ではない）
+公式導線から戻るまで: 的中後 ${durationLabel(science.hit.officialAwayMedian)} / 不的中後 ${durationLabel(science.miss.officialAwayMedian)}
+
+予定から行動:
+${planLine("planned", "ある")}
+${planLine("undecided", "まだわからない")}
+${planLine("none", "ない")}
+
+複数条件の観測材料:
+- 不的中後に本人中央値より早く次へ進み、次AIR額も増えた: ${science.signals.missTwoFactor.length}回
+- 的中確認後に公式投票導線を開いた: ${science.signals.hitOfficial.length}回
+- 朝の予定が「ない」からAIR BETした: ${science.signals.noPlanThenAir.length}日
+
+注意: これは診断や感情推定ではありません。1回は事実として扱い、各結果条件n=5未満は傾向と呼ばないでください。締切までの残り時間・選択可能レース数を併記し、他人ではなく本人の過去と比較してください。勝敗・艇・買い目・賭け金の推奨は禁止です。`;
+    }
     const profile = window.MAMO_BEHAVIOR_INSIGHTS_V2?.build?.();
     if (profile) {
       const metrics = profile.metrics;
@@ -3031,6 +2992,20 @@ B的中: ${stats.virtualHits}件
     S.pilot.participantId = participantId;
     S.pilot.consent = consent;
     S.pressroom = pressroom;
+    [
+      "mamoboat_record_v1",
+      "mamoboat_behavior_science_v1",
+      "mamoboat_decision_events_v1",
+      "mamoboat_decision_journeys_v1",
+      "mamoboat_behavior_feedback_v2",
+      "mamoboat_baseline_interventions_v1",
+      "mamoboat_intervention_history_v1",
+      "mamoboat_compound_realtime_shown_v1",
+      "mamoboat_ai_safe_events",
+      "mamoboat_ai_phase1_events",
+      "mamoboat_morning_press_read_v1",
+      "mamoboat_push_open_log_v1",
+    ].forEach((key) => localStorage.removeItem(key));
     save();
     renderAll();
     window.go("home");

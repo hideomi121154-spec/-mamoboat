@@ -1,8 +1,8 @@
-/* MAMO BOAT — MAMO RECORD Phase 1 + 2 + 3 */
+/* MAMO BOAT — MAMO RECORD passive result anchor */
 (()=>{
   "use strict";
-  if(window.__MAMO_RECORD_V4__)return;
-  window.__MAMO_RECORD_V4__=true;
+  if(window.__MAMO_RECORD_V5__)return;
+  window.__MAMO_RECORD_V5__=true;
 
   const AK="mamoboat_v40_personal",RK="mamoboat_record_v1",CAP=50,R=10;
   let ready=false,active=null;
@@ -18,7 +18,7 @@
 
   function state(){
     const s=read(RK,{balance:0,ledger:[],reflections:{},postReflections:{},skipReflections:{},seenRecordIds:[]});
-    s.version=4;
+    s.version=5;
     s.balance=Math.max(0,+s.balance||0);
     s.ledger=Array.isArray(s.ledger)?s.ledger:[];
     s.reflections=s.reflections||{};
@@ -41,7 +41,7 @@
     if(document.getElementById("mr3css"))return;
     const s=document.createElement("style");
     s.id="mr3css";
-    s.textContent=`#mamoRecordSummary{margin:10px 0 4px;padding:13px 14px;border:1px solid #dce4e5;border-left:5px solid #d2a23b;border-radius:13px;background:#fffdf8;display:flex;align-items:center;justify-content:space-between;gap:12px}#mamoRecordSummary small{display:block;color:#8b6a1d;font-size:8px;font-weight:1000;letter-spacing:.12em}#mamoRecordSummary b{display:block;color:#08233d;font-size:15px}#mamoRecordSummary strong{color:#a77709;font-size:25px}.mr-bg{position:fixed;inset:0;z-index:9999;background:#04141f6b;display:none;align-items:flex-end;justify-content:center}.mr-bg.show{display:flex}.mr-sheet{width:min(100%,560px);max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}.mr-top{display:flex;justify-content:space-between;gap:10px}.mr-top h2{margin:3px 0;color:#08233d}.mr-close{width:34px;height:34px;border:0;border-radius:50%}.mr-result{margin:14px 0 0;padding:13px;border:1px solid #dbe3e5;border-radius:14px;background:#f5f9fa}.mr-result-kicker{display:block;color:#a91e2b;font-size:8px;font-weight:1000;letter-spacing:.12em}.mr-result-head{display:flex;align-items:center;justify-content:space-between;margin:7px 0}.mr-result-head b{color:#08233d;font-size:12px}.mr-result-head small{color:#718188;font-size:8px;font-weight:900}.mr-finish{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.mr-place{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 7px;min-width:0;padding:9px;background:#fff;border:1px solid #dce5e7;border-radius:11px}.mr-place>span{color:#72838a;font-size:8px;font-weight:1000}.mr-place>strong{grid-row:1/3;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#082f50;color:#fff;font-size:18px}.mr-place>small{overflow:hidden;color:#18394a;font-size:8px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.mr-result-none{grid-column:1/-1;padding:13px;text-align:center;background:#fff;border-radius:11px;color:#18394a;font-weight:1000}.mr-air-outcome{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:11px 12px;border-radius:11px;background:#eaf1f4}.mr-air-outcome small{display:block;color:#62767e;font-size:8px;font-weight:1000;letter-spacing:.1em}.mr-air-outcome strong{display:block;color:#08233d;font-size:19px}.mr-air-outcome>b{color:#08233d;font-size:14px}.mr-air-outcome.hit{background:#fff4d8;border:1px solid #d9ad41}.mr-air-outcome.hit strong,.mr-air-outcome.hit>b{color:#9d6b00}.mr-air-outcome.refund{background:#f4effb;border:1px solid #b9a1d7}.mr-bet-receipt{margin-top:9px;padding:10px 11px;background:#fff;border:1px solid #dfe6e7;border-radius:11px}.mr-bet-receipt>span{display:block;color:#72838a;font-size:8px;font-weight:1000}.mr-bet-line{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#18394a;font-size:9px;font-weight:900}.mr-bet-line b{color:#08233d}.mr-bet-more{display:block;margin-top:5px;color:#72838a;font-size:8px;font-weight:900}.mr-money{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid #e2e8e9}.mr-money div{min-width:0}.mr-money span{display:block;color:#72838a;font-size:8px;font-weight:900}.mr-money strong{display:block;color:#08233d;font-size:15px}.mr-money>i{align-self:center;color:#87969b;font-style:normal;font-weight:1000}.mr-q{margin-top:12px;padding:13px;border:1px solid #e1e7e8;border-radius:13px}.mr-emotions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.mr-emotions button{min-height:44px;border:1px solid #d7e0e1;border-radius:10px;background:#fff;color:#087be5;font-weight:1000}.mr-foot{text-align:center;font-size:9px;color:#718188;margin-top:10px}.mr-done{text-align:center;padding:22px}.mr-done strong{display:block;font-size:42px;color:#a77709}.mr-toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));z-index:10020;transform:translate(-50%,14px);opacity:0;pointer-events:none;background:#08233d;color:#fff;border:2px solid #d2a23b;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;transition:.2s}.mr-toast.show{opacity:1;transform:translate(-50%,0)}`;
+    s.textContent=`#mamoRecordSummary{margin:10px 0 4px;padding:13px 14px;border:1px solid #dce4e5;border-left:5px solid #d2a23b;border-radius:13px;background:#fffdf8;display:flex;align-items:center;justify-content:space-between;gap:12px}#mamoRecordSummary small{display:block;color:#8b6a1d;font-size:8px;font-weight:1000;letter-spacing:.12em}#mamoRecordSummary b{display:block;color:#08233d;font-size:15px}#mamoRecordSummary strong{color:#a77709;font-size:25px}.mr-bg{position:fixed;inset:0;z-index:9999;background:#04141f6b;display:none;align-items:flex-end;justify-content:center}.mr-bg.show{display:flex}.mr-sheet{width:min(100%,560px);max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}.mr-top{display:flex;justify-content:space-between;gap:10px}.mr-top h2{margin:3px 0;color:#08233d}.mr-close{width:34px;height:34px;border:0;border-radius:50%}.mr-result{margin:14px 0 0;padding:13px;border:1px solid #dbe3e5;border-radius:14px;background:#f5f9fa}.mr-result-kicker{display:block;color:#a91e2b;font-size:8px;font-weight:1000;letter-spacing:.12em}.mr-result-head{display:flex;align-items:center;justify-content:space-between;margin:7px 0}.mr-result-head b{color:#08233d;font-size:12px}.mr-result-head small{color:#718188;font-size:8px;font-weight:900}.mr-finish{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.mr-place{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 7px;min-width:0;padding:9px;background:#fff;border:1px solid #dce5e7;border-radius:11px}.mr-place>span{color:#72838a;font-size:8px;font-weight:1000}.mr-place>strong{grid-row:1/3;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#082f50;color:#fff;font-size:18px}.mr-place>small{overflow:hidden;color:#18394a;font-size:8px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.mr-result-none{grid-column:1/-1;padding:13px;text-align:center;background:#fff;border-radius:11px;color:#18394a;font-weight:1000}.mr-air-outcome{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:11px 12px;border-radius:11px;background:#eaf1f4}.mr-air-outcome small{display:block;color:#62767e;font-size:8px;font-weight:1000;letter-spacing:.1em}.mr-air-outcome strong{display:block;color:#08233d;font-size:19px}.mr-air-outcome>b{color:#08233d;font-size:14px}.mr-air-outcome.hit{background:#fff4d8;border:1px solid #d9ad41}.mr-air-outcome.hit strong,.mr-air-outcome.hit>b{color:#9d6b00}.mr-air-outcome.refund{background:#f4effb;border:1px solid #b9a1d7}.mr-bet-receipt{margin-top:9px;padding:10px 11px;background:#fff;border:1px solid #dfe6e7;border-radius:11px}.mr-bet-receipt>span{display:block;color:#72838a;font-size:8px;font-weight:1000}.mr-bet-line{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#18394a;font-size:9px;font-weight:900}.mr-bet-line b{color:#08233d}.mr-bet-more{display:block;margin-top:5px;color:#72838a;font-size:8px;font-weight:900}.mr-money{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid #e2e8e9}.mr-money div{min-width:0}.mr-money span{display:block;color:#72838a;font-size:8px;font-weight:900}.mr-money strong{display:block;color:#08233d;font-size:15px}.mr-money>i{align-self:center;color:#87969b;font-style:normal;font-weight:1000}.mr-observe{margin-top:12px;padding:13px;border:1px solid #d7e3e8;border-radius:13px;background:#f7fafc}.mr-observe>b{display:block;color:#08233d;font-size:14px}.mr-observe>p{margin:5px 0 10px;color:#5d707a;font-size:10px;line-height:1.6}.mr-observe-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:5px;align-items:center;margin:8px 0 12px}.mr-observe-flow span{padding:8px 5px;border-radius:9px;background:#e9f1f5;color:#153a53;font-size:8px;font-weight:1000;text-align:center}.mr-observe-flow i{color:#cf1d2b;font-style:normal;font-weight:1000}.mr-observe button{width:100%;min-height:48px;border:0;border-radius:11px;background:#082f50;color:#fff;font-weight:1000}.mr-foot{text-align:center;font-size:9px;color:#718188;margin-top:10px}.mr-done{text-align:center;padding:22px}.mr-done strong{display:block;font-size:42px;color:#a77709}.mr-toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));z-index:10020;transform:translate(-50%,14px);opacity:0;pointer-events:none;background:#08233d;color:#fff;border:2px solid #d2a23b;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;transition:.2s}.mr-toast.show{opacity:1;transform:translate(-50%,0)}`;
     document.head.appendChild(s);
   }
   function sheet(){
@@ -94,8 +94,9 @@
   }
   function showPost(r){
     active=r;
-    document.getElementById("mamoRecordSheetBody").innerHTML=head(r,"結果を見て、今は？")+resultHtml(r)+'<div class="mr-q"><b>結果を見て、いちばん近い気持ちは？</b><div class="mr-emotions"><button data-emotion="satisfied">納得した</button><button data-emotion="frustrated">悔しい</button><button data-emotion="chase">取り返したい</button><button data-emotion="neutral">特になし</button></div></div><div class="mr-foot">1タップで完了</div>';
+    document.getElementById("mamoRecordSheetBody").innerHTML=head(r,"結果と、その次の行動")+resultHtml(r)+'<div class="mr-observe"><b>ここからは、質問せずに行動を見ます。</b><p>次のレースを開くまで、次のAIR BETまで、公式サイトへ移動して戻るまでを同じ流れとして記録します。</p><div class="mr-observe-flow" aria-label="自動記録する流れ"><span>結果確認</span><i>→</i><span>次の閲覧</span><i>→</i><span>AIR / 公式</span></div><button type="button" data-result-observed>結果を確認した</button></div><div class="mr-foot">気持ちや依存度は直接質問しません</div>';
     sheet().classList.add("show");
+    try{window.dispatchEvent(new CustomEvent("mamo:result-observed",{detail:{record:r,source:"result_sheet_shown",at:new Date().toISOString()}}))}catch(_){}
   }
   function track(n,p,r){
     const a=window.MAMO_DECISION_EVENTS;
@@ -106,20 +107,14 @@
     if(!rid)return;
     const s=state();
     if(s.reflections[rid])return;
-    const confidence=Number(r?.conf),cashUrge=Number(r?.urge);
     s.reflections[rid]={
       recordId:rid,
-      conviction:Number.isFinite(confidence)?confidence/2:null,
-      confidence:Number.isFinite(confidence)?confidence:null,
-      cashUrge:Number.isFinite(cashUrge)?cashUrge/2:null,
-      cashUrgeRaw:Number.isFinite(cashUrge)?cashUrge:null,
-      sourceScale:10,
-      source:"air_bet_confirmation",
+      source:"passive_behavior_observation",
       recordedAt:r?.time||new Date().toISOString()
     };
     const a=reward?award(s,rid,"air_bet_recorded"):{amount:0,reason:"backfill"};
     write(RK,s);
-    if(reward)track("mamo_record_air_bet_captured",{record_id:rid,confidence:Number.isFinite(confidence)?confidence:null,cash_urge:Number.isFinite(cashUrge)?cashUrge:null,record_awarded:a.amount},r);
+    if(reward)track("mamo_record_air_bet_observed",{record_id:rid,observation_version:Number(r?.observationVersion)||1,record_awarded:a.amount},r);
     summary();
   }
   function done(a){
@@ -132,14 +127,14 @@
     if(!t){t=document.createElement("div");t.id="mamoRecordToast";t.className="mr-toast";document.body.appendChild(t)}
     t.textContent=text;t.classList.add("show");clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),1500);
   }
-  function post(emotion){
+  function confirmResult(){
     if(!active)return;
     const rid=id(active),s=state();
     if(s.postReflections[rid])return done({amount:0,reason:"already"});
-    s.postReflections[rid]={recordId:rid,emotion,recordedAt:new Date().toISOString(),status:active.status};
-    const a=award(s,rid,"result_reflection_complete");
+    s.postReflections[rid]={recordId:rid,observed:true,recordedAt:new Date().toISOString(),status:active.status,source:"result_check"};
+    const a=award(s,rid,"result_observation_complete");
     write(RK,s);
-    track("mamo_record_result_reflection_completed",{record_id:rid,emotion,status:active.status,record_awarded:a.amount},active);
+    track("mamo_record_result_observation_completed",{record_id:rid,status:active.status,record_awarded:a.amount},active);
     done(a);
   }
   function rewardSkip(button){
@@ -158,8 +153,7 @@
     const skip=e.target.closest?.("[data-decision-skip-reason]");
     if(skip){setTimeout(()=>rewardSkip(skip),0);return}
     if(e.target.closest?.("[data-close]"))return close();
-    const em=e.target.closest?.("[data-emotion]");
-    if(em&&active)return post(em.dataset.emotion);
+    if(e.target.closest?.("[data-result-observed]")&&active)return confirmResult();
   }
   function summary(){
     const stats=document.getElementById("home")?.querySelector(".three-stats");
@@ -167,7 +161,7 @@
     let p=document.getElementById("mamoRecordSummary");
     if(!p){p=document.createElement("div");p.id="mamoRecordSummary";stats.insertAdjacentElement("afterend",p)}
     const s=state();
-    p.innerHTML=`<div><small>MAMO RECORD</small><b>気持ち・振り返り・見送りを記録。</b><span style="display:block;font-size:8px;color:#7c8a90">今日 ${earned(s)}/${CAP}R</span></div><strong>${s.balance.toLocaleString("ja-JP")}R</strong>`;
+    p.innerHTML=`<div><small>MAMO RECORD</small><b>結果確認・見送り・行動の流れを記録。</b><span style="display:block;font-size:8px;color:#7c8a90">今日 ${earned(s)}/${CAP}R</span></div><strong>${s.balance.toLocaleString("ja-JP")}R</strong>`;
   }
   function scan(){
     const records=read(AK,{}).records||[],s=state(),persist=new Set(s.seenRecordIds);
@@ -184,14 +178,14 @@
     const latest=state();
     latest.seenRecordIds=[...persist].slice(-3000);
     write(RK,latest);
-    if(active)return;
+    if(active||document.hidden)return;
     const c=[...records].reverse().find(r=>{const x=id(r);return x&&!latest.postReflections[x]&&settled(r)});
     if(c)setTimeout(()=>{if(!active)showPost(c)},300);
   }
   function boot(){
     css();sheet();document.addEventListener("click",click,false);summary();scan();setInterval(scan,1000);
     window.addEventListener("pageshow",()=>{summary();scan()});
-    window.MAMO_RECORD=Object.freeze({version:4,balance:()=>state().balance,state,dailyCap:CAP});
+    window.MAMO_RECORD=Object.freeze({version:5,balance:()=>state().balance,state,dailyCap:CAP,activeRecord:()=>active});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
