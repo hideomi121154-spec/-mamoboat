@@ -187,7 +187,7 @@ const MAMO_SCRIPTS = [
   ["morning-intervention-insight.js?v=20260819-1","morning-intervention-insight"],
   ["period-intervention-insight.js?v=20260819-1","period-intervention-insight"],
   // Plan selection is owned by app.js. Do not load plan wrappers or scroll fixes.
-  ["visual-refresh.js?v=20260827-1","visual-refresh"],
+  ["visual-refresh.js?v=20260829-2","visual-refresh"],
   ["race-layout-refresh.js?v=20260816-2","race-layout-refresh"],
   ["air-outcome-experience.js?v=20260817-2","air-outcome"],
   ["motion-experience.js?v=20260827-1","motion-experience"],

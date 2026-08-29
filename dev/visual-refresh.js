@@ -92,6 +92,15 @@
     installStyle();
     const list = document.getElementById("analysisList");
     if (!list || list.dataset.mamoNormalizing === "1") return;
+    // Passive Behavior Science owns a presentation surface made of timelines,
+    // comparison bars, and method details. Flattening those sections into the
+    // legacy metric-card format destroys the visual evidence hierarchy.
+    if (list.dataset.owner === "behavior-science"
+      || list.dataset.insightVersion === "behavior-science-1"
+      || list.classList.contains("bs-report")) {
+      list.classList.remove("mamo-fixed-cards");
+      return;
+    }
     // Behavior Insights v2 owns the complete card markup. Reformatting those
     // articles as legacy metric cards would turn the header marker (↔) into
     // the title and the first number in the observation into the main value.

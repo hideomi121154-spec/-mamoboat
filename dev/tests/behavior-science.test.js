@@ -5,6 +5,7 @@ const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "behavior-science.js"), "utf8");
+const visualRefresh = fs.readFileSync(path.join(root, "visual-refresh.js"), "utf8");
 const storage = new Map();
 const window = {
   addEventListener() {},
@@ -108,5 +109,7 @@ assert.match(source, /朝の予定から、実際の行動まで/);
 assert.match(source, /各n=5までは傾向と呼びません/);
 assert.match(source, /診断ではなく/);
 assert.doesNotMatch(source, /依存度スコア/);
+assert.match(visualRefresh, /dataset\.owner === "behavior-science"/);
+assert.match(visualRefresh, /classList\.contains\("bs-report"\)/);
 
 console.log("Behavior Science links plan, result, next action, stake change, and official return without diagnosing emotion");
