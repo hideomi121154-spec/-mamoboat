@@ -63,7 +63,7 @@
     "B投票と結果": {icon:"B", tone:"teal", help:"B投票がどこまで結果反映されたか"},
     "結果の反映時間": {icon:"◷", tone:"blue", help:"締切からMAMO BOATへ反映される速さ"},
     "仮想投票総額": {icon:"¥", tone:"gold", help:"現金の代わりにAIR BETへ置き換えた合計"},
-    "低い納得度×高い衝動": {icon:"↗", tone:"red", help:"納得より勢いが先に出た参加"},
+    "低い自信度×高い衝動": {icon:"↗", tone:"red", help:"自信より勢いが先に出た参加"},
     "取り返したい参加": {icon:"↶", tone:"purple", help:"取り返したい気持ちを申告した参加"},
     "短時間の金額増加": {icon:"◴", tone:"blue", help:"短時間で予定額を増やした参加"},
     "外れ後の追い上げ": {icon:"↑", tone:"orange", help:"不的中後すぐに予定額を上げた参加"},

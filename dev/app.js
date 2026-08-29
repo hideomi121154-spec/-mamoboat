@@ -1859,7 +1859,7 @@ const reference = liveValue != null
       <div class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
       <div class="notice editorial-safety"><b>AIは勝敗を判断しません。</b><br>ここから記録するのは、艇の強さではなく、今の自分の状態です。</div>
-      <h3>この選択への自分の納得度</h3>
+      <h3>この買い目への自信は？</h3>
       <input id="conf" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('cv').textContent=this.value"><div id="cv" class="big">5</div>
       <h3>今、現金で買いたい気持ち</h3>
       <input id="urge" class="slider" type="range" min="0" max="10" value="5" oninput="document.getElementById('uv').textContent=this.value"><div id="uv" class="big">5</div>
@@ -2418,7 +2418,7 @@ const reference = liveValue != null
       <span class="status ${record.saved ? "on" : "off"}">${badge}</span></div>
       ${betReceipt(record.lines, entrySnapshot, record.betMode)}${result}${resultTimingHtml(record)}
       ${record.settled && officialResult ? `<a class="link" href="${officialResult}" target="_blank" rel="noopener noreferrer">公式結果と払戻を照合 ↗</a>` : ""}
-      <div class="recgrid"><span>自分の納得度</span><b>${record.conf}/10</b><span>参加前の現金衝動</span><b>${record.urge}/10</b>
+      <div class="recgrid"><span>参加前の自信</span><b>${record.conf}/10</b><span>参加前の現金衝動</span><b>${record.urge}/10</b>
       <span>理由</span><b>${esc(record.reason || "未入力")}</b><span>仮想投票へ置換</span><b>${fmt(record.saved)}円</b>
       ${record.behaviorReviewed ? `<span>参加後の現金衝動</span><b>${record.afterUrge ?? "—"}/10</b><span>追い上げ衝動</span><b>${record.chaseUrge ?? "—"}/10</b>${record.cashWouldHaveWonUrge == null ? "" : `<span>「現金なら」の強さ</span><b>${record.cashWouldHaveWonUrge}/10</b>`}` : ""}</div>
       ${canReviewAfter(record) ? `<button class="btn secondary full" onclick="reviewAfter('${record.id}')">レース後の行動を記録</button>` : ""}
@@ -2671,7 +2671,7 @@ const reference = liveValue != null
       <div class="membership-points membership-selectable" role="group" aria-label="PILOTプラン">
         <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>基本5項目・安全機能・今日の小さな気づき1件</span></button>
         <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="selectPilotPlan('bronze')"><b>BRONZE / MAMO RECORD</b><span>7日・30日比較、100Bや参加理由ごとの単独パターン</span></button>
-        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER / MAMO INSIGHT</b><span>勝敗直後・納得度・衝動を組み合わせた週間分析</span></button>
+        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="selectPilotPlan('silver')"><b>SILVER / MAMO INSIGHT</b><span>結果後の感情・参加前の自信・衝動を組み合わせた週間分析</span></button>
         <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="selectPilotPlan('gold')"><b>GOLD / MAMO PRESS</b><span>朝刊・週間・月刊、長期変化、選んだテーマの深掘り</span></button>
       </div>
       <button id="membershipDeepInterview" class="btn secondary full membership-deep-action" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ（GOLD）</button>

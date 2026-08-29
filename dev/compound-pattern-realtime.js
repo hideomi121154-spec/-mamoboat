@@ -41,7 +41,7 @@
     after_miss: "不的中後",
     rapid: "10分以内",
     high_urge: "衝動7以上",
-    low_confidence: "納得度4以下",
+    low_confidence: "自信度4以下",
     live_before: "LIVE後",
   };
 

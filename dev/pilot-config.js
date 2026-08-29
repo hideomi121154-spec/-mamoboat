@@ -167,7 +167,7 @@ window.MAMO_SYNC_READY = loadMamoModule(["device-sync.js?v=20260827-2","device-s
 const MAMO_SCRIPTS = [
   ["decision-event-schema.js?v=20260819-1","decision-event-schema"],
   ["decision-event-collector.js?v=20260819-1","decision-event-collector"],
-  ["decision-event-api-compat.js?v=20260828-8","decision-event-api-compat"],
+  ["decision-event-api-compat.js?v=20260829-1","decision-event-api-compat"],
   ["decision-transition-model.js?v=20260819-2","decision-transition-model"],
   ["intervention-history.js?v=20260819-1","intervention-history"],
   ["baseline-intervention.js?v=20260819-1","baseline-intervention"],

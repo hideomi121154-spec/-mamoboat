@@ -309,13 +309,13 @@
       requiredRank: 1,
       priority: 62 + Math.round(Math.min(20, Math.abs(lowLines - highLines) * 5)),
       evidenceCount: low.length + high.length,
-      eyebrow: "納得度と買い目数",
+      eyebrow: "自信度と買い目数",
       title: lowLines > highLines + .5
-        ? "納得度が低い時ほど、買い目が広がっています"
+        ? "自信度が低い時ほど、買い目が広がっています"
         : highLines > lowLines + .5
-          ? "納得度が高い時の方が、買い目が多めです"
-          : "納得度で、買い目数は大きく変わっていません",
-      observation: `納得度が低い時は平均${one(lowLines)}点・${integer(lowStake)}B。高い時は平均${one(highLines)}点・${integer(highStake)}Bでした。`,
+          ? "自信度が高い時の方が、買い目が多めです"
+          : "自信度で、買い目数は大きく変わっていません",
+      observation: `自信度が低い時は平均${one(lowLines)}点・${integer(lowStake)}B。高い時は平均${one(highLines)}点・${integer(highStake)}Bでした。`,
       evidence: `低い時 ${low.length}回 / 高い時 ${high.length}回`,
       visual: {
         type: "compare",
@@ -426,11 +426,11 @@
       priority: safety ? 96 : 72,
       evidenceCount: mismatch.length + other.length,
       safety,
-      eyebrow: safety ? "安全に関わる気づき" : "納得度と衝動",
+      eyebrow: safety ? "安全に関わる気づき" : "自信度と衝動",
       title: mismatchStake > otherStake * 1.15 || mismatchLines > otherLines + .5
         ? "納得より勢いが先に出た時、参加が広がっています"
         : "納得より勢いが先でも、参加量は増えていません",
-      observation: `納得度が低く現金衝動が高い時は平均${integer(mismatchStake)}B・${one(mismatchLines)}点。その他は${integer(otherStake)}B・${one(otherLines)}点でした。`,
+      observation: `自信度が低く現金衝動が高い時は平均${integer(mismatchStake)}B・${one(mismatchLines)}点。その他は${integer(otherStake)}B・${one(otherLines)}点でした。`,
       evidence: `該当 ${mismatch.length}回 / 比較 ${other.length}回`,
       visual: {
         type: "compare",
@@ -461,8 +461,8 @@
       eyebrow: "参加前と結果後",
       title: highSatisfied > lowSatisfied + .15
         ? "参加前に納得できた勝負ほど、結果後も納得しやすい"
-        : "参加前の納得度だけでは、結果後の気持ちは決まっていません",
-      observation: `参加前の納得度4〜5では、結果後に「納得した」が${percent(highSatisfied)}。納得度1〜2では${percent(lowSatisfied)}でした。`,
+        : "参加前の自信度だけでは、結果後の気持ちは決まっていません",
+      observation: `参加前の自信度4〜5では、結果後に「納得した」が${percent(highSatisfied)}。自信度1〜2では${percent(lowSatisfied)}でした。`,
       evidence: `高い納得 ${high.length}回 / 低い納得 ${low.length}回`,
       visual: {
         type: "compare",
@@ -696,7 +696,7 @@
 
   function nextTier(rank) {
     if (rank === 0) return { label: PLAN_LABEL[1], text: "7日・30日や、100B・「なんとなく」など単独条件ごとの差を確認します。" };
-    if (rank === 1) return { label: PLAN_LABEL[2], text: "不的中直後、納得度、現金衝動など複数条件を組み合わせて確認します。" };
+    if (rank === 1) return { label: PLAN_LABEL[2], text: "不的中直後、自信度、現金衝動など複数条件を組み合わせて確認します。" };
     if (rank === 2) return { label: PLAN_LABEL[3], text: "朝刊・週間・月刊で、30日を超える変化と選んだテーマを届けます。" };
     return null;
   }

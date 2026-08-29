@@ -15,11 +15,10 @@
 
   function eligible(){
     const app=read(AK,{}),s=read(RK,{}),records=Array.isArray(app.records)?app.records:[];
-    s.reflections=s.reflections||{};
     s.postReflections=s.postReflections||{};
     return [...records].reverse().find(r=>{
       const id=rid(r);
-      return id&&s.reflections[id]&&!s.postReflections[id]&&settled(r);
+      return id&&!s.postReflections[id]&&settled(r);
     })||null;
   }
 

@@ -542,8 +542,8 @@
       question = "最初の一回と最後の一回で、気持ちは同じでしたか？";
       evidenceKeys.push("casual_entry");
     } else if (lowAgreementHighUrge > 0) {
-      headline = `納得度4以下・現金衝動7以上を${lowAgreementHighUrge}回記録`;
-      question = "納得度より、参加したい気持ちが強くなった理由はありますか？";
+      headline = `自信度4以下・現金衝動7以上を${lowAgreementHighUrge}回記録`;
+      question = "自信より、参加したい気持ちが強くなった理由はありますか？";
       evidenceKeys.push("low_agreement_high_urge");
     }
 
