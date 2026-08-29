@@ -15,8 +15,15 @@ assert.doesNotMatch(record, /show\(r,"pre"\)/);
 assert.match(record, /captureAirBet\(r,true\)/);
 assert.match(record, /showPost\(c\)/);
 assert.match(record, /結果を見て、今は？/);
+assert.match(record, /OFFICIAL RACE RESULT/);
+assert.match(record, /確定着順/);
+assert.match(record, /AIR BET RESULT/);
+assert.match(record, /あなたの買い目/);
+assert.match(record, /resultHtml\(r\)/);
+assert.ok(record.indexOf('resultHtml(r)') < record.indexOf('結果を見て、いちばん近い気持ちは？'));
 
 assert.doesNotMatch(resultFirst, /s\.reflections\[id\]/);
 assert.match(resultFirst, /!s\.postReflections\[id\]&&settled\(r\)/);
+assert.doesNotMatch(resultFirst, /MutationObserver/);
 
-console.log("MAMO RECORD asks only after the race result and reuses pre-bet inputs");
+console.log("MAMO RECORD shows the official result and AIR BET outcome before asking once");

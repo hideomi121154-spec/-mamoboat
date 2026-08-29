@@ -351,7 +351,7 @@ assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=
 assert.match(indexSource, /onboard-cover-art/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /pilot-config\.js\?v=20260829-1/);
+assert.match(indexSource, /pilot-config\.js\?v=20260829-2/);
 assert.match(indexSource, /app\.js\?v=20260829-1/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
@@ -559,7 +559,7 @@ assert.match(shopMarketplaceSource, /これは値引き額ではありません/
 assert.match(shopMarketplaceSource, /実際の損失・貯金を補填するものではなく/);
 assert.doesNotMatch(shopMarketplaceSource, /損失を取り返|実質無料|MAMO BOATのおかげ/);
 assert.equal(fs.existsSync(path.join(__dirname, "..", "mamo-shop-real-products.js")), false);
-assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260829-1/);
+assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260829-2/);
 assert.match(swRefreshSource, /Service Worker refresh v27/);
 
 console.log("logic tests OK");
