@@ -1,7 +1,9 @@
 name: One-shot pressroom membership refactor
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - agent/extract-pressroom-membership
 
 permissions:
   contents: write
@@ -18,7 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: Extract membership controller
-        run: python .github/scripts/refactor_pressroom_membership.py
+        run: |
+          python .github/scripts/refactor_pressroom_membership.py
+          git checkout -- .github/workflows/test.yml
 
       - name: Validate extracted module
         run: |
