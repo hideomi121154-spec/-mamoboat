@@ -49,7 +49,7 @@
     return;
   }
   const script = document.createElement("script");
-  script.src = "mamo-shop.js?v=20260830-1";
+  script.src = "mamo-shop.js?v=20260830-2";
   script.async = true;
   script.dataset.mamoShop = "pilot";
   script.onload = loadBenefits;
