@@ -50,10 +50,10 @@ for (let index = 0; index < 25; index += 1) observerCallback();
 assert.equal(titleWrites, 1, "observer callbacks must not observe their own text write forever");
 assert.doesNotMatch(source, /queueMicrotask\(enhanceBuilder\)/);
 
-// Development-only navigation experiments must not alter production hit testing.
-assert.doesNotMatch(compatibility, /mamo-shop\.js/);
+// SHOP may exist, but the abandoned horizontal-navigation experiment must stay unloaded.
+assert.match(compatibility, /mamo-shop\.js\?v=20260830-1/);
+assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
-assert.doesNotMatch(compatibility, /mamo-shop-record-benefits\.js/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260830-2/);
 
 console.log("iOS race event-loop regression checks passed");
