@@ -31,13 +31,10 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true }); else boot();
 })();
 
-(() => {"use strict";if(document.querySelector('script[data-mamo-shop="pilot"]'))return;const script=document.createElement("script");script.src="mamo-shop.js?v=20260820-1";script.async=true;script.dataset.mamoShop="pilot";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-record="phase1"]'))return;const script=document.createElement("script");script.src="mamo-record.js?v=20260829-3";script.async=true;script.dataset.mamoRecord="phase1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-record-dismiss-fix]'))return;const script=document.createElement("script");script.src="mamo-record-dismiss-fix.js?v=20260829-3";script.async=true;script.dataset.mamoRecordDismissFix="1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-air-real-selection-fix]'))return;const script=document.createElement("script");script.src="air-real-selection-fix.js?v=20260830-1";script.async=true;script.dataset.mamoAirRealSelectionFix="1";document.head.appendChild(script);})();
-(() => {"use strict";if(document.querySelector('script[data-mamo-bet-review-flow]'))return;const script=document.createElement("script");script.src="bet-review-flow.js?v=20260830-1";script.async=true;script.dataset.mamoBetReviewFlow="1";document.head.appendChild(script);})();
-(() => {"use strict";if(document.querySelector('script[data-mamo-bottom-nav="horizontal"]'))return;const script=document.createElement("script");script.src="bottom-nav-horizontal.js?v=20260820-1";script.async=true;script.dataset.mamoBottomNav="horizontal";document.head.appendChild(script);})();
-(() => {"use strict";if(document.querySelector('script[data-mamo-shop-record-benefits="phase5"]'))return;const script=document.createElement("script");script.src="mamo-shop-record-benefits.js?v=20260828-1";script.async=true;script.dataset.mamoShopRecordBenefits="phase5";document.head.appendChild(script);})();
+(() => {"use strict";if(document.querySelector('script[data-mamo-bet-review-flow]'))return;const script=document.createElement("script");script.src="bet-review-flow.js?v=20260830-2";script.async=true;script.dataset.mamoBetReviewFlow="1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-home-record-balance]'))return;const script=document.createElement("script");script.src="home-record-balance.js?v=20260828-1";script.async=true;script.dataset.mamoHomeRecordBalance="1";document.head.appendChild(script);})();
 
 /* MAMO VALUE marketplace: factual AIR BET amount comparison + live or fallback market links. */

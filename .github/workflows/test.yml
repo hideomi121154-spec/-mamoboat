@@ -47,6 +47,7 @@ jobs:
           node --check dev/mamo-shop-marketplace.js
           node --check dev/mamo-shop-record-benefits.js
           node --check dev/home-record-balance.js
+          node --check dev/bet-review-flow.js
           node --check dev/behavior-science.js
           node --check tests/master-room.test.js
           node --check tests/mamokamo-asset.test.js
@@ -59,6 +60,7 @@ jobs:
           node tests/master-room.test.js
           node tests/mamokamo-asset.test.js
           node tests/ios-navigation-regression.test.js
+          node tests/ios-race-event-loop-regression.test.js
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/brand-theme.test.js
           node --test dev/tests/shop-coupon.test.js

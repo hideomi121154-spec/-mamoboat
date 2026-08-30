@@ -33,8 +33,10 @@ test("member benefits are placed after the product grid", () => {
   assert.match(benefits, /商品案内の最後に、会員特典。/);
 });
 
-test("coupon release uses fresh client assets", () => {
-  assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260828-1/);
+test("SHOP pilot stays isolated from the production navigation", () => {
+  assert.doesNotMatch(compatibility, /mamo-shop\.js/);
+  assert.doesNotMatch(compatibility, /mamo-shop-record-benefits\.js/);
+  assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
   assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
 });
