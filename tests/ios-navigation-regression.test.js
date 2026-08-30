@@ -11,6 +11,7 @@ const app = read("dev/app.js");
 const html = read("dev/index.html");
 const touchRollback = read("dev/home-deadline-touch-fix.js");
 const compatibility = read("dev/decision-event-api-compat.js");
+const shop = read("dev/mamo-shop.js");
 
 // The story reader must use one fixed compositor layer. A nested fixed CTA can
 // leave a stale iOS hit-test layer after its parent is removed.
@@ -45,9 +46,11 @@ assert.match(app, /item\.classList\.toggle\("active", item\.id === `nav-\$\{id\}
 assert.doesNotMatch(touchRollback, /addEventListener\s*\(/);
 assert.doesNotMatch(touchRollback, /preventDefault\s*\(/);
 
-// SHOP is allowed as a normal static-navigation item. The abandoned horizontal
-// swipe experiment must stay unloaded because it changed iOS hit testing.
+// SHOP uses native CSS overflow only. The abandoned whole-app horizontal
+// navigation experiment must stay unloaded because it changed iOS hit testing.
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
-assert.match(compatibility, /mamo-shop\.js\?v=20260830-1/);
+assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);
+assert.match(shop, /overflow-x:auto!important/);
+assert.match(shop, /touch-action:pan-x/);
 
 console.log("iOS navigation regression checks passed");
