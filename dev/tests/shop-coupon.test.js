@@ -5,6 +5,7 @@ const test = require("node:test");
 
 const devRoot = path.resolve(__dirname, "..");
 const marketplace = fs.readFileSync(path.join(devRoot, "mamo-shop-marketplace.js"), "utf8");
+const shop = fs.readFileSync(path.join(devRoot, "mamo-shop.js"), "utf8");
 const benefits = fs.readFileSync(path.join(devRoot, "mamo-shop-record-benefits.js"), "utf8");
 const homeBalance = fs.readFileSync(path.join(devRoot, "home-record-balance.js"), "utf8");
 const compatibility = fs.readFileSync(path.join(devRoot, "decision-event-api-compat.js"), "utf8");
@@ -35,13 +36,23 @@ test("member benefits are placed after the product grid", () => {
 });
 
 test("SHOP is restored without the abandoned horizontal navigation", () => {
-  assert.match(compatibility, /mamo-shop\.js\?v=20260830-1/);
+  assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);
   assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
   assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
   assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
-  assert.match(serviceWorker, /mamo-shop\.js\?v=20260830-1/);
+  assert.match(serviceWorker, /mamo-shop\.js\?v=20260830-2/);
   assert.match(serviceWorker, /mamo-shop-record-benefits\.js\?v=20260830-1/);
+});
+
+test("mobile bottom nav stays one row and scrolls only inside the nav", () => {
+  assert.match(shop, /display:flex!important/);
+  assert.match(shop, /flex-wrap:nowrap!important/);
+  assert.match(shop, /overflow-x:auto!important/);
+  assert.match(shop, /overflow-y:hidden!important/);
+  assert.match(shop, /touch-action:pan-x/);
+  assert.match(shop, /flex:0 0 68px!important/);
+  assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
 });
 
 test("product cards are ready for Rakuten point multipliers", () => {
