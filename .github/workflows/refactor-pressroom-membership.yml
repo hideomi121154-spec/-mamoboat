@@ -1,9 +1,7 @@
 name: One-shot pressroom membership refactor
 
 on:
-  push:
-    branches:
-      - agent/extract-pressroom-membership
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -42,7 +40,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/refactor-pressroom-membership.yml .github/scripts/refactor_pressroom_membership.py
+          git rm .github/scripts/refactor_pressroom_membership.py
           git add -A
           git diff --cached --check
           git commit -m "Extract pressroom membership controller"
