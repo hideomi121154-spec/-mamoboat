@@ -1605,7 +1605,7 @@
     else form[index].add(boat);
     refreshBuilder();
   };
- async function addCombos(combos) {
+  async function addCombos(combos) {
     const seen = new Set(cart.map(
       (line) => `${C.normalizeBetType(line.betType)}:${C.canonicalCombo(line.combo, line.betType)}`
     ));
@@ -1613,8 +1613,10 @@
     const raceItem = race(S.venue, S.raceNo);
        let liveOdds = null;
 
+    let liveOddsTimeout = null;
+    const liveOddsController = typeof AbortController === "function" ? new AbortController() : null;
     try {
-      const oddsResponse = await fetch(
+      const liveOddsRequest = fetch(
         "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-odds",
         {
           method: "POST",
@@ -1627,10 +1629,20 @@
             raceNo: S.raceNo,
             betType,
           }),
+          ...(liveOddsController ? { signal: liveOddsController.signal } : {}),
         }
       );
+      const oddsResponse = await Promise.race([
+        liveOddsRequest,
+        new Promise((resolve) => {
+          liveOddsTimeout = setTimeout(() => {
+            liveOddsController?.abort();
+            resolve(null);
+          }, 1800);
+        }),
+      ]);
 
-      if (oddsResponse.ok) {
+      if (oddsResponse?.ok) {
         const oddsPayload = await oddsResponse.json();
 
         if (
@@ -1642,7 +1654,11 @@
         }
       }
     } catch (error) {
-      console.warn("リアルタイム倍率の取得に失敗しました", error);
+      if (error?.name !== "AbortError") {
+        console.warn("リアルタイム倍率の取得に失敗しました", error);
+      }
+    } finally {
+      if (liveOddsTimeout !== null) clearTimeout(liveOddsTimeout);
     }
     combos.forEach((combo) => {
       const canonical = C.canonicalCombo(combo, betType).split("-").map(Number);
@@ -1684,11 +1700,15 @@ const reference = liveValue != null
         ? `${added}点を追加しました。続けて別の買い目を選べます。`
         : "同じ買い目はすでに追加されています。";
     }
+    return added;
   }
 
   window.addNormal = () => {
-    if (!normal.every(Boolean)) return alert(`${C.BET_TYPES[betType].picks}艇を選択してください。`);
-    addCombos([[...normal]]);
+    if (!normal.every(Boolean)) {
+      alert(`${C.BET_TYPES[betType].picks}艇を選択してください。`);
+      return Promise.resolve(0);
+    }
+    return addCombos([[...normal]]);
   };
 
   function selections(items, count, ordered) {
@@ -1711,11 +1731,17 @@ const reference = liveValue != null
   window.addBox = () => {
     const spec = C.BET_TYPES[betType];
     const boats = [...box];
-    if (boats.length < spec.picks) return alert(`${spec.picks}艇以上選択してください。`);
-    addCombos(selections(boats, spec.picks, spec.ordered));
+    if (boats.length < spec.picks) {
+      alert(`${spec.picks}艇以上選択してください。`);
+      return Promise.resolve(0);
+    }
+    return addCombos(selections(boats, spec.picks, spec.ordered));
   };
   window.addForm = () => {
-    if (form.some((items) => !items.size)) return alert("各候補を選択してください。");
+    if (form.some((items) => !items.size)) {
+      alert("各候補を選択してください。");
+      return Promise.resolve(0);
+    }
     const combos = [];
     const walk = (index, selected) => {
       if (index === form.length) {
@@ -1727,7 +1753,7 @@ const reference = liveValue != null
       });
     };
     walk(0, []);
-    addCombos(combos);
+    return addCombos(combos);
   };
 
   function refreshBuilder() {

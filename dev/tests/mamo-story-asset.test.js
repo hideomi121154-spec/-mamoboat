@@ -14,8 +14,8 @@ test("MAMO STORY uses 16 same-origin panel images", () => {
   assert.match(source, /\.\/assets\/mamo-story\/mamo-story-/);
   assert.match(source, /class="story-panel"/);
   assert.doesNotMatch(source, /raw\.githubusercontent\.com|mamo-story-image(?:-v9)?\.txt|createObjectURL|atob\(/);
-  assert.match(pilotSource, /sw-refresh\.js\?v=20260829-29/);
-  assert.match(refreshSource, /mamo-story\.js\?v=20260827-3/);
+  assert.match(pilotSource, /sw-refresh\.js\?v=20260831-35/);
+  assert.match(refreshSource, /mamo-story\.js\?v=20260830-4/);
   assert.match(source, /destination:\"mamo_story_completed\"/);
 });
 

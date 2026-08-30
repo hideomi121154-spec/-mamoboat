@@ -11,7 +11,7 @@ assert.match(publicHtml, /const latest = new URL\("dev\/", current\)/);
 assert.match(publicHtml, /latest\.search = current\.search/);
 assert.match(publicHtml, /latest\.hash = current\.hash/);
 assert.match(publicHtml, /window\.location\.replace\(latest\.href\)/);
-assert.match(latestHtml, /growth-entry\.js\?v=20260827-5/);
+assert.match(latestHtml, /growth-entry\.js\?v=20260830-1/);
 assert.ok(fs.existsSync(path.join(root, "dev", "mamo-story.js")));
 
 const redirectScript = publicHtml.match(/<script>([\s\S]*?)<\/script>/)?.[1];

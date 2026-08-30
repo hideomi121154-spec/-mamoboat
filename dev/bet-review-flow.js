@@ -14,7 +14,7 @@
     const count = document.getElementById("cartCount")?.textContent || "";
     if (/\b[1-9]\d*\s*点/.test(count)) return true;
     const cart = document.getElementById("cart");
-    return !!String(cart?.textContent || "").trim();
+    return !!cart?.querySelector?.(".cartrow");
   }
 
   function activeModeLabel() {
@@ -41,24 +41,21 @@
     if (!currentDraftIsComplete()) return false;
     const label = activeModeLabel();
     if (/BOX/i.test(label) && typeof window.addBox === "function") {
-      window.addBox();
-      return true;
+      return window.addBox();
     }
     if (/フォーメーション/.test(label) && typeof window.addForm === "function") {
-      window.addForm();
-      return true;
+      return window.addForm();
     }
     if (typeof window.addNormal === "function") {
-      window.addNormal();
-      return true;
+      return window.addNormal();
     }
     return false;
   }
 
-  function showSelectionHint() {
+  function showSelectionHint(message = "買い目を選んでから「AIR BETを確認」を押してください。") {
     const notice = document.getElementById("addedNotice") || document.getElementById("cartSum");
     if (notice) {
-      notice.textContent = "買い目を選んでから「AIR BETを確認」を押してください。";
+      notice.textContent = message;
       notice.classList.add("mamo-review-selection-hint");
     }
   }
@@ -118,16 +115,41 @@
     }
   }
 
-  window.reviewBet = () => {
-    const draftComplete = currentDraftIsComplete();
-    if (draftComplete) addCurrentDraft();
-    else if (!cartHasItems()) {
-      showSelectionHint();
-      return;
+  let reviewInFlight = false;
+  window.reviewBet = async () => {
+    if (reviewInFlight) return;
+    const reviewButton = document.querySelector('button[onclick="reviewBet()"]');
+    const originalLabel = reviewButton?.textContent || "AIR BETを確認";
+    reviewInFlight = true;
+    if (reviewButton) {
+      reviewButton.disabled = true;
+      reviewButton.textContent = "確認中…";
     }
 
-    originalReviewBet();
-    setTimeout(enhanceReviewModal, 0);
+    try {
+      if (currentDraftIsComplete()) {
+        await Promise.resolve(addCurrentDraft());
+      } else if (!cartHasItems()) {
+        showSelectionHint();
+        return;
+      }
+
+      if (!cartHasItems()) {
+        showSelectionHint("買い目を追加できませんでした。通信状態を確認して、もう一度お試しください。");
+        return;
+      }
+      originalReviewBet();
+      setTimeout(enhanceReviewModal, 0);
+    } catch (error) {
+      console.error("AIR BET確認画面を開けませんでした", error);
+      showSelectionHint("確認画面を開けませんでした。もう一度お試しください。");
+    } finally {
+      reviewInFlight = false;
+      if (reviewButton) {
+        reviewButton.disabled = false;
+        reviewButton.textContent = originalLabel;
+      }
+    }
   };
 
   const style = document.createElement("style");

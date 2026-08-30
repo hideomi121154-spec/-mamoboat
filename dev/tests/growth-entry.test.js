@@ -16,7 +16,7 @@ test("X entry is isolated behind campaign parameters", () => {
   assert.match(source, /destination/);
   assert.match(source, /mamoboat_growth_entry_dismissed_v1/);
   assert.match(source, /sessionStorage\.setItem/);
-  assert.match(html, /growth-entry\.js\?v=20260827-5/);
+  assert.match(html, /growth-entry\.js\?v=20260830-1/);
 });
 
 test("growth funnel uses the consent-aware existing event queue", () => {
@@ -45,5 +45,5 @@ test("returning users leave the story directly for home without reopening onboar
     handler[1].indexOf("hasAcceptedOnboarding()") < handler[1].indexOf("airBetOnboarding = true"),
     "returning-user check must run before first-voyage onboarding is opened"
   );
-  assert.match(html, /app\.js\?v=20260829-2/);
+  assert.match(html, /app\.js\?v=20260831-2/);
 });
