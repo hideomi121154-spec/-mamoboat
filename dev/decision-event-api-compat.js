@@ -31,6 +31,31 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true }); else boot();
 })();
 
+/* Restore SHOP itself, but deliberately keep the abandoned horizontal navigation unloaded. */
+(() => {
+  "use strict";
+  const loadBenefits = () => {
+    if (document.querySelector('script[data-mamo-shop-record-benefits="phase5"]')) return;
+    const benefits = document.createElement("script");
+    benefits.src = "mamo-shop-record-benefits.js?v=20260830-1";
+    benefits.async = true;
+    benefits.dataset.mamoShopRecordBenefits = "phase5";
+    document.head.appendChild(benefits);
+  };
+  if (window.__MAMO_SHOP_PILOT__) return loadBenefits();
+  const existing = document.querySelector('script[data-mamo-shop="pilot"]');
+  if (existing) {
+    existing.addEventListener?.("load", loadBenefits, { once: true });
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = "mamo-shop.js?v=20260830-1";
+  script.async = true;
+  script.dataset.mamoShop = "pilot";
+  script.onload = loadBenefits;
+  document.head.appendChild(script);
+})();
+
 (() => {"use strict";if(document.querySelector('script[data-mamo-record="phase1"]'))return;const script=document.createElement("script");script.src="mamo-record.js?v=20260829-3";script.async=true;script.dataset.mamoRecord="phase1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-record-dismiss-fix]'))return;const script=document.createElement("script");script.src="mamo-record-dismiss-fix.js?v=20260829-3";script.async=true;script.dataset.mamoRecordDismissFix="1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-air-real-selection-fix]'))return;const script=document.createElement("script");script.src="air-real-selection-fix.js?v=20260830-1";script.async=true;script.dataset.mamoAirRealSelectionFix="1";document.head.appendChild(script);})();
