@@ -77,7 +77,7 @@
     let script = document.querySelector('script[data-mamo-story="1"]');
     if (!script) {
       script = document.createElement("script");
-      script.src = "mamo-story.js?v=20260827-3";
+      script.src = "mamo-story.js?v=20260830-4";
       script.async = true;
       script.dataset.mamoStory = "1";
       document.head.appendChild(script);

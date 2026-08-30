@@ -1386,7 +1386,8 @@
     }
     S.raceNo = raceItem.number;
     const now = Date.now();
-    const chips = venueItem.races.map((item) => {
+    const venueRaces = Array.isArray(venueItem.races) ? venueItem.races : [];
+    const chips = venueRaces.map((item) => {
       const closed = !!item.closeTime && now >= new Date(item.closeTime).getTime();
       const confirmed = !!item.result;
       return `<button class="racechip ${closed ? "closed" : ""} ${confirmed ? "confirmed" : ""} ${item.number === raceItem.number ? "active" : ""}"
@@ -1394,11 +1395,14 @@
         title="${closed ? "締切済み・結果閲覧" : `締切 ${timeText(item.closeTime)}`}"
         onclick="selectRace(${item.number})">${item.number}R</button>`;
     }).join("");
-    const entries = `<div class="boats">${raceItem.entries.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く">
+    const entriesList = Array.isArray(raceItem.entries) ? raceItem.entries : [];
+    const entries = entriesList.length === 6
+      ? `<div class="boats">${entriesList.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く">
       <div class="num b${entry.boatNumber}">${entry.boatNumber}</div>
       <div><b>${esc(entry.name)}</b><div class="tiny">${entry.racerNumber} ${esc(entry.branch || "")}${entry.age ? ` / ${entry.age}歳` : ""}${entry.weight ? ` / ${entry.weight}kg` : ""}</div></div>
       <div><b class="tiny">${esc(entry.class || "")}</b><div class="tiny">${entry.motorNumber ? `M${entry.motorNumber}` : ""}${entry.boatPart ? ` / B${entry.boatPart}` : ""}</div><div class="racerlinkhint">公式情報 ↗</div></div>
-    </a>`).join("")}</div>`;
+    </a>`).join("")}</div>`
+      : '<div class="notice warn">番組表を取得中です。6艇の公式データが揃うまでAIR BETを停止しています。</div>';
     const open = closeState(raceItem);
     lastRenderedRaceOpen = open;
     const raceStatus = raceStatusInfo(raceItem);
@@ -1895,7 +1899,7 @@ const reference = liveValue != null
       eventGradeLabel: event.gradeLabel,
       eventDayLabel: event.dayLabel,
       betMode: mode,
-      entrySnapshot: raceItem.entries.map((entry) => ({
+      entrySnapshot: (Array.isArray(raceItem.entries) ? raceItem.entries : []).map((entry) => ({
         boatNumber: entry.boatNumber,
         racerNumber: entry.racerNumber,
         name: entry.name,
