@@ -8,6 +8,7 @@ const marketplace = fs.readFileSync(path.join(devRoot, "mamo-shop-marketplace.js
 const benefits = fs.readFileSync(path.join(devRoot, "mamo-shop-record-benefits.js"), "utf8");
 const homeBalance = fs.readFileSync(path.join(devRoot, "home-record-balance.js"), "utf8");
 const compatibility = fs.readFileSync(path.join(devRoot, "decision-event-api-compat.js"), "utf8");
+const serviceWorker = fs.readFileSync(path.join(devRoot, "sw.js"), "utf8");
 const edgeFunction = fs.readFileSync(path.join(devRoot, "..", "supabase", "functions", "shop-rakuten", "index.ts"), "utf8");
 
 test("SHOP leads with public Rakuten coupon guidance", () => {
@@ -33,12 +34,14 @@ test("member benefits are placed after the product grid", () => {
   assert.match(benefits, /商品案内の最後に、会員特典。/);
 });
 
-test("SHOP pilot stays isolated from the production navigation", () => {
-  assert.doesNotMatch(compatibility, /mamo-shop\.js/);
-  assert.doesNotMatch(compatibility, /mamo-shop-record-benefits\.js/);
+test("SHOP is restored without the abandoned horizontal navigation", () => {
+  assert.match(compatibility, /mamo-shop\.js\?v=20260830-1/);
+  assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
   assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
   assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
+  assert.match(serviceWorker, /mamo-shop\.js\?v=20260830-1/);
+  assert.match(serviceWorker, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 });
 
 test("product cards are ready for Rakuten point multipliers", () => {
