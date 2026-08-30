@@ -45,9 +45,9 @@ assert.match(app, /item\.classList\.toggle\("active", item\.id === `nav-\$\{id\}
 assert.doesNotMatch(touchRollback, /addEventListener\s*\(/);
 assert.doesNotMatch(touchRollback, /preventDefault\s*\(/);
 
-// Production keeps the static bottom navigation. The abandoned horizontal
-// swipe experiment and its development-only SHOP item must stay unloaded.
+// SHOP is allowed as a normal static-navigation item. The abandoned horizontal
+// swipe experiment must stay unloaded because it changed iOS hit testing.
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
-assert.doesNotMatch(compatibility, /mamo-shop\.js/);
+assert.match(compatibility, /mamo-shop\.js\?v=20260830-1/);
 
 console.log("iOS navigation regression checks passed");
