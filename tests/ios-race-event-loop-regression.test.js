@@ -6,6 +6,7 @@ const vm = require("node:vm");
 const root = path.join(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "dev", "bet-review-flow.js"), "utf8");
 const compatibility = fs.readFileSync(path.join(root, "dev", "decision-event-api-compat.js"), "utf8");
+const shop = fs.readFileSync(path.join(root, "dev", "mamo-shop.js"), "utf8");
 
 let observerCallback = null;
 let titleWrites = 0;
@@ -50,10 +51,13 @@ for (let index = 0; index < 25; index += 1) observerCallback();
 assert.equal(titleWrites, 1, "observer callbacks must not observe their own text write forever");
 assert.doesNotMatch(source, /queueMicrotask\(enhanceBuilder\)/);
 
-// SHOP may exist, but the abandoned horizontal-navigation experiment must stay unloaded.
-assert.match(compatibility, /mamo-shop\.js\?v=20260830-1/);
+// SHOP may exist, but only its own native overflow is allowed; the abandoned
+// whole-app horizontal-navigation experiment must stay unloaded.
+assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);
 assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
+assert.match(shop, /overflow-x:auto!important/);
+assert.doesNotMatch(shop, /touchstart|touchmove|preventDefault/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260830-2/);
 
 console.log("iOS race event-loop regression checks passed");
