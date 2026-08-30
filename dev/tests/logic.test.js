@@ -561,6 +561,6 @@ assert.doesNotMatch(shopMarketplaceSource, /損失を取り返|実質無料|MAMO
 assert.equal(fs.existsSync(path.join(__dirname, "..", "mamo-shop-real-products.js")), false);
 assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260830-4/);
 assert.match(pilotConfigSource, /behavior-science\.js\?v=20260829-2/);
-assert.match(swRefreshSource, /Service Worker refresh v34/);
+assert.match(swRefreshSource, /Service Worker refresh v35/);
 
 console.log("logic tests OK");

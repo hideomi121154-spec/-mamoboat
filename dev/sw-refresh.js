@@ -1,4 +1,4 @@
-/* MAMO BOAT Service Worker refresh v34 — release the iOS race event-loop fix. */
+/* MAMO BOAT Service Worker refresh v35 — load the extracted pressroom membership module. */
 (()=>{
   "use strict";
   const currentJstLabel=()=>{const parts=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).map(p=>[p.type,p.value]));const y=Number(parts.year),m=Number(parts.month),d=Number(parts.day);const weekday=["SUN","MON","TUE","WED","THU","FRI","SAT"][new Date(Date.UTC(y,m-1,d)).getUTCDay()];return `${parts.year}.${parts.month}.${parts.day} ${weekday}`;};
