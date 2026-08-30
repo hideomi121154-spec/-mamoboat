@@ -76,7 +76,11 @@
     });
 
     const title = document.querySelector(".cart-title small");
-    if (title) title.textContent = "確認画面から、追加・修正できます";
+    const titleCopy = "確認画面から、追加・修正できます";
+    // This function runs from a child-list observer. An unconditional
+    // textContent assignment observes its own write and can starve Safari's
+    // event loop forever as soon as the race screen is rendered.
+    if (title && title.textContent !== titleCopy) title.textContent = titleCopy;
   }
 
   function enhanceReviewModal() {
@@ -142,7 +146,7 @@
   function boot() {
     enhanceBuilder();
     const raceView = document.getElementById("raceView");
-    if (raceView) new MutationObserver(() => queueMicrotask(enhanceBuilder)).observe(raceView, { childList: true, subtree: true });
+    if (raceView) new MutationObserver(enhanceBuilder).observe(raceView, { childList: true, subtree: true });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();

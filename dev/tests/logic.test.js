@@ -559,8 +559,8 @@ assert.match(shopMarketplaceSource, /これは値引き額ではありません/
 assert.match(shopMarketplaceSource, /実際の損失・貯金を補填するものではなく/);
 assert.doesNotMatch(shopMarketplaceSource, /損失を取り返|実質無料|MAMO BOATのおかげ/);
 assert.equal(fs.existsSync(path.join(__dirname, "..", "mamo-shop-real-products.js")), false);
-assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260829-3/);
+assert.match(pilotConfigSource, /decision-event-api-compat\.js\?v=20260830-4/);
 assert.match(pilotConfigSource, /behavior-science\.js\?v=20260829-2/);
-assert.match(swRefreshSource, /Service Worker refresh v29/);
+assert.match(swRefreshSource, /Service Worker refresh v34/);
 
 console.log("logic tests OK");

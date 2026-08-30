@@ -10,6 +10,7 @@ const refresh = read("dev/sw-refresh.js");
 const app = read("dev/app.js");
 const html = read("dev/index.html");
 const touchRollback = read("dev/home-deadline-touch-fix.js");
+const compatibility = read("dev/decision-event-api-compat.js");
 
 // The story reader must use one fixed compositor layer. A nested fixed CTA can
 // leave a stale iOS hit-test layer after its parent is removed.
@@ -43,5 +44,10 @@ assert.match(app, /item\.classList\.toggle\("active", item\.id === `nav-\$\{id\}
 // The emergency global touch/click shim stays removed.
 assert.doesNotMatch(touchRollback, /addEventListener\s*\(/);
 assert.doesNotMatch(touchRollback, /preventDefault\s*\(/);
+
+// Production keeps the static bottom navigation. The abandoned horizontal
+// swipe experiment and its development-only SHOP item must stay unloaded.
+assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
+assert.doesNotMatch(compatibility, /mamo-shop\.js/);
 
 console.log("iOS navigation regression checks passed");

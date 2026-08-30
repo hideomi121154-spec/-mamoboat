@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v411-ios-navigation-47-dev";
+const CACHE = "mamoboat-v411-ios-race-unlock-48-dev";
 const SHELL = [
   "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
