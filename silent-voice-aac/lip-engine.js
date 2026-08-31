@@ -3,7 +3,23 @@ const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERS
 const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
 const DEFAULT_PHRASES = ["はい","いいえ","ありがとう","助けてください","水が","欲しいです","薬を","ください","今日は","明日は","家族に","病院に","行きたいです","来てください","痛いです","苦しいです","少し","とても","大丈夫です","わかりません"];
-const CALIBRATION_PROMPTS = ["おはようございます","今日はいい天気です","水を飲みたいです","家族に電話してください","病院に行きたいです","少し痛いです","大丈夫です","ありがとうございます","もう一度お願いします","ゆっくり話してください","明日の予定を教えてください","ここで待っています"];
+
+const CALIBRATION_ITEMS = [
+  { text: "赤い傘を持つ兄は、駅へ急ぎます。", reading: "あかいかさをもつあにはえきへいそぎます" },
+  { text: "黄色い服の子が、雲を見て笛を吹きます。", reading: "きいろいふくのこがくもをみてふえをふきます" },
+  { text: "船の上で猫と犬が、海を眺めます。", reading: "ふねのうえでねこといぬがうみをながめます" },
+  { text: "朝、庭の花へ水をやり、鳥の声を聞きます。", reading: "あさにわのはなへみずをやりとりのこえをききます" },
+  { text: "昼、村の店でパンと牛乳を買います。", reading: "ひるむらのみせでぱんとぎゅうにゅうをかいます" },
+  { text: "帰りに本屋へ寄り、レモンを選びます。", reading: "かえりにほんやへよりれもんをえらびます" },
+  { text: "山道を登ると、冷たい風が吹き抜けます。", reading: "やまみちをのぼるとつめたいかぜがふきぬけます" },
+  { text: "若い記者が写真を撮り、ニュースを伝えます。", reading: "わかいきしゃがしゃしんをとりにゅうすをつたえます" },
+  { text: "ジャズとピアノの曲を、ベッドで聞きます。", reading: "じゃずとぴあののきょくをべっどでききます" },
+  { text: "頬を強く押さえ、ゆっくり休みます。", reading: "ほおをつよくおさえゆっくりやすみます" },
+];
+const CALIBRATION_PROMPTS = CALIBRATION_ITEMS.map((item) => item.text);
+const CALIBRATION_READINGS = Object.fromEntries(CALIBRATION_ITEMS.map((item) => [item.text, item.reading]));
+const BASIC_GOJUON = [..."あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"];
+
 const STORAGE_KEY = "silentVoiceAAC.templates.v2";
 const LEGACY_STORAGE_KEY = "silentVoiceAAC.templates.v1";
 const CALIBRATION_KEY = "silentVoiceAAC.calibration.v1";
@@ -19,7 +35,7 @@ function dtwDistance(a,b){const n=a.length,m=b.length;if(!n||!m)return Infinity;
 function safeParse(raw){try{const parsed=JSON.parse(raw||"{}");return parsed&&typeof parsed==="object"&&!Array.isArray(parsed)?parsed:{}}catch{return{}}}
 function loadTemplates(){let parsed=safeParse(localStorage.getItem(STORAGE_KEY));if(!Object.keys(parsed).length){const legacy=safeParse(localStorage.getItem(LEGACY_STORAGE_KEY));if(Object.keys(legacy).length)parsed=legacy}for(const phrase of DEFAULT_PHRASES)if(!Array.isArray(parsed[phrase]))parsed[phrase]=[];for(const [phrase,templates] of Object.entries(parsed))if(!cleanPhrase(phrase)||!Array.isArray(templates))delete parsed[phrase];return parsed}
 function saveTemplates(templates){localStorage.setItem(STORAGE_KEY,JSON.stringify(templates))}
-function loadCalibration(){const parsed=safeParse(localStorage.getItem(CALIBRATION_KEY));if(!parsed.samples||typeof parsed.samples!=="object"||Array.isArray(parsed.samples))parsed.samples={};parsed.version=1;return parsed}
+function loadCalibration(){const parsed=safeParse(localStorage.getItem(CALIBRATION_KEY));if(!parsed.samples||typeof parsed.samples!=="object"||Array.isArray(parsed.samples))parsed.samples={};parsed.version=2;return parsed}
 function saveCalibration(calibration){localStorage.setItem(CALIBRATION_KEY,JSON.stringify(calibration))}
 
 export class LipEngine{
@@ -33,10 +49,12 @@ export class LipEngine{
   async capture(durationMs=2200){const raw=await this.collectRaw(durationMs),normalized=normalizeSequence(raw.seq);if(normalized.length<10)throw new Error("口元を十分に検出できませんでした。");return normalized}
   async captureCalibration(durationMs=5200){const raw=await this.collectRaw(durationMs);return{sequence:normalizeSequence(raw.seq,48),summary:summarizeSequence(raw.seq,raw.durationMs)}}
   calibrationPrompts(){return[...CALIBRATION_PROMPTS]}
+  calibrationReading(prompt){return CALIBRATION_READINGS[prompt]||""}
   calibrationState(){const samples=this.calibration.samples||{},completed=CALIBRATION_PROMPTS.filter(prompt=>samples[prompt]).length;return{completed,total:CALIBRATION_PROMPTS.length,samples,done:completed===CALIBRATION_PROMPTS.length}}
-  saveCalibrationSample(prompt,sample){if(!CALIBRATION_PROMPTS.includes(prompt))throw new Error("指定文が不正です。");if(!sample?.sequence?.length||!sample?.summary)throw new Error("キャリブレーションデータが不足しています。");this.calibration.samples||={};this.calibration.samples[prompt]={prompt,sequence:sample.sequence,summary:sample.summary,capturedAt:new Date().toISOString()};this.calibration.updatedAt=new Date().toISOString();saveCalibration(this.calibration)}
-  clearCalibration(){this.calibration={version:1,samples:{}};saveCalibration(this.calibration)}
-  calibrationProfile(){const records=Object.values(this.calibration.samples||{}).filter(item=>item?.summary);if(!records.length)return null;const avg=pick=>records.reduce((sum,item)=>sum+Number(pick(item)||0),0)/records.length;const latest=records.map(r=>r.capturedAt).filter(Boolean).sort().at(-1)||null;return{sampleCount:records.length,averageInnerOpening:Number(avg(r=>r.summary.mean?.[0]).toFixed(4)),averageOpeningRange:Number(avg(r=>r.summary.range?.[0]).toFixed(4)),averageWidthRatio:Number(avg(r=>r.summary.mean?.[2]).toFixed(4)),averageMotion:Number(avg(r=>r.summary.overallMotion).toFixed(5)),averageFrames:Math.round(avg(r=>r.summary.frames)),updatedAt:latest}}
+  calibrationCoverage(){const samples=this.calibration.samples||{};const completedReadings=CALIBRATION_ITEMS.filter(item=>samples[item.text]).map(item=>item.reading).join("");const chars=new Set([...completedReadings]);const covered=BASIC_GOJUON.filter(kana=>chars.has(kana));const missing=BASIC_GOJUON.filter(kana=>!chars.has(kana));return{covered:covered.length,total:BASIC_GOJUON.length,percent:Math.round(covered.length/BASIC_GOJUON.length*100),missing}}
+  saveCalibrationSample(prompt,sample){if(!CALIBRATION_PROMPTS.includes(prompt))throw new Error("校正文が不正です。");if(!sample?.sequence?.length||!sample?.summary)throw new Error("キャリブレーションデータが不足しています。");this.calibration.samples||={};this.calibration.samples[prompt]={prompt,reading:CALIBRATION_READINGS[prompt]||"",sequence:sample.sequence,summary:sample.summary,capturedAt:new Date().toISOString()};this.calibration.updatedAt=new Date().toISOString();this.calibration.version=2;saveCalibration(this.calibration)}
+  clearCalibration(){this.calibration={version:2,samples:{}};saveCalibration(this.calibration)}
+  calibrationProfile(){const records=CALIBRATION_PROMPTS.map(prompt=>this.calibration.samples?.[prompt]).filter(item=>item?.summary);if(!records.length)return null;const avg=pick=>records.reduce((sum,item)=>sum+Number(pick(item)||0),0)/records.length;const latest=records.map(r=>r.capturedAt).filter(Boolean).sort().at(-1)||null;return{sampleCount:records.length,averageInnerOpening:Number(avg(r=>r.summary.mean?.[0]).toFixed(4)),averageOpeningRange:Number(avg(r=>r.summary.range?.[0]).toFixed(4)),averageWidthRatio:Number(avg(r=>r.summary.mean?.[2]).toFixed(4)),averageMotion:Number(avg(r=>r.summary.overallMotion).toFixed(5)),averageFrames:Math.round(avg(r=>r.summary.frames)),updatedAt:latest}}
   phrases(){const custom=Object.keys(this.templates).filter(phrase=>!DEFAULT_PHRASES.includes(phrase));return[...DEFAULT_PHRASES,...custom.sort((a,b)=>a.localeCompare(b,"ja"))]}
   ensurePhrase(value){const phrase=cleanPhrase(value);if(!phrase)throw new Error("登録する言葉を入力してください。");if(!this.templates[phrase])this.templates[phrase]=[];saveTemplates(this.templates);return phrase}
   addTemplate(value,sequence){const phrase=this.ensurePhrase(value);this.templates[phrase].push(sequence);if(this.templates[phrase].length>5)this.templates[phrase]=this.templates[phrase].slice(-5);saveTemplates(this.templates)}
@@ -44,4 +62,5 @@ export class LipEngine{
   counts(){return Object.fromEntries(this.phrases().map(phrase=>[phrase,this.templates[phrase]?.length||0]))}
   classify(sequence){const scored=[];for(const phrase of this.phrases()){const templates=this.templates[phrase]||[];if(!templates.length)continue;const distances=templates.map(t=>dtwDistance(sequence,t)).sort((a,b)=>a-b),bestTwo=distances.slice(0,Math.min(2,distances.length)),score=bestTwo.reduce((a,b)=>a+b,0)/bestTwo.length;scored.push({phrase,distance:score})}scored.sort((a,b)=>a.distance-b.distance);if(!scored.length)return[];const best=scored[0].distance;return scored.slice(0,3).map(item=>({phrase:item.phrase,distance:item.distance,confidence:Math.round(clamp(100*Math.exp(-2.8*Math.max(0,item.distance-best+0.04)),8,96))}))}
 }
-export{DEFAULT_PHRASES,CALIBRATION_PROMPTS};
+
+export{DEFAULT_PHRASES,CALIBRATION_PROMPTS,CALIBRATION_ITEMS,CALIBRATION_READINGS,BASIC_GOJUON};

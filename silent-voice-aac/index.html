@@ -4,21 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <meta name="description" content="指定文の口パクから本人専用の口形プロファイルを作り、短い言葉を連続入力して文章を読み上げるAAC試作版" />
+  <meta name="description" content="日本語の基本50音を網羅する校正文を口パクし、本人専用の口形プロファイルを作るAAC試作版" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css?v=20260831-4" />
   <title>Silent Voice AAC</title>
   <script type="importmap">
-    {"imports":{"./lip-engine.js":"./lip-engine.js?v=20260831-4"}}
+    {"imports":{"./lip-engine.js":"./lip-engine.js?v=20260831-5"}}
   </script>
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">PERSONAL AAC PROTOTYPE · v0.3.1</p>
+        <p class="eyebrow">PERSONAL AAC PROTOTYPE · v0.5</p>
         <h1>Silent Voice AAC</h1>
-        <p class="subtitle">最初に指定文を口パクして本人の口の動きを記録。その後、登録語をつないで文章として発声します。</p>
+        <p class="subtitle">最初に10本の校正文を口パクするだけ。日本語の基本50音をまんべんなく記録し、本人専用の口の動きの基礎データを作ります。</p>
       </div>
       <div class="privacy-badge">端末内学習</div>
     </header>
@@ -36,16 +36,16 @@
     </section>
 
     <section class="card calibration-card">
-      <div class="section-head"><div><p class="section-kicker">02 CALIBRATION</p><h2>指定文で本人の口を覚える</h2></div><span id="calibrationCount" class="status-pill">0 / 12</span></div>
-      <p class="calibration-lead">画面に出る文章を<strong>声を出さず自然に口パク</strong>してください。口の開き・横幅・動き量・時系列パターンを本人プロファイルとして端末内に保存します。</p>
+      <div class="section-head"><div><p class="section-kicker">02 CALIBRATION</p><h2>10文で基本50音を覚える</h2></div><span id="calibrationCount" class="status-pill">0 / 10</span></div>
+      <p class="calibration-lead">10本の文章には、日本語の基本50音が<strong>全体でまんべんなく入っています</strong>。画面に出る文章を声を出さず自然に口パクしてください。全部読むと本人モデルの基礎登録が完了します。</p>
       <div class="calibration-progress" aria-label="キャリブレーション進捗"><div id="calibrationFill" class="calibration-fill"></div></div>
-      <div class="calibration-prompt"><span id="calibrationPromptNumber" class="prompt-number">1 / 12</span><p id="calibrationPromptText" class="prompt-text">おはようございます</p><small>表示された文章だけを、普段話す速度で口パクしてください。</small></div>
+      <div class="calibration-prompt"><span id="calibrationPromptNumber" class="prompt-number">1 / 10</span><p id="calibrationPromptText" class="prompt-text">赤い傘を持つ兄は、駅へ急ぎます。</p><small>表示された文章だけを、普段話す速度で口パクしてください。</small></div>
       <button id="calibrationCapture" class="btn btn-accent btn-full" type="button" disabled>この文章を口パクで登録（約5秒）</button>
       <div class="calibration-nav"><button id="calibrationPrev" class="btn btn-secondary" type="button">前の文章</button><button id="calibrationNext" class="btn btn-secondary" type="button">次の文章</button></div>
-      <div id="calibrationPromptList" class="calibration-dots" aria-label="指定文一覧"></div>
-      <div id="calibrationProfile" class="profile-summary" aria-live="polite">まだ本人プロファイルはありません。</div>
-      <button id="calibrationReset" class="text-button" type="button">キャリブレーションを最初からやり直す</button>
-      <p class="hint">v0.3ではこのデータを「本人専用の自由文モデル」を作るための基礎データとして保存します。現在の自由な文章認識そのものは、まだ次段階です。</p>
+      <div id="calibrationPromptList" class="calibration-dots" aria-label="校正文一覧"></div>
+      <div id="calibrationProfile" class="profile-summary" aria-live="polite">まだ本人プロファイルはありません。10文すべて読むと登録完了です。</div>
+      <button id="calibrationReset" class="text-button" type="button">50音キャリブレーションを最初からやり直す</button>
+      <p class="hint">この段階では、本人の口形・速度・動き方の基礎データを作ります。未登録の自由文章を高精度に読むには、このデータを音単位へ分解して学習する次段階が必要です。</p>
     </section>
 
     <section class="card">
@@ -81,8 +81,8 @@
       <div class="speak-actions"><button id="speakText" class="btn btn-primary" type="button">読み上げ</button><button id="stopSpeak" class="btn btn-secondary" type="button">読み上げ停止</button></div>
     </section>
 
-    <section class="card privacy-card"><p class="section-kicker">PRIVACY</p><h2>この試作版のデータ扱い</h2><ul><li>カメラ映像そのものは保存しません。</li><li>キャリブレーションでは口の形・動きの数値特徴だけを保存します。</li><li>指定文の学習データと登録語データはブラウザの端末内ストレージに保存します。</li><li>作成中の会話文章はサーバーへ保存しません。</li><li>入力映像は読唇処理のため外部サーバーへ送信しません。</li><li>MediaPipe自体の利用統計・性能メトリクスはGoogleへ送信される場合があります。</li></ul></section>
+    <section class="card privacy-card"><p class="section-kicker">PRIVACY</p><h2>この試作版のデータ扱い</h2><ul><li>カメラ映像そのものは保存しません。</li><li>50音キャリブレーションでは口の形・動きの数値特徴だけを保存します。</li><li>校正文の学習データと登録語データはブラウザの端末内ストレージに保存します。</li><li>作成中の会話文章はサーバーへ保存しません。</li><li>入力映像は読唇処理のため外部サーバーへ送信しません。</li><li>MediaPipe自体の利用統計・性能メトリクスはGoogleへ送信される場合があります。</li></ul></section>
   </main>
-  <script type="module" src="./app.js?v=20260831-4"></script>
+  <script type="module" src="./app.js?v=20260831-5"></script>
 </body>
 </html>
