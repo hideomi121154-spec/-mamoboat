@@ -32,7 +32,8 @@
   ]);
 
   const INTERVENTION_RESULTS = Object.freeze([
-    "air_bet", "skip", "real_intent", "dismissed", "unknown",
+    "air_bet", "skip", "real_intent", "return_to_air", "continue_to_real",
+    "dismissed", "unknown",
   ]);
 
   window.MAMO_DECISION_EVENT_SCHEMA = Object.freeze({

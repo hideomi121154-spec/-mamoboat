@@ -271,6 +271,7 @@
       kind: input.kind || "reflection",
       message_key: input.messageKey || null,
       trigger_key: input.triggerKey || null,
+      details: input.details || null,
     }, context);
     return interventionId;
   }
