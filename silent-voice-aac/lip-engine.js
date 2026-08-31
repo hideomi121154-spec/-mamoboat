@@ -2,8 +2,31 @@ const MP_VERSION = "1.0.1";
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
 const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
-const PHRASES = ["はい", "いいえ", "ありがとう", "水が欲しいです", "痛いです"];
-const STORAGE_KEY = "silentVoiceAAC.templates.v1";
+const DEFAULT_PHRASES = [
+  "はい",
+  "いいえ",
+  "ありがとう",
+  "助けてください",
+  "水が",
+  "欲しいです",
+  "薬を",
+  "ください",
+  "今日は",
+  "明日は",
+  "家族に",
+  "病院に",
+  "行きたいです",
+  "来てください",
+  "痛いです",
+  "苦しいです",
+  "少し",
+  "とても",
+  "大丈夫です",
+  "わかりません",
+];
+
+const STORAGE_KEY = "silentVoiceAAC.templates.v2";
+const LEGACY_STORAGE_KEY = "silentVoiceAAC.templates.v1";
 
 function dist(a, b) {
   const dx = a.x - b.x;
@@ -13,6 +36,10 @@ function dist(a, b) {
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
+}
+
+function cleanPhrase(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").slice(0, 40);
 }
 
 function extractFeatures(lm) {
@@ -95,16 +122,32 @@ function dtwDistance(a, b) {
   return prev[m] / (n + m);
 }
 
-function loadTemplates() {
+function safeParse(raw) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    for (const phrase of PHRASES) {
-      if (!Array.isArray(parsed[phrase])) parsed[phrase] = [];
-    }
-    return parsed;
+    const parsed = JSON.parse(raw || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
-    return Object.fromEntries(PHRASES.map((p) => [p, []]));
+    return {};
   }
+}
+
+function loadTemplates() {
+  let parsed = safeParse(localStorage.getItem(STORAGE_KEY));
+
+  if (!Object.keys(parsed).length) {
+    const legacy = safeParse(localStorage.getItem(LEGACY_STORAGE_KEY));
+    if (Object.keys(legacy).length) parsed = legacy;
+  }
+
+  for (const phrase of DEFAULT_PHRASES) {
+    if (!Array.isArray(parsed[phrase])) parsed[phrase] = [];
+  }
+
+  for (const [phrase, templates] of Object.entries(parsed)) {
+    if (!cleanPhrase(phrase) || !Array.isArray(templates)) delete parsed[phrase];
+  }
+
+  return parsed;
 }
 
 function saveTemplates(templates) {
@@ -125,6 +168,7 @@ export class LipEngine {
     this.latestFeatures = null;
     this.rafId = null;
     this.templates = loadTemplates();
+    saveTemplates(this.templates);
   }
 
   async init() {
@@ -227,26 +271,39 @@ export class LipEngine {
     return normalized;
   }
 
-  addTemplate(phrase, sequence) {
-    if (!PHRASES.includes(phrase)) throw new Error("未対応のフレーズです。");
-    this.templates[phrase] ||= [];
+  phrases() {
+    const custom = Object.keys(this.templates).filter((phrase) => !DEFAULT_PHRASES.includes(phrase));
+    return [...DEFAULT_PHRASES, ...custom.sort((a, b) => a.localeCompare(b, "ja"))];
+  }
+
+  ensurePhrase(value) {
+    const phrase = cleanPhrase(value);
+    if (!phrase) throw new Error("登録する言葉を入力してください。");
+    if (!this.templates[phrase]) this.templates[phrase] = [];
+    saveTemplates(this.templates);
+    return phrase;
+  }
+
+  addTemplate(value, sequence) {
+    const phrase = this.ensurePhrase(value);
     this.templates[phrase].push(sequence);
     if (this.templates[phrase].length > 5) this.templates[phrase] = this.templates[phrase].slice(-5);
     saveTemplates(this.templates);
   }
 
   clearTemplates() {
-    this.templates = Object.fromEntries(PHRASES.map((p) => [p, []]));
+    for (const phrase of Object.keys(this.templates)) this.templates[phrase] = [];
+    for (const phrase of DEFAULT_PHRASES) this.templates[phrase] ||= [];
     saveTemplates(this.templates);
   }
 
   counts() {
-    return Object.fromEntries(PHRASES.map((p) => [p, this.templates[p]?.length || 0]));
+    return Object.fromEntries(this.phrases().map((phrase) => [phrase, this.templates[phrase]?.length || 0]));
   }
 
   classify(sequence) {
     const scored = [];
-    for (const phrase of PHRASES) {
+    for (const phrase of this.phrases()) {
       const templates = this.templates[phrase] || [];
       if (!templates.length) continue;
       const distances = templates.map((t) => dtwDistance(sequence, t)).sort((a, b) => a - b);
@@ -266,4 +323,4 @@ export class LipEngine {
   }
 }
 
-export { PHRASES };
+export { DEFAULT_PHRASES };
