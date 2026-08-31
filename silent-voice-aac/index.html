@@ -4,18 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <meta name="description" content="口の動きを本人専用に学習し、短い言葉を連続入力して文章を作り、読み上げるAAC試作版" />
+  <meta name="description" content="指定文の口パクから本人専用の口形プロファイルを作り、短い言葉を連続入力して文章を読み上げるAAC試作版" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=20260831-2" />
+  <link rel="stylesheet" href="./styles.css?v=20260831-3" />
   <title>Silent Voice AAC</title>
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">PERSONAL AAC PROTOTYPE · v0.2</p>
+        <p class="eyebrow">PERSONAL AAC PROTOTYPE · v0.3</p>
         <h1>Silent Voice AAC</h1>
-        <p class="subtitle">口パクを1語ずつ認識し、何回でも文章へ追加して、スマホがまとめて話します。</p>
+        <p class="subtitle">最初に指定文を口パクして本人の口の動きを記録。その後、登録語をつないで文章として発声します。</p>
       </div>
       <div class="privacy-badge">端末内学習</div>
     </header>
@@ -26,149 +26,60 @@
     </section>
 
     <section class="card camera-card">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">01 CAMERA</p>
-          <h2>口元を読み取る</h2>
-        </div>
-        <span id="engineStatus" class="status-pill">準備中</span>
-      </div>
-
-      <div class="camera-stage">
-        <video id="camera" playsinline muted></video>
-        <canvas id="overlay"></canvas>
-        <div id="cameraPlaceholder" class="camera-placeholder">
-          <span class="mouth-mark">◡</span>
-          <p>「カメラ開始」を押してください</p>
-        </div>
-        <div id="recordingBadge" class="recording-badge hidden">口パク記録中</div>
-      </div>
-
-      <div class="camera-actions">
-        <button id="startCamera" class="btn btn-primary" type="button">カメラ開始</button>
-        <button id="stopCamera" class="btn btn-secondary" type="button" disabled>停止</button>
-      </div>
+      <div class="section-head"><div><p class="section-kicker">01 CAMERA</p><h2>口元を読み取る</h2></div><span id="engineStatus" class="status-pill">準備中</span></div>
+      <div class="camera-stage"><video id="camera" playsinline muted></video><canvas id="overlay"></canvas><div id="cameraPlaceholder" class="camera-placeholder"><span class="mouth-mark">◡</span><p>「カメラ開始」を押してください</p></div><div id="recordingBadge" class="recording-badge hidden">口パク記録中</div></div>
+      <div class="camera-actions"><button id="startCamera" class="btn btn-primary" type="button">カメラ開始</button><button id="stopCamera" class="btn btn-secondary" type="button" disabled>停止</button></div>
       <p id="cameraHint" class="hint">iPhoneではHTTPS上で開いてカメラ許可が必要です。</p>
     </section>
 
+    <section class="card calibration-card">
+      <div class="section-head"><div><p class="section-kicker">02 CALIBRATION</p><h2>指定文で本人の口を覚える</h2></div><span id="calibrationCount" class="status-pill">0 / 12</span></div>
+      <p class="calibration-lead">画面に出る文章を<strong>声を出さず自然に口パク</strong>してください。口の開き・横幅・動き量・時系列パターンを本人プロファイルとして端末内に保存します。</p>
+      <div class="calibration-progress" aria-label="キャリブレーション進捗"><div id="calibrationFill" class="calibration-fill"></div></div>
+      <div class="calibration-prompt"><span id="calibrationPromptNumber" class="prompt-number">1 / 12</span><p id="calibrationPromptText" class="prompt-text">おはようございます</p><small>表示された文章だけを、普段話す速度で口パクしてください。</small></div>
+      <button id="calibrationCapture" class="btn btn-accent btn-full" type="button" disabled>この文章を口パクで登録（約5秒）</button>
+      <div class="calibration-nav"><button id="calibrationPrev" class="btn btn-secondary" type="button">前の文章</button><button id="calibrationNext" class="btn btn-secondary" type="button">次の文章</button></div>
+      <div id="calibrationPromptList" class="calibration-dots" aria-label="指定文一覧"></div>
+      <div id="calibrationProfile" class="profile-summary" aria-live="polite">まだ本人プロファイルはありません。</div>
+      <button id="calibrationReset" class="text-button" type="button">キャリブレーションを最初からやり直す</button>
+      <p class="hint">v0.3ではこのデータを「本人専用の自由文モデル」を作るための基礎データとして保存します。現在の自由な文章認識そのものは、まだ次段階です。</p>
+    </section>
+
     <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">02 TRAIN</p>
-          <h2>使う言葉を本人専用に登録</h2>
-        </div>
-        <span id="trainingCount" class="status-pill">0語 / 0回</span>
-      </div>
-
-      <label class="field-label" for="trainingPhrase">登録する言葉</label>
-      <select id="trainingPhrase" class="select"></select>
-
-      <div class="inline-form">
-        <input id="customPhrase" class="text-input" maxlength="40" placeholder="例：先生に / 電話して / 帰りたいです" />
-        <button id="addPhrase" class="btn btn-secondary" type="button">言葉を追加</button>
-      </div>
-
+      <div class="section-head"><div><p class="section-kicker">03 TRAIN</p><h2>使う言葉を本人専用に登録</h2></div><span id="trainingCount" class="status-pill">0語 / 0回</span></div>
+      <label class="field-label" for="trainingPhrase">登録する言葉</label><select id="trainingPhrase" class="select"></select>
+      <div class="inline-form"><input id="customPhrase" class="text-input" maxlength="40" placeholder="例：先生に / 電話して / 帰りたいです" /><button id="addPhrase" class="btn btn-secondary" type="button">言葉を追加</button></div>
       <div id="phraseProgress" class="phrase-progress" aria-live="polite"></div>
-
-      <button id="trainButton" class="btn btn-primary btn-full" type="button" disabled>
-        この言葉を口パクで登録（約2秒）
-      </button>
+      <button id="trainButton" class="btn btn-primary btn-full" type="button" disabled>この言葉を口パクで登録（約2秒）</button>
       <button id="clearTraining" class="text-button" type="button">学習データを消去</button>
       <p class="hint">全部を登録する必要はありません。普段使う言葉だけ、各3回ほど登録してください。</p>
     </section>
 
     <section class="card recognition-card">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">03 RECOGNIZE</p>
-          <h2>1つずつ口パクを認識</h2>
-        </div>
-      </div>
-
-      <button id="recognizeButton" class="btn btn-accent btn-full" type="button" disabled>
-        口パクを読み取る（約2秒）
-      </button>
-
-      <div id="recognitionEmpty" class="empty-result">
-        2語以上を学習すると、ここに候補が表示されます。
-      </div>
-      <div id="candidateList" class="candidate-list" aria-live="polite"></div>
+      <div class="section-head"><div><p class="section-kicker">04 RECOGNIZE</p><h2>1つずつ口パクを認識</h2></div></div>
+      <button id="recognizeButton" class="btn btn-accent btn-full" type="button" disabled>口パクを読み取る（約2秒）</button>
+      <div id="recognitionEmpty" class="empty-result">2語以上を学習すると、ここに候補が表示されます。</div><div id="candidateList" class="candidate-list" aria-live="polite"></div>
     </section>
 
     <section class="card conversation-card">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">04 CONVERSATION</p>
-          <h2>口パクをつないで文章にする</h2>
-        </div>
-        <span class="status-pill">連続入力</span>
-      </div>
-
-      <div class="conversation-flow" aria-label="使い方">
-        <span>口パク</span><b>→</b><span>候補を追加</span><b>→</b><span>次の口パク</span><b>→</b><span>全文発声</span>
-      </div>
-
-      <label class="field-label" for="conversationText">作成中の文章</label>
-      <textarea id="conversationText" class="textarea conversation-editor" rows="5" placeholder="候補の「文章に追加」を押すと、ここへ順番に入ります。手入力で直すこともできます。"></textarea>
-
-      <div class="conversation-toolbar">
-        <button id="undoConversation" class="btn btn-secondary" type="button" disabled>1つ戻す</button>
-        <button id="addPeriod" class="btn btn-secondary" type="button" disabled>「。」を付ける</button>
-        <button id="clearConversation" class="btn btn-secondary" type="button" disabled>全文クリア</button>
-      </div>
+      <div class="section-head"><div><p class="section-kicker">05 CONVERSATION</p><h2>口パクをつないで文章にする</h2></div><span class="status-pill">連続入力</span></div>
+      <div class="conversation-flow" aria-label="使い方"><span>口パク</span><b>→</b><span>候補を追加</span><b>→</b><span>次の口パク</span><b>→</b><span>全文発声</span></div>
+      <label class="field-label" for="conversationText">作成中の文章</label><textarea id="conversationText" class="textarea conversation-editor" rows="5" placeholder="候補の「文章に追加」を押すと、ここへ順番に入ります。手入力で直すこともできます。"></textarea>
+      <div class="conversation-toolbar"><button id="undoConversation" class="btn btn-secondary" type="button" disabled>1つ戻す</button><button id="addPeriod" class="btn btn-secondary" type="button" disabled>「。」を付ける</button><button id="clearConversation" class="btn btn-secondary" type="button" disabled>全文クリア</button></div>
       <button id="speakConversation" class="btn btn-primary btn-full speak-big" type="button" disabled>🔊 この文章をまとめて話す</button>
-
-      <div class="conversation-tip">
-        例：<strong>今日は</strong> → <strong>病院に</strong> → <strong>行きたいです</strong><br />
-        完成：<strong>「今日は病院に行きたいです」</strong>
-      </div>
+      <div class="conversation-tip">例：<strong>今日は</strong> → <strong>病院に</strong> → <strong>行きたいです</strong><br />完成：<strong>「今日は病院に行きたいです」</strong></div>
     </section>
 
     <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">05 QUICK SPEAK</p>
-          <h2>すぐ伝える</h2>
-        </div>
-      </div>
-
-      <div class="quick-grid">
-        <button class="quick-phrase" type="button" data-speak="はい">はい</button>
-        <button class="quick-phrase" type="button" data-speak="いいえ">いいえ</button>
-        <button class="quick-phrase" type="button" data-speak="ありがとう">ありがとう</button>
-        <button class="quick-phrase" type="button" data-speak="水が欲しいです">水が欲しいです</button>
-        <button class="quick-phrase danger" type="button" data-speak="痛いです">痛いです</button>
-        <button class="quick-phrase danger" type="button" data-speak="助けてください">助けてください</button>
-      </div>
-
-      <div class="quick-append-row">
-        <button class="mini-btn" type="button" data-append="今日は">＋今日は</button>
-        <button class="mini-btn" type="button" data-append="病院に">＋病院に</button>
-        <button class="mini-btn" type="button" data-append="行きたいです">＋行きたいです</button>
-      </div>
-
-      <label class="field-label" for="freeText">自由入力</label>
-      <textarea id="freeText" class="textarea" rows="3" placeholder="伝えたい文章を入力"></textarea>
-      <div class="speak-actions">
-        <button id="speakText" class="btn btn-primary" type="button">読み上げ</button>
-        <button id="stopSpeak" class="btn btn-secondary" type="button">読み上げ停止</button>
-      </div>
+      <div class="section-head"><div><p class="section-kicker">06 QUICK SPEAK</p><h2>すぐ伝える</h2></div></div>
+      <div class="quick-grid"><button class="quick-phrase" type="button" data-speak="はい">はい</button><button class="quick-phrase" type="button" data-speak="いいえ">いいえ</button><button class="quick-phrase" type="button" data-speak="ありがとう">ありがとう</button><button class="quick-phrase" type="button" data-speak="水が欲しいです">水が欲しいです</button><button class="quick-phrase danger" type="button" data-speak="痛いです">痛いです</button><button class="quick-phrase danger" type="button" data-speak="助けてください">助けてください</button></div>
+      <div class="quick-append-row"><button class="mini-btn" type="button" data-append="今日は">＋今日は</button><button class="mini-btn" type="button" data-append="病院に">＋病院に</button><button class="mini-btn" type="button" data-append="行きたいです">＋行きたいです</button></div>
+      <label class="field-label" for="freeText">自由入力</label><textarea id="freeText" class="textarea" rows="3" placeholder="伝えたい文章を入力"></textarea>
+      <div class="speak-actions"><button id="speakText" class="btn btn-primary" type="button">読み上げ</button><button id="stopSpeak" class="btn btn-secondary" type="button">読み上げ停止</button></div>
     </section>
 
-    <section class="card privacy-card">
-      <p class="section-kicker">PRIVACY</p>
-      <h2>この試作版のデータ扱い</h2>
-      <ul>
-        <li>カメラ映像そのものは保存しません。</li>
-        <li>登録するのは口の形の数値特徴だけです。</li>
-        <li>学習データはブラウザの端末内ストレージに保存します。</li>
-        <li>作成中の会話文章はサーバーへ保存しません。</li>
-        <li>入力映像は読唇処理のため外部サーバーへ送信しません。</li>
-        <li>MediaPipe自体の利用統計・性能メトリクスはGoogleへ送信される場合があります。</li>
-      </ul>
-    </section>
+    <section class="card privacy-card"><p class="section-kicker">PRIVACY</p><h2>この試作版のデータ扱い</h2><ul><li>カメラ映像そのものは保存しません。</li><li>キャリブレーションでは口の形・動きの数値特徴だけを保存します。</li><li>指定文の学習データと登録語データはブラウザの端末内ストレージに保存します。</li><li>作成中の会話文章はサーバーへ保存しません。</li><li>入力映像は読唇処理のため外部サーバーへ送信しません。</li><li>MediaPipe自体の利用統計・性能メトリクスはGoogleへ送信される場合があります。</li></ul></section>
   </main>
-
-  <script type="module" src="./app.js?v=20260831-2"></script>
+  <script type="module" src="./app.js?v=20260831-3"></script>
 </body>
 </html>
