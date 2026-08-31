@@ -1,4 +1,4 @@
-import { LipEngine, PHRASES } from "./lip-engine.js";
+import { LipEngine } from "./lip-engine.js";
 
 const $ = (id) => document.getElementById(id);
 const video = $("camera");
@@ -9,6 +9,8 @@ const stopCamera = $("stopCamera");
 const cameraPlaceholder = $("cameraPlaceholder");
 const cameraHint = $("cameraHint");
 const trainingPhrase = $("trainingPhrase");
+const customPhrase = $("customPhrase");
+const addPhrase = $("addPhrase");
 const trainButton = $("trainButton");
 const recognizeButton = $("recognizeButton");
 const recordingBadge = $("recordingBadge");
@@ -17,6 +19,11 @@ const phraseProgress = $("phraseProgress");
 const clearTraining = $("clearTraining");
 const candidateList = $("candidateList");
 const recognitionEmpty = $("recognitionEmpty");
+const conversationText = $("conversationText");
+const undoConversation = $("undoConversation");
+const addPeriod = $("addPeriod");
+const clearConversation = $("clearConversation");
+const speakConversation = $("speakConversation");
 const freeText = $("freeText");
 const speakText = $("speakText");
 const stopSpeak = $("stopSpeak");
@@ -24,6 +31,7 @@ const stopSpeak = $("stopSpeak");
 let cameraStarted = false;
 let engineReady = false;
 let busy = false;
+let conversationHistory = [];
 
 function setStatus(text) {
   engineStatus.textContent = text;
@@ -55,26 +63,42 @@ function speak(text) {
   speechSynthesis.speak(utterance);
 }
 
-function updateProgress() {
-  const counts = engine.counts();
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  trainingCount.textContent = `${total} / 15`;
-  phraseProgress.innerHTML = PHRASES.map((phrase) => `
-    <div class="progress-item">
-      <strong>${escapeHtml(shortLabel(phrase))}</strong>
-      ${counts[phrase]} / 3
-    </div>
-  `).join("");
-  recognizeButton.disabled = !cameraStarted || Object.values(counts).filter((n) => n > 0).length < 2 || busy;
+function escapeHtml(str) {
+  return String(str).replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
 }
 
 function shortLabel(phrase) {
-  if (phrase.length <= 5) return phrase;
-  return phrase.replace("です", "");
+  return phrase.length <= 10 ? phrase : `${phrase.slice(0, 9)}…`;
 }
 
-function escapeHtml(str) {
-  return str.replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+function renderPhraseOptions(selected = trainingPhrase.value) {
+  const phrases = engine.phrases();
+  trainingPhrase.innerHTML = phrases.map((phrase) => `<option value="${escapeHtml(phrase)}">${escapeHtml(phrase)}</option>`).join("");
+  if (phrases.includes(selected)) trainingPhrase.value = selected;
+}
+
+function updateProgress() {
+  const counts = engine.counts();
+  const phrases = engine.phrases();
+  const totalSamples = Object.values(counts).reduce((a, b) => a + b, 0);
+  const trainedPhrases = Object.values(counts).filter((n) => n > 0).length;
+  trainingCount.textContent = `${trainedPhrases}語 / ${totalSamples}回`;
+
+  phraseProgress.innerHTML = phrases.map((phrase) => `
+    <button class="progress-item ${counts[phrase] ? "trained" : ""}" type="button" data-select-phrase="${escapeHtml(phrase)}">
+      <strong>${escapeHtml(shortLabel(phrase))}</strong>
+      ${counts[phrase]} / 3
+    </button>
+  `).join("");
+
+  phraseProgress.querySelectorAll("[data-select-phrase]").forEach((button) => {
+    button.addEventListener("click", () => {
+      trainingPhrase.value = button.dataset.selectPhrase;
+      trainingPhrase.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+
+  recognizeButton.disabled = !cameraStarted || trainedPhrases < 2 || busy;
 }
 
 function setBusy(value, badgeText = "口パク記録中") {
@@ -87,9 +111,47 @@ function setBusy(value, badgeText = "口パク記録中") {
   updateProgress();
 }
 
+function pushConversationSnapshot() {
+  conversationHistory.push(conversationText.value);
+  if (conversationHistory.length > 30) conversationHistory = conversationHistory.slice(-30);
+  updateConversationButtons();
+}
+
+function isSentenceEnding(text) {
+  return /(?:です|ます|ません|ください|でした|ました|ありがとう|大丈夫|わかりません|痛い|苦しい)[。！？!?]?$/.test(text.trim());
+}
+
+function appendToConversation(phrase) {
+  const unit = String(phrase || "").trim();
+  if (!unit) return;
+
+  pushConversationSnapshot();
+  const current = conversationText.value.trimEnd();
+  if (!current) {
+    conversationText.value = unit;
+  } else {
+    const needsPeriod = !/[。！？!?]$/.test(current) && isSentenceEnding(current);
+    conversationText.value = `${current}${needsPeriod ? "。" : ""}${unit}`;
+  }
+  conversationText.focus();
+  conversationText.setSelectionRange(conversationText.value.length, conversationText.value.length);
+  updateConversationButtons();
+  cameraHint.textContent = "文章に追加しました。続けて「口パクを読み取る」を押すと、次の言葉を足せます。";
+}
+
+function updateConversationButtons() {
+  const hasText = Boolean(conversationText.value.trim());
+  undoConversation.disabled = conversationHistory.length === 0;
+  addPeriod.disabled = !hasText;
+  clearConversation.disabled = !hasText;
+  speakConversation.disabled = !hasText;
+}
+
 async function initialize() {
+  renderPhraseOptions();
   engineReady = await engine.init();
   updateProgress();
+  updateConversationButtons();
   if (!engineReady) {
     cameraHint.textContent = "読唇AIの読み込みに失敗しました。通信状態を確認して再読み込みしてください。読み上げ機能は利用できます。";
   }
@@ -125,6 +187,25 @@ stopCamera.addEventListener("click", () => {
   setStatus(engineReady ? "AI準備OK" : "AI読込失敗");
 });
 
+addPhrase.addEventListener("click", () => {
+  try {
+    const phrase = engine.ensurePhrase(customPhrase.value);
+    renderPhraseOptions(phrase);
+    customPhrase.value = "";
+    updateProgress();
+    cameraHint.textContent = `「${phrase}」を追加しました。次に口パクを3回ほど登録してください。`;
+  } catch (error) {
+    alert(error.message || "言葉を追加できませんでした。");
+  }
+});
+
+customPhrase.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addPhrase.click();
+  }
+});
+
 trainButton.addEventListener("click", async () => {
   if (busy) return;
   const phrase = trainingPhrase.value;
@@ -133,7 +214,8 @@ trainButton.addEventListener("click", async () => {
     cameraHint.textContent = `声を出さず「${phrase}」と自然に口を動かしてください。`;
     const seq = await engine.capture(2200);
     engine.addTemplate(phrase, seq);
-    cameraHint.textContent = `「${phrase}」を登録しました。あと${Math.max(0, 3 - (engine.counts()[phrase] || 0))}回が目安です。`;
+    const count = engine.counts()[phrase] || 0;
+    cameraHint.textContent = `「${phrase}」を登録しました。あと${Math.max(0, 3 - count)}回が目安です。`;
   } catch (error) {
     alert(error.message || "登録に失敗しました。");
   } finally {
@@ -146,11 +228,11 @@ recognizeButton.addEventListener("click", async () => {
   if (busy) return;
   try {
     setBusy(true, "認識用の口パクを記録中");
-    cameraHint.textContent = "伝えたい登録フレーズを口パクしてください。";
+    cameraHint.textContent = "文章に足したい登録語を口パクしてください。";
     const seq = await engine.capture(2200);
     const results = engine.classify(seq);
     renderCandidates(results);
-    cameraHint.textContent = "候補をタップすると読み上げます。候補が違う場合はもう一度試してください。";
+    cameraHint.textContent = "候補の「文章に追加」を押し、続けて次の口パクを入力できます。";
   } catch (error) {
     alert(error.message || "認識に失敗しました。");
   } finally {
@@ -167,17 +249,49 @@ function renderCandidates(results) {
   }
 
   results.forEach((result, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "candidate";
-    button.innerHTML = `<strong>${index + 1}. ${escapeHtml(result.phrase)}</strong><span>一致度目安 ${result.confidence}%</span>`;
-    button.addEventListener("click", () => speak(result.phrase));
-    candidateList.appendChild(button);
+    const card = document.createElement("div");
+    card.className = "candidate-card";
+    card.innerHTML = `
+      <div class="candidate-copy">
+        <strong>${index + 1}. ${escapeHtml(result.phrase)}</strong>
+        <span>一致度目安 ${result.confidence}%</span>
+      </div>
+      <div class="candidate-actions">
+        <button class="mini-btn mini-btn-primary" type="button" data-add-candidate>文章に追加</button>
+        <button class="mini-btn" type="button" data-speak-candidate>今すぐ発声</button>
+      </div>
+    `;
+    card.querySelector("[data-add-candidate]").addEventListener("click", () => appendToConversation(result.phrase));
+    card.querySelector("[data-speak-candidate]").addEventListener("click", () => speak(result.phrase));
+    candidateList.appendChild(card);
   });
 }
 
+undoConversation.addEventListener("click", () => {
+  if (!conversationHistory.length) return;
+  conversationText.value = conversationHistory.pop();
+  updateConversationButtons();
+});
+
+addPeriod.addEventListener("click", () => {
+  if (!conversationText.value.trim()) return;
+  pushConversationSnapshot();
+  conversationText.value = conversationText.value.trimEnd().replace(/[。！？!?]+$/, "") + "。";
+  updateConversationButtons();
+});
+
+clearConversation.addEventListener("click", () => {
+  if (!conversationText.value.trim()) return;
+  pushConversationSnapshot();
+  conversationText.value = "";
+  updateConversationButtons();
+});
+
+speakConversation.addEventListener("click", () => speak(conversationText.value));
+conversationText.addEventListener("input", updateConversationButtons);
+
 clearTraining.addEventListener("click", () => {
-  if (!confirm("端末内に保存した口パク学習データをすべて削除しますか？")) return;
+  if (!confirm("端末内に保存した口パク学習データをすべて削除しますか？追加した言葉の一覧は残ります。")) return;
   engine.clearTemplates();
   candidateList.innerHTML = "";
   recognitionEmpty.classList.remove("hidden");
@@ -189,6 +303,10 @@ document.querySelectorAll("[data-speak]").forEach((button) => {
   button.addEventListener("click", () => speak(button.dataset.speak));
 });
 
+document.querySelectorAll("[data-append]").forEach((button) => {
+  button.addEventListener("click", () => appendToConversation(button.dataset.append));
+});
+
 speakText.addEventListener("click", () => speak(freeText.value));
 stopSpeak.addEventListener("click", () => window.speechSynthesis?.cancel());
 
@@ -196,5 +314,4 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch((error) => console.warn("SW registration failed", error));
 }
 
-updateProgress();
 initialize();
