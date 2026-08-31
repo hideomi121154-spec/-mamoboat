@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="口の動きを本人専用に学習し、候補文を読み上げるAAC試作版" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Silent Voice AAC</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">PERSONAL AAC PROTOTYPE</p>
+        <h1>Silent Voice AAC</h1>
+        <p class="subtitle">口の動きを登録して、伝えたい言葉を候補にし、スマホが代わりに話します。</p>
+      </div>
+      <div class="privacy-badge">端末内保存</div>
+    </header>
+
+    <section class="notice" aria-label="重要なお知らせ">
+      <strong>試作版</strong>
+      <span>医療機器ではありません。緊急時は本アプリだけに依存せず、既存の連絡・支援手段を併用してください。</span>
+    </section>
+
+    <section class="card camera-card">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">01 CAMERA</p>
+          <h2>口元を読み取る</h2>
+        </div>
+        <span id="engineStatus" class="status-pill">準備中</span>
+      </div>
+
+      <div class="camera-stage">
+        <video id="camera" playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div id="cameraPlaceholder" class="camera-placeholder">
+          <span class="mouth-mark">◡</span>
+          <p>「カメラ開始」を押してください</p>
+        </div>
+        <div id="recordingBadge" class="recording-badge hidden">口パク記録中</div>
+      </div>
+
+      <div class="camera-actions">
+        <button id="startCamera" class="btn btn-primary" type="button">カメラ開始</button>
+        <button id="stopCamera" class="btn btn-secondary" type="button" disabled>停止</button>
+      </div>
+      <p id="cameraHint" class="hint">iPhoneではHTTPS上で開いてカメラ許可が必要です。</p>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">02 TRAIN</p>
+          <h2>本人の口パクを登録</h2>
+        </div>
+        <span id="trainingCount" class="status-pill">0 / 15</span>
+      </div>
+
+      <label class="field-label" for="trainingPhrase">登録する言葉</label>
+      <select id="trainingPhrase" class="select">
+        <option>はい</option>
+        <option>いいえ</option>
+        <option>ありがとう</option>
+        <option>水が欲しいです</option>
+        <option>痛いです</option>
+      </select>
+
+      <div id="phraseProgress" class="phrase-progress" aria-live="polite"></div>
+
+      <button id="trainButton" class="btn btn-primary btn-full" type="button" disabled>
+        この言葉を口パクで登録（約2秒）
+      </button>
+      <button id="clearTraining" class="text-button" type="button">学習データを消去</button>
+      <p class="hint">各フレーズ3回が目安です。声は出さず、普段話すように口を動かしてください。</p>
+    </section>
+
+    <section class="card recognition-card">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">03 RECOGNIZE</p>
+          <h2>口パクから候補を出す</h2>
+        </div>
+      </div>
+
+      <button id="recognizeButton" class="btn btn-accent btn-full" type="button" disabled>
+        口パクを読み取る（約2秒）
+      </button>
+
+      <div id="recognitionEmpty" class="empty-result">
+        学習後に口パクすると、ここに候補が表示されます。
+      </div>
+      <div id="candidateList" class="candidate-list" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">04 QUICK SPEAK</p>
+          <h2>すぐ伝える</h2>
+        </div>
+      </div>
+
+      <div class="quick-grid">
+        <button class="quick-phrase" type="button" data-speak="はい">はい</button>
+        <button class="quick-phrase" type="button" data-speak="いいえ">いいえ</button>
+        <button class="quick-phrase" type="button" data-speak="ありがとう">ありがとう</button>
+        <button class="quick-phrase" type="button" data-speak="水が欲しいです">水が欲しいです</button>
+        <button class="quick-phrase danger" type="button" data-speak="痛いです">痛いです</button>
+        <button class="quick-phrase danger" type="button" data-speak="助けてください">助けてください</button>
+      </div>
+
+      <label class="field-label" for="freeText">自由入力</label>
+      <textarea id="freeText" class="textarea" rows="3" placeholder="伝えたい文章を入力"></textarea>
+      <div class="speak-actions">
+        <button id="speakText" class="btn btn-primary" type="button">読み上げ</button>
+        <button id="stopSpeak" class="btn btn-secondary" type="button">読み上げ停止</button>
+      </div>
+    </section>
+
+    <section class="card privacy-card">
+      <p class="section-kicker">PRIVACY</p>
+      <h2>この試作版のデータ扱い</h2>
+      <ul>
+        <li>カメラ映像そのものは保存しません。</li>
+        <li>登録するのは口の形の数値特徴だけです。</li>
+        <li>学習データはブラウザの端末内ストレージに保存します。</li>
+        <li>入力映像は読唇処理のため外部サーバーへ送信しません。</li>
+        <li>MediaPipe自体の利用統計・性能メトリクスはGoogleへ送信される場合があります。</li>
+      </ul>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
