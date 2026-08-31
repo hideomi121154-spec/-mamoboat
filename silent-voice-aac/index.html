@@ -6,14 +6,17 @@
   <meta name="theme-color" content="#ffffff" />
   <meta name="description" content="指定文の口パクから本人専用の口形プロファイルを作り、短い言葉を連続入力して文章を読み上げるAAC試作版" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=20260831-3" />
+  <link rel="stylesheet" href="./styles.css?v=20260831-4" />
   <title>Silent Voice AAC</title>
+  <script type="importmap">
+    {"imports":{"./lip-engine.js":"./lip-engine.js?v=20260831-4"}}
+  </script>
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">PERSONAL AAC PROTOTYPE · v0.3</p>
+        <p class="eyebrow">PERSONAL AAC PROTOTYPE · v0.3.1</p>
         <h1>Silent Voice AAC</h1>
         <p class="subtitle">最初に指定文を口パクして本人の口の動きを記録。その後、登録語をつないで文章として発声します。</p>
       </div>
@@ -80,6 +83,6 @@
 
     <section class="card privacy-card"><p class="section-kicker">PRIVACY</p><h2>この試作版のデータ扱い</h2><ul><li>カメラ映像そのものは保存しません。</li><li>キャリブレーションでは口の形・動きの数値特徴だけを保存します。</li><li>指定文の学習データと登録語データはブラウザの端末内ストレージに保存します。</li><li>作成中の会話文章はサーバーへ保存しません。</li><li>入力映像は読唇処理のため外部サーバーへ送信しません。</li><li>MediaPipe自体の利用統計・性能メトリクスはGoogleへ送信される場合があります。</li></ul></section>
   </main>
-  <script type="module" src="./app.js?v=20260831-3"></script>
+  <script type="module" src="./app.js?v=20260831-4"></script>
 </body>
 </html>
