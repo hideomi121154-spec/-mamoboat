@@ -1,5 +1,5 @@
-const CACHE = "silent-voice-aac-v1";
-const LOCAL = ["./", "./index.html", "./styles.css", "./app.js", "./lip-engine.js", "./manifest.webmanifest"];
+const CACHE = "silent-voice-aac-v2";
+const LOCAL = ["./", "./index.html", "./styles.css?v=20260831-2", "./app.js?v=20260831-2", "./lip-engine.js", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(LOCAL)));
