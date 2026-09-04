@@ -10,7 +10,7 @@
 :root{
   color-scheme:light;
   --ink:#0f172a;--muted:#64748b;--line:#dbe3ec;--bg:#f4f7fb;--card:#fff;
-  --accent:#0f5bd8;--accent2:#eaf2ff;--ok:#0f766e;--warn:#b45309;
+  --accent:#0f5bd8;--accent2:#eaf2ff;--ok:#0f766e;--warn:#b45309;--danger:#b91c1c;
 }
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,input,textarea{font:inherit}.shell{max-width:560px;margin:0 auto;min-height:100vh;padding:calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom))}
@@ -22,75 +22,148 @@ button,input,textarea{font:inherit}.shell{max-width:560px;margin:0 auto;min-heig
 .primary,.secondary,.ghost{border:0;border-radius:14px;padding:14px 16px;font-weight:800;cursor:pointer}.primary{width:100%;background:var(--accent);color:#fff}.secondary{width:100%;background:#fff;color:var(--ink);border:1px solid var(--line);margin-top:10px}.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}.small{padding:9px 11px;font-size:12px}.primary:disabled{opacity:.45;cursor:not-allowed}
 .status{display:flex;gap:10px;align-items:flex-start;background:#effcf8;border:1px solid #bce6db;border-radius:16px;padding:13px 14px;margin-bottom:14px;color:#115e59}.status b{display:block;margin-bottom:3px}.status small{line-height:1.5}
 .qr-wrap{display:flex;justify-content:center;padding:18px;background:#fff;border:1px solid var(--line);border-radius:18px}.qr-wrap img{width:min(78vw,300px);height:auto;image-rendering:pixelated}.urlbox{font-size:12px;word-break:break-all;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;color:#475569}
-.photo-view{border-radius:22px;overflow:hidden;background:#e7edf5;border:1px solid var(--line)}.photo-view img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:#111827}.viewer-title{font-size:26px;margin:0 0 6px}.viewer-meta{color:var(--muted);font-size:13px}.note{margin-top:14px;padding:14px 16px;border-left:4px solid var(--accent);background:#f8fbff;border-radius:0 12px 12px 0;line-height:1.6}.warning{background:#fff8ed;border:1px solid #f5d6a8;border-radius:16px;padding:14px;color:#92400e;line-height:1.6}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.actions button{margin:0}.only-print{display:none}
+.photo-view{border-radius:22px;overflow:hidden;background:#e7edf5;border:1px solid var(--line)}.photo-view img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:#111827}.viewer-title{font-size:26px;margin:0 0 6px}.viewer-meta{color:var(--muted);font-size:13px}.note{margin-top:14px;padding:14px 16px;border-left:4px solid var(--accent);background:#f8fbff;border-radius:0 12px 12px 0;line-height:1.6}.warning{background:#fff8ed;border:1px solid #f5d6a8;border-radius:16px;padding:14px;color:#92400e;line-height:1.6}.error{background:#fef2f2;border:1px solid #fecaca;border-radius:16px;padding:14px;color:var(--danger);line-height:1.6}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.actions button{margin:0}.only-print{display:none}.spinner{width:22px;height:22px;border:3px solid #cbd5e1;border-top-color:var(--accent);border-radius:999px;animation:spin .8s linear infinite;margin:0 auto 10px}@keyframes spin{to{transform:rotate(360deg)}}
 @media print{
   body{background:#fff}.shell{max-width:none;padding:0}.topbar,.no-print{display:none!important}.only-print{display:block}.card{box-shadow:none;border:0;padding:0}.qr-wrap{border:0;padding:12px}.qr-wrap img{width:70mm}.print-label{text-align:center;font-size:18pt;font-weight:800;margin-top:8mm}.print-sub{text-align:center;font-size:10pt;color:#444;margin-top:3mm}
 }
-
-</style>
+  </style>
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
       <div>
-        <div class="eyebrow">GENBA MEMORY / POC 0.3</div>
+        <div class="eyebrow">GENBA MEMORY / WEB POC 0.4</div>
         <h1>QR写真実証</h1>
       </div>
       <button id="homeBtn" class="ghost small" type="button">最初へ</button>
     </header>
     <section id="app" aria-live="polite"></section>
   </main>
-  <script>
-const STORAGE_KEY = 'genba_memory_poc_v03_places';
+<script>
+const API = 'https://cwkhrrgjhkaqeyteepyh.supabase.co';
+const PUBLISHABLE_KEY = 'sb_publishable_wbMXjYA6rVa9DnvYJvfKMg_7SOwes3k';
 const app = document.querySelector('#app');
 const homeBtn = document.querySelector('#homeBtn');
 
-function loadPlaces(){
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; }
-  catch { return {}; }
-}
-function savePlaces(places){ localStorage.setItem(STORAGE_KEY, JSON.stringify(places)); }
 function esc(s=''){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function randomId(){
-  const a = new Uint32Array(2); crypto.getRandomValues(a);
-  return 'gm-' + [...a].map(x=>x.toString(36)).join('');
+function bytesToHex(bytes){ return [...bytes].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function randomToken(){
+  const a = new Uint8Array(24); crypto.getRandomValues(a);
+  return bytesToHex(a);
 }
-function placeUrl(id){
+function placeUrl(token){
   const base = location.origin + location.pathname;
-  return `${base}?place=${encodeURIComponent(id)}`;
+  return `${base}?place=${encodeURIComponent(token)}`;
 }
 function qrUrl(text){
   return `https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=18&ecc=M&data=${encodeURIComponent(text)}`;
 }
-function setQuery(id){
-  const u = new URL(location.href); if(id) u.searchParams.set('place', id); else u.searchParams.delete('place');
+function setQuery(token){
+  const u = new URL(location.href);
+  if(token) u.searchParams.set('place', token); else u.searchParams.delete('place');
   history.pushState({},'',u); render();
 }
-
+async function sha256(text){
+  const bytes = new TextEncoder().encode(text);
+  return bytesToHex(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)));
+}
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=()=>reject(r.error || new Error('file read failed'));
+    r.readAsDataURL(file);
+  });
+}
+function loadImage(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error('image decode failed'));
+    img.src=src;
+  });
+}
 async function compressImage(file){
-  const bitmap = await createImageBitmap(file);
-  const maxSide = 1200;
-  let {width, height} = bitmap;
+  if(!file.type.startsWith('image/')) throw new Error('画像ファイルを選んでください。');
+  const src = await fileToDataURL(file);
+  const img = await loadImage(src);
+  const maxSide = 1024;
+  let width = img.naturalWidth || img.width, height = img.naturalHeight || img.height;
   const scale = Math.min(1, maxSide / Math.max(width,height));
-  width = Math.round(width*scale); height = Math.round(height*scale);
-  const canvas = document.createElement('canvas'); canvas.width=width; canvas.height=height;
-  const ctx = canvas.getContext('2d'); ctx.drawImage(bitmap,0,0,width,height); bitmap.close?.();
-  let quality = .78;
-  let data = canvas.toDataURL('image/jpeg', quality);
-  while(data.length > 900000 && quality > .45){ quality -= .08; data = canvas.toDataURL('image/jpeg', quality); }
+  width=Math.max(1,Math.round(width*scale)); height=Math.max(1,Math.round(height*scale));
+  const canvas=document.createElement('canvas'); canvas.width=width; canvas.height=height;
+  const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,width,height);
+  let quality=.80;
+  let data=canvas.toDataURL('image/jpeg',quality);
+  while(data.length > 650000 && quality > .40){
+    quality -= .08;
+    data=canvas.toDataURL('image/jpeg',quality);
+  }
+  if(data.length > 900000) throw new Error('写真を圧縮できませんでした。別の写真で試してください。');
   return data;
+}
+function commonHeaders(clientInfo){
+  return {
+    'apikey': PUBLISHABLE_KEY,
+    'Authorization': `Bearer ${PUBLISHABLE_KEY}`,
+    'X-Client-Info': clientInfo
+  };
+}
+async function savePlace({name,note,imageData,pin}){
+  const writeHash = await sha256(pin.trim());
+  const publicToken = randomToken();
+  const body = {
+    id: crypto.randomUUID(),
+    name,
+    note,
+    image_data: imageData,
+    image_path: null,
+    image_mime: 'image/jpeg',
+    public_token: publicToken,
+    write_token: writeHash
+  };
+  const res = await fetch(`${API}/rest/v1/places`,{
+    method:'POST',
+    headers:{
+      ...commonHeaders(`gm-write:${writeHash}`),
+      'Content-Type':'application/json',
+      'Prefer':'return=minimal'
+    },
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){
+    let msg='';
+    try{ msg=(await res.json())?.message || ''; }catch{}
+    if(res.status===401 || res.status===403) throw new Error('管理PINが違うか、登録権限がありません。');
+    throw new Error(msg || `クラウド保存に失敗しました (${res.status})`);
+  }
+  return publicToken;
+}
+async function loadPlace(token){
+  const qs = new URLSearchParams({
+    public_token:`eq.${token}`,
+    select:'name,note,image_data,created_at',
+    limit:'1'
+  });
+  const res = await fetch(`${API}/rest/v1/places?${qs.toString()}`,{
+    headers:commonHeaders(`gm-read:${token}`),
+    cache:'no-store'
+  });
+  if(!res.ok) throw new Error(`写真の読み込みに失敗しました (${res.status})`);
+  const rows = await res.json();
+  return rows?.[0] || null;
 }
 
 function renderRegister(){
   app.innerHTML = `
     <div class="hero no-print">
-      <h2>まず1か所だけ、<br>本当に試す。</h2>
-      <p>場所を撮影し、その写真を呼び出すQRを作ります。QRを印刷して現場に貼り、同じiPhoneで読み取って写真が出れば第一段階クリアです。</p>
+      <h2>写真を撮る。<br>QRを貼る。読み込む。</h2>
+      <p>第一段階はこれだけです。写真はクラウドに保存されるので、登録したiPhoneとは別のスマホからQRを読んでも同じ写真を表示できます。</p>
     </div>
     <div class="card no-print">
       <label class="label"><span class="step">1</span>場所名</label>
-      <input id="name" class="input" maxlength="50" placeholder="例：工具棚A / 台車1号" />
+      <input id="name" class="input" maxlength="120" placeholder="例：工具棚A / 台車1号" />
     </div>
     <div class="card no-print">
       <label class="label"><span class="step">2</span>正しい状態を撮影</label>
@@ -99,45 +172,71 @@ function renderRegister(){
     </div>
     <div class="card no-print">
       <label class="label"><span class="step">3</span>ひとこと（任意）</label>
-      <input id="note" class="input" maxlength="60" placeholder="例：右から順番に戻してください" />
+      <input id="note" class="input" maxlength="120" placeholder="例：この状態に戻してください" />
     </div>
-    <button id="make" class="primary no-print" disabled>QRコードを作る</button>
-    <p class="muted no-print" style="font-size:12px">※ この0.3は「同じiPhoneでの実証」専用です。写真は端末内に保存され、別のスマホからはまだ見えません。</p>`;
+    <div class="card no-print">
+      <label class="label"><span class="step">4</span>管理PIN</label>
+      <input id="pin" class="input" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="32" placeholder="管理PINを入力" />
+      <p class="muted" style="font-size:12px;margin-bottom:0">写真を登録できる人だけが使うPINです。QRを見る側には不要です。</p>
+    </div>
+    <button id="make" class="primary no-print" disabled>クラウド保存してQRを作る</button>
+    <p class="muted no-print" style="font-size:12px">実証用です。会社の機密・設備情報は許可なく登録せず、自宅などのテスト写真で確認してください。</p>`;
 
-  const name = document.querySelector('#name'); const photo = document.querySelector('#photo');
-  const note = document.querySelector('#note'); const preview = document.querySelector('#preview'); const make = document.querySelector('#make');
-  let imageData = '';
-  const update = ()=>{ make.disabled = !(name.value.trim() && imageData); };
-  name.addEventListener('input', update);
-  photo.addEventListener('change', async e=>{
+  const name=document.querySelector('#name'), photo=document.querySelector('#photo');
+  const note=document.querySelector('#note'), pin=document.querySelector('#pin');
+  const preview=document.querySelector('#preview'), make=document.querySelector('#make');
+  let imageData='';
+  const update=()=>{ make.disabled=!(name.value.trim() && imageData && pin.value.trim()); };
+  name.addEventListener('input',update); pin.addEventListener('input',update);
+  photo.addEventListener('change',async e=>{
     const f=e.target.files?.[0]; if(!f) return;
-    preview.innerHTML='<div class="preview-empty">写真を準備中…</div>';
+    preview.innerHTML='<div class="preview-empty">写真を圧縮中…</div>';
     try{
-      imageData = await compressImage(f);
-      preview.innerHTML=`<img src="${imageData}" alt="撮影した正解状態">`; update();
-    }catch(err){ preview.innerHTML='<div class="preview-empty">写真の読み込みに失敗しました</div>'; console.error(err); }
+      imageData=await compressImage(f);
+      preview.innerHTML=`<img src="${imageData}" alt="撮影した正解状態">`;
+      update();
+    }catch(err){
+      imageData='';
+      preview.innerHTML=`<div class="preview-empty">${esc(err?.message || '写真の読み込みに失敗しました')}</div>`;
+      update();
+    }
   });
-  make.addEventListener('click',()=>{
-    const id=randomId(); const places=loadPlaces();
-    places[id]={id,name:name.value.trim(),note:note.value.trim(),image:imageData,createdAt:new Date().toISOString()};
-    try{ savePlaces(places); setQuery(id); }
-    catch(e){ alert('写真サイズが大きく、端末保存に失敗しました。別の写真でもう一度お試しください。'); }
+  make.addEventListener('click',async()=>{
+    make.disabled=true;
+    const old=make.textContent; make.textContent='クラウドへ保存中…';
+    try{
+      const token=await savePlace({
+        name:name.value.trim(),
+        note:note.value.trim(),
+        imageData,
+        pin:pin.value
+      });
+      setQuery(token);
+    }catch(err){
+      alert(err?.message || '保存に失敗しました。');
+      make.disabled=false;
+      make.textContent=old;
+    }
   });
 }
 
-function renderViewer(id, place){
-  app.innerHTML = `
-    <div class="status no-print"><div>✓</div><div><b>QRから写真を呼び出せました</b><small>第一段階の実証成功です。</small></div></div>
+function renderLoading(){
+  app.innerHTML=`<div class="card"><div class="spinner"></div><p class="muted" style="text-align:center;margin:0">QRの写真を読み込み中…</p></div>`;
+}
+function renderViewer(token,place){
+  app.innerHTML=`
+    <div class="status no-print"><div>✓</div><div><b>QRからクラウド写真を呼び出せました</b><small>第一段階の実証成功です。</small></div></div>
     <div class="card">
       <h2 class="viewer-title">${esc(place.name)}</h2>
-      <div class="viewer-meta">登録写真 / GENBA MEMORY POC 0.3</div>
-      <div class="photo-view" style="margin-top:14px"><img src="${place.image}" alt="${esc(place.name)} の正解状態"></div>
+      <div class="viewer-meta">登録された正しい状態 / GENBA MEMORY WEB POC 0.4</div>
+      <div class="photo-view" style="margin-top:14px"><img src="${place.image_data}" alt="${esc(place.name)} の正解状態"></div>
       ${place.note ? `<div class="note">💬 ${esc(place.note)}</div>` : ''}
+      <p class="muted" style="margin-bottom:0">この写真と同じ状態に戻してください。</p>
     </div>
     <div class="card no-print">
       <div class="label">この場所のQR</div>
-      <div class="qr-wrap"><img src="${qrUrl(placeUrl(id))}" alt="場所QR"></div>
-      <div class="urlbox" style="margin-top:12px">${esc(placeUrl(id))}</div>
+      <div class="qr-wrap"><img src="${qrUrl(placeUrl(token))}" alt="場所QR"></div>
+      <div class="urlbox" style="margin-top:12px">${esc(placeUrl(token))}</div>
       <div class="actions">
         <button id="print" class="primary">QRを印刷</button>
         <button id="copy" class="secondary">URLコピー</button>
@@ -145,37 +244,34 @@ function renderViewer(id, place){
       <button id="new" class="secondary">別の場所を登録</button>
     </div>
     <div class="only-print">
-      <div class="qr-wrap"><img src="${qrUrl(placeUrl(id))}" alt="場所QR"></div>
+      <div class="qr-wrap"><img src="${qrUrl(placeUrl(token))}" alt="場所QR"></div>
       <div class="print-label">${esc(place.name)}</div>
-      <div class="print-sub">GENBA MEMORY / QRをスマホのカメラで読み取ってください</div>
+      <div class="print-sub">GENBA MEMORY / スマホの標準カメラでQRを読み取ってください</div>
     </div>`;
   document.querySelector('#print')?.addEventListener('click',()=>window.print());
   document.querySelector('#copy')?.addEventListener('click',async()=>{
-    try{ await navigator.clipboard.writeText(placeUrl(id)); alert('URLをコピーしました'); }
-    catch{ prompt('このURLをコピーしてください',placeUrl(id)); }
+    try{ await navigator.clipboard.writeText(placeUrl(token)); alert('URLをコピーしました'); }
+    catch{ prompt('このURLをコピーしてください',placeUrl(token)); }
   });
   document.querySelector('#new')?.addEventListener('click',()=>setQuery(null));
 }
-
-function renderMissing(){
-  app.innerHTML = `<div class="card">
-    <h2>このスマホには写真がありません</h2>
-    <div class="warning">第一段階0.3では写真を撮ったiPhoneの中にだけ保存しています。<br><br>別のスマホで読めるようにするのは、次の段階でSupabaseへ写真を保存すると実現できます。</div>
-    <button id="back" class="primary" style="margin-top:14px">このスマホで場所を登録する</button>
-  </div>`;
-  document.querySelector('#back').addEventListener('click',()=>setQuery(null));
+function renderError(message){
+  app.innerHTML=`<div class="card"><h2>写真を開けませんでした</h2><div class="error">${esc(message)}</div><button id="back" class="primary" style="margin-top:14px">最初へ戻る</button></div>`;
+  document.querySelector('#back')?.addEventListener('click',()=>setQuery(null));
 }
-
-function render(){
-  const id=new URLSearchParams(location.search).get('place');
-  if(!id){ renderRegister(); return; }
-  const place=loadPlaces()[id]; if(!place){ renderMissing(); return; }
-  renderViewer(id,place);
+async function render(){
+  const token=new URLSearchParams(location.search).get('place');
+  if(!token){ renderRegister(); return; }
+  renderLoading();
+  try{
+    const place=await loadPlace(token);
+    if(!place){ renderError('このQRに対応する写真が見つかりません。'); return; }
+    renderViewer(token,place);
+  }catch(err){ renderError(err?.message || '読み込みに失敗しました。'); }
 }
 homeBtn.addEventListener('click',()=>setQuery(null));
 window.addEventListener('popstate',render);
 render();
-
 </script>
 </body>
 </html>
