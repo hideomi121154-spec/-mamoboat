@@ -26,6 +26,9 @@ self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET") return;
   const url=new URL(event.request.url);
   if(url.origin!==location.origin) return;
+  // GENBA MEMORY is an isolated POC. Do not let MAMO BOAT's root service worker
+  // cache or rewrite its navigations.
+  if(url.pathname.startsWith("/genba-memory-poc/")) return;
 
   if(url.pathname.includes("/data/")&&url.pathname.endsWith(".json")){
     const canonical=new Request(url.origin+url.pathname,{method:"GET"});
