@@ -1,7 +1,7 @@
 {
   "schemaVersion": 10,
   "date": "2026-09-04",
-  "generatedAt": "2026-09-04T20:51:05.319868+09:00",
+  "generatedAt": "2026-09-04T20:58:52.954388+09:00",
   "source": {
     "type": "official-lzh",
     "schedule": "BOAT RACE 番組表ダウンロード",
@@ -67451,7 +67451,158 @@
               "boatPart": 74
             }
           ],
-          "result": null,
+          "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 3940,
+                "name": "飯山泰"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 3226,
+                "name": "浦田信義"
+              },
+              {
+                "position": 3,
+                "boatNumber": 6,
+                "racerNumber": 3508,
+                "name": "久富政弘"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 3726,
+                "name": "桂林寛"
+              },
+              {
+                "position": 5,
+                "boatNumber": 5,
+                "racerNumber": 3505,
+                "name": "山田竜一"
+              },
+              {
+                "position": 6,
+                "boatNumber": 3,
+                "racerNumber": 3715,
+                "name": "倉尾大介"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-6",
+                "payout": 6830,
+                "popularity": 20
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 390,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 810,
+                  "popularity": 4
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 1090,
+                  "popularity": 4
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 260,
+                  "popularity": 4
+                },
+                {
+                  "combination": "1-6",
+                  "payout": 1030,
+                  "popularity": 10
+                },
+                {
+                  "combination": "4-6",
+                  "payout": 1380,
+                  "popularity": 13
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-6",
+                  "payout": 6830,
+                  "popularity": 20
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-4-6",
+                  "payout": 3980,
+                  "popularity": 11
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 3940,
+                "status": "01"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3726,
+                "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3715,
+                "status": "06"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3226,
+                "status": "02"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 3505,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 3508,
+                "status": "03"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
+            "source": "official-web-result",
+            "fetchedAt": "2026-09-04T20:58:51.711625+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260904&jcd=20&rno=12"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -67742,6 +67893,11 @@
             },
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/oddstf?hd=20260904&jcd=20&rno=12",
             "lastFetchedAt": "2026-09-04T20:38:02.376915+09:00"
+          },
+          "resultCheck": {
+            "state": "confirmed",
+            "checkedAt": "2026-09-04T20:58:52.153525+09:00",
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260904&jcd=20&rno=12"
           }
         }
       ],
@@ -78340,7 +78496,7 @@
       "scheduleEntries": 936,
       "performanceRaces": 132,
       "matchedResultRaces": 132,
-      "completedResultRaces": 150,
+      "completedResultRaces": 151,
       "resultRows": 792,
       "sanrenshoPayouts": 131,
       "totalPayoutEntries": 1308,
@@ -78357,9 +78513,10 @@
       "oddsRaces": 152,
       "oddsEntries": 32132,
       "lzhCompletedResultRaces": 132,
-      "webResultRaces": 18,
-      "cachedWebResultRaces": 18
+      "webResultRaces": 19,
+      "cachedWebResultRaces": 0
     },
-    "oddsDebug": "cached=152 candidates=1 fetched=1 recent=0 requests=5 stored=152 entries=32132"
+    "oddsDebug": "cached=152 candidates=1 fetched=1 recent=0 requests=5 stored=152 entries=32132",
+    "fastResultDebug": "cached=0 candidates=1 fetched=1 pending=0 requests=1 selection=venue-round-robin storedWeb=19 total=151"
   }
 }
