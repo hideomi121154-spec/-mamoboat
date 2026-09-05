@@ -82,7 +82,7 @@
       }
     });
 
-    const formationRanks = Array.from(builder.children).filter((node) =>
+    const formationRanks = Array.from(builder.children || []).filter((node) =>
       node.classList?.contains("rank") && node.querySelector?.('[id^="f-"]')
     );
     const formationMode = formationRanks.length > 0;
