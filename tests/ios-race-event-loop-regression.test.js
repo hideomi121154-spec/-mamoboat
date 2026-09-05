@@ -60,7 +60,7 @@ assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
 assert.match(shop, /overflow-x:auto!important/);
 assert.doesNotMatch(shop, /touchstart|touchmove|preventDefault/);
-assert.match(compatibility, /bet-review-flow\.js\?v=20260831-1/);
+assert.match(compatibility, /bet-review-flow\.js\?v=20260905-1/);
 
 // Adding the selected draft fetches a best-effort odds update asynchronously.
 // The review modal must wait for that operation so it never reads an empty cart.
@@ -69,15 +69,24 @@ assert.match(source, /window\.reviewBet = async/);
 assert.match(source, /await Promise\.resolve\(addCurrentDraft\(\)\)/);
 assert.match(source, /querySelector\?\.\("\.cartrow"\)/);
 
+// A fresh selection is a replacement. Only the explicit add-more action may
+// preserve the previous cart. This prevents stale formation rows such as 3-x-x
+// from surviving after the user changes the first-place candidate to 1.
+assert.match(source, /function clearCommittedCartForReplacement\(\)/);
+assert.match(source, /if \(!appendRequested\) clearCommittedCartForReplacement\(\)/);
+assert.match(source, /addMore\.textContent = "買い目を追加"/);
+assert.match(source, /appendRequested = true/);
+assert.doesNotMatch(source, /買い目を追加・修正/);
+
 test("AIR BET review waits until the selected draft reaches the cart", async () => {
   let asyncObserverCallback = null;
   let addResolved = false;
   let addCalls = 0;
   let originalReviewCalls = 0;
   const cartCount = { textContent: "0点" };
-  const cart = { textContent: "" };
+  const cart = { textContent: "", querySelector() { return null; }, querySelectorAll() { return []; } };
   const reviewButton = { disabled: false, textContent: "AIR BETを確認" };
-  const asyncTitle = { textContent: "確認画面から、追加・修正できます" };
+  const asyncTitle = { textContent: "現在の選択を確認。追加は確認画面から行えます" };
   const ranks = Array.from({ length: 3 }, () => ({
     querySelector(selector) { return selector === ".pick.sel" ? {} : null; },
   }));
@@ -149,6 +158,85 @@ test("AIR BET review waits until the selected draft reaches the cart", async () 
   assert.equal(reviewButton.disabled, false);
   assert.equal(reviewButton.textContent, "AIR BETを確認");
   assert.equal(typeof asyncObserverCallback, "function");
+});
+
+test("a new formation selection replaces stale purchase rows", async () => {
+  let staleRows = [{}, {}, {}];
+  const removed = [];
+  let addCalls = 0;
+  let originalReviewCalls = 0;
+  const cartCount = { textContent: "3点" };
+  const cart = {
+    querySelector(selector) {
+      return selector === ".cartrow" ? staleRows[0] || null : null;
+    },
+    querySelectorAll(selector) {
+      return selector === ".cartrow" ? staleRows : [];
+    },
+  };
+  const reviewButton = { disabled: false, textContent: "AIR BETを確認" };
+  const ranks = Array.from({ length: 3 }, () => ({
+    querySelector(selector) { return selector === ".pick.sel" ? {} : null; },
+  }));
+  const formationBuilder = {
+    querySelectorAll(selector) {
+      if (selector === ".rank") return ranks;
+      if (selector === "button") return [];
+      return [];
+    },
+  };
+  const formationDocument = {
+    readyState: "complete",
+    head: { appendChild() {} },
+    createElement: () => ({}),
+    getElementById(id) {
+      if (id === "builder") return formationBuilder;
+      if (id === "raceView") return {};
+      if (id === "cartCount") return cartCount;
+      if (id === "cart") return cart;
+      return null;
+    },
+    querySelector(selector) {
+      if (selector === "#modeTabs .active, .bet-tabs .active") return { textContent: "フォーメーション" };
+      if (selector === 'button[onclick="reviewBet()"]') return reviewButton;
+      return null;
+    },
+  };
+  class FormationMutationObserver {
+    constructor() {}
+    observe() {}
+  }
+  const formationWindow = {
+    reviewBet() {
+      assert.equal(staleRows.length, 0, "stale cart rows must be gone before review opens");
+      assert.equal(cartCount.textContent, "2点");
+      originalReviewCalls += 1;
+    },
+    removeLine(index) {
+      removed.push(index);
+      staleRows.splice(index, 1);
+      cartCount.textContent = `${staleRows.length}点`;
+    },
+    addForm() {
+      addCalls += 1;
+      assert.equal(staleRows.length, 0, "old formation must be removed before new formation is added");
+      cartCount.textContent = "2点";
+      return Promise.resolve(2);
+    },
+  };
+
+  vm.runInNewContext(source, {
+    window: formationWindow,
+    document: formationDocument,
+    MutationObserver: FormationMutationObserver,
+    setTimeout,
+    console,
+  });
+
+  await formationWindow.reviewBet();
+  assert.deepEqual(removed, [2, 1, 0], "cart rows must be removed from the end to keep indexes stable");
+  assert.equal(addCalls, 1);
+  assert.equal(originalReviewCalls, 1);
 });
 
 console.log("iOS race event-loop regression checks passed");
