@@ -1542,6 +1542,12 @@
     return spec.ordered ? `${index + 1}着` : `${index + 1}艇目（順不同）`;
   }
 
+  const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
+  function notifyAirBetRendered() {
+    if (typeof window.dispatchEvent !== "function" || typeof CustomEvent !== "function") return;
+    window.dispatchEvent(new CustomEvent(AIR_BET_RENDERED_EVENT));
+  }
+
   function renderBuilder() {
     if (!$("builder")) return;
     const spec = C.BET_TYPES[betType];
@@ -1586,6 +1592,7 @@
     }
     $("builder").innerHTML = html;
     refreshBuilder();
+    notifyAirBetRendered();
   }
 
   window.pickNormal = (index, boat) => {

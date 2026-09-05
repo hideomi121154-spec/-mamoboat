@@ -10,48 +10,62 @@ const app = fs.readFileSync(path.join(root, "dev", "app.js"), "utf8");
 const compatibility = fs.readFileSync(path.join(root, "dev", "decision-event-api-compat.js"), "utf8");
 const shop = fs.readFileSync(path.join(root, "dev", "mamo-shop.js"), "utf8");
 
-let observerCallback = null;
 let titleWrites = 0;
 const title = {
   value: "購入内容を確認",
   get textContent() { return this.value; },
   set textContent(value) { titleWrites += 1; this.value = value; },
 };
-const builder = { querySelectorAll: () => [] };
-const raceView = {};
+// AIR BET enhancements must run only after the base renderer announces a new
+// builder. Watching the subtree while writing into it starved Safari's clicks.
+const classList = { add() {}, remove() {}, toggle() {}, contains() { return false; } };
+const betdesk = {
+  querySelector(selector) {
+    if (selector === ".cart-title small") return title;
+    return null;
+  },
+  insertBefore() {},
+};
+const builder = {
+  children: [],
+  classList,
+  dataset: {},
+  closest() { return betdesk; },
+  querySelector() { return null; },
+  querySelectorAll: () => [],
+};
+const listeners = new Map();
 const document = {
   readyState: "complete",
   head: { appendChild() {} },
   createElement: () => ({}),
   getElementById(id) {
     if (id === "builder") return builder;
-    if (id === "raceView") return raceView;
     return null;
   },
-  querySelector(selector) {
-    if (selector === ".cart-title small") return title;
-    return null;
-  },
+  querySelector() { return null; },
 };
-class MutationObserver {
-  constructor(callback) { observerCallback = callback; }
-  observe() {}
-}
-const window = { reviewBet() {} };
+const window = {
+  reviewBet() {},
+  addEventListener(name, callback) { listeners.set(name, callback); },
+};
 
 vm.runInNewContext(source, {
   window,
   document,
-  MutationObserver,
   setTimeout,
   console,
 });
 
-assert.equal(typeof observerCallback, "function");
+const renderListener = listeners.get("mamo:air-bet-rendered");
+assert.equal(typeof renderListener, "function");
 assert.equal(titleWrites, 1, "initial enhancement may update the copy once");
-for (let index = 0; index < 25; index += 1) observerCallback();
-assert.equal(titleWrites, 1, "observer callbacks must not observe their own text write forever");
+for (let index = 0; index < 25; index += 1) renderListener();
+assert.equal(titleWrites, 1, "repeated render notifications must not rewrite identical text");
+assert.doesNotMatch(source, /MutationObserver/);
 assert.doesNotMatch(source, /queueMicrotask\(enhanceBuilder\)/);
+assert.match(app, /const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered"/);
+assert.match(app, /refreshBuilder\(\);\s*notifyAirBetRendered\(\);/);
 
 // SHOP may exist, but only its own native overflow is allowed; the abandoned
 // whole-app horizontal-navigation experiment must stay unloaded.
@@ -60,7 +74,7 @@ assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
 assert.match(shop, /overflow-x:auto!important/);
 assert.doesNotMatch(shop, /touchstart|touchmove|preventDefault/);
-assert.match(compatibility, /bet-review-flow\.js\?v=20260905-1/);
+assert.match(compatibility, /bet-review-flow\.js\?v=20260906-1/);
 
 // Adding the selected draft fetches a best-effort odds update asynchronously.
 // The review modal must wait for that operation so it never reads an empty cart.
@@ -79,48 +93,45 @@ assert.match(source, /appendRequested = true/);
 assert.doesNotMatch(source, /買い目を追加・修正/);
 
 test("AIR BET review waits until the selected draft reaches the cart", async () => {
-  let asyncObserverCallback = null;
   let addResolved = false;
   let addCalls = 0;
   let originalReviewCalls = 0;
   const cartCount = { textContent: "0点" };
   const cart = { textContent: "", querySelector() { return null; }, querySelectorAll() { return []; } };
   const reviewButton = { disabled: false, textContent: "AIR BETを確認" };
-  const asyncTitle = { textContent: "現在の選択を確認。追加は確認画面から行えます" };
   const ranks = Array.from({ length: 3 }, () => ({
     querySelector(selector) { return selector === ".pick.sel" ? {} : null; },
   }));
   const asyncBuilder = {
+    children: [],
+    classList,
+    dataset: {},
+    closest() { return { querySelector() { return null; }, insertBefore() {} }; },
+    querySelector() { return null; },
     querySelectorAll(selector) {
       if (selector === ".rank") return ranks;
       if (selector === "button") return [];
       return [];
     },
   };
-  const asyncRaceView = {};
   const asyncDocument = {
     readyState: "complete",
     head: { appendChild() {} },
     createElement: () => ({}),
     getElementById(id) {
       if (id === "builder") return asyncBuilder;
-      if (id === "raceView") return asyncRaceView;
       if (id === "cartCount") return cartCount;
       if (id === "cart") return cart;
       return null;
     },
     querySelector(selector) {
-      if (selector === ".cart-title small") return asyncTitle;
       if (selector === "#modeTabs .active, .bet-tabs .active") return { textContent: "通常" };
       if (selector === 'button[onclick="reviewBet()"]') return reviewButton;
       return null;
     },
   };
-  class AsyncMutationObserver {
-    constructor(callback) { asyncObserverCallback = callback; }
-    observe() {}
-  }
   const asyncWindow = {
+    addEventListener() {},
     reviewBet() {
       assert.equal(addResolved, true, "base review must not run before the draft is stored");
       assert.equal(cartCount.textContent, "1点");
@@ -142,7 +153,6 @@ test("AIR BET review waits until the selected draft reaches the cart", async () 
   vm.runInNewContext(source, {
     window: asyncWindow,
     document: asyncDocument,
-    MutationObserver: AsyncMutationObserver,
     setTimeout,
     console,
   });
@@ -157,7 +167,6 @@ test("AIR BET review waits until the selected draft reaches the cart", async () 
   assert.equal(originalReviewCalls, 1);
   assert.equal(reviewButton.disabled, false);
   assert.equal(reviewButton.textContent, "AIR BETを確認");
-  assert.equal(typeof asyncObserverCallback, "function");
 });
 
 test("a new formation selection replaces stale purchase rows", async () => {
@@ -179,6 +188,11 @@ test("a new formation selection replaces stale purchase rows", async () => {
     querySelector(selector) { return selector === ".pick.sel" ? {} : null; },
   }));
   const formationBuilder = {
+    children: [],
+    classList,
+    dataset: {},
+    closest() { return { querySelector() { return null; }, insertBefore() {} }; },
+    querySelector() { return null; },
     querySelectorAll(selector) {
       if (selector === ".rank") return ranks;
       if (selector === "button") return [];
@@ -191,7 +205,6 @@ test("a new formation selection replaces stale purchase rows", async () => {
     createElement: () => ({}),
     getElementById(id) {
       if (id === "builder") return formationBuilder;
-      if (id === "raceView") return {};
       if (id === "cartCount") return cartCount;
       if (id === "cart") return cart;
       return null;
@@ -202,11 +215,8 @@ test("a new formation selection replaces stale purchase rows", async () => {
       return null;
     },
   };
-  class FormationMutationObserver {
-    constructor() {}
-    observe() {}
-  }
   const formationWindow = {
+    addEventListener() {},
     reviewBet() {
       assert.equal(staleRows.length, 0, "stale cart rows must be gone before review opens");
       assert.equal(cartCount.textContent, "2点");
@@ -228,7 +238,6 @@ test("a new formation selection replaces stale purchase rows", async () => {
   vm.runInNewContext(source, {
     window: formationWindow,
     document: formationDocument,
-    MutationObserver: FormationMutationObserver,
     setTimeout,
     console,
   });
