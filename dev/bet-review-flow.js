@@ -10,6 +10,40 @@
   const originalReviewBet = window.reviewBet;
   if (typeof originalReviewBet !== "function") return;
 
+  const originalPickNormal = window.pickNormal;
+  if (typeof originalPickNormal === "function") {
+    window.pickNormal = (index, boat) => {
+      const selectedButton = document.getElementById(`n-${index}-${boat}`);
+      if (!selectedButton?.classList?.contains("sel")) {
+        return originalPickNormal(index, boat);
+      }
+
+      const keepSelections = Array.from(document.querySelectorAll("#builder .rank"))
+        .map((rank) => {
+          const selected = rank.querySelector('[id^="n-"].sel');
+          const match = selected?.id?.match(/^n-(\d+)-(\d+)$/);
+          if (!match) return null;
+          const selectedIndex = Number(match[1]);
+          const selectedBoat = Number(match[2]);
+          if (selectedIndex === Number(index) && selectedBoat === Number(boat)) return null;
+          return { index: selectedIndex, boat: selectedBoat };
+        })
+        .filter(Boolean);
+
+      // app.js の通常選択は null を直接セットするAPIを公開していないため、
+      // 通常モードだけ安全に初期化し、残す選択を元の選択関数で復元する。
+      if (typeof window.setMode === "function") {
+        window.setMode("normal");
+        keepSelections.forEach((selection) => {
+          originalPickNormal(selection.index, selection.boat);
+        });
+        return;
+      }
+
+      return originalPickNormal(index, boat);
+    };
+  }
+
   function cartHasItems() {
     const count = document.getElementById("cartCount")?.textContent || "";
     if (/\b[1-9]\d*\s*点/.test(count)) return true;
