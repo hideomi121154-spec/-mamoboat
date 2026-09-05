@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v412-decision-conflict-50-dev";
+const CACHE = "mamoboat-v413-formation-cart-sync-51-dev";
 const SHELL = [
   "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js","./decision-event-collector.js","./decision-event-api-compat.js",
