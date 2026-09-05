@@ -82,6 +82,29 @@
       }
     });
 
+    if (builder.classList && builder.dataset) {
+      const formationRanks = Array.from(builder.children || []).filter((node) =>
+        node.classList?.contains("rank") && node.querySelector?.('[id^="f-"]')
+      );
+      const formationMode = formationRanks.length > 0;
+      builder.classList.toggle("mamo-formation-matrix", formationMode);
+      if (formationMode) {
+        builder.dataset.mamoFormationColumns = String(formationRanks.length);
+        formationRanks.forEach((rank, index) => {
+          rank.dataset.mamoFormationRank = String(index + 1);
+        });
+        if (!builder.querySelector(".mamo-formation-matrix-guide")) {
+          const guide = document.createElement("div");
+          guide.className = "mamo-formation-matrix-guide";
+          guide.innerHTML = "<b>着順ごとに縦で選択</b><span>選んだマスだけ色が付きます。艇番は各ボタン左側の色ラインで確認できます。</span>";
+          builder.insertBefore(guide, builder.firstChild);
+        }
+      } else {
+        delete builder.dataset.mamoFormationColumns;
+        builder.querySelector(".mamo-formation-matrix-guide")?.remove();
+      }
+    }
+
     const title = document.querySelector(".cart-title small");
     const titleCopy = "現在の選択を確認。追加は確認画面から行えます";
     if (title && title.textContent !== titleCopy) title.textContent = titleCopy;
@@ -174,6 +197,39 @@
     .mamo-air-review-guide b{font-size:13px;margin-bottom:3px}.mamo-air-review-guide span{font-size:10px;color:#687b82;line-height:1.5}
     .mamo-air-review-add{margin-top:12px!important;background:#fff!important;color:#0b2a42!important;border:1px solid #aebfc3!important}
     .mamo-air-review-confirm{margin-top:8px!important;font-size:16px!important}
+
+    /* Formation matrix: MAMO BOAT original vertical selection UI. */
+    #builder.mamo-formation-matrix{display:grid;gap:8px;margin-top:10px;align-items:start}
+    #builder.mamo-formation-matrix[data-mamo-formation-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #builder.mamo-formation-matrix[data-mamo-formation-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+    #builder.mamo-formation-matrix .mamo-formation-matrix-guide{grid-column:1/-1;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #d6e0e6;border-left:5px solid #dc2029;border-radius:12px;background:#f7f9fc;color:#082b4a}
+    #builder.mamo-formation-matrix .mamo-formation-matrix-guide b{flex:0 0 auto;font-size:12px;font-weight:1000}
+    #builder.mamo-formation-matrix .mamo-formation-matrix-guide span{color:#61778a;font-size:9px;font-weight:750;line-height:1.45;text-align:right}
+    #builder.mamo-formation-matrix>.rank{min-width:0;margin:0}
+    #builder.mamo-formation-matrix>.rank h3{display:grid;place-items:center;min-height:40px;margin:0 0 7px;padding:7px 4px;border:1px solid #cfdbe2;border-radius:11px;background:#eef3f7;color:#082b4a;font-size:11px;font-weight:1000}
+    #builder.mamo-formation-matrix>.rank[data-mamo-formation-rank="1"] h3{border-top:4px solid #dc2029}
+    #builder.mamo-formation-matrix>.rank[data-mamo-formation-rank="2"] h3{border-top:4px solid #082b4a}
+    #builder.mamo-formation-matrix>.rank[data-mamo-formation-rank="3"] h3{border-top:4px solid #3a6792}
+    #builder.mamo-formation-matrix>.rank .betgrid{display:grid;grid-template-columns:1fr;gap:6px}
+    #builder.mamo-formation-matrix>.rank .pick{--mamo-boat-accent:#cad4da;position:relative;min-width:0;min-height:49px;border:1px solid #cad7de!important;border-radius:11px;background:#fff!important;color:#082b4a!important;outline:0!important;box-shadow:inset 4px 0 var(--mamo-boat-accent)!important;transform:none!important;font-size:17px;font-weight:1000;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease}
+    #builder.mamo-formation-matrix>.rank .pick.b1{--mamo-boat-accent:#d6dade}
+    #builder.mamo-formation-matrix>.rank .pick.b2{--mamo-boat-accent:#33383d}
+    #builder.mamo-formation-matrix>.rank .pick.b3{--mamo-boat-accent:#d74449}
+    #builder.mamo-formation-matrix>.rank .pick.b4{--mamo-boat-accent:#376ed0}
+    #builder.mamo-formation-matrix>.rank .pick.b5{--mamo-boat-accent:#f0cf40}
+    #builder.mamo-formation-matrix>.rank .pick.b6{--mamo-boat-accent:#41a56b}
+    #builder.mamo-formation-matrix>.rank .pick.sel::after{content:"✓";position:absolute;top:5px;right:7px;font-size:10px;font-weight:1000}
+    #builder.mamo-formation-matrix>.rank[data-mamo-formation-rank="1"] .pick.sel{border-color:#dc2029!important;background:#dc2029!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.9),0 4px 11px rgba(220,32,41,.22)!important}
+    #builder.mamo-formation-matrix>.rank[data-mamo-formation-rank="2"] .pick.sel{border-color:#082b4a!important;background:#082b4a!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.85),0 4px 11px rgba(8,43,74,.18)!important}
+    #builder.mamo-formation-matrix>.rank[data-mamo-formation-rank="3"] .pick.sel{border-color:#3a6792!important;background:#3a6792!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.85),0 4px 11px rgba(58,103,146,.18)!important}
+    #builder.mamo-formation-matrix>.btn{grid-column:1/-1}
+    @media(max-width:390px){
+      #builder.mamo-formation-matrix{gap:6px}
+      #builder.mamo-formation-matrix .mamo-formation-matrix-guide{display:block;padding:10px}
+      #builder.mamo-formation-matrix .mamo-formation-matrix-guide span{display:block;margin-top:3px;text-align:left}
+      #builder.mamo-formation-matrix>.rank h3{min-height:37px;font-size:10px}
+      #builder.mamo-formation-matrix>.rank .pick{min-height:46px;font-size:16px}
+    }
   `;
   document.head.appendChild(style);
 
