@@ -9,6 +9,7 @@
 
   const originalReviewBet = window.reviewBet;
   if (typeof originalReviewBet !== "function") return;
+  const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
 
   const originalPickNormal = window.pickNormal;
   if (typeof originalPickNormal === "function") {
@@ -150,9 +151,9 @@
       [...builder.querySelectorAll("button")].forEach((button) => {
         const text = String(button.textContent || "").trim();
         if (/^(買い目を追加|BOXを追加|フォーメーションを追加)$/.test(text)) {
-          button.hidden = true;
-          button.setAttribute("aria-hidden", "true");
-          button.tabIndex = -1;
+          if (!button.hidden) button.hidden = true;
+          if (button.getAttribute("aria-hidden") !== "true") button.setAttribute("aria-hidden", "true");
+          if (button.tabIndex !== -1) button.tabIndex = -1;
         }
       });
 
@@ -188,13 +189,16 @@
       }
 
       const reviewButton = betdesk?.querySelector('button[onclick="reviewBet()"]');
-      if (reviewButton && reviewButton.textContent !== "この買い目で次へ進む") {
-        reviewButton.textContent = "この買い目で次へ進む";
+      if (reviewButton) {
+        if (reviewButton.textContent !== "この買い目で次へ進む") {
+          reviewButton.textContent = "この買い目で次へ進む";
+        }
         reviewButton.classList.add("mamo-next-bet");
       }
 
-      const title = document.querySelector(".cart-title small");
-      if (title) title.textContent = "現在の選択を確認。追加は確認画面から行えます";
+      const title = betdesk?.querySelector(".cart-title small");
+      const titleCopy = "現在の選択を確認。追加は確認画面から行えます";
+      if (title && title.textContent !== titleCopy) title.textContent = titleCopy;
     } finally {
       enhancing = false;
     }
@@ -366,8 +370,7 @@
 
   function boot() {
     enhanceBuilder();
-    const raceView = document.getElementById("raceView");
-    if (raceView) new MutationObserver(enhanceBuilder).observe(raceView, { childList: true, subtree: true });
+    window.addEventListener(AIR_BET_RENDERED_EVENT, enhanceBuilder);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
