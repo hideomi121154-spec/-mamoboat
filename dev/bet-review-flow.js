@@ -82,25 +82,27 @@
       }
     });
 
-    const formationRanks = Array.from(builder.children || []).filter((node) =>
-      node.classList?.contains("rank") && node.querySelector?.('[id^="f-"]')
-    );
-    const formationMode = formationRanks.length > 0;
-    builder.classList.toggle("mamo-formation-matrix", formationMode);
-    if (formationMode) {
-      builder.dataset.mamoFormationColumns = String(formationRanks.length);
-      formationRanks.forEach((rank, index) => {
-        rank.dataset.mamoFormationRank = String(index + 1);
-      });
-      if (!builder.querySelector(".mamo-formation-matrix-guide")) {
-        const guide = document.createElement("div");
-        guide.className = "mamo-formation-matrix-guide";
-        guide.innerHTML = "<b>着順ごとに縦で選択</b><span>選んだマスだけ色が付きます。艇番は各ボタン左側の色ラインで確認できます。</span>";
-        builder.insertBefore(guide, builder.firstChild);
+    if (builder.classList && builder.dataset) {
+      const formationRanks = Array.from(builder.children || []).filter((node) =>
+        node.classList?.contains("rank") && node.querySelector?.('[id^="f-"]')
+      );
+      const formationMode = formationRanks.length > 0;
+      builder.classList.toggle("mamo-formation-matrix", formationMode);
+      if (formationMode) {
+        builder.dataset.mamoFormationColumns = String(formationRanks.length);
+        formationRanks.forEach((rank, index) => {
+          rank.dataset.mamoFormationRank = String(index + 1);
+        });
+        if (!builder.querySelector(".mamo-formation-matrix-guide")) {
+          const guide = document.createElement("div");
+          guide.className = "mamo-formation-matrix-guide";
+          guide.innerHTML = "<b>着順ごとに縦で選択</b><span>選んだマスだけ色が付きます。艇番は各ボタン左側の色ラインで確認できます。</span>";
+          builder.insertBefore(guide, builder.firstChild);
+        }
+      } else {
+        delete builder.dataset.mamoFormationColumns;
+        builder.querySelector(".mamo-formation-matrix-guide")?.remove();
       }
-    } else {
-      delete builder.dataset.mamoFormationColumns;
-      builder.querySelector(".mamo-formation-matrix-guide")?.remove();
     }
 
     const title = document.querySelector(".cart-title small");
