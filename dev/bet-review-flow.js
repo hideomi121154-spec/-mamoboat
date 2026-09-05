@@ -1,11 +1,11 @@
-/* MAMO BOAT — AIR BET review flow v3
- * Current draft replaces stale purchase content by default.
- * Existing purchase content is appended only after an explicit "買い目を追加" action.
+/* MAMO BOAT — AIR BET review flow v4
+ * Compact race/bet selection layout for iPhone Safari/PWA.
+ * Keeps AIR BET logic intact while reducing vertical travel and integrating racer info.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V3__) return;
-  window.__MAMO_BET_REVIEW_FLOW_V3__ = true;
+  if (window.__MAMO_BET_REVIEW_FLOW_V4__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V4__ = true;
 
   const originalReviewBet = window.reviewBet;
   if (typeof originalReviewBet !== "function") return;
@@ -30,8 +30,6 @@
         })
         .filter(Boolean);
 
-      // app.js の通常選択は null を直接セットするAPIを公開していないため、
-      // 通常モードだけ安全に初期化し、残す選択を元の選択関数で復元する。
       if (typeof window.setMode === "function") {
         window.setMode("normal");
         keepSelections.forEach((selection) => {
@@ -74,15 +72,9 @@
   function addCurrentDraft() {
     if (!currentDraftIsComplete()) return false;
     const label = activeModeLabel();
-    if (/BOX/i.test(label) && typeof window.addBox === "function") {
-      return window.addBox();
-    }
-    if (/フォーメーション/.test(label) && typeof window.addForm === "function") {
-      return window.addForm();
-    }
-    if (typeof window.addNormal === "function") {
-      return window.addNormal();
-    }
+    if (/BOX/i.test(label) && typeof window.addBox === "function") return window.addBox();
+    if (/フォーメーション/.test(label) && typeof window.addForm === "function") return window.addForm();
+    if (typeof window.addNormal === "function") return window.addNormal();
     return false;
   }
 
@@ -90,33 +82,80 @@
     const cart = document.getElementById("cart");
     const rows = Array.from(cart?.querySelectorAll?.(".cartrow") || []);
     if (!rows.length || typeof window.removeLine !== "function") return 0;
-    for (let index = rows.length - 1; index >= 0; index -= 1) {
-      window.removeLine(index);
-    }
+    for (let index = rows.length - 1; index >= 0; index -= 1) window.removeLine(index);
     return rows.length;
   }
 
-  function showSelectionHint(message = "買い目を選んでから「AIR BETを確認」を押してください。") {
+  function showSelectionHint(message = "買い目を選んでから「この買い目で次へ進む」を押してください。") {
     const notice = document.getElementById("addedNotice") || document.getElementById("cartSum");
-    if (notice) {
-      notice.textContent = message;
-      notice.classList.add("mamo-review-selection-hint");
-    }
+    if (!notice) return;
+    notice.textContent = message;
+    notice.classList.add("mamo-review-selection-hint");
   }
 
-  function enhanceBuilder() {
-    const builder = document.getElementById("builder");
-    if (!builder) return;
-    [...builder.querySelectorAll("button")].forEach((button) => {
-      const text = String(button.textContent || "").trim();
-      if (/^(買い目を追加|BOXを追加|フォーメーションを追加)$/.test(text)) {
-        button.hidden = true;
-        button.setAttribute("aria-hidden", "true");
-        button.tabIndex = -1;
-      }
-    });
+  function racerRows() {
+    return Array.from(document.querySelectorAll("#raceView .boats .boat")).map((item) => {
+      const number = Number(item.querySelector(".num")?.textContent?.trim());
+      const name = String(item.querySelector(":scope > div:nth-child(2) > b")?.textContent || "").trim();
+      const href = String(item.getAttribute("href") || "").trim();
+      return { number, name, href };
+    }).filter((item) => Number.isFinite(item.number) && item.number >= 1 && item.number <= 6 && item.name);
+  }
 
-    if (builder.classList && builder.dataset) {
+  function ensureRacerColumn(builder) {
+    const rows = racerRows();
+    const existing = builder.querySelector(":scope > .mamo-racer-list");
+    if (!rows.length) {
+      existing?.remove();
+      builder.dataset.mamoHasRacers = "false";
+      return;
+    }
+
+    const signature = rows.map((item) => `${item.number}:${item.name}:${item.href}`).join("|");
+    if (existing?.dataset.signature === signature) {
+      builder.dataset.mamoHasRacers = "true";
+      return;
+    }
+
+    existing?.remove();
+    const column = document.createElement("div");
+    column.className = "mamo-racer-list";
+    column.dataset.signature = signature;
+    column.innerHTML = `<div class="mamo-racer-head">選手</div><div class="mamo-racer-rows">${rows.map((item) => `
+      <div class="mamo-racer-row">
+        <span class="mamo-lane b${item.number}">${item.number}</span>
+        <span class="mamo-racer-copy"><b>${item.name}</b>${item.href ? `<a class="mamo-official-button" href="${item.href}" target="_blank" rel="noopener noreferrer">公式情報 ↗</a>` : ""}</span>
+      </div>`).join("")}</div>`;
+    builder.insertBefore(column, builder.firstChild);
+    builder.dataset.mamoHasRacers = "true";
+  }
+
+  let enhancing = false;
+  function enhanceBuilder() {
+    if (enhancing) return;
+    enhancing = true;
+    try {
+      const builder = document.getElementById("builder");
+      if (!builder) return;
+
+      const betdesk = builder.closest(".betdesk");
+      const modeTabs = document.getElementById("modeTabs");
+      const betTypeBar = betdesk?.querySelector(".bettypebar");
+      if (betdesk && modeTabs && betTypeBar && modeTabs.nextElementSibling !== betTypeBar) {
+        betdesk.insertBefore(modeTabs, betTypeBar);
+      }
+
+      builder.querySelectorAll(".mamo-selection-matrix-guide,.mamo-formation-matrix-guide").forEach((node) => node.remove());
+
+      [...builder.querySelectorAll("button")].forEach((button) => {
+        const text = String(button.textContent || "").trim();
+        if (/^(買い目を追加|BOXを追加|フォーメーションを追加)$/.test(text)) {
+          button.hidden = true;
+          button.setAttribute("aria-hidden", "true");
+          button.tabIndex = -1;
+        }
+      });
+
       const ranks = Array.from(builder.children || []).filter((node) =>
         node.classList?.contains("rank") && node.querySelector?.(".pick")
       );
@@ -127,47 +166,38 @@
           : ranks.some((rank) => rank.querySelector?.('[id^="n-"]'))
             ? "normal"
             : "";
-      const verticalMode = Boolean(pickerMode && ranks.length);
 
       builder.classList.remove("mamo-formation-matrix");
-      builder.classList.toggle("mamo-selection-matrix", verticalMode);
+      builder.classList.toggle("mamo-selection-matrix", Boolean(pickerMode && ranks.length));
       delete builder.dataset.mamoFormationColumns;
-      builder.querySelector(".mamo-formation-matrix-guide")?.remove();
-      ranks.forEach((rank) => {
-        if (rank.dataset) delete rank.dataset.mamoFormationRank;
+
+      ranks.forEach((rank, index) => {
+        if (!rank.dataset) return;
+        delete rank.dataset.mamoFormationRank;
+        rank.dataset.mamoPickerRank = String(index + 1);
       });
 
-      if (verticalMode) {
+      if (pickerMode && ranks.length) {
         builder.dataset.mamoPickerMode = pickerMode;
         builder.dataset.mamoPickerColumns = String(pickerMode === "box" ? 1 : ranks.length);
-        ranks.forEach((rank, index) => {
-          if (rank.dataset) rank.dataset.mamoPickerRank = String(index + 1);
-        });
-
-        if (!builder.querySelector(".mamo-selection-matrix-guide")) {
-          const guide = document.createElement("div");
-          guide.className = "mamo-selection-matrix-guide";
-          if (pickerMode === "box") {
-            guide.innerHTML = "<b>艇を縦に選択</b><span>BOXに含める艇を選びます。選んだ艇だけ色が付きます。</span>";
-          } else if (ranks.length === 1) {
-            guide.innerHTML = "<b>艇を縦に選択</b><span>候補の艇を選びます。選んだマスだけ色が付きます。</span>";
-          } else if (pickerMode === "normal") {
-            guide.innerHTML = "<b>候補列ごとに縦で選択</b><span>各列から1艇ずつ選びます。選んだマスだけ色が付きます。</span>";
-          } else {
-            guide.innerHTML = "<b>候補列ごとに縦で選択</b><span>各列から候補を選びます。選んだマスだけ色が付きます。</span>";
-          }
-          builder.insertBefore(guide, builder.firstChild);
-        }
+        ensureRacerColumn(builder);
       } else {
         delete builder.dataset.mamoPickerMode;
         delete builder.dataset.mamoPickerColumns;
-        builder.querySelector(".mamo-selection-matrix-guide")?.remove();
+        builder.querySelector(":scope > .mamo-racer-list")?.remove();
       }
-    }
 
-    const title = document.querySelector(".cart-title small");
-    const titleCopy = "現在の選択を確認。追加は確認画面から行えます";
-    if (title && title.textContent !== titleCopy) title.textContent = titleCopy;
+      const reviewButton = betdesk?.querySelector('button[onclick="reviewBet()"]');
+      if (reviewButton && reviewButton.textContent !== "この買い目で次へ進む") {
+        reviewButton.textContent = "この買い目で次へ進む";
+        reviewButton.classList.add("mamo-next-bet");
+      }
+
+      const title = document.querySelector(".cart-title small");
+      if (title) title.textContent = "現在の選択を確認。追加は確認画面から行えます";
+    } finally {
+      enhancing = false;
+    }
   }
 
   let appendRequested = false;
@@ -212,7 +242,7 @@
   window.reviewBet = async () => {
     if (reviewInFlight) return;
     const reviewButton = document.querySelector('button[onclick="reviewBet()"]');
-    const originalLabel = reviewButton?.textContent || "AIR BETを確認";
+    const originalLabel = reviewButton?.textContent || "この買い目で次へ進む";
     reviewInFlight = true;
     if (reviewButton) {
       reviewButton.disabled = true;
@@ -248,52 +278,90 @@
   };
 
   const style = document.createElement("style");
-  style.id = "mamoBetReviewFlowStyleV3";
+  style.id = "mamoBetReviewFlowStyleV4";
   style.textContent = `
     #builder button[hidden]{display:none!important}
-    .mamo-review-selection-hint{color:#b4232d!important;font-weight:900!important}
+    .mamo-review-selection-hint{display:block!important;margin:8px 0!important;padding:9px 10px!important;color:#b4232d!important;font-weight:900!important;background:#fff5f5!important;border-radius:10px!important}
     .mamo-air-review-guide{margin:10px 0 12px;padding:11px 12px;border:1px solid #d7e2e4;border-left:4px solid #0a948c;border-radius:10px;background:#f5fbfa;color:#17333d}
     .mamo-air-review-guide b,.mamo-air-review-guide span{display:block}
     .mamo-air-review-guide b{font-size:13px;margin-bottom:3px}.mamo-air-review-guide span{font-size:10px;color:#687b82;line-height:1.5}
     .mamo-air-review-add{margin-top:12px!important;background:#fff!important;color:#0b2a42!important;border:1px solid #aebfc3!important}
     .mamo-air-review-confirm{margin-top:8px!important;font-size:16px!important}
 
-    /* All AIR BET modes share one vertical selection language. */
-    #builder.mamo-selection-matrix{display:grid;gap:8px;margin-top:10px;align-items:start}
-    #builder.mamo-selection-matrix[data-mamo-picker-columns="1"]{grid-template-columns:1fr}
-    #builder.mamo-selection-matrix[data-mamo-picker-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
-    #builder.mamo-selection-matrix[data-mamo-picker-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
-    #builder.mamo-selection-matrix[data-mamo-picker-columns="1"]>.rank{width:min(430px,100%);justify-self:center}
-    #builder.mamo-selection-matrix .mamo-selection-matrix-guide{grid-column:1/-1;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #d6e0e6;border-left:5px solid #dc2029;border-radius:12px;background:#f7f9fc;color:#082b4a}
-    #builder.mamo-selection-matrix .mamo-selection-matrix-guide b{flex:0 0 auto;font-size:12px;font-weight:1000}
-    #builder.mamo-selection-matrix .mamo-selection-matrix-guide span{color:#61778a;font-size:9px;font-weight:750;line-height:1.45;text-align:right}
-    #builder.mamo-selection-matrix>.rank{min-width:0;margin:0}
-    #builder.mamo-selection-matrix>.rank h3{display:grid;place-items:center;min-height:40px;margin:0 0 7px;padding:7px 4px;border:1px solid #cfdbe2;border-radius:11px;background:#eef3f7;color:#082b4a;font-size:11px;font-weight:1000}
-    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="1"] h3{border-top:4px solid #dc2029}
-    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="2"] h3{border-top:4px solid #082b4a}
-    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="3"] h3{border-top:4px solid #3a6792}
-    #builder.mamo-selection-matrix>.rank .betgrid{display:grid;grid-template-columns:1fr;gap:6px}
-    #builder.mamo-selection-matrix>.rank .pick{--mamo-boat-accent:#cad4da;position:relative;min-width:0;min-height:49px;border:1px solid #cad7de!important;border-radius:11px;background:#fff!important;color:#082b4a!important;outline:0!important;box-shadow:inset 4px 0 var(--mamo-boat-accent)!important;transform:none!important;font-size:17px;font-weight:1000;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease}
+    /* Compact order: mode -> bet type -> short guide -> integrated racer picker. */
+    .betdesk #modeTabs{margin:0 0 10px!important;min-height:48px!important}
+    .betdesk #modeTabs .bet-tab{min-height:48px!important;font-size:14px!important;font-weight:950!important}
+    .betdesk .bettypebar{margin:0 0 9px!important;gap:7px!important}
+    .betdesk .bettypebar .bettypebtn{min-height:46px!important;padding:8px 6px!important;font-size:12px!important;font-weight:950!important}
+    .betdesk #betGuide{margin:0 0 8px!important;padding:8px 10px!important;background:#f3f8fb!important;border:1px solid #dce7ec!important}
+    .betdesk #betGuide>div:first-child{margin:0!important;font-size:11px!important;line-height:1.45!important}
+    .betdesk .odds-snapshot,.betdesk .odds-caution,.betdesk .odds-now{display:none!important}
+    .betdesk .cart-title,.betdesk #cart,.betdesk #cartTools,.betdesk #cartSum{display:none!important}
+    .betdesk #addedNotice:not(.show):not(.duplicate):not(.mamo-review-selection-hint){display:none!important}
+    .betdesk .mamo-next-bet{margin-top:10px!important;min-height:56px!important;border-radius:14px!important;background:#e61f2a!important;color:#fff!important;font-size:16px!important;font-weight:1000!important;box-shadow:0 5px 0 #9f1720!important}
+
+    /* One integrated table: racer + 1st/2nd/3rd columns. */
+    #builder.mamo-selection-matrix{display:grid!important;gap:6px!important;margin-top:0!important;align-items:start!important}
+    #builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="1"]{grid-template-columns:minmax(142px,1.55fr) minmax(86px,1fr)!important}
+    #builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="2"]{grid-template-columns:minmax(126px,1.45fr) repeat(2,minmax(70px,1fr))!important}
+    #builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="3"]{grid-template-columns:minmax(120px,1.5fr) repeat(3,minmax(58px,1fr))!important}
+    #builder.mamo-selection-matrix[data-mamo-has-racers="false"][data-mamo-picker-columns="1"]{grid-template-columns:1fr!important}
+    #builder.mamo-selection-matrix[data-mamo-has-racers="false"][data-mamo-picker-columns="2"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    #builder.mamo-selection-matrix[data-mamo-has-racers="false"][data-mamo-picker-columns="3"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+    #builder.mamo-selection-matrix .mamo-selection-matrix-guide,#builder.mamo-selection-matrix .mamo-formation-matrix-guide{display:none!important}
+    #builder.mamo-selection-matrix>.rank{min-width:0!important;margin:0!important;width:auto!important}
+    #builder.mamo-selection-matrix>.rank h3,.mamo-racer-head{display:grid!important;place-items:center!important;min-height:40px!important;margin:0 0 6px!important;padding:6px 3px!important;border:1px solid #cfdbe2!important;border-radius:9px!important;background:#eef3f7!important;color:#082b4a!important;font-size:10px!important;font-weight:1000!important}
+    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="1"] h3{border-top:4px solid #dc2029!important}
+    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="2"] h3{border-top:4px solid #082b4a!important}
+    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="3"] h3{border-top:4px solid #3a6792!important}
+    #builder.mamo-selection-matrix>.rank .betgrid,.mamo-racer-rows{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+    #builder.mamo-selection-matrix>.rank .pick{--mamo-boat-accent:#cad4da;position:relative!important;min-width:0!important;min-height:49px!important;padding:6px 2px!important;border:1px solid #cad7de!important;border-radius:9px!important;background:#fff!important;color:#082b4a!important;outline:0!important;box-shadow:inset 4px 0 var(--mamo-boat-accent)!important;transform:none!important;font-size:17px!important;font-weight:1000!important;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease!important}
     #builder.mamo-selection-matrix>.rank .pick.b1{--mamo-boat-accent:#d6dade}
     #builder.mamo-selection-matrix>.rank .pick.b2{--mamo-boat-accent:#33383d}
     #builder.mamo-selection-matrix>.rank .pick.b3{--mamo-boat-accent:#d74449}
     #builder.mamo-selection-matrix>.rank .pick.b4{--mamo-boat-accent:#376ed0}
     #builder.mamo-selection-matrix>.rank .pick.b5{--mamo-boat-accent:#f0cf40}
     #builder.mamo-selection-matrix>.rank .pick.b6{--mamo-boat-accent:#41a56b}
-    #builder.mamo-selection-matrix>.rank .pick.sel::after{content:"✓";position:absolute;top:5px;right:7px;font-size:10px;font-weight:1000}
-    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="1"] .pick.sel{border-color:#dc2029!important;background:#dc2029!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.9),0 4px 11px rgba(220,32,41,.22)!important}
-    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="2"] .pick.sel{border-color:#082b4a!important;background:#082b4a!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.85),0 4px 11px rgba(8,43,74,.18)!important}
-    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="3"] .pick.sel{border-color:#3a6792!important;background:#3a6792!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.85),0 4px 11px rgba(58,103,146,.18)!important}
-    #builder.mamo-selection-matrix[data-mamo-picker-mode="box"]>.rank .pick.sel{border-color:#082b4a!important;background:#082b4a!important;color:#fff!important;box-shadow:inset 5px 0 #dc2029,0 4px 11px rgba(8,43,74,.18)!important}
-    #builder.mamo-selection-matrix>.btn{grid-column:1/-1}
+    #builder.mamo-selection-matrix>.rank .pick.sel::after{content:"✓";position:absolute;top:4px;right:6px;font-size:9px;font-weight:1000}
+    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="1"] .pick.sel{border-color:#dc2029!important;background:#dc2029!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.9),0 3px 9px rgba(220,32,41,.2)!important}
+    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="2"] .pick.sel{border-color:#082b4a!important;background:#082b4a!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.85),0 3px 9px rgba(8,43,74,.17)!important}
+    #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="3"] .pick.sel{border-color:#3a6792!important;background:#3a6792!important;color:#fff!important;box-shadow:inset 4px 0 rgba(255,255,255,.85),0 3px 9px rgba(58,103,146,.17)!important}
+    #builder.mamo-selection-matrix[data-mamo-picker-mode="box"]>.rank .pick.sel{border-color:#082b4a!important;background:#082b4a!important;color:#fff!important;box-shadow:inset 5px 0 #dc2029,0 3px 9px rgba(8,43,74,.17)!important}
+    #builder.mamo-selection-matrix>.btn{grid-column:1/-1!important}
+
+    .mamo-racer-list{min-width:0!important;margin:0!important}
+    .mamo-racer-head{border-top:4px solid #d8a62e!important}
+    .mamo-racer-row{min-height:49px!important;display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;align-items:center!important;gap:7px!important;padding:3px 5px 3px 3px!important;border:1px solid #dbe4e8!important;border-radius:9px!important;background:#fff!important;overflow:hidden!important}
+    .mamo-lane{width:29px!important;height:40px!important;display:grid!important;place-items:center!important;border-radius:7px!important;font-size:16px!important;font-weight:1000!important;background:#f4f4f4!important;color:#092b49!important}
+    .mamo-lane.b1{background:#f4f4f4!important;color:#0b2438!important;border:2px solid #cfd5d8!important}
+    .mamo-lane.b2{background:#303438!important;color:#fff!important}
+    .mamo-lane.b3{background:#e34a4f!important;color:#fff!important}
+    .mamo-lane.b4{background:#3975d6!important;color:#fff!important}
+    .mamo-lane.b5{background:#f0cf3d!important;color:#111!important}
+    .mamo-lane.b6{background:#3ca568!important;color:#fff!important}
+    .mamo-racer-copy{min-width:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:4px!important}
+    .mamo-racer-copy>b{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#082b4a!important;font-size:11px!important;font-weight:1000!important}
+    .mamo-official-button{flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:30px!important;padding:4px 6px!important;border:1px solid #7fbdf0!important;border-radius:8px!important;background:#f7fbff!important;color:#0871cf!important;text-decoration:none!important;font-size:8px!important;font-weight:1000!important;white-space:nowrap!important}
+
     @media(max-width:390px){
-      #builder.mamo-selection-matrix{gap:6px}
-      #builder.mamo-selection-matrix .mamo-selection-matrix-guide{display:block;padding:10px}
-      #builder.mamo-selection-matrix .mamo-selection-matrix-guide span{display:block;margin-top:3px;text-align:left}
-      #builder.mamo-selection-matrix>.rank h3{min-height:37px;font-size:10px}
-      #builder.mamo-selection-matrix>.rank .pick{min-height:46px;font-size:16px}
+      .betdesk #modeTabs{min-height:46px!important}
+      .betdesk #modeTabs .bet-tab{min-height:46px!important;font-size:13px!important}
+      .betdesk .bettypebar{gap:6px!important}
+      .betdesk .bettypebar .bettypebtn{min-height:44px!important;font-size:11px!important;padding:6px 3px!important}
+      #builder.mamo-selection-matrix{gap:5px!important}
+      #builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="3"]{grid-template-columns:minmax(112px,1.48fr) repeat(3,minmax(54px,1fr))!important}
+      #builder.mamo-selection-matrix>.rank h3,.mamo-racer-head{min-height:37px!important;font-size:9px!important;margin-bottom:5px!important}
+      #builder.mamo-selection-matrix>.rank .betgrid,.mamo-racer-rows{gap:5px!important}
+      #builder.mamo-selection-matrix>.rank .pick,.mamo-racer-row{min-height:46px!important}
+      #builder.mamo-selection-matrix>.rank .pick{font-size:16px!important}
+      .mamo-racer-row{grid-template-columns:27px minmax(0,1fr)!important;gap:5px!important;padding:2px 4px 2px 2px!important}
+      .mamo-lane{width:27px!important;height:37px!important;font-size:15px!important}
+      .mamo-racer-copy{display:block!important}
+      .mamo-racer-copy>b{display:block!important;font-size:10px!important;line-height:1.2!important}
+      .mamo-official-button{display:inline-flex!important;margin-top:2px!important;min-height:20px!important;padding:1px 4px!important;border-radius:6px!important;font-size:7px!important}
     }
   `;
+  document.getElementById("mamoBetReviewFlowStyleV3")?.remove();
   document.head.appendChild(style);
 
   function boot() {
@@ -301,6 +369,7 @@
     const raceView = document.getElementById("raceView");
     if (raceView) new MutationObserver(enhanceBuilder).observe(raceView, { childList: true, subtree: true });
   }
+
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
 })();
