@@ -1,11 +1,11 @@
-/* MAMO BOAT — AIR BET review flow v2
- * The builder no longer asks users to press an intermediate "買い目を追加" button.
- * Selected draft -> AIR BETを確認 -> 決定 / 買い目を追加・修正.
+/* MAMO BOAT — AIR BET review flow v3
+ * Current draft replaces stale purchase content by default.
+ * Existing purchase content is appended only after an explicit "買い目を追加" action.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V2__) return;
-  window.__MAMO_BET_REVIEW_FLOW_V2__ = true;
+  if (window.__MAMO_BET_REVIEW_FLOW_V3__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V3__ = true;
 
   const originalReviewBet = window.reviewBet;
   if (typeof originalReviewBet !== "function") return;
@@ -52,6 +52,16 @@
     return false;
   }
 
+  function clearCommittedCartForReplacement() {
+    const cart = document.getElementById("cart");
+    const rows = Array.from(cart?.querySelectorAll?.(".cartrow") || []);
+    if (!rows.length || typeof window.removeLine !== "function") return 0;
+    for (let index = rows.length - 1; index >= 0; index -= 1) {
+      window.removeLine(index);
+    }
+    return rows.length;
+  }
+
   function showSelectionHint(message = "買い目を選んでから「AIR BETを確認」を押してください。") {
     const notice = document.getElementById("addedNotice") || document.getElementById("cartSum");
     if (notice) {
@@ -73,12 +83,11 @@
     });
 
     const title = document.querySelector(".cart-title small");
-    const titleCopy = "確認画面から、追加・修正できます";
-    // This function runs from a child-list observer. An unconditional
-    // textContent assignment observes its own write and can starve Safari's
-    // event loop forever as soon as the race screen is rendered.
+    const titleCopy = "現在の選択を確認。追加は確認画面から行えます";
     if (title && title.textContent !== titleCopy) title.textContent = titleCopy;
   }
+
+  let appendRequested = false;
 
   function enhanceReviewModal() {
     const modal = document.getElementById("modal");
@@ -94,8 +103,9 @@
       addMore.type = "button";
       addMore.dataset.mamoAddMore = "1";
       addMore.className = "btn secondary full mamo-air-review-add";
-      addMore.textContent = "買い目を追加・修正";
+      addMore.textContent = "買い目を追加";
       addMore.addEventListener("click", () => {
+        appendRequested = true;
         window.closeModal?.();
         setTimeout(() => {
           enhanceBuilder();
@@ -109,7 +119,7 @@
       const guide = document.createElement("div");
       guide.dataset.mamoReviewGuide = "1";
       guide.className = "mamo-air-review-guide";
-      guide.innerHTML = "<b>この内容でよければAIR BETを決定。</b><span>もう1点追加したい、または内容を直したい場合は「買い目を追加・修正」へ。</span>";
+      guide.innerHTML = "<b>この内容でよければAIR BETを決定。</b><span>別の買い目を足す場合だけ「買い目を追加」へ。選び直した場合は現在の選択で購入内容を置き換えます。</span>";
       const purchaseHeading = [...modal.querySelectorAll("h3")].find((node) => /購入内容/.test(node.textContent || ""));
       (purchaseHeading || confirm).insertAdjacentElement("beforebegin", guide);
     }
@@ -128,7 +138,9 @@
 
     try {
       if (currentDraftIsComplete()) {
+        if (!appendRequested) clearCommittedCartForReplacement();
         await Promise.resolve(addCurrentDraft());
+        appendRequested = false;
       } else if (!cartHasItems()) {
         showSelectionHint();
         return;
@@ -153,7 +165,7 @@
   };
 
   const style = document.createElement("style");
-  style.id = "mamoBetReviewFlowStyleV2";
+  style.id = "mamoBetReviewFlowStyleV3";
   style.textContent = `
     #builder button[hidden]{display:none!important}
     .mamo-review-selection-hint{color:#b4232d!important;font-weight:900!important}

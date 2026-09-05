@@ -110,5 +110,5 @@ test("the intervention is transparent, optional, and does not ask for a rating",
 test("the decision-conflict modules are available offline", () => {
   assert.match(serviceWorker, /decision-conflict-core\.js/);
   assert.match(serviceWorker, /decision-conflict-guard\.js/);
-  assert.match(serviceWorker, /mamoboat-v412-decision-conflict-50-dev/);
+  assert.match(serviceWorker, /mamoboat-v413-formation-cart-sync-51-dev/);
 });
