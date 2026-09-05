@@ -96,7 +96,7 @@
         if (!builder.querySelector(".mamo-formation-matrix-guide")) {
           const guide = document.createElement("div");
           guide.className = "mamo-formation-matrix-guide";
-          guide.innerHTML = "<b>着順ごとに縦で選択</b><span>選んだマスだけ色が付きます。艇番は各ボタン左側の色ラインで確認できます。</span>";
+          guide.innerHTML = "<b>候補列ごとに縦で選択</b><span>各列から候補を選びます。選んだマスだけ色が付き、艇番は左側の色ラインで確認できます。</span>";
           builder.insertBefore(guide, builder.firstChild);
         }
       } else {
