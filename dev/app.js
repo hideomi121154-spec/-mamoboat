@@ -1915,7 +1915,7 @@ const reference = liveValue != null
         const amount = normalizeStake(line.stake);
         return `<div class="cartrow${amount ? "" : " stake-missing"}"><b class="tickettype">${C.BET_TYPES[C.normalizeBetType(line.betType)].label}</b>
           <b class="cart-combo">${line.combo.join("-")}</b>
-          <label class="cart-stake"><input class="cart-stake-input" type="number" min="100" step="100" value="${amount || ""}" inputmode="numeric" aria-label="${line.combo.join("-")}のベット数" placeholder="入力" onchange="this.value=changeLine(${index},'stake',this.value)"><span>B</span></label>
+          <label class="cart-stake"><input class="cart-stake-input" type="number" min="100" step="100" value="${amount || ""}" inputmode="numeric" aria-label="${line.combo.join("-")}のベット数" placeholder="入力" oninput="changeLine(${index},'stake',this.value)" onchange="this.value=changeLine(${index},'stake',this.value)"><span>B</span></label>
           ${line.oddsSource === "official-snapshot"
             ? `<div class="cart-odds" aria-label="参考オッズ ${esc(line.odds)}倍"><b>${esc(line.odds)}倍</b><small>${timeText(line.oddsCapturedAt)} ${line.oddsTimeSource === "fetched" ? "取得" : "更新"}</small></div>`
             : `<label class="odds-input"><input value="${esc(line.odds)}" inputmode="decimal" aria-label="参考オッズ" placeholder="倍率" onchange="changeLine(${index},'odds',this.value)">${line.oddsCapturedAt ? `<small>${timeText(line.oddsCapturedAt)} 入力</small>` : `<small>未取得</small>`}</label>`}
@@ -1965,7 +1965,7 @@ const reference = liveValue != null
           <b class="betcombo">${combo.join(separator)}</b><b class="betline-current-stake${amount ? "" : " is-missing"}">${amount ? `${fmt(amount)}B` : "未入力"}</b>
           ${racerNames.length === combo.length ? `<div class="betnames">${lineMode ? `${lineMode} / ` : ""}${racerNames.map(esc).join(separator)}</div>` : ""}
           ${oddsNumber(line.odds) > 0 ? `<div class="betnames">参加時参考オッズ ${esc(line.odds)}倍${line.oddsCapturedAt ? ` / ${timeText(line.oddsCapturedAt)}${line.oddsTimeSource === "fetched" ? "取得" : line.oddsSource === "official-snapshot" ? "更新" : "入力"}` : ""}</div>` : ""}
-          ${editable ? `<div class="betline-edit"><label><span>この買い目のベット数</span><span class="betline-stake-control"><input class="betline-stake-input" type="number" min="100" step="100" inputmode="numeric" value="${amount || ""}" placeholder="入力" aria-label="${combo.join("-")}のベット数" onchange="this.value=updateReviewLineStake(${index},this.value)"><b>B</b></span></label><button class="betline-remove" type="button" onclick="removeReviewLine(${index})">この買い目を削除</button></div>` : ""}</div>`;
+          ${editable ? `<div class="betline-edit"><label><span>この買い目のベット数</span><span class="betline-stake-control"><input class="betline-stake-input" type="number" min="100" step="100" inputmode="numeric" value="${amount || ""}" placeholder="入力" aria-label="${combo.join("-")}のベット数" oninput="updateReviewLineStake(${index},this.value)" onchange="this.value=updateReviewLineStake(${index},this.value)"><b>B</b></span></label><button class="betline-remove" type="button" onclick="removeReviewLine(${index})">この買い目を削除</button></div>` : ""}</div>`;
       }).join("")}</div></details>`;
   }
 
@@ -2041,6 +2041,7 @@ const reference = liveValue != null
       if (previousIndex <= index) return;
       const nextIndex = previousIndex - 1;
       row.dataset.cartIndex = String(nextIndex);
+      row.querySelector(".betline-stake-input")?.setAttribute("oninput", `updateReviewLineStake(${nextIndex},this.value)`);
       row.querySelector(".betline-stake-input")?.setAttribute("onchange", `this.value=updateReviewLineStake(${nextIndex},this.value)`);
       row.querySelector(".betline-remove")?.setAttribute("onclick", `removeReviewLine(${nextIndex})`);
     });
