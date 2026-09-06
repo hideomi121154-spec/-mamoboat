@@ -255,11 +255,20 @@ main { padding: 14px; }
 .cart { display: grid; gap: 6px; }
 .cartrow { display: grid; grid-template-columns: 48px 58px 1fr 60px 30px; gap: 4px; align-items: center; padding: 6px; border: 1px solid var(--soft-line); background: white; }
 .cartrow input { width: 100%; min-width: 0; min-height: 36px; border: 1px solid var(--line); padding: 4px; text-align: center; }
+.cart-stake { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-width: 0; border: 1px solid var(--line); background: white; }
+.cart-stake input { min-height: 36px; border: 0; }
+.cart-stake span { padding-right: 6px; color: var(--muted); font-size: 9px; font-weight: 900; }
 .odds-input { display: grid; gap: 2px; min-width: 0; }
 .odds-input small { color: var(--muted); font-size: 6px; text-align: center; white-space: nowrap; }
 .cart-tools { display: flex; align-items: center; gap: 4px; overflow-x: auto; margin: 7px 0; padding-bottom: 2px; }
 .cart-tools span { flex: 0 0 auto; color: var(--muted); font-size: 8px; font-weight: 900; }
 .cart-tools button { flex: 0 0 auto; min-height: 30px; border: 1px solid var(--line); border-radius: 4px; padding: 4px 7px; background: white; color: var(--navy); font-size: 8px; font-weight: 900; }
+.cart-tools button[aria-pressed="true"] { border-color: var(--navy); background: var(--navy); color: white; box-shadow: 0 3px 0 var(--gold); }
+.cart-custom-stake { display: grid; gap: 4px; }
+.cart-custom-stake > label { color: var(--muted); font-size: 8px; font-weight: 900; }
+.cart-custom-stake > div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 5px; }
+.cart-custom-stake input { width: 100%; min-width: 0; min-height: 38px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: white; color: var(--navy); font-size: 16px; font-weight: 900; text-align: right; }
+.cart-custom-stake span { padding-right: 2px; color: var(--navy); font-size: 10px; }
 .cart-tools button.clear { border-color: #efc3bf; color: #9c3d36; }
 .tickettype, .bettype { color: var(--teal-dark); font-size: 8px; font-weight: 1000; }
 .xbtn { height: 31px; border: 0; background: #edf1f2; }
@@ -291,6 +300,12 @@ main { padding: 14px; }
 .betline { display: grid; grid-template-columns: 48px 1fr auto; gap: 6px; padding: 7px; border: 1px solid var(--soft-line); background: white; }
 .betcombo { font-size: 16px; }
 .betnames { grid-column: 1 / -1; color: var(--muted); font-size: 8px; line-height: 1.45; }
+.betline-edit { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 7px; padding-top: 7px; border-top: 1px solid var(--soft-line); }
+.betline-edit > label { display: grid; gap: 3px; color: var(--muted); font-size: 8px; font-weight: 900; }
+.betline-stake-control { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-width: 0; border: 1px solid var(--line); border-radius: 6px; background: white; }
+.betline-stake-control input { width: 100%; min-width: 0; min-height: 40px; border: 0; padding: 7px 4px 7px 8px; background: transparent; color: var(--navy); font-size: 16px; font-weight: 900; text-align: right; }
+.betline-stake-control b { padding: 0 8px 0 4px; color: var(--muted); font-size: 10px; }
+.betline-remove { min-height: 40px; border: 1px solid #e5b8b5; border-radius: 6px; padding: 7px 9px; background: #fff7f6; color: #9c3d36; font-size: 9px; font-weight: 900; }
 .recgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px; }
 .result { font-size: 14px; font-weight: 1000; }
 .reward { color: #176d50; font-size: 11px; font-weight: 1000; }
@@ -394,10 +409,11 @@ main { padding: 14px; }
 .nav span { display: block; font-size: 9px; font-weight: 900; }
 .nav.active { color: var(--navy); background: var(--mint); box-shadow: inset 0 -3px var(--teal); }
 
-.modal-bg { position: fixed; inset: 0; z-index: 70; display: none; align-items: flex-end; padding: 12px; background: rgba(4,18,28,.75); }
+.modal-bg { position: fixed; inset: 0; z-index: 70; display: none; align-items: flex-end; overflow: hidden; padding: 12px; background: rgba(4,18,28,.75); overscroll-behavior: none; touch-action: none; }
 .modal-bg.show { display: flex; }
-.modal { width: min(650px, 100%); max-height: 89vh; overflow: auto; margin: auto; padding: 18px; background: var(--paper); border-top: 6px solid var(--teal); box-shadow: 8px 8px 0 rgba(0,0,0,.25); }
+.modal { width: min(650px, 100%); max-height: 89vh; overflow: auto; margin: auto; padding: 18px; background: var(--paper); border-top: 6px solid var(--teal); box-shadow: 8px 8px 0 rgba(0,0,0,.25); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 .modal h2 { margin-top: 0; letter-spacing: -.05em; }
+html.modal-open, body.modal-open { overflow: hidden !important; overscroll-behavior: none; }
 
 .onboard { position: fixed; inset: 0; z-index: 100; display: none; overflow: auto; padding: 14px; background: var(--navy); color: white; }
 .onboard.show { display: block; }

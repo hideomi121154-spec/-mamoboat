@@ -958,6 +958,8 @@
   function openModal(html) {
     $("modal").innerHTML = html;
     $("modalBg").classList.add("show");
+    document.documentElement?.classList?.toggle("modal-open", true);
+    document.body?.classList?.toggle("modal-open", true);
   }
 
   window.openMedalTopup = () => {
@@ -976,7 +978,11 @@
     </div>`);
   };
 
-  window.closeModal = () => $("modalBg").classList.remove("show");
+  window.closeModal = () => {
+    $("modalBg").classList.remove("show");
+    document.documentElement?.classList?.toggle("modal-open", false);
+    document.body?.classList?.toggle("modal-open", false);
+  };
   window.bgClose = (event) => {
     if (event.target.id === "modalBg") window.closeModal();
   };
@@ -1782,9 +1788,58 @@ const reference = liveValue != null
     renderCart();
   }
 
+  function normalizeStake(value) {
+    const numeric = Number(String(value ?? "").replaceAll(",", ""));
+    if (!Number.isFinite(numeric)) return 100;
+    return Math.max(100, Math.floor(numeric / 100) * 100);
+  }
+
+  function cartTotal() {
+    return cart.reduce((sum, line) => sum + normalizeStake(line.stake), 0);
+  }
+
+  function receiptMeta(lines) {
+    const labels = [...new Set((lines || []).map(
+      (line) => C.BET_TYPES[C.normalizeBetType(line.betType)].label
+    ))];
+    return [labels.join("・"), `${(lines || []).length}点`].filter(Boolean).join(" / ");
+  }
+
+  function syncCartStakeUI() {
+    const total = cartTotal();
+    const commonStake = cart.length && cart.every(
+      (line) => normalizeStake(line.stake) === normalizeStake(cart[0].stake)
+    ) ? normalizeStake(cart[0].stake) : null;
+
+    $("cart")?.querySelectorAll?.(".cart-stake-input").forEach((input, index) => {
+      if (cart[index] && document.activeElement !== input) input.value = String(normalizeStake(cart[index].stake));
+    });
+    document.querySelectorAll?.("#cartTools [data-stake]").forEach((button) => {
+      const selected = commonStake === Number(button.dataset.stake);
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+
+    const custom = $("allStakeInput");
+    if (custom && document.activeElement !== custom) custom.value = commonStake ? String(commonStake) : "";
+    const summary = $("cartStakeSummary");
+    if (summary) summary.textContent = `${cart.length}点 / 合計 ${fmt(total)}B　全点のBメダル`;
+
+    const estimates = cart.filter((line) => oddsNumber(line.odds) > 0)
+      .map((line) => normalizeStake(line.stake) * oddsNumber(line.odds));
+    $("cartSum").innerHTML = cart.length
+      ? `<b>${cart.length}点 / 合計 ${fmt(total)}B</b>${estimates.length
+        ? `<br>入力オッズの最低想定払戻 ${fmt(Math.min(...estimates))}B${Math.min(...estimates) < total ? " / トリガミ候補" : ""}`
+        : ""}<br>最終精算は公式の確定払戻で行います。`
+      : "買い目を作成してください。";
+  }
+
   window.changeLine = (index, key, value) => {
+    if (!cart[index]) return;
     if (key === "stake") {
-      cart[index].stake = Math.max(100, Math.floor((Number(value) || 100) / 100) * 100);
+      cart[index].stake = normalizeStake(value);
+      syncCartStakeUI();
+      return cart[index].stake;
     } else {
       cart[index].odds = value;
       cart[index].oddsCapturedAt = oddsNumber(value) > 0 ? new Date().toISOString() : null;
@@ -1794,14 +1849,25 @@ const reference = liveValue != null
     renderCart();
   };
   window.removeLine = (index) => {
+    if (!cart[index]) return;
     cart.splice(index, 1);
     renderCart();
   };
 
   window.setAllStakes = (amount) => {
-    const value = Math.max(100, Math.floor((Number(amount) || 100) / 100) * 100);
+    const value = normalizeStake(amount);
     cart.forEach((line) => { line.stake = value; });
-    renderCart();
+    syncCartStakeUI();
+  };
+
+  window.applyCustomStake = () => {
+    const input = $("allStakeInput");
+    if (!input || !String(input.value || "").trim()) {
+      alert("100B以上を100B単位で入力してください。");
+      return;
+    }
+    input.value = String(normalizeStake(input.value));
+    window.setAllStakes(input.value);
   };
 
   window.clearCart = () => {
@@ -1814,30 +1880,30 @@ const reference = liveValue != null
     if (!$("cart")) return;
     $("cart").innerHTML = cart.length
       ? cart.map((line, index) => `<div class="cartrow"><b class="tickettype">${C.BET_TYPES[C.normalizeBetType(line.betType)].label}</b>
-          <b>${line.combo.join("-")}</b>
-          <input value="${line.stake}" inputmode="numeric" aria-label="投票メダル" onchange="changeLine(${index},'stake',this.value)">
+          <b class="cart-combo">${line.combo.join("-")}</b>
+          <label class="cart-stake"><input class="cart-stake-input" type="number" min="100" step="100" value="${normalizeStake(line.stake)}" inputmode="numeric" aria-label="${line.combo.join("-")}のBメダル" onchange="this.value=changeLine(${index},'stake',this.value)"><span>B</span></label>
           ${line.oddsSource === "official-snapshot"
             ? `<div class="cart-odds" aria-label="参考オッズ ${esc(line.odds)}倍"><b>${esc(line.odds)}倍</b><small>${timeText(line.oddsCapturedAt)} ${line.oddsTimeSource === "fetched" ? "取得" : "更新"}</small></div>`
             : `<label class="odds-input"><input value="${esc(line.odds)}" inputmode="decimal" aria-label="参考オッズ" placeholder="倍率" onchange="changeLine(${index},'odds',this.value)">${line.oddsCapturedAt ? `<small>${timeText(line.oddsCapturedAt)} 入力</small>` : `<small>未取得</small>`}</label>`}
-          <button class="xbtn" aria-label="削除" onclick="removeLine(${index})">×</button></div>`).join("")
+          <button class="xbtn" type="button" aria-label="${line.combo.join("-")}を削除" onclick="removeLine(${index})">削除</button></div>`).join("")
       : '<div class="muted">買い目はまだありません。</div>';
-    const total = cart.reduce((sum, line) => sum + line.stake, 0);
     $("cartCount").textContent = `${cart.length}点`;
     $("cartTools").innerHTML = cart.length
-      ? `<span>全点のBメダル</span><button type="button" onclick="setAllStakes(100)">100B</button><button type="button" onclick="setAllStakes(200)">200B</button><button type="button" onclick="setAllStakes(500)">500B</button><button type="button" onclick="setAllStakes(1000)">1,000B</button><button class="clear" type="button" onclick="clearCart()">全削除</button>`
+      ? `<span id="cartStakeSummary"></span>
+        <button type="button" data-stake="100" aria-pressed="false" onclick="setAllStakes(100)">100B</button>
+        <button type="button" data-stake="200" aria-pressed="false" onclick="setAllStakes(200)">200B</button>
+        <button type="button" data-stake="500" aria-pressed="false" onclick="setAllStakes(500)">500B</button>
+        <button type="button" data-stake="1000" aria-pressed="false" onclick="setAllStakes(1000)">1,000B</button>
+        <div class="cart-custom-stake"><label for="allStakeInput">任意額（100B単位）</label><div><input id="allStakeInput" type="number" min="100" step="100" inputmode="numeric" aria-label="全点の任意Bメダル額" placeholder="例 300"><span>B</span><button type="button" onclick="applyCustomStake()">全点に反映</button></div></div>
+        <button class="clear" type="button" onclick="clearCart()">全点を削除</button>`
       : "";
-    const estimates = cart.filter((line) => oddsNumber(line.odds) > 0)
-      .map((line) => line.stake * oddsNumber(line.odds));
-    $("cartSum").innerHTML = cart.length
-      ? `<b>${cart.length}点 / 合計 ${fmt(total)}B</b>${estimates.length
-        ? `<br>入力オッズの最低想定払戻 ${fmt(Math.min(...estimates))}B${Math.min(...estimates) < total ? " / トリガミ候補" : ""}`
-        : ""}<br>最終精算は公式の確定払戻で行います。`
-      : "買い目を作成してください。";
+    syncCartStakeUI();
   }
 
-  function betReceipt(lines, entries, betMode, title = "購入した買い目") {
-    const validLines = (lines || []).filter(
-      (line) => {
+  function betReceipt(lines, entries, betMode, title = "購入した買い目", options = {}) {
+    const editable = options.editable === true;
+    const validLines = (lines || []).map((line, index) => ({ line, index })).filter(
+      ({ line }) => {
         const type = C.normalizeBetType(line.betType);
         return Array.isArray(line.combo) && line.combo.length === C.BET_TYPES[type].picks;
       }
@@ -1848,12 +1914,9 @@ const reference = liveValue != null
     const names = new Map((entries || []).map(
       (entry) => [Number(entry.boatNumber), String(entry.name || "")]
     ));
-    const labels = [...new Set(validLines.map(
-      (line) => C.BET_TYPES[C.normalizeBetType(line.betType)].label
-    ))];
-    const meta = [labels.join("・"), `${validLines.length}点`].filter(Boolean).join(" / ");
-    return `<details class="betreceipt" open><summary>${esc(title)}<span>${esc(meta)}</span></summary>
-      <div class="betlines">${validLines.map((line) => {
+    const meta = receiptMeta(validLines.map(({ line }) => line));
+    return `<details class="betreceipt"${editable ? ' data-editable-cart="true"' : ""} open><summary>${esc(title)}<span${editable ? ' id="reviewBetReceiptMeta"' : ""}>${esc(meta)}</span></summary>
+      <div class="betlines">${validLines.map(({ line, index }) => {
         const type = C.normalizeBetType(line.betType);
         const ordered = C.BET_TYPES[type].ordered;
         const separator = ordered ? " → " : " - ";
@@ -1862,12 +1925,67 @@ const reference = liveValue != null
           (boat) => names.get(boat) ? `${boat}号艇 ${names.get(boat)}` : ""
         ).filter(Boolean);
         const lineMode = MODE_LABELS[line.mode || betMode] || "";
-        return `<div class="betline"><span class="bettype">${C.BET_TYPES[type].label}</span>
-          <b class="betcombo">${combo.join(separator)}</b><b>${fmt(line.stake)}B</b>
+        return `<div class="betline"${editable ? ` data-cart-index="${index}"` : ""}><span class="bettype">${C.BET_TYPES[type].label}</span>
+          <b class="betcombo">${combo.join(separator)}</b><b class="betline-current-stake">${fmt(line.stake)}B</b>
           ${racerNames.length === combo.length ? `<div class="betnames">${lineMode ? `${lineMode} / ` : ""}${racerNames.map(esc).join(separator)}</div>` : ""}
-          ${oddsNumber(line.odds) > 0 ? `<div class="betnames">参加時参考オッズ ${esc(line.odds)}倍${line.oddsCapturedAt ? ` / ${timeText(line.oddsCapturedAt)}${line.oddsTimeSource === "fetched" ? "取得" : line.oddsSource === "official-snapshot" ? "更新" : "入力"}` : ""}</div>` : ""}</div>`;
+          ${oddsNumber(line.odds) > 0 ? `<div class="betnames">参加時参考オッズ ${esc(line.odds)}倍${line.oddsCapturedAt ? ` / ${timeText(line.oddsCapturedAt)}${line.oddsTimeSource === "fetched" ? "取得" : line.oddsSource === "official-snapshot" ? "更新" : "入力"}` : ""}</div>` : ""}
+          ${editable ? `<div class="betline-edit"><label><span>この買い目のBメダル</span><span class="betline-stake-control"><input class="betline-stake-input" type="number" min="100" step="100" inputmode="numeric" value="${normalizeStake(line.stake)}" onchange="this.value=updateReviewLineStake(${index},this.value)"><b>B</b></span></label><button class="betline-remove" type="button" onclick="removeReviewLine(${index})">この買い目を削除</button></div>` : ""}</div>`;
       }).join("")}</div></details>`;
   }
+
+  function syncReviewBetUI() {
+    const total = cartTotal();
+    const summary = $("reviewBetSummary");
+    if (summary) summary.innerHTML = `<b>${cart.length}点 / ${fmt(total)}B</b>`;
+    const meta = $("reviewBetReceiptMeta");
+    if (meta) meta.textContent = receiptMeta(cart);
+    $("modal")?.querySelectorAll?.(".betline[data-cart-index]").forEach((row) => {
+      const line = cart[Number(row.dataset.cartIndex)];
+      if (!line) return;
+      const amount = normalizeStake(line.stake);
+      const input = row.querySelector(".betline-stake-input");
+      if (input && document.activeElement !== input) input.value = String(amount);
+      const current = row.querySelector(".betline-current-stake");
+      if (current) current.textContent = `${fmt(amount)}B`;
+    });
+    const overBalance = total > S.coins;
+    const error = $("reviewBetBalanceError");
+    if (error) {
+      error.hidden = !overBalance;
+      error.textContent = overBalance ? `Bメダル残高が不足しています（残高 ${fmt(S.coins)}B）。` : "";
+    }
+    const confirm = $("modal")?.querySelector?.('button[onclick="placeBet()"]');
+    if (confirm) confirm.disabled = overBalance || !cart.length;
+  }
+
+  window.updateReviewLineStake = (index, value) => {
+    if (!cart[index]) return;
+    cart[index].stake = normalizeStake(value);
+    syncCartStakeUI();
+    syncReviewBetUI();
+    return cart[index].stake;
+  };
+
+  window.removeReviewLine = (index) => {
+    if (!cart[index]) return;
+    cart.splice(index, 1);
+    renderCart();
+    if (!cart.length) {
+      window.closeModal();
+      return;
+    }
+    const modal = $("modal");
+    modal?.querySelector?.(`.betline[data-cart-index="${index}"]`)?.remove();
+    modal?.querySelectorAll?.(".betline[data-cart-index]").forEach((row) => {
+      const previousIndex = Number(row.dataset.cartIndex);
+      if (previousIndex <= index) return;
+      const nextIndex = previousIndex - 1;
+      row.dataset.cartIndex = String(nextIndex);
+      row.querySelector(".betline-stake-input")?.setAttribute("onchange", `this.value=updateReviewLineStake(${nextIndex},this.value)`);
+      row.querySelector(".betline-remove")?.setAttribute("onclick", `removeReviewLine(${nextIndex})`);
+    });
+    syncReviewBetUI();
+  };
 
   function dailyChallengeRecord(date = DATA.date) {
     return S.records.find(
@@ -1882,7 +2000,7 @@ const reference = liveValue != null
       return alert("締切後または検証済み当日データではないため、B投票できません。");
     }
     if (!cart.length) return alert("買い目を追加してください。");
-    const total = cart.reduce((sum, line) => sum + line.stake, 0);
+    const total = cartTotal();
     if (total > S.coins) return alert("Bメダル残高が不足しています。");
     trackEvent("bet_review_opened", {
       line_count: cart.length,
@@ -1894,10 +2012,12 @@ const reference = liveValue != null
       raceNo: raceItem.number,
     });
     openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
-      <div class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
-      <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目")}
+      <div id="reviewBetSummary" class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
+      <div id="reviewBetBalanceError" class="notice warn" hidden></div>
+      <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目", { editable: true })}
       <div class="notice editorial-safety"><b>気持ちの採点はしません。</b><br>結果確認後の「次のレースを見るまで」「次のAIR BETまで」「公式サイトへ移動して戻るまで」を自動でつなぎ、普段の自分と比較します。</div>
       <button class="btn teal full" onclick="placeBet()">AIR BETを確定する</button>`);
+    syncReviewBetUI();
   };
 
   window.placeBet = () => {
@@ -1907,7 +2027,7 @@ const reference = liveValue != null
       window.closeModal();
       return alert("締切時刻を過ぎたため、B投票を取り消しました。");
     }
-    const total = cart.reduce((sum, line) => sum + line.stake, 0);
+    const total = cartTotal();
     if (!cart.length || total > S.coins) return alert("Bメダル残高が不足しています。");
     const event = eventInfo(venueItem);
     const rewardChallenge = false;
