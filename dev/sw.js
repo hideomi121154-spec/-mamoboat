@@ -1,8 +1,8 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v416-air-bet-cart-editor-54-dev";
+const CACHE = "mamoboat-v417-air-bet-required-stake-55-dev";
 const SHELL = [
-  "./","./index.html","./styles.css?v=20260906-2","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js?v=20260906-3","./app.js?v=20260906-3",
-  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-1","./decision-event-collector.js","./decision-event-api-compat.js?v=20260906-3","./bet-review-flow.js?v=20260906-3",
+  "./","./index.html","./styles.css?v=20260906-3","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js?v=20260906-4","./app.js?v=20260906-4",
+  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260906-4","./bet-review-flow.js?v=20260906-4",
   "./decision-transition-model.js","./growth-entry.js?v=20260830-1","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
