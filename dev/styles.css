@@ -254,14 +254,18 @@ main { padding: 14px; }
 .cart-title small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; font-weight: 700; }
 .cart { display: grid; gap: 6px; }
 .cartrow { display: grid; grid-template-columns: 48px 58px 1fr 60px 30px; gap: 4px; align-items: center; padding: 6px; border: 1px solid var(--soft-line); background: white; }
+.cartrow.stake-missing { border-color: #d8a62e; background: #fffdf6; }
 .cartrow input { width: 100%; min-width: 0; min-height: 36px; border: 1px solid var(--line); padding: 4px; text-align: center; }
 .cart-stake { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-width: 0; border: 1px solid var(--line); background: white; }
+.cartrow.stake-missing .cart-stake { border-color: #d8a62e; box-shadow: 0 0 0 2px rgba(255, 200, 61, .18); }
 .cart-stake input { min-height: 36px; border: 0; }
+.cart-stake input::placeholder { color: #8a6a18; opacity: 1; font-size: 10px; }
 .cart-stake span { padding-right: 6px; color: var(--muted); font-size: 9px; font-weight: 900; }
 .odds-input { display: grid; gap: 2px; min-width: 0; }
 .odds-input small { color: var(--muted); font-size: 6px; text-align: center; white-space: nowrap; }
 .cart-tools { display: flex; align-items: center; gap: 4px; overflow-x: auto; margin: 7px 0; padding-bottom: 2px; }
 .cart-tools span { flex: 0 0 auto; color: var(--muted); font-size: 8px; font-weight: 900; }
+.cart-tools span.is-required { color: var(--navy); }
 .cart-tools button { flex: 0 0 auto; min-height: 30px; border: 1px solid var(--line); border-radius: 4px; padding: 4px 7px; background: white; color: var(--navy); font-size: 8px; font-weight: 900; }
 .cart-tools button[aria-pressed="true"] { border-color: var(--navy); background: var(--navy); color: white; box-shadow: 0 3px 0 var(--gold); }
 .cart-custom-stake { display: grid; gap: 4px; }
@@ -298,14 +302,32 @@ main { padding: 14px; }
 .betreceipt summary span { margin-left: 5px; color: var(--muted); font-size: 8px; }
 .betlines { display: grid; gap: 5px; max-height: 250px; overflow: auto; margin-top: 7px; }
 .betline { display: grid; grid-template-columns: 48px 1fr auto; gap: 6px; padding: 7px; border: 1px solid var(--soft-line); background: white; }
+.betline.stake-missing { border-color: #d8a62e; background: #fffdf6; }
 .betcombo { font-size: 16px; }
+.betline-current-stake.is-missing { color: #8a6a18; font-size: 10px; }
 .betnames { grid-column: 1 / -1; color: var(--muted); font-size: 8px; line-height: 1.45; }
 .betline-edit { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 7px; padding-top: 7px; border-top: 1px solid var(--soft-line); }
 .betline-edit > label { display: grid; gap: 3px; color: var(--muted); font-size: 8px; font-weight: 900; }
 .betline-stake-control { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-width: 0; border: 1px solid var(--line); border-radius: 6px; background: white; }
+.betline.stake-missing .betline-stake-control { border-color: #d8a62e; box-shadow: 0 0 0 2px rgba(255, 200, 61, .18); }
 .betline-stake-control input { width: 100%; min-width: 0; min-height: 40px; border: 0; padding: 7px 4px 7px 8px; background: transparent; color: var(--navy); font-size: 16px; font-weight: 900; text-align: right; }
+.betline-stake-control input::placeholder { color: #8a6a18; opacity: 1; font-size: 10px; }
 .betline-stake-control b { padding: 0 8px 0 4px; color: var(--muted); font-size: 10px; }
 .betline-remove { min-height: 40px; border: 1px solid #e5b8b5; border-radius: 6px; padding: 7px 9px; background: #fff7f6; color: #9c3d36; font-size: 9px; font-weight: 900; }
+.review-stake-prompt { display: grid; gap: 3px; margin: 9px 0 12px; padding: 11px 12px; border: 1px solid #e8d28e; border-left: 5px solid var(--gold); border-radius: 9px; background: #fff9e8; color: var(--navy); }
+.review-stake-prompt[hidden] { display: none; }
+.review-stake-prompt b { font-size: 13px; }
+.review-stake-prompt span { color: #6f5d2a; font-size: 9px; line-height: 1.5; }
+.review-stake-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 9px 0 12px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: #f3f7f8; }
+.review-stake-tools > span { grid-column: 1 / -1; color: var(--navy); font-size: 9px; font-weight: 1000; }
+.review-stake-tools > button { min-width: 0; min-height: 38px; border: 1px solid var(--line); border-radius: 7px; padding: 5px 2px; background: white; color: var(--navy); font-size: 9px; font-weight: 1000; }
+.review-stake-tools > button[aria-pressed="true"] { border-color: var(--navy); background: var(--navy); color: white; box-shadow: 0 3px 0 var(--gold); }
+.review-stake-custom { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(86px, .7fr); align-items: center; gap: 6px; }
+.review-stake-custom input { min-width: 0; min-height: 42px; border: 1px solid var(--line); border-radius: 7px; padding: 7px 8px; background: white; color: var(--navy); font-size: 16px; font-weight: 900; text-align: right; }
+.review-stake-custom > b { color: var(--muted); font-size: 10px; }
+.review-stake-custom > button { min-width: 0; min-height: 42px; border: 0; border-radius: 7px; padding: 6px; background: var(--teal-dark); color: white; font-size: 9px; font-weight: 1000; }
+.stake-required-notice { border-color: #e8d28e; background: #fff9e8; color: var(--navy); }
+.mamo-air-review-confirm:disabled { opacity: .42; box-shadow: none !important; }
 .recgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px; }
 .result { font-size: 14px; font-weight: 1000; }
 .reward { color: #176d50; font-size: 11px; font-weight: 1000; }

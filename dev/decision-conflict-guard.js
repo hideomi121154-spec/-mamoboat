@@ -16,8 +16,8 @@
   const LOCAL_EVENT_KEY = "mamoboat_decision_conflict_v1";
   const MAX_LOCAL_EVENTS = 500;
   const REAL_HOSTS = new Set(["spweb.brtb.jp", "ib.mbrace.or.jp"]);
-  const AMOUNT_CONTROL_SELECTOR = '#cartTools button, button[onclick^="setAllStakes"], button.xbtn, button[onclick^="removeLine"], .betline-remove, button[onclick^="removeReviewLine"]';
-  const STAKE_INPUT_SELECTOR = '.cart-stake-input, .betline-stake-input, input[aria-label="投票メダル"]';
+  const AMOUNT_CONTROL_SELECTOR = '#cartTools button, #reviewStakeTools button, button[onclick^="setAllStakes"], button.xbtn, button[onclick^="removeLine"], .betline-remove, button[onclick^="removeReviewLine"]';
+  const STAKE_INPUT_SELECTOR = '#allStakeInput, #reviewAllStakeInput, .cart-stake-input, .betline-stake-input, input[aria-label="投票メダル"]';
   const shownRaceKeys = new Set();
   const bypassOnce = new WeakSet();
 
