@@ -10,6 +10,12 @@
   const originalReviewBet = window.reviewBet;
   if (typeof originalReviewBet !== "function") return;
   const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
+  const escapeHtml = (value) => String(value == null ? "" : value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 
   const originalPickNormal = window.pickNormal;
   if (typeof originalPickNormal === "function") {
@@ -99,7 +105,10 @@
       const number = Number(item.querySelector(".num")?.textContent?.trim());
       const name = String(item.querySelector(":scope > div:nth-child(2) > b")?.textContent || "").trim();
       const href = String(item.getAttribute("href") || "").trim();
-      return { number, name, href };
+      const racerClass = String(item.dataset.racerClass || "").trim();
+      const motorNumber = String(item.dataset.motorNumber || "").trim();
+      const boatPart = String(item.dataset.boatPart || "").trim();
+      return { number, name, href, racerClass, motorNumber, boatPart };
     }).filter((item) => Number.isFinite(item.number) && item.number >= 1 && item.number <= 6 && item.name);
   }
 
@@ -112,7 +121,14 @@
       return;
     }
 
-    const signature = rows.map((item) => `${item.number}:${item.name}:${item.href}`).join("|");
+    const signature = rows.map((item) => [
+      item.number,
+      item.name,
+      item.href,
+      item.racerClass,
+      item.motorNumber,
+      item.boatPart,
+    ].join(":")).join("|");
     if (existing?.dataset.signature === signature) {
       builder.dataset.mamoHasRacers = "true";
       return;
@@ -122,11 +138,18 @@
     const column = document.createElement("div");
     column.className = "mamo-racer-list";
     column.dataset.signature = signature;
-    column.innerHTML = `<div class="mamo-racer-head">選手</div><div class="mamo-racer-rows">${rows.map((item) => `
+    column.innerHTML = `<div class="mamo-racer-head">選手</div><div class="mamo-racer-rows">${rows.map((item) => {
+      const equipment = [
+        item.motorNumber ? `M${item.motorNumber}` : "",
+        item.boatPart ? `B${item.boatPart}` : "",
+      ].filter(Boolean).join(" / ");
+      const meta = [item.racerClass, equipment].filter(Boolean).join(" · ");
+      return `
       <div class="mamo-racer-row">
         <span class="mamo-lane b${item.number}">${item.number}</span>
-        <span class="mamo-racer-copy"><b>${item.name}</b>${item.href ? `<a class="mamo-official-button" href="${item.href}" target="_blank" rel="noopener noreferrer">公式情報 ↗</a>` : ""}</span>
-      </div>`).join("")}</div>`;
+        <span class="mamo-racer-copy"><span class="mamo-racer-identity"><b>${escapeHtml(item.name)}</b><small class="mamo-racer-meta">${escapeHtml(meta)}</small></span>${item.href ? `<a class="mamo-official-button" href="${escapeHtml(item.href)}" target="_blank" rel="noopener noreferrer">公式情報 ↗</a>` : ""}</span>
+      </div>`;
+    }).join("")}</div>`;
     builder.insertBefore(column, builder.firstChild);
     builder.dataset.mamoHasRacers = "true";
   }
@@ -319,7 +342,7 @@
     #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="2"] h3{border-top:4px solid #082b4a!important}
     #builder.mamo-selection-matrix>.rank[data-mamo-picker-rank="3"] h3{border-top:4px solid #3a6792!important}
     #builder.mamo-selection-matrix>.rank .betgrid,.mamo-racer-rows{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
-    #builder.mamo-selection-matrix>.rank .pick{--mamo-boat-accent:#cad4da;position:relative!important;min-width:0!important;min-height:49px!important;padding:6px 2px!important;border:1px solid #cad7de!important;border-radius:9px!important;background:#fff!important;color:#082b4a!important;outline:0!important;box-shadow:inset 4px 0 var(--mamo-boat-accent)!important;transform:none!important;font-size:17px!important;font-weight:1000!important;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease!important}
+    #builder.mamo-selection-matrix>.rank .pick{--mamo-boat-accent:#cad4da;position:relative!important;min-width:0!important;min-height:55px!important;padding:6px 2px!important;border:1px solid #cad7de!important;border-radius:9px!important;background:#fff!important;color:#082b4a!important;outline:0!important;box-shadow:inset 4px 0 var(--mamo-boat-accent)!important;transform:none!important;font-size:17px!important;font-weight:1000!important;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease!important}
     #builder.mamo-selection-matrix>.rank .pick.b1{--mamo-boat-accent:#d6dade}
     #builder.mamo-selection-matrix>.rank .pick.b2{--mamo-boat-accent:#33383d}
     #builder.mamo-selection-matrix>.rank .pick.b3{--mamo-boat-accent:#d74449}
@@ -335,7 +358,7 @@
 
     .mamo-racer-list{min-width:0!important;margin:0!important}
     .mamo-racer-head{border-top:4px solid #d8a62e!important}
-    .mamo-racer-row{min-height:49px!important;display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;align-items:center!important;gap:7px!important;padding:3px 5px 3px 3px!important;border:1px solid #dbe4e8!important;border-radius:9px!important;background:#fff!important;overflow:hidden!important}
+    .mamo-racer-row{min-height:55px!important;display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;align-items:center!important;gap:7px!important;padding:3px 5px 3px 3px!important;border:1px solid #dbe4e8!important;border-radius:9px!important;background:#fff!important;overflow:hidden!important}
     .mamo-lane{width:29px!important;height:40px!important;display:grid!important;place-items:center!important;border-radius:7px!important;font-size:16px!important;font-weight:1000!important;background:#f4f4f4!important;color:#092b49!important}
     .mamo-lane.b1{background:#f4f4f4!important;color:#0b2438!important;border:2px solid #cfd5d8!important}
     .mamo-lane.b2{background:#303438!important;color:#fff!important}
@@ -344,7 +367,9 @@
     .mamo-lane.b5{background:#f0cf3d!important;color:#111!important}
     .mamo-lane.b6{background:#3ca568!important;color:#fff!important}
     .mamo-racer-copy{min-width:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:4px!important}
-    .mamo-racer-copy>b{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#082b4a!important;font-size:11px!important;font-weight:1000!important}
+    .mamo-racer-identity{display:block!important;min-width:0!important}
+    .mamo-racer-identity>b{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#082b4a!important;font-size:11px!important;font-weight:1000!important}
+    .mamo-racer-meta{display:block!important;margin-top:2px!important;color:#657886!important;font-size:9px!important;font-weight:900!important;line-height:1.15!important;white-space:nowrap!important}
     .mamo-official-button{flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:30px!important;padding:4px 6px!important;border:1px solid #7fbdf0!important;border-radius:8px!important;background:#f7fbff!important;color:#0871cf!important;text-decoration:none!important;font-size:8px!important;font-weight:1000!important;white-space:nowrap!important}
 
     @media(max-width:390px){
@@ -356,12 +381,13 @@
       #builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="3"]{grid-template-columns:minmax(112px,1.48fr) repeat(3,minmax(54px,1fr))!important}
       #builder.mamo-selection-matrix>.rank h3,.mamo-racer-head{min-height:37px!important;font-size:9px!important;margin-bottom:5px!important}
       #builder.mamo-selection-matrix>.rank .betgrid,.mamo-racer-rows{gap:5px!important}
-      #builder.mamo-selection-matrix>.rank .pick,.mamo-racer-row{min-height:46px!important}
+      #builder.mamo-selection-matrix>.rank .pick,.mamo-racer-row{min-height:52px!important}
       #builder.mamo-selection-matrix>.rank .pick{font-size:16px!important}
       .mamo-racer-row{grid-template-columns:27px minmax(0,1fr)!important;gap:5px!important;padding:2px 4px 2px 2px!important}
       .mamo-lane{width:27px!important;height:37px!important;font-size:15px!important}
       .mamo-racer-copy{display:block!important}
-      .mamo-racer-copy>b{display:block!important;font-size:10px!important;line-height:1.2!important}
+      .mamo-racer-identity>b{font-size:10px!important;line-height:1.2!important}
+      .mamo-racer-meta{font-size:8px!important}
       .mamo-official-button{display:inline-flex!important;margin-top:2px!important;min-height:20px!important;padding:1px 4px!important;border-radius:6px!important;font-size:7px!important}
     }
   `;

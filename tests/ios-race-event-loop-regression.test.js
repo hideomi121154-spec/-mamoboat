@@ -66,6 +66,16 @@ assert.doesNotMatch(source, /MutationObserver/);
 assert.doesNotMatch(source, /queueMicrotask\(enhanceBuilder\)/);
 assert.match(app, /const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered"/);
 assert.match(app, /refreshBuilder\(\);\s*notifyAirBetRendered\(\);/);
+assert.match(app, /<details class="race-racer-details">/);
+assert.doesNotMatch(app, /<details class="race-racer-details"\s+open/);
+assert.match(app, /data-racer-class=/);
+assert.match(app, /data-motor-number=/);
+assert.match(app, /data-boat-part=/);
+assert.match(source, /class="mamo-racer-meta"/);
+assert.match(source, /item\.racerClass/);
+assert.match(source, /item\.motorNumber/);
+assert.match(source, /item\.boatPart/);
+assert.match(app, /<div class="officialmenu"[\s\S]*?\$\{entries\}[\s\S]*?<div class="source-note">/);
 
 // SHOP may exist, but only its own native overflow is allowed; the abandoned
 // whole-app horizontal-navigation experiment must stay unloaded.
@@ -74,7 +84,7 @@ assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
 assert.match(shop, /overflow-x:auto!important/);
 assert.doesNotMatch(shop, /touchstart|touchmove|preventDefault/);
-assert.match(compatibility, /bet-review-flow\.js\?v=20260906-1/);
+assert.match(compatibility, /bet-review-flow\.js\?v=20260906-2/);
 
 // Adding the selected draft fetches a best-effort odds update asynchronously.
 // The review modal must wait for that operation so it never reads an empty cart.

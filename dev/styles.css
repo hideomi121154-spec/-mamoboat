@@ -195,6 +195,17 @@ main { padding: 14px; }
 .raceclock.confirmed { background: var(--mint); color: var(--teal-dark); }
 .raceclock.waiting { background: var(--warn); color: #765618; }
 .boats { display: grid; gap: 6px; margin-top: 12px; }
+.race-racer-details { margin-top: 10px; border: 1px solid var(--soft-line); border-radius: 10px; background: #fbfdfd; overflow: hidden; }
+.race-racer-details > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; color: var(--navy); cursor: pointer; list-style: none; }
+.race-racer-details > summary::-webkit-details-marker { display: none; }
+.race-racer-details > summary b, .race-racer-details > summary small { display: block; }
+.race-racer-details > summary b { font-size: 12px; font-weight: 1000; }
+.race-racer-details > summary small { margin-top: 2px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+.race-racer-details > summary::after { content: "+"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: white; font-size: 16px; font-weight: 1000; }
+.race-racer-details[open] > summary { border-bottom: 1px solid var(--soft-line); }
+.race-racer-details[open] > summary::after { content: "−"; }
+.race-racer-count { color: var(--teal-dark); font-size: 10px; font-weight: 1000; }
+.race-racer-details .boats { margin-top: 0; padding: 8px; }
 .boat { display: grid; grid-template-columns: 43px 1fr 72px; gap: 8px; align-items: center; min-height: 57px; padding: 6px; border: 1px solid var(--soft-line); background: #fbfdfd; text-decoration: none; color: inherit; }
 .boat:active { background: var(--mint); }
 .num { display: grid; place-items: center; height: 43px; border: 1px solid rgba(0,0,0,.12); font-size: 18px; font-weight: 1000; }

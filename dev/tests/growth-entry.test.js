@@ -45,5 +45,5 @@ test("returning users leave the story directly for home without reopening onboar
     handler[1].indexOf("hasAcceptedOnboarding()") < handler[1].indexOf("airBetOnboarding = true"),
     "returning-user check must run before first-voyage onboarding is opened"
   );
-  assert.match(html, /app\.js\?v=20260906-1/);
+  assert.match(html, /app\.js\?v=20260906-2/);
 });
