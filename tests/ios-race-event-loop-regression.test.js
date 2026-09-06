@@ -96,6 +96,8 @@ assert.match(source, /#raceView \.betdesk #cart\{display:grid!important/);
 assert.match(app, /id="allStakeInput"[^>]*step="100"/);
 assert.match(app, /class="cart-stake-input"[^>]*step="100"/);
 assert.match(app, /id="reviewAllStakeInput"[^>]*step="100"/);
+assert.match(app, /class="cart-stake-input"[^>]*oninput="changeLine/);
+assert.match(app, /class="betline-stake-input"[^>]*oninput="updateReviewLineStake/);
 assert.match(app, /data-stake="100" aria-pressed="false"/);
 assert.match(app, /window\.applyCustomStake = \(\) =>/);
 assert.match(app, /window\.applyReviewAllStake = \(\) =>/);
