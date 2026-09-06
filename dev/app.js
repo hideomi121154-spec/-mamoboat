@@ -1397,11 +1397,12 @@
     }).join("");
     const entriesList = Array.isArray(raceItem.entries) ? raceItem.entries : [];
     const entries = entriesList.length === 6
-      ? `<div class="boats">${entriesList.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く">
+      ? `<details class="race-racer-details"><summary><span><b>選手詳細</b><small>級別・支部・年齢・体重・M/B</small></span><span class="race-racer-count">6艇</span></summary><div class="boats">${entriesList.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く"
+      data-racer-class="${esc(entry.class || "")}" data-motor-number="${esc(entry.motorNumber || "")}" data-boat-part="${esc(entry.boatPart || "")}">
       <div class="num b${entry.boatNumber}">${entry.boatNumber}</div>
       <div><b>${esc(entry.name)}</b><div class="tiny">${entry.racerNumber} ${esc(entry.branch || "")}${entry.age ? ` / ${entry.age}歳` : ""}${entry.weight ? ` / ${entry.weight}kg` : ""}</div></div>
       <div><b class="tiny">${esc(entry.class || "")}</b><div class="tiny">${entry.motorNumber ? `M${entry.motorNumber}` : ""}${entry.boatPart ? ` / B${entry.boatPart}` : ""}</div><div class="racerlinkhint">公式情報 ↗</div></div>
-    </a>`).join("")}</div>`
+    </a>`).join("")}</div></details>`
       : '<div class="notice warn">番組表を取得中です。6艇の公式データが揃うまでAIR BETを停止しています。</div>';
     const open = closeState(raceItem);
     lastRenderedRaceOpen = open;
@@ -1422,13 +1423,14 @@
         <div class="racename"><button class="race-venue-button" type="button" onclick="openVenueSwitcher()">${esc(venueItem.name)}⌄</button> <strong>${raceItem.number}R</strong> <span>${esc(raceItem.name || "")}</span></div>
         <div class="tiny">電話投票締切予定 ${timeText(raceItem.closeTime)} ※変更される場合があります</div></div>
         <div id="raceStatusPanel" class="raceclock ${raceStatus.key}">${raceStatusHtml(raceItem)}</div></div>
-        ${entries}${resultHtml(raceItem)}
+        ${resultHtml(raceItem)}
         <div class="officialmenu" style="margin-top:10px">
           <a class="officiallink" href="${officialUrl(venueItem.code, raceItem.number)}" target="_blank" rel="noopener noreferrer"><span>出走表</span><b>公式で確認 ↗</b></a>
           <a id="officialOddsMain" class="officiallink" href="${officialOddsUrl(venueItem.code, raceItem.number)}" target="_blank" rel="noopener noreferrer"><span>オッズ</span><b id="officialOddsMainLabel">公式3連単 ↗</b></a>
           <a class="officiallink" href="${officialResultUrl(venueItem.code, raceItem.number)}" target="_blank" rel="noopener noreferrer"><span>レース結果</span><b>公式で確認 ↗</b></a>
           <a class="officiallink" href="${esc(venueItem.boatcast)}" target="_blank" rel="noopener noreferrer"><span>映像</span><b>LIVE・リプレイ ↗</b></a>
         </div>
+        ${entries}
         <div class="source-note">参考オッズは締切45分前から約15分周期で取得するスナップショットです。時刻を確認し、最終情報は公式サイトで確認してください。</div>
       </div>
       <div class="section-head small"><div><span class="section-number">B</span><h2>AIR BET</h2><small>Bメダル仮想投票</small></div><span class="section-meta">公式7舟券種</span></div>
