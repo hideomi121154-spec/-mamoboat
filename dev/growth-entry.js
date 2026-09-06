@@ -160,3 +160,13 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", render, { once: true });
   else render();
 })();
+
+/* Load the read-only Race Carte archive independently from race rendering. */
+(() => {
+  if (document.querySelector('script[data-mamo-race-carte="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "race-carte.js?v=20260906-1";
+  script.async = true;
+  script.dataset.mamoRaceCarte = "1";
+  document.head.appendChild(script);
+})();
