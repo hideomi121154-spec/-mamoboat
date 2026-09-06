@@ -16,6 +16,8 @@
   const LOCAL_EVENT_KEY = "mamoboat_decision_conflict_v1";
   const MAX_LOCAL_EVENTS = 500;
   const REAL_HOSTS = new Set(["spweb.brtb.jp", "ib.mbrace.or.jp"]);
+  const AMOUNT_CONTROL_SELECTOR = '#cartTools button, button[onclick^="setAllStakes"], button.xbtn, button[onclick^="removeLine"], .betline-remove, button[onclick^="removeReviewLine"]';
+  const STAKE_INPUT_SELECTOR = '.cart-stake-input, .betline-stake-input, input[aria-label="投票メダル"]';
   const shownRaceKeys = new Set();
   const bypassOnce = new WeakSet();
 
@@ -392,7 +394,7 @@
   }
 
   function totalAmount() {
-    const inputs = [...document.querySelectorAll('#cart input[aria-label="投票メダル"]')];
+    const inputs = [...document.querySelectorAll("#cart .cart-stake-input, #cart input[aria-label=\"投票メダル\"]")];
     if (!inputs.length) return null;
     return inputs.reduce((sum, input) => {
       const value = Number(String(input.value || "").replace(/,/g, ""));
@@ -421,7 +423,7 @@
       session.tracker.recordReviewReturn();
     }
 
-    const amountControl = target?.closest?.('#cartTools button, button[onclick^="setAllStakes"], button.xbtn, button[onclick^="removeLine"]');
+    const amountControl = target?.closest?.(AMOUNT_CONTROL_SELECTOR);
     if (amountControl) {
       const amount = totalAmount();
       if (amount != null) session.tracker.recordAmount(amount);
@@ -429,7 +431,7 @@
   }
 
   function handleAmountCapture(event) {
-    const control = event.target?.closest?.('#cartTools button, button[onclick^="setAllStakes"], button.xbtn, button[onclick^="removeLine"]');
+    const control = event.target?.closest?.(AMOUNT_CONTROL_SELECTOR);
     if (!control) return;
     const session = ensureActive();
     const amount = totalAmount();
@@ -437,7 +439,7 @@
   }
 
   function handleAmountFocus(event) {
-    const input = event.target?.closest?.('input[aria-label="投票メダル"]');
+    const input = event.target?.closest?.(STAKE_INPUT_SELECTOR);
     if (!input) return;
     const session = ensureActive();
     const amount = totalAmount();
@@ -445,7 +447,7 @@
   }
 
   function handleChangeBubble(event) {
-    const input = event.target?.closest?.('input[aria-label="投票メダル"]');
+    const input = event.target?.closest?.(STAKE_INPUT_SELECTOR);
     if (!input) return;
     const session = ensureActive();
     const amount = totalAmount();

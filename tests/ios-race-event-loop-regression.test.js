@@ -7,6 +7,7 @@ const vm = require("node:vm");
 const root = path.join(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "dev", "bet-review-flow.js"), "utf8");
 const app = fs.readFileSync(path.join(root, "dev", "app.js"), "utf8");
+const styles = fs.readFileSync(path.join(root, "dev", "styles.css"), "utf8");
 const compatibility = fs.readFileSync(path.join(root, "dev", "decision-event-api-compat.js"), "utf8");
 const shop = fs.readFileSync(path.join(root, "dev", "mamo-shop.js"), "utf8");
 
@@ -84,7 +85,38 @@ assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
 assert.match(shop, /overflow-x:auto!important/);
 assert.doesNotMatch(shop, /touchstart|touchmove|preventDefault/);
-assert.match(compatibility, /bet-review-flow\.js\?v=20260906-2/);
+assert.match(compatibility, /bet-review-flow\.js\?v=20260906-3/);
+
+// The compact AIR BET layout must keep the actual cart editable. Previously
+// #cart was hidden while a later stylesheet accidentally re-exposed only the
+// preset buttons, so stake changes had no visible result and per-line delete
+// was impossible.
+assert.doesNotMatch(source, /\.betdesk \.cart-title,\.betdesk #cart,\.betdesk #cartTools/);
+assert.match(source, /#raceView \.betdesk #cart\{display:grid!important/);
+assert.match(app, /id="allStakeInput"[^>]*step="100"/);
+assert.match(app, /class="cart-stake-input"[^>]*step="100"/);
+assert.match(app, /data-stake="100" aria-pressed="false"/);
+assert.match(app, /window\.applyCustomStake = \(\) =>/);
+assert.match(app, /window\.updateReviewLineStake = \(index, value\) =>/);
+assert.match(app, /window\.removeReviewLine = \(index\) =>/);
+assert.match(app, /この買い目を削除/);
+
+const setAllStakesBody = app.match(/window\.setAllStakes = \(amount\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+assert.match(setAllStakesBody, /syncCartStakeUI\(\)/);
+assert.doesNotMatch(setAllStakesBody, /renderCart\(\)/, "stake taps must not destroy their own controls");
+
+const normalizeStakeSource = app.match(/function normalizeStake\(value\) \{[\s\S]*?\n  \}/)?.[0];
+assert(normalizeStakeSource, "stake normalization must remain a standalone testable rule");
+const stakeSandbox = {};
+vm.runInNewContext(`${normalizeStakeSource}; this.values = [normalizeStake(50), normalizeStake(350), normalizeStake("1,200"), normalizeStake(1750)];`, stakeSandbox);
+assert.equal(JSON.stringify(stakeSandbox.values), JSON.stringify([100, 300, 1200, 1700]));
+
+// Lock the document scroller while the fixed modal is open. The modal remains
+// the only vertical scroll container, without touch preventDefault/scrollTo.
+assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", true\)/);
+assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", false\)/);
+assert.match(styles, /html\.modal-open, body\.modal-open \{ overflow: hidden !important; overscroll-behavior: none; \}/);
+assert.doesNotMatch(setAllStakesBody, /requestAnimationFrame|setTimeout|scrollTo|visualViewport/);
 
 // Adding the selected draft fetches a best-effort odds update asynchronously.
 // The review modal must wait for that operation so it never reads an empty cart.

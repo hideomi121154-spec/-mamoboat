@@ -1,11 +1,11 @@
-/* MAMO BOAT — AIR BET review flow v4
+/* MAMO BOAT — AIR BET review flow v5
  * Compact race/bet selection layout for iPhone Safari/PWA.
  * Keeps AIR BET logic intact while reducing vertical travel and integrating racer info.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V4__) return;
-  window.__MAMO_BET_REVIEW_FLOW_V4__ = true;
+  if (window.__MAMO_BET_REVIEW_FLOW_V5__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V5__ = true;
 
   const originalReviewBet = window.reviewBet;
   if (typeof originalReviewBet !== "function") return;
@@ -305,7 +305,7 @@
   };
 
   const style = document.createElement("style");
-  style.id = "mamoBetReviewFlowStyleV4";
+  style.id = "mamoBetReviewFlowStyleV5";
   style.textContent = `
     #builder button[hidden]{display:none!important}
     .mamo-review-selection-hint{display:block!important;margin:8px 0!important;padding:9px 10px!important;color:#b4232d!important;font-weight:900!important;background:#fff5f5!important;border-radius:10px!important}
@@ -323,7 +323,26 @@
     .betdesk #betGuide{margin:0 0 8px!important;padding:8px 10px!important;background:#f3f8fb!important;border:1px solid #dce7ec!important}
     .betdesk #betGuide>div:first-child{margin:0!important;font-size:11px!important;line-height:1.45!important}
     .betdesk .odds-snapshot,.betdesk .odds-caution,.betdesk .odds-now{display:none!important}
-    .betdesk .cart-title,.betdesk #cart,.betdesk #cartTools,.betdesk #cartSum{display:none!important}
+    .betdesk .cart-title,.betdesk #cartSum{display:none!important}
+    #raceView .betdesk #cart{display:grid!important;gap:7px!important;margin-top:8px!important}
+    #raceView .betdesk #cart>.muted{display:none!important}
+    #raceView .betdesk #cart .cartrow{display:grid!important;grid-template-columns:48px minmax(54px,1fr) minmax(92px,1.15fr) 52px!important;gap:6px!important;align-items:center!important;padding:7px!important;border:1px solid #d8e2e5!important;border-radius:10px!important;background:#fff!important}
+    #raceView .betdesk #cart .cart-combo{font-size:14px!important;color:#082b4a!important;text-align:center!important}
+    #raceView .betdesk #cart .cart-stake{min-width:0!important;border:1px solid #b9cbd2!important;border-radius:8px!important;overflow:hidden!important}
+    #raceView .betdesk #cart .cart-stake-input{min-width:0!important;min-height:42px!important;padding:6px 2px 6px 6px!important;border:0!important;background:#fff!important;color:#082b4a!important;font-size:16px!important;font-weight:1000!important;text-align:right!important}
+    #raceView .betdesk #cart .cart-stake>span{padding-right:6px!important;color:#657886!important;font-size:9px!important}
+    #raceView .betdesk #cart .cart-odds,#raceView .betdesk #cart .odds-input{display:none!important}
+    #raceView .betdesk #cart .xbtn{width:100%!important;min-height:42px!important;height:auto!important;padding:5px 2px!important;border:1px solid #efc3bf!important;border-radius:8px!important;background:#fff7f6!important;color:#9c3d36!important;font-size:9px!important;font-weight:1000!important}
+    #raceView .betdesk #cartTools{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin:8px 0 0!important;overflow:visible!important}
+    #raceView .betdesk #cartTools>span{grid-column:1/-1!important;width:auto!important;color:#657886!important;font-size:10px!important}
+    #raceView .betdesk #cartTools>button{min-width:0!important;min-height:42px!important;padding:6px 3px!important;border-radius:9px!important;font-size:11px!important}
+    #raceView .betdesk #cartTools>button[aria-pressed="true"]{border-color:#082b4a!important;background:#082b4a!important;color:#fff!important;box-shadow:0 3px 0 #d8a62e!important}
+    #raceView .betdesk #cartTools>.cart-custom-stake{grid-column:1/-1!important;display:grid!important;gap:5px!important;padding:8px!important;border:1px solid #d8e2e5!important;border-radius:10px!important;background:#f7fafb!important}
+    #raceView .betdesk #cartTools>.cart-custom-stake>label{font-size:9px!important}
+    #raceView .betdesk #cartTools>.cart-custom-stake>div{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(92px,.75fr)!important;gap:6px!important}
+    #raceView .betdesk #cartTools>.cart-custom-stake input{min-width:0!important;min-height:42px!important;font-size:16px!important}
+    #raceView .betdesk #cartTools>.cart-custom-stake button{min-width:92px!important;min-height:42px!important;border:0!important;border-radius:8px!important;background:#0b8f88!important;color:#fff!important;font-size:10px!important;font-weight:1000!important}
+    #raceView .betdesk #cartTools>.clear{grid-column:1/-1!important;min-height:42px!important;background:#fff7f6!important;color:#9c3d36!important;border-color:#efc3bf!important}
     .betdesk #addedNotice:not(.show):not(.duplicate):not(.mamo-review-selection-hint){display:none!important}
     .betdesk .mamo-next-bet{margin-top:10px!important;min-height:56px!important;border-radius:14px!important;background:#e61f2a!important;color:#fff!important;font-size:16px!important;font-weight:1000!important;box-shadow:0 5px 0 #9f1720!important}
 
@@ -392,6 +411,7 @@
     }
   `;
   document.getElementById("mamoBetReviewFlowStyleV3")?.remove();
+  document.getElementById("mamoBetReviewFlowStyleV4")?.remove();
   document.head.appendChild(style);
 
   function boot() {
