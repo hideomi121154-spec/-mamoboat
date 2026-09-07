@@ -69,6 +69,11 @@ def has_preview(race: dict) -> bool:
     return has_env and has_exhibition
 
 
+def has_kimarite(race: dict) -> bool:
+    result = race.get("result")
+    return isinstance(result, dict) and bool(result.get("kimarite"))
+
+
 def enrich_one(code: str, race: dict, date_text: str) -> tuple[bool, int, int, int]:
     changed = False
     card_done = preview_done = result_done = 0
@@ -87,8 +92,14 @@ def enrich_one(code: str, race: dict, date_text: str) -> tuple[bool, int, int, i
         except Exception as exc:
             print(f"history preview failed {code}-{race.get('number')}R: {exc}")
 
-    if race.get("result") and not (race.get("result") or {}).get("kimarite"):
+    # Important: the user's local AIR BET result can already be settled while the
+    # shared race JSON still has result=null. The legacy enrich_result() refuses to
+    # fetch in that state, so create an empty result container and fetch the official
+    # winning method for every closed race that does not yet have kimarite.
+    if not has_kimarite(race):
         try:
+            if not isinstance(race.get("result"), dict):
+                race["result"] = {}
             changed |= enrich_result(race, date_text, code)
             result_done = 1
         except Exception as exc:
@@ -124,7 +135,7 @@ def main() -> int:
                 targets.append((code, race))
 
     targets.sort(key=lambda item: (
-        has_static_stats(item[1]) and has_preview(item[1]),
+        has_static_stats(item[1]) and has_preview(item[1]) and has_kimarite(item[1]),
         (close_dt(item[1]) or datetime(1970, 1, 1, tzinfo=JST)).timestamp(),
     ))
     targets = targets[: max(0, args.max_races)]
