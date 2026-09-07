@@ -44,8 +44,17 @@ jobs:
           python -m py_compile scripts/race_carte_official_v2.py
           python -m py_compile scripts/backfill_race_carte_history.py
 
-      - name: Backfill recent same-day races
-        run: python scripts/backfill_race_carte_history.py --hours 8 --max-races 96 --workers 8
+      - name: Backfill today's incomplete cartes
+        run: python scripts/backfill_race_carte_history.py --hours 12 --max-races 192 --workers 12
+
+      - name: Backfill yesterday's incomplete cartes
+        run: |
+          YESTERDAY=$(date -d 'yesterday' +%F)
+          if [ -f "data/$YESTERDAY.json" ]; then
+            python scripts/backfill_race_carte_history.py --date "$YESTERDAY" --hours 48 --max-races 72 --workers 12
+          else
+            echo "No dated dataset for $YESTERDAY"
+          fi
 
       - name: Mirror data into dev
         run: |
