@@ -16,7 +16,7 @@
     "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
     "raceCarteEnrichment": "BOAT RACE official pcexpect/beforeinfo/raceresult",
     "raceCarteEnrichmentPolicy": "static stats cached; preview near close; kimarite after settlement",
-    "raceCarteHistoryBackfill": "same-day recent settled races via validated official racelist/beforeinfo/raceresult; missing kimarite retried until confirmed"
+    "raceCarteHistoryBackfill": "recent incomplete races via validated official racelist/beforeinfo/raceresult; missing kimarite and missing stats retried until confirmed"
   },
   "venues": [
     {
@@ -17742,7 +17742,21 @@
               "age": 27,
               "weight": 55.0,
               "motorNumber": 66,
-              "boatPart": 62
+              "boatPart": 62,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 6.87,
+              "national2Rate": 51.56,
+              "national3Rate": 74.22,
+              "localWinRate": 6.3,
+              "local2Rate": 40.0,
+              "local3Rate": 70.0,
+              "motor2Rate": 23.4,
+              "motor3Rate": 38.3,
+              "boat2Rate": 33.7,
+              "boat3Rate": 51.09,
+              "exhibitionTime": 6.65
             },
             {
               "boatNumber": 2,
@@ -17753,7 +17767,21 @@
               "age": 26,
               "weight": 55.0,
               "motorNumber": 48,
-              "boatPart": 56
+              "boatPart": 56,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.91,
+              "national2Rate": 39.34,
+              "national3Rate": 61.48,
+              "localWinRate": 5.17,
+              "local2Rate": 36.67,
+              "local3Rate": 43.33,
+              "motor2Rate": 32.26,
+              "motor3Rate": 55.91,
+              "boat2Rate": 22.22,
+              "boat3Rate": 40.74,
+              "exhibitionTime": 6.76
             },
             {
               "boatNumber": 3,
@@ -17764,7 +17792,21 @@
               "age": 30,
               "weight": 53.0,
               "motorNumber": 57,
-              "boatPart": 72
+              "boatPart": 72,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 4.49,
+              "national2Rate": 24.74,
+              "national3Rate": 38.14,
+              "localWinRate": 4.69,
+              "local2Rate": 15.38,
+              "local3Rate": 42.31,
+              "motor2Rate": 46.46,
+              "motor3Rate": 56.57,
+              "boat2Rate": 34.44,
+              "boat3Rate": 53.33,
+              "exhibitionTime": 6.71
             },
             {
               "boatNumber": 4,
@@ -17775,7 +17817,21 @@
               "age": 26,
               "weight": 55.0,
               "motorNumber": 53,
-              "boatPart": 69
+              "boatPart": 69,
+              "flyingCount": 1,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 5.98,
+              "national2Rate": 46.99,
+              "national3Rate": 54.22,
+              "localWinRate": 5.38,
+              "local2Rate": 37.93,
+              "local3Rate": 41.38,
+              "motor2Rate": 27.47,
+              "motor3Rate": 43.96,
+              "boat2Rate": 39.6,
+              "boat3Rate": 65.35,
+              "exhibitionTime": 6.86
             },
             {
               "boatNumber": 5,
@@ -17786,7 +17842,21 @@
               "age": 24,
               "weight": 52.0,
               "motorNumber": 26,
-              "boatPart": 40
+              "boatPart": 40,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 6.65,
+              "national2Rate": 50.65,
+              "national3Rate": 67.53,
+              "localWinRate": 1.75,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 37.74,
+              "motor3Rate": 54.72,
+              "boat2Rate": 25.58,
+              "boat3Rate": 37.21,
+              "exhibitionTime": 6.74
             },
             {
               "boatNumber": 6,
@@ -17797,10 +17867,41 @@
               "age": 27,
               "weight": 52.0,
               "motorNumber": 64,
-              "boatPart": 24
+              "boatPart": 24,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 5.49,
+              "national2Rate": 34.83,
+              "national3Rate": 56.18,
+              "localWinRate": 5.71,
+              "local2Rate": 50.0,
+              "local3Rate": 57.14,
+              "motor2Rate": 29.55,
+              "motor3Rate": 47.73,
+              "boat2Rate": 40.0,
+              "boat3Rate": 58.0,
+              "exhibitionTime": 6.81
             }
           ],
-          "result": null
+          "result": {},
+          "carteSource": {
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20260907&jcd=11&rno=12",
+            "raceCardFetchedAt": "2026-09-07T16:17:04.862542+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260907&jcd=11&rno=12",
+            "previewFetchedAt": "2026-09-07T16:17:15.268809+09:00"
+          },
+          "environment": {
+            "airTemperature": 25.0,
+            "waterTemperature": 27.0,
+            "windSpeed": 0.0,
+            "waveHeight": 1.0,
+            "weather": "曇"
+          }
         }
       ],
       "boatcast": "https://race.boatcast.jp/?jo=11"
@@ -31122,5 +31223,5 @@
     "fastResultDebug": "cached=0 candidates=16 fetched=16 pending=0 requests=16 selection=venue-round-robin storedWeb=34 total=34"
   },
   "raceCarteEnrichedAt": "2026-09-07T11:50:13.914615+09:00",
-  "raceCarteHistoryBackfilledAt": "2026-09-07T16:13:21.276314+09:00"
+  "raceCarteHistoryBackfilledAt": "2026-09-07T16:16:55.150017+09:00"
 }
