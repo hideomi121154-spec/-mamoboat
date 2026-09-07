@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Backfill Race Carte details for recent already-started/settled races.
-
-The normal enricher intentionally focuses on races near the current betting window.
-This helper fills older same-day races so existing AIR BET records can recover
-weather, exhibition, racer/motor stats and kimarite after the fact.
-"""
+"""Backfill Race Carte details for recent already-started/settled races."""
 from __future__ import annotations
 
 import argparse
@@ -14,8 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock
 
-import enrich_race_carte_data as enrichment
-from enrich_race_carte_data import (
+from race_carte_official_v2 import (
     JST,
     close_dt,
     enrich_preview,
@@ -24,16 +18,6 @@ from enrich_race_carte_data import (
     has_static_stats,
     jst_now,
 )
-
-# The first implementation could spend up to 12 seconds on every official page.
-# With dozens of races that exceeded the GitHub Actions timeout before anything
-# was committed. Backfill is best-effort, so fail fast and process races in parallel.
-_original_fetch_html = enrichment.fetch_html
-
-def _fast_fetch_html(path: str, timeout: int = 5) -> str:
-    return _original_fetch_html(path, timeout=min(timeout, 5))
-
-enrichment.fetch_html = _fast_fetch_html
 
 
 def parse_args() -> argparse.Namespace:
@@ -64,7 +48,7 @@ def save_payload(path: Path, payload: dict) -> None:
 def has_preview(race: dict) -> bool:
     env = race.get("environment") or {}
     entries = race.get("entries") or []
-    has_env = any(env.get(key) not in (None, "") for key in (
+    has_env = any(env.get(key) not in (None, "", "undefined", "null") for key in (
         "weather", "windDirection", "windSpeed", "waveHeight",
         "airTemperature", "waterTemperature",
     ))
@@ -147,7 +131,7 @@ def main() -> int:
                 result_done += r
 
     payload.setdefault("source", {})["raceCarteHistoryBackfill"] = (
-        "same-day recent settled races via official pcexpect/beforeinfo/raceresult"
+        "same-day recent settled races via official racelist-v2/beforeinfo-v2/raceresult"
     )
     payload["raceCarteHistoryBackfilledAt"] = now.isoformat()
     if changed:
