@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "scripts/backfill_race_carte_history.py"
+      - "scripts/race_carte_official_v2.py"
       - ".github/workflows/backfill-race-carte.yml"
   schedule:
     - cron: "8,38 0-14 * * *"
@@ -40,10 +41,11 @@ jobs:
       - name: Validate backfill parser
         run: |
           python -m py_compile scripts/enrich_race_carte_data.py
+          python -m py_compile scripts/race_carte_official_v2.py
           python -m py_compile scripts/backfill_race_carte_history.py
 
       - name: Backfill recent same-day races
-        run: python scripts/backfill_race_carte_history.py --hours 8 --max-races 96
+        run: python scripts/backfill_race_carte_history.py --hours 8 --max-races 96 --workers 8
 
       - name: Mirror data into dev
         run: |
