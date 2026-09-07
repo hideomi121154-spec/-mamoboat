@@ -15,7 +15,8 @@
     "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
     "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
     "raceCarteEnrichment": "BOAT RACE official pcexpect/beforeinfo/raceresult",
-    "raceCarteEnrichmentPolicy": "static stats cached; preview near close; kimarite after settlement"
+    "raceCarteEnrichmentPolicy": "static stats cached; preview near close; kimarite after settlement",
+    "raceCarteHistoryBackfill": "same-day recent settled races via official racelist-v2/beforeinfo-v2/raceresult"
   },
   "venues": [
     {
@@ -1418,7 +1419,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:22.314608+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=03&rno=2"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=03&rno=2",
+            "kimarite": "差し"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -1434,7 +1436,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:55:15.625189+09:00"
+            "previewFetchedAt": "2026-09-07T11:55:15.625189+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:27.807017+09:00"
           }
         },
         {
@@ -1665,7 +1669,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:31.758865+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=03&rno=3"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=03&rno=3",
+            "kimarite": "逃げ"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -1967,7 +1972,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:56:02.658506+09:00"
+            "previewFetchedAt": "2026-09-07T11:56:02.658506+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:45.016123+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -3366,7 +3373,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:25.303610+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=04&rno=3"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=04&rno=3",
+            "kimarite": "差し"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -3668,7 +3676,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:54:25.654734+09:00"
+            "previewFetchedAt": "2026-09-07T11:54:25.654734+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:33.689771+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -5997,7 +6007,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:23.304055+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=09&rno=3"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=09&rno=3",
+            "kimarite": "逃げ"
           },
           "environment": {
             "airTemperature": 23.0,
@@ -6008,7 +6019,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:54:55.500417+09:00"
+            "previewFetchedAt": "2026-09-07T11:54:55.500417+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:28.900431+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -6244,7 +6257,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:32.774347+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=09&rno=4"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=09&rno=4",
+            "kimarite": "逃げ"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -6546,7 +6560,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:56:21.871821+09:00"
+            "previewFetchedAt": "2026-09-07T11:56:21.871821+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:44.183433+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -8615,12 +8631,17 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:19.107159+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=10&rno=5"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=10&rno=5",
+            "kimarite": "差し"
           },
           "resultCheck": {
             "state": "confirmed",
             "checkedAt": "2026-09-07T13:56:19.347591+09:00",
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=10&rno=5"
+          },
+          "carteSource": {
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:08.472600+09:00"
           }
         },
         {
@@ -8845,12 +8866,17 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:28.560067+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=10&rno=6"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=10&rno=6",
+            "kimarite": "逃げ"
           },
           "resultCheck": {
             "state": "confirmed",
             "checkedAt": "2026-09-07T13:56:28.824575+09:00",
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=10&rno=6"
+          },
+          "carteSource": {
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:08.448714+09:00"
           }
         },
         {
@@ -10342,7 +10368,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:21.312446+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=11&rno=3"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=11&rno=3",
+            "kimarite": "逃げ"
           },
           "environment": {
             "airTemperature": 26.0,
@@ -10353,7 +10380,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:55:33.980455+09:00"
+            "previewFetchedAt": "2026-09-07T11:55:33.980455+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:28.583328+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -10589,7 +10618,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:30.751518+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=11&rno=4"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=11&rno=4",
+            "kimarite": "まくり差し"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -10891,7 +10921,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:55:25.314149+09:00"
+            "previewFetchedAt": "2026-09-07T11:55:25.314149+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:41.950645+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -12219,7 +12251,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:20.147848+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=13&rno=3"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=13&rno=3",
+            "kimarite": "まくり"
           },
           "environment": {
             "airTemperature": 27.4,
@@ -12230,7 +12263,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:55:54.068441+09:00"
+            "previewFetchedAt": "2026-09-07T11:55:54.068441+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:27.584711+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -12466,7 +12501,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:29.624857+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=13&rno=4"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=13&rno=4",
+            "kimarite": "まくり"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -12768,7 +12804,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:54:45.980858+09:00"
+            "previewFetchedAt": "2026-09-07T11:54:45.980858+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:36.970739+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -14608,12 +14646,17 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:17.719993+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=14&rno=4"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=14&rno=4",
+            "kimarite": "逃げ"
           },
           "resultCheck": {
             "state": "confirmed",
             "checkedAt": "2026-09-07T13:56:18.306876+09:00",
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=14&rno=4"
+          },
+          "carteSource": {
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:00:56.399344+09:00"
           }
         },
         {
@@ -14832,12 +14875,17 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:27.391293+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=14&rno=5"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=14&rno=5",
+            "kimarite": "まくり"
           },
           "resultCheck": {
             "state": "confirmed",
             "checkedAt": "2026-09-07T13:56:27.759809+09:00",
             "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=14&rno=5"
+          },
+          "carteSource": {
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:09.525942+09:00"
           }
         },
         {
@@ -16425,7 +16473,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:26.327494+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=16&rno=3"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=16&rno=3",
+            "kimarite": "まくり"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -16727,7 +16776,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:55:05.080860+09:00"
+            "previewFetchedAt": "2026-09-07T11:55:05.080860+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:36.947756+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -17691,7 +17742,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:24.318435+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=22&rno=1"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=22&rno=1",
+            "kimarite": "逃げ"
           },
           "environment": {
             "airTemperature": 28.0,
@@ -17702,7 +17754,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:54:36.229787+09:00"
+            "previewFetchedAt": "2026-09-07T11:54:36.229787+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:30.943957+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -17932,7 +17986,8 @@
             "settleable": true,
             "source": "official-web-result",
             "fetchedAt": "2026-09-07T13:56:33.754277+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=22&rno=2"
+            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20260907&jcd=22&rno=2",
+            "kimarite": "逃げ"
           },
           "odds": {
             "source": "official-web-snapshot",
@@ -18234,7 +18289,9 @@
           },
           "carteSource": {
             "preview": "official-beforeinfo",
-            "previewFetchedAt": "2026-09-07T11:56:39.001427+09:00"
+            "previewFetchedAt": "2026-09-07T11:56:39.001427+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-09-07T14:01:53.303289+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -19999,5 +20056,6 @@
     "oddsDebug": "cached=2 candidates=9 fetched=9 recent=0 requests=45 stored=11 entries=2332",
     "fastResultDebug": "cached=0 candidates=16 fetched=16 pending=0 requests=16 selection=venue-round-robin storedWeb=34 total=34"
   },
-  "raceCarteEnrichedAt": "2026-09-07T11:50:13.914615+09:00"
+  "raceCarteEnrichedAt": "2026-09-07T11:50:13.914615+09:00",
+  "raceCarteHistoryBackfilledAt": "2026-09-07T14:00:35.776505+09:00"
 }
