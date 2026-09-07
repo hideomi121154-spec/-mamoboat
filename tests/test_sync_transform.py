@@ -14,7 +14,7 @@ SPEC.loader.exec_module(sync)
 def b_entry(boat, racer, name="選手太郎", branch="愛知"):
     row = f"{boat} {racer:04d}{name:<4}{30:02d}{branch:<2}{52:02d}{'A1':<2}"
     row = row.ljust(41) + f"{boat + 10:02d}"
-    row = row.ljust(50) + f"{boat + 20:02d}"
+    row = row.ljust(49) + f"{boat + 120:03d}"
     return row
 
 
@@ -107,6 +107,7 @@ assert len(gamagori["races"]) == 12
 assert [race["number"] for race in omura["races"]] == list(range(1, 13))
 assert all(len(race["entries"]) == 6 for race in omura["races"] + gamagori["races"])
 assert omura["races"][0]["entries"][0]["racerNumber"] == 5007
+assert omura["races"][0]["entries"][0]["boatPart"] == 121
 assert gamagori["races"][0]["entries"][0]["racerNumber"] == 4007
 assert omura["races"][0]["closeTime"].endswith("+09:00")
 

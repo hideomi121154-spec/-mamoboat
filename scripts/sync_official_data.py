@@ -851,14 +851,15 @@ def parse_entry(line: str):
 
     # 公式Bファイルの固定幅（文字位置）。
     # 艇[0] 登番[2:6] 氏名[6:10] 年齢[10:12] 支部[12:14]
-    # 体重[14:16] 級別[16:18] モーター[41:43] ボート[50:52]
+    # 体重[14:16] 級別[16:18] モーター[41:43] ボート[49:52]
+    # ボート番号は3桁になるため、[50:52]では100番台の百位が欠落する。
     name = row[6:10].strip().replace("\u3000", " ")
     age = number(row[10:12])
     branch = row[12:14].strip().replace("\u3000", " ") or None
     weight = number(row[14:16], float)
     racer_class = normalized(row[16:18]).strip() or None
     motor = number(row[41:43])
-    boat_part = number(row[50:52])
+    boat_part = number(row[49:52])
 
     if not name:
         fallback = re.match(

@@ -26,6 +26,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hours", type=float, default=8.0)
     parser.add_argument("--max-races", type=int, default=96)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--venue", default="", help="optional two-digit venue code")
+    parser.add_argument("--race", type=int, default=0, help="optional 1-12 race number")
     return parser.parse_args()
 
 
@@ -48,11 +50,22 @@ def save_payload(path: Path, payload: dict) -> None:
 def has_preview(race: dict) -> bool:
     env = race.get("environment") or {}
     entries = race.get("entries") or []
-    has_env = any(env.get(key) not in (None, "", "undefined", "null") for key in (
-        "weather", "windDirection", "windSpeed", "waveHeight",
-        "airTemperature", "waterTemperature",
+    present = lambda key: env.get(key) not in (None, "", "undefined", "null")
+    has_env = all(present(key) for key in (
+        "weather", "windSpeed", "waveHeight", "airTemperature", "waterTemperature",
     ))
-    has_exhibition = bool(entries) and any(entry.get("exhibitionTime") is not None for entry in entries)
+    # A calm official record has no directional arrow. Otherwise require the
+    # direction so a partial environment snapshot is retried by the backfill.
+    try:
+        wind_speed = float(env.get("windSpeed") or 0)
+    except (TypeError, ValueError):
+        wind_speed = 0
+        has_env = False
+    if wind_speed > 0:
+        has_env = has_env and present("windDirection")
+    has_exhibition = bool(entries) and all(
+        entry.get("exhibitionTime") is not None for entry in entries
+    )
     return has_env and has_exhibition
 
 
@@ -99,7 +112,11 @@ def main() -> int:
 
     for venue in payload.get("venues") or []:
         code = str(venue.get("code") or "").zfill(2)
+        if args.venue and code != args.venue.zfill(2):
+            continue
         for race in venue.get("races") or []:
+            if args.race and int(race.get("number") or 0) != args.race:
+                continue
             close = close_dt(race)
             if not close or close > now + timedelta(minutes=15) or close < cutoff:
                 continue
@@ -131,7 +148,7 @@ def main() -> int:
                 result_done += r
 
     payload.setdefault("source", {})["raceCarteHistoryBackfill"] = (
-        "same-day recent settled races via official racelist-v2/beforeinfo-v2/raceresult"
+        "same-day recent settled races via validated official racelist/beforeinfo/raceresult"
     )
     payload["raceCarteHistoryBackfilledAt"] = now.isoformat()
     if changed:
