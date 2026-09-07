@@ -92,18 +92,25 @@ def enrich_one(code: str, race: dict, date_text: str) -> tuple[bool, int, int, i
         except Exception as exc:
             print(f"history preview failed {code}-{race.get('number')}R: {exc}")
 
-    # Important: the user's local AIR BET result can already be settled while the
-    # shared race JSON still has result=null. The legacy enrich_result() refuses to
-    # fetch in that state, so create an empty result container and fetch the official
-    # winning method for every closed race that does not yet have kimarite.
+    # Retry every closed race until kimarite is actually confirmed. The legacy
+    # enrich_result() treats an empty dict as "no result" and returns early, so
+    # use a temporary truthy marker only during the fetch. Never persist it.
     if not has_kimarite(race):
+        marker = "_raceCartePendingKimarite"
         try:
             if not isinstance(race.get("result"), dict):
                 race["result"] = {}
+            result = race["result"]
+            if not result:
+                result[marker] = True
             changed |= enrich_result(race, date_text, code)
             result_done = 1
         except Exception as exc:
             print(f"history result failed {code}-{race.get('number')}R: {exc}")
+        finally:
+            result = race.get("result")
+            if isinstance(result, dict):
+                result.pop(marker, None)
 
     return changed, card_done, preview_done, result_done
 
@@ -134,8 +141,11 @@ def main() -> int:
             if race.get("entries"):
                 targets.append((code, race))
 
+    # Missing kimarite is the highest-priority retry. After that, prioritize other
+    # incomplete carte fields, then older closed races first.
     targets.sort(key=lambda item: (
-        has_static_stats(item[1]) and has_preview(item[1]) and has_kimarite(item[1]),
+        has_kimarite(item[1]),
+        has_static_stats(item[1]) and has_preview(item[1]),
         (close_dt(item[1]) or datetime(1970, 1, 1, tzinfo=JST)).timestamp(),
     ))
     targets = targets[: max(0, args.max_races)]
@@ -159,7 +169,8 @@ def main() -> int:
                 result_done += r
 
     payload.setdefault("source", {})["raceCarteHistoryBackfill"] = (
-        "same-day recent settled races via validated official racelist/beforeinfo/raceresult"
+        "same-day recent settled races via validated official racelist/beforeinfo/raceresult; "
+        "missing kimarite retried until confirmed"
     )
     payload["raceCarteHistoryBackfilledAt"] = now.isoformat()
     if changed:
