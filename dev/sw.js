@@ -1,9 +1,9 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v421-record-financial-detail-59-dev";
+const CACHE = "mamoboat-v422-readable-record-layout-60-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260906-3","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js?v=20260906-4","./app.js?v=20260906-5",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260906-4","./bet-review-flow.js?v=20260906-4",
-  "./decision-transition-model.js","./growth-entry.js?v=20260830-1","./venue-live-priority.js?v=20260907-2","./general-grade-theme.js?v=20260908-1","./record-financial-detail-fix.js?v=20260908-1","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
+  "./decision-transition-model.js","./growth-entry.js?v=20260830-1","./venue-live-priority.js?v=20260907-2","./general-grade-theme.js?v=20260908-1","./record-financial-detail-fix.js?v=20260908-1","./record-unified-layout.js?v=20260908-1","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
 ];
@@ -37,6 +37,9 @@ function withLiveVenueLoader(response){
     }
     if(!html.includes("record-financial-detail-fix.js")){
       html=html.replace("</body>",'<script src="record-financial-detail-fix.js?v=20260908-1"></script></body>');
+    }
+    if(!html.includes("record-unified-layout.js")){
+      html=html.replace("</body>",'<script src="record-unified-layout.js?v=20260908-1"></script></body>');
     }
     const headers=new Headers(response.headers);
     headers.delete("content-length");
