@@ -45,3 +45,13 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });
   else boot();
 })();
+
+/* Race Carte snapshot capture is isolated from navigation and race rendering. */
+(() => {
+  if (document.querySelector('script[data-mamo-race-carte-snapshot="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "race-carte-snapshot.js?v=20260907-1";
+  script.async = true;
+  script.dataset.mamoRaceCarteSnapshot = "1";
+  document.head.appendChild(script);
+})();
