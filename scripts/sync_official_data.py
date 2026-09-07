@@ -1992,6 +1992,41 @@ def refresh_official_odds(
 
 
 
+def merge_cached_carte(payload, previous):
+    """Preserve official details across B/K rebuilds only for identical lineups.
+
+    Date, venue, race, lane, registration, motor and boat must all agree.
+    Current results and odds remain owned by their existing merge paths.
+    """
+    if not previous or previous.get("date") != payload.get("date"):
+        return
+    previous_races = _payload_race_index(previous)
+    fields = (
+        "nationalWinRate", "national2Rate", "national3Rate",
+        "localWinRate", "local2Rate", "local3Rate", "averageStart",
+        "flyingCount", "lateCount", "motor2Rate", "motor3Rate",
+        "boat2Rate", "boat3Rate", "exhibitionTime", "exhibitionCourse",
+    )
+    def identity(entry):
+        return tuple(str(entry.get(k, "")) for k in
+                     ("boatNumber", "racerNumber", "motorNumber", "boatPart"))
+    for key, race in _payload_race_index(payload).items():
+        old = previous_races.get(key, {})
+        entries = race.get("entries") or []
+        cached = {identity(e): e for e in old.get("entries") or []}
+        if not entries or len(entries) != len(cached) or any(identity(e) not in cached for e in entries):
+            continue
+        for entry in entries:
+            source = cached[identity(entry)]
+            for field in fields:
+                if entry.get(field) is None and source.get(field) is not None:
+                    entry[field] = source[field]
+        for field in ("environment", "carteSource"):
+            race[field] = {**(old.get(field) or {}), **(race.get(field) or {})}
+        if (old.get("result") or {}).get("kimarite") and race.get("result"):
+            race["result"].setdefault("kimarite", old["result"]["kimarite"])
+
+
 def merge_cached_results(
     payload: dict[str, Any],
     previous: Mapping[str, Any] | None,
@@ -2520,6 +2555,7 @@ def main():
             grace_minutes=max(1, args.result_grace_minutes),
             max_races=max(1, args.result_max_races),
         )
+    merge_cached_carte(payload, previous_payload)
     reuse_generated_at_when_unchanged(payload, dated)
     text = json.dumps(payload, ensure_ascii=False, indent=2)
     atomic_write_text(dated, text)

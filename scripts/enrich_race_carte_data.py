@@ -325,6 +325,10 @@ def has_static_stats(race: dict[str, Any]) -> bool:
 
 
 def main() -> int:
+    # The scheduled sync must use the same validated parser as history backfill.
+    # Import here because that module reuses this module's HTTP/result helpers.
+    from race_carte_official_v2 import enrich_race_card, enrich_preview, has_static_stats
+
     args = parse_args()
     date_text = target_date(args.date)
     path = dataset_path(date_text)

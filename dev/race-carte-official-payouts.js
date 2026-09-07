@@ -14,7 +14,7 @@
     if(document.getElementById("mamoRaceCarteSnapshotLoader"))return;
     const s=document.createElement("script");
     s.id="mamoRaceCarteSnapshotLoader";
-    s.src=`race-carte-snapshot.js?v=20260907-5`;
+    s.src=`race-carte-snapshot.js?v=20260907-6`;
     s.async=false;
     s.onload=()=>{
       window.MAMO_RACE_CARTE_SNAPSHOT?.backfill?.(100);

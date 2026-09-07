@@ -53,13 +53,16 @@ const dated = JSON.parse(fs.readFileSync(path.join(ROOT, "data/2026-09-07.json")
 const today = JSON.parse(fs.readFileSync(path.join(ROOT, "data/today.json"), "utf8"));
 const devDated = JSON.parse(fs.readFileSync(path.join(ROOT, "dev/data/2026-09-07.json"), "utf8"));
 const devToday = JSON.parse(fs.readFileSync(path.join(ROOT, "dev/data/today.json"), "utf8"));
-assert.deepEqual(today, dated);
 assert.deepEqual(devDated, dated);
-assert.deepEqual(devToday, dated);
+assert.deepEqual(devToday, today);
 
 const race = fukuoka2(devDated);
 const snapshot = loadClosure("dev/race-carte-snapshot.js", ["racerSnapshot", "environmentSnapshot"]);
 const ui = loadClosure("dev/race-carte.js", ["racersHtml", "environment"]);
+const missing = visibleText(ui.racersHtml({entrySnapshot:[snapshot.racerSnapshot({boatNumber:1})]}));
+assert.ok(missing.includes("全国勝率 —"));
+assert.ok(missing.includes("展示 —"));
+assert.ok(!missing.includes("0.00"));
 const record = {
   entrySnapshot: race.entries.map(entry => snapshot.racerSnapshot(entry)),
   environmentSnapshot: snapshot.environmentSnapshot(race),
@@ -87,3 +90,14 @@ assert.deepEqual(
 );
 
 console.log("Race Carte official JSON -> snapshot -> UI data flow test passed.");
+
+// User-reported 11R: assert each racer's own rendered card, not a whole-page
+// substring that could accidentally match a neighbouring racer's values.
+const race11 = devDated.venues.find(v => String(v.code) === "22").races.find(r => r.number === 11);
+for (const entry of race11.entries) {
+  const card = visibleText(ui.racersHtml({entrySnapshot:[snapshot.racerSnapshot(entry)]}));
+  for (const [label, key] of [["全国勝率","nationalWinRate"],["当地勝率","localWinRate"],["平均ST","averageStart"],["展示","exhibitionTime"]]) {
+    assert.ok(entry[key] != null);
+    assert.ok(card.includes(`${label} ${entry[key].toFixed(2)}`));
+  }
+}

@@ -5,7 +5,8 @@
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_SNAPSHOT_V3__) return;
+  if (window.__MAMO_RACE_CARTE_SNAPSHOT_V4__) return;
+  window.__MAMO_RACE_CARTE_SNAPSHOT_V4__ = true;
   window.__MAMO_RACE_CARTE_SNAPSHOT_V3__ = true;
 
   const KEY = "mamoboat_v40_personal";
@@ -17,6 +18,7 @@
   };
   const first = (...values) => values.find(v => v !== undefined && v !== null && v !== "");
   const safeNumber = value => {
+    if (value == null || String(value).trim() === "") return null;
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
   };

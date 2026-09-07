@@ -19,7 +19,7 @@
     return s && !["undefined","null","nan","none","—","未保存"].includes(s.toLowerCase()) ? s : "";
   };
   const valueOr = (v, fallback="—") => validText(v) || fallback;
-  const rate = v => Number.isFinite(Number(v)) ? Number(v).toFixed(2) : "—";
+  const rate = v => v == null || String(v).trim() === "" ? "—" : Number.isFinite(Number(v)) ? Number(v).toFixed(2) : "—";
   let scrollLock = null;
 
   function readState(){try{const raw=JSON.parse(localStorage.getItem(KEY)||"null");return raw&&typeof raw==="object"?raw:{records:[]};}catch(_){return{records:[]};}}

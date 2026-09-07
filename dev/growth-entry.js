@@ -175,7 +175,7 @@
 (() => {
   if (document.querySelector('script[data-mamo-race-carte-snapshot="1"]')) return;
   const script = document.createElement("script");
-  script.src = "race-carte-snapshot.js?v=20260907-3";
+  script.src = "race-carte-snapshot.js?v=20260907-6";
   script.async = true;
   script.dataset.mamoRaceCarteSnapshot = "1";
   document.head.appendChild(script);
