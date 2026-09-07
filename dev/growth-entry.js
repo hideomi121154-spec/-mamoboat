@@ -170,3 +170,13 @@
   script.dataset.mamoRaceCarte = "1";
   document.head.appendChild(script);
 })();
+
+/* Enrich Race Carte records from synced official data without touching race navigation. */
+(() => {
+  if (document.querySelector('script[data-mamo-race-carte-snapshot="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "race-carte-snapshot.js?v=20260907-2";
+  script.async = true;
+  script.dataset.mamoRaceCarteSnapshot = "1";
+  document.head.appendChild(script);
+})();
