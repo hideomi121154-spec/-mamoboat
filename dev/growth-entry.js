@@ -165,7 +165,7 @@
 (() => {
   if (document.querySelector('script[data-mamo-race-carte="1"]')) return;
   const script = document.createElement("script");
-  script.src = "race-carte.js?v=20260906-1";
+  script.src = "race-carte.js?v=20260907-4";
   script.async = true;
   script.dataset.mamoRaceCarte = "1";
   document.head.appendChild(script);
@@ -175,7 +175,7 @@
 (() => {
   if (document.querySelector('script[data-mamo-race-carte-snapshot="1"]')) return;
   const script = document.createElement("script");
-  script.src = "race-carte-snapshot.js?v=20260907-2";
+  script.src = "race-carte-snapshot.js?v=20260907-3";
   script.async = true;
   script.dataset.mamoRaceCarteSnapshot = "1";
   document.head.appendChild(script);
