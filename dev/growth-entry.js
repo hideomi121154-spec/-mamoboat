@@ -180,3 +180,13 @@
   script.dataset.mamoRaceCarteSnapshot = "1";
   document.head.appendChild(script);
 })();
+
+/* Make currently available venues and deadlines obvious on the 24-venue screen. */
+(() => {
+  if (document.querySelector('script[data-mamo-venue-live-priority="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "venue-live-priority.js?v=20260907-1";
+  script.async = true;
+  script.dataset.mamoVenueLivePriority = "1";
+  document.head.appendChild(script);
+})();
