@@ -1,18 +1,26 @@
-/* MAMO BOAT — Race Carte snapshot enrichment v2
+/* MAMO BOAT — Race Carte snapshot enrichment v3
  * Backfills existing AIR BET records from synced official data.
+ * Robustly matches legacy records by venue code OR venue name.
  * No MutationObserver / no navigation rewrite / no race DOM rewrite.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_SNAPSHOT_V2__) return;
-  window.__MAMO_RACE_CARTE_SNAPSHOT_V2__ = true;
+  if (window.__MAMO_RACE_CARTE_SNAPSHOT_V3__) return;
+  window.__MAMO_RACE_CARTE_SNAPSHOT_V3__ = true;
 
   const KEY = "mamoboat_v40_personal";
+  const VENUES = {
+    "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
+    "07":"蒲郡","08":"常滑","09":"津","10":"三国","11":"びわこ","12":"住之江",
+    "13":"尼崎","14":"鳴門","15":"丸亀","16":"児島","17":"宮島","18":"徳山",
+    "19":"下関","20":"若松","21":"芦屋","22":"福岡","23":"唐津","24":"大村"
+  };
   const first = (...values) => values.find(v => v !== undefined && v !== null && v !== "");
   const safeNumber = value => {
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
   };
+  const cleanText = value => String(value ?? "").replace(/[\s　]+/g, "").trim();
 
   function readState() {
     try { return JSON.parse(localStorage.getItem(KEY) || "null"); }
@@ -26,6 +34,31 @@
     return [...(state?.records || [])].filter(Boolean).sort((a,b) =>
       String(b.time || b.createdAt || b.raceDate || "").localeCompare(String(a.time || a.createdAt || a.raceDate || ""))
     );
+  }
+
+  function normalizeDate(value) {
+    const raw = String(value || "").trim();
+    const direct = raw.match(/^(\d{4})[-\/]?(\d{2})[-\/]?(\d{2})/);
+    if (direct) return `${direct[1]}-${direct[2]}-${direct[3]}`;
+    try {
+      const d = new Date(value);
+      if (!Number.isNaN(d.getTime())) return new Intl.DateTimeFormat("en-CA", {
+        timeZone:"Asia/Tokyo", year:"numeric", month:"2-digit", day:"2-digit"
+      }).format(d);
+    } catch (_) {}
+    return "";
+  }
+
+  function recordDate(record) {
+    return normalizeDate(first(record?.raceDate, record?.date, record?.time, record?.createdAt));
+  }
+
+  function recordVenueCode(record) {
+    const code = String(first(record?.venueCode, record?.jcd, record?.stadiumCode, "")).replace(/\D/g, "").padStart(2, "0");
+    if (/^\d{2}$/.test(code) && VENUES[code]) return code;
+    const name = cleanText(first(record?.venue, record?.venueName, record?.stadium, ""));
+    const hit = Object.entries(VENUES).find(([,label]) => name.includes(cleanText(label)) || cleanText(label).includes(name));
+    return hit?.[0] || "";
   }
 
   function racerSnapshot(entry) {
@@ -44,8 +77,10 @@
       lateCount: safeNumber(first(entry?.lateCount, entry?.lCount, entry?.L)),
       motorNumber: safeNumber(first(entry?.motorNumber, entry?.motor)),
       motor2Rate: safeNumber(first(entry?.motor2Rate, entry?.motorSecondRate, entry?.motor2WinRate, entry?.motorRate)),
+      motor3Rate: safeNumber(first(entry?.motor3Rate, entry?.motorThirdRate)),
       boatNumberPart: safeNumber(first(entry?.boatPart, entry?.boatNumberPart, entry?.boat)),
       boat2Rate: safeNumber(first(entry?.boat2Rate, entry?.boatSecondRate, entry?.boat2WinRate, entry?.boatRate)),
+      boat3Rate: safeNumber(first(entry?.boat3Rate, entry?.boatThirdRate)),
       exhibitionTime: safeNumber(first(entry?.exhibitionTime, entry?.tenjiTime, entry?.displayTime)),
       exhibitionCourse: safeNumber(first(entry?.exhibitionCourse, entry?.course, entry?.entryCourse)),
     };
@@ -61,9 +96,10 @@
       {}
     );
     const obj = typeof source === "object" && source ? source : {};
+    const direction = String(first(obj.windDirection, obj.wind, raceItem?.windDirection, ""));
     return {
       weather: String(first(obj.weather, obj.condition, raceItem?.weatherLabel, raceItem?.weather, "")),
-      windDirection: String(first(obj.windDirection, obj.wind, raceItem?.windDirection, "")),
+      windDirection: ["undefined","null","none","nan"].includes(direction.toLowerCase()) ? "" : direction,
       windSpeed: safeNumber(first(obj.windSpeed, raceItem?.windSpeed)),
       waveHeight: safeNumber(first(obj.waveHeight, obj.wave, raceItem?.waveHeight)),
       airTemperature: safeNumber(first(obj.airTemperature, obj.temperature, raceItem?.airTemperature)),
@@ -95,8 +131,10 @@
   }
 
   async function datasetFor(date) {
+    // Prefer the dated file because history-backfill commits are guaranteed to mirror
+    // into it. today.json remains a fallback for live data.
     const paths = date === todayJst()
-      ? ["data/today.json", `data/${date}.json`]
+      ? [`data/${date}.json`, "data/today.json"]
       : [`data/${date}.json`];
     let lastError = null;
     for (const path of paths) {
@@ -109,9 +147,20 @@
   }
 
   function findRace(dataset, record) {
-    const venueCode = String(record?.venueCode || "").padStart(2,"0");
-    const venue = (dataset?.venues || []).find(v => String(v?.code || "").padStart(2,"0") === venueCode);
-    return venue?.races?.find(r => Number(r?.number) === Number(record?.raceNo)) || null;
+    const venueCode = recordVenueCode(record);
+    const venueName = cleanText(first(record?.venue, record?.venueName, record?.stadium, ""));
+    let venue = null;
+    if (venueCode) {
+      venue = (dataset?.venues || []).find(v => String(v?.code || "").padStart(2,"0") === venueCode);
+    }
+    if (!venue && venueName) {
+      venue = (dataset?.venues || []).find(v => {
+        const candidate = cleanText(v?.name);
+        return candidate && (candidate === venueName || candidate.includes(venueName) || venueName.includes(candidate));
+      });
+    }
+    const raceNo = Number(first(record?.raceNo, record?.race));
+    return venue?.races?.find(r => Number(r?.number) === raceNo) || null;
   }
 
   function mergeRecord(record, raceItem) {
@@ -144,7 +193,7 @@
 
     if (changed || !record.snapshotCapturedAt) {
       record.snapshotCapturedAt = new Date().toISOString();
-      record.snapshotVersion = 2;
+      record.snapshotVersion = 3;
     }
     return changed;
   }
@@ -152,9 +201,13 @@
   function activeCarteIndex() {
     const overlay = document.getElementById("mamoRaceCarteOverlay");
     if (!overlay || overlay.hidden) return null;
-    const title = overlay.querySelector(".mamo-carte-hero h2")?.textContent || "";
+    const title = cleanText(overlay.querySelector(".mamo-carte-hero h2")?.textContent || "");
     const list = orderedRecords(readState());
-    const index = list.findIndex(r => title.includes(String(r?.venue || r?.venueName || "")) && title.includes(`${r?.raceNo}R`));
+    const index = list.findIndex(r => {
+      const venue = cleanText(first(r?.venue, r?.venueName, VENUES[recordVenueCode(r)], ""));
+      const race = String(first(r?.raceNo, r?.race, "")).replace(/R$/i, "");
+      return venue && title.includes(venue) && title.includes(`${race}R`);
+    });
     return index >= 0 ? index : null;
   }
 
@@ -173,13 +226,14 @@
     const state = readState();
     if (!state || !Array.isArray(state.records)) return false;
     const record = state.records.find(r => r?.id === recordId);
-    if (!record?.raceDate || !record?.venueCode || !record?.raceNo) return false;
+    const date = recordDate(record);
+    if (!record || !date || !recordVenueCode(record) || !first(record?.raceNo, record?.race)) return false;
     try {
-      const raceItem = findRace(await datasetFor(record.raceDate), record);
+      const raceItem = findRace(await datasetFor(date), record);
       if (!raceItem) return false;
       if (!mergeRecord(record, raceItem)) return false;
       writeState(state);
-      notify({ recordId, backfill:true });
+      notify({ recordId, backfill:true, date, venueCode:recordVenueCode(record), raceNo:first(record?.raceNo, record?.race) });
       return true;
     } catch (error) {
       console.warn("レースカルテ補完に失敗しました", error);
@@ -191,15 +245,15 @@
     const state = readState();
     if (!state || !Array.isArray(state.records) || !state.records.length) return false;
     const targets = [...state.records].reverse()
-      .filter(r => r?.raceDate && r?.venueCode && r?.raceNo)
+      .filter(r => recordDate(r) && recordVenueCode(r) && first(r?.raceNo, r?.race))
       .slice(0, Math.max(1, limit));
     const datasets = new Map();
-    for (const date of [...new Set(targets.map(r => r.raceDate))]) {
+    for (const date of [...new Set(targets.map(recordDate))]) {
       try { datasets.set(date, await datasetFor(date)); } catch (_) {}
     }
     let changed = false;
     for (const record of targets) {
-      const raceItem = findRace(datasets.get(record.raceDate), record);
+      const raceItem = findRace(datasets.get(recordDate(record)), record);
       if (raceItem && mergeRecord(record, raceItem)) changed = true;
     }
     if (changed) {
@@ -228,6 +282,8 @@
   }
 
   function enhanceClicks() {
+    // Capture phase is intentional: the Race Carte button itself stops bubbling.
+    // This guarantees enrichment still starts before the sheet opens.
     document.addEventListener("click", event => {
       const carteButton = event.target?.closest?.(".mamo-carte-btn");
       if (carteButton) {
@@ -235,23 +291,24 @@
         const record = orderedRecords(readState())[index];
         if (record?.id) {
           enrichRecordById(record.id);
-          setTimeout(() => enrichRecordById(record.id), 900);
-          setTimeout(() => enrichRecordById(record.id), 2400);
+          setTimeout(() => enrichRecordById(record.id), 700);
+          setTimeout(() => enrichRecordById(record.id), 1800);
         }
       }
       if (event.target?.closest?.("#nav-records")) setTimeout(() => backfill(100), 0);
-    }, { passive:true });
+    }, { capture:true, passive:true });
   }
 
   function boot() {
     wrapPlaceBet();
     enhanceClicks();
     backfill(100);
-    setTimeout(() => backfill(100), 1500);
+    setTimeout(() => backfill(100), 800);
+    setTimeout(() => backfill(100), 2200);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });
   else boot();
 
-  window.MAMO_RACE_CARTE_SNAPSHOT = Object.freeze({ backfill, enrichRecordById });
+  window.MAMO_RACE_CARTE_SNAPSHOT = Object.freeze({ backfill, enrichRecordById, recordVenueCode, recordDate });
 })();
