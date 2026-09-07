@@ -1,18 +1,18 @@
-/* MAMO BOAT — Race Carte snapshot enrichment v1
- * Enriches AIR BET records with the race data available in the synced dataset.
+/* MAMO BOAT — Race Carte snapshot enrichment v2
+ * Backfills existing AIR BET records from synced official data.
  * No MutationObserver / no navigation rewrite / no race DOM rewrite.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_SNAPSHOT_V1__) return;
-  window.__MAMO_RACE_CARTE_SNAPSHOT_V1__ = true;
+  if (window.__MAMO_RACE_CARTE_SNAPSHOT_V2__) return;
+  window.__MAMO_RACE_CARTE_SNAPSHOT_V2__ = true;
 
   const KEY = "mamoboat_v40_personal";
+  const first = (...values) => values.find(v => v !== undefined && v !== null && v !== "");
   const safeNumber = value => {
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
   };
-  const first = (...values) => values.find(v => v !== undefined && v !== null && v !== "");
 
   function readState() {
     try { return JSON.parse(localStorage.getItem(KEY) || "null"); }
@@ -21,6 +21,11 @@
   function writeState(state) {
     try { localStorage.setItem(KEY, JSON.stringify(state)); return true; }
     catch (_) { return false; }
+  }
+  function orderedRecords(state) {
+    return [...(state?.records || [])].filter(Boolean).sort((a,b) =>
+      String(b.time || b.createdAt || b.raceDate || "").localeCompare(String(a.time || a.createdAt || a.raceDate || ""))
+    );
   }
 
   function racerSnapshot(entry) {
@@ -50,7 +55,6 @@
     const source = first(
       raceItem?.environment,
       raceItem?.environmentSnapshot,
-      raceItem?.weather,
       raceItem?.conditions,
       raceItem?.result?.environment,
       raceItem?.result?.weather,
@@ -58,7 +62,7 @@
     );
     const obj = typeof source === "object" && source ? source : {};
     return {
-      weather: String(first(obj.weather, obj.condition, raceItem?.weatherLabel, "")),
+      weather: String(first(obj.weather, obj.condition, raceItem?.weatherLabel, raceItem?.weather, "")),
       windDirection: String(first(obj.windDirection, obj.wind, raceItem?.windDirection, "")),
       windSpeed: safeNumber(first(obj.windSpeed, raceItem?.windSpeed)),
       waveHeight: safeNumber(first(obj.waveHeight, obj.wave, raceItem?.waveHeight)),
@@ -78,27 +82,46 @@
     ));
   }
 
-  async function datasetFor(date) {
-    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-    const path = date === today ? "data/today.json" : `data/${date}.json`;
-    const response = await fetch(`${path}?carte=${Date.now()}`, { cache: "no-store" });
+  function todayJst() {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone:"Asia/Tokyo", year:"numeric", month:"2-digit", day:"2-digit"
+    }).format(new Date());
+  }
+
+  async function fetchJson(path) {
+    const response = await fetch(`${path}?carte=${Date.now()}`, { cache:"no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
   }
 
+  async function datasetFor(date) {
+    const paths = date === todayJst()
+      ? ["data/today.json", `data/${date}.json`]
+      : [`data/${date}.json`];
+    let lastError = null;
+    for (const path of paths) {
+      try {
+        const data = await fetchJson(path);
+        if (data?.venues?.length) return data;
+      } catch (error) { lastError = error; }
+    }
+    throw lastError || new Error("dataset unavailable");
+  }
+
   function findRace(dataset, record) {
-    const venue = (dataset?.venues || []).find(v => String(v?.code) === String(record?.venueCode));
+    const venueCode = String(record?.venueCode || "").padStart(2,"0");
+    const venue = (dataset?.venues || []).find(v => String(v?.code || "").padStart(2,"0") === venueCode);
     return venue?.races?.find(r => Number(r?.number) === Number(record?.raceNo)) || null;
   }
 
   function mergeRecord(record, raceItem) {
     if (!record || !raceItem) return false;
     let changed = false;
+
     const entries = Array.isArray(raceItem.entries) ? raceItem.entries.map(racerSnapshot) : [];
-    if (entries.length) {
-      const before = JSON.stringify(record.entrySnapshot || []);
-      const after = JSON.stringify(entries);
-      if (before !== after) { record.entrySnapshot = entries; changed = true; }
+    if (entries.length && JSON.stringify(record.entrySnapshot || []) !== JSON.stringify(entries)) {
+      record.entrySnapshot = entries;
+      changed = true;
     }
 
     const env = environmentSnapshot(raceItem);
@@ -114,16 +137,36 @@
       changed = true;
     }
 
-    if (raceItem?.result && !record.resultSnapshot) {
+    if (raceItem?.result && JSON.stringify(record.resultSnapshot || null) !== JSON.stringify(raceItem.result)) {
       record.resultSnapshot = raceItem.result;
       changed = true;
     }
-    if (!record.snapshotCapturedAt) {
+
+    if (changed || !record.snapshotCapturedAt) {
       record.snapshotCapturedAt = new Date().toISOString();
-      changed = true;
+      record.snapshotVersion = 2;
     }
-    record.snapshotVersion = 1;
     return changed;
+  }
+
+  function activeCarteIndex() {
+    const overlay = document.getElementById("mamoRaceCarteOverlay");
+    if (!overlay || overlay.hidden) return null;
+    const title = overlay.querySelector(".mamo-carte-hero h2")?.textContent || "";
+    const list = orderedRecords(readState());
+    const index = list.findIndex(r => title.includes(String(r?.venue || r?.venueName || "")) && title.includes(`${r?.raceNo}R`));
+    return index >= 0 ? index : null;
+  }
+
+  function refreshOpenCarte() {
+    const index = activeCarteIndex();
+    if (index != null) window.MAMO_RACE_CARTE?.open?.(index);
+  }
+
+  function notify(detail) {
+    window.dispatchEvent(new CustomEvent("mamo:race-carte-snapshot", { detail }));
+    window.MAMO_RACE_CARTE?.refresh?.();
+    refreshOpenCarte();
   }
 
   async function enrichRecordById(recordId) {
@@ -132,39 +175,38 @@
     const record = state.records.find(r => r?.id === recordId);
     if (!record?.raceDate || !record?.venueCode || !record?.raceNo) return false;
     try {
-      const dataset = await datasetFor(record.raceDate);
-      const raceItem = findRace(dataset, record);
-      if (!raceItem || !mergeRecord(record, raceItem)) return false;
+      const raceItem = findRace(await datasetFor(record.raceDate), record);
+      if (!raceItem) return false;
+      if (!mergeRecord(record, raceItem)) return false;
       writeState(state);
-      window.dispatchEvent(new CustomEvent("mamo:race-carte-snapshot", { detail: { recordId } }));
-      window.MAMO_RACE_CARTE?.refresh?.();
+      notify({ recordId, backfill:true });
       return true;
     } catch (error) {
-      console.warn("レースカルテ用スナップショット取得に失敗しました", error);
+      console.warn("レースカルテ補完に失敗しました", error);
       return false;
     }
   }
 
-  async function backfill(limit = 20) {
+  async function backfill(limit = 100) {
     const state = readState();
-    if (!state || !Array.isArray(state.records) || !state.records.length) return;
-    const targets = [...state.records].reverse().filter(r => r?.raceDate && r?.venueCode && r?.raceNo).slice(0, limit);
-    const dates = [...new Set(targets.map(r => r.raceDate))];
+    if (!state || !Array.isArray(state.records) || !state.records.length) return false;
+    const targets = [...state.records].reverse()
+      .filter(r => r?.raceDate && r?.venueCode && r?.raceNo)
+      .slice(0, Math.max(1, limit));
     const datasets = new Map();
-    for (const date of dates) {
+    for (const date of [...new Set(targets.map(r => r.raceDate))]) {
       try { datasets.set(date, await datasetFor(date)); } catch (_) {}
     }
     let changed = false;
     for (const record of targets) {
-      const dataset = datasets.get(record.raceDate);
-      const raceItem = dataset ? findRace(dataset, record) : null;
+      const raceItem = findRace(datasets.get(record.raceDate), record);
       if (raceItem && mergeRecord(record, raceItem)) changed = true;
     }
     if (changed) {
       writeState(state);
-      window.dispatchEvent(new CustomEvent("mamo:race-carte-snapshot", { detail: { backfill: true } }));
-      window.MAMO_RACE_CARTE?.refresh?.();
+      notify({ backfill:true, count:targets.length });
     }
+    return changed;
   }
 
   function wrapPlaceBet() {
@@ -185,46 +227,30 @@
     window.placeBet = wrapped;
   }
 
-  function enhanceOpenCarteDisplay() {
+  function enhanceClicks() {
     document.addEventListener("click", event => {
       const carteButton = event.target?.closest?.(".mamo-carte-btn");
       if (carteButton) {
         const index = Number(carteButton.dataset.raceCarteIndex);
-        const state = readState();
-        const ordered = [...(state?.records || [])].filter(Boolean).sort((a,b) => String(b.time || b.createdAt || b.raceDate || "").localeCompare(String(a.time || a.createdAt || a.raceDate || "")));
-        const record = ordered[index];
-        if (record?.id) enrichRecordById(record.id);
+        const record = orderedRecords(readState())[index];
+        if (record?.id) {
+          enrichRecordById(record.id);
+          setTimeout(() => enrichRecordById(record.id), 900);
+          setTimeout(() => enrichRecordById(record.id), 2400);
+        }
       }
-      const racerTab = event.target?.closest?.('[data-carte-tab="racers"]');
-      if (!racerTab) return;
-      setTimeout(() => {
-        const panel = document.querySelector('[data-carte-panel="racers"] .mamo-carte-block');
-        if (!panel) return;
-        const overlay = document.getElementById("mamoRaceCarteOverlay");
-        const title = overlay?.querySelector(".mamo-carte-hero h2")?.textContent || "";
-        const state = readState();
-        const record = [...(state?.records || [])].reverse().find(r => title.includes(String(r?.venue || "")) && title.includes(`${r?.raceNo}R`));
-        const entries = record?.entrySnapshot || [];
-        if (!entries.length) return;
-        panel.innerHTML = `<h3>AIR BET時点の選手・艇データ</h3><div class="mamo-carte-racers">${entries.map(e => {
-          const rate = v => v == null ? "—" : Number(v).toFixed(2);
-          const pct = v => v == null ? "—" : `${Number(v).toFixed(1)}%`;
-          return `<div class="mamo-carte-racer" style="grid-template-columns:34px 1fr"><i>${e.boatNumber}</i><div><b>${e.name || `${e.boatNumber}号艇`} / ${e.class || "—"}</b><span style="display:block;margin-top:3px">全国 ${rate(e.nationalWinRate)} / 当地 ${rate(e.localWinRate)} / ST ${e.averageStart == null ? "—" : Number(e.averageStart).toFixed(2)} / F${e.flyingCount ?? "—"} L${e.lateCount ?? "—"}</span><span style="display:block;margin-top:2px">M${e.motorNumber ?? "—"} 2連率 ${pct(e.motor2Rate)} / B${e.boatNumberPart ?? "—"} 2連率 ${pct(e.boat2Rate)} / 展示 ${e.exhibitionTime ?? "—"}</span></div></div>`;
-        }).join("")}</div><div class="mamo-carte-note">AIR BET時点で公式同期データに存在した値を保存します。公式同期元にない項目は「—」表示です。</div>`;
-      }, 0);
-    }, { passive: true });
+      if (event.target?.closest?.("#nav-records")) setTimeout(() => backfill(100), 0);
+    }, { passive:true });
   }
 
   function boot() {
     wrapPlaceBet();
-    enhanceOpenCarteDisplay();
-    backfill();
-    document.addEventListener("click", event => {
-      if (event.target?.closest?.("#nav-records")) setTimeout(() => backfill(), 0);
-    }, { passive: true });
+    enhanceClicks();
+    backfill(100);
+    setTimeout(() => backfill(100), 1500);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });
   else boot();
 
   window.MAMO_RACE_CARTE_SNAPSHOT = Object.freeze({ backfill, enrichRecordById });
