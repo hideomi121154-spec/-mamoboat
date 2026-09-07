@@ -54,8 +54,6 @@ def has_preview(race: dict) -> bool:
     has_env = all(present(key) for key in (
         "weather", "windSpeed", "waveHeight", "airTemperature", "waterTemperature",
     ))
-    # A calm official record has no directional arrow. Otherwise require the
-    # direction so a partial environment snapshot is retried by the backfill.
     try:
         wind_speed = float(env.get("windSpeed") or 0)
     except (TypeError, ValueError):
@@ -72,6 +70,10 @@ def has_preview(race: dict) -> bool:
 def has_kimarite(race: dict) -> bool:
     result = race.get("result")
     return isinstance(result, dict) and bool(result.get("kimarite"))
+
+
+def needs_work(race: dict) -> bool:
+    return not (has_kimarite(race) and has_static_stats(race) and has_preview(race))
 
 
 def enrich_one(code: str, race: dict, date_text: str) -> tuple[bool, int, int, int]:
@@ -138,14 +140,16 @@ def main() -> int:
             close = close_dt(race)
             if not close or close > now + timedelta(minutes=15) or close < cutoff:
                 continue
-            if race.get("entries"):
+            if race.get("entries") and needs_work(race):
                 targets.append((code, race))
 
-    # Missing kimarite is the highest-priority retry. After that, prioritize other
-    # incomplete carte fields, then older closed races first.
+    # Never spend the capped request budget on already-complete races. Within
+    # incomplete races: missing kimarite first, then missing racer/motor stats,
+    # then missing preview/environment; older closed races win ties.
     targets.sort(key=lambda item: (
-        has_kimarite(item[1]),
-        has_static_stats(item[1]) and has_preview(item[1]),
+        0 if not has_kimarite(item[1]) else 1,
+        0 if not has_static_stats(item[1]) else 1,
+        0 if not has_preview(item[1]) else 1,
         (close_dt(item[1]) or datetime(1970, 1, 1, tzinfo=JST)).timestamp(),
     ))
     targets = targets[: max(0, args.max_races)]
@@ -169,8 +173,8 @@ def main() -> int:
                 result_done += r
 
     payload.setdefault("source", {})["raceCarteHistoryBackfill"] = (
-        "same-day recent settled races via validated official racelist/beforeinfo/raceresult; "
-        "missing kimarite retried until confirmed"
+        "recent incomplete races via validated official racelist/beforeinfo/raceresult; "
+        "missing kimarite and missing stats retried until confirmed"
     )
     payload["raceCarteHistoryBackfilledAt"] = now.isoformat()
     if changed:
