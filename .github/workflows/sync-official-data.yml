@@ -12,6 +12,8 @@ on:
     paths:
       - "scripts/sync_official_data.py"
       - "scripts/fallback_openapi.py"
+      - "scripts/enrich_race_carte_data.py"
+      - "requirements.txt"
       - ".github/workflows/sync-official-data.yml"
   schedule:
     # 既存の番組表・日次成績・参考オッズ同期（15分周期）
@@ -66,6 +68,7 @@ jobs:
         run: |
           python -m py_compile scripts/sync_official_data.py
           python -m py_compile scripts/fallback_openapi.py
+          python -m py_compile scripts/enrich_race_carte_data.py
 
       - name: Sync official data
         continue-on-error: true
@@ -116,6 +119,23 @@ jobs:
             exit 0
           fi
           python scripts/fallback_openapi.py
+
+      - name: Enrich race carte official details
+        continue-on-error: true
+        env:
+          TARGET_DATE: ${{ inputs.target_date }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
+          if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
+            echo "Skip race-carte enrichment in fast-results mode"
+            exit 0
+          fi
+          if [ "$SCHEDULE" = "35 15,20 * * *" ] && [ -z "$TARGET_DATE" ]; then
+            TARGET_DATE="$(TZ=Asia/Tokyo date -d yesterday +%F)"
+            export TARGET_DATE
+          fi
+          python scripts/enrich_race_carte_data.py
 
       - name: Mirror official data into dev
         run: |
