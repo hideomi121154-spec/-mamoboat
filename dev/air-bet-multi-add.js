@@ -1,10 +1,12 @@
-/* MAMO BOAT — AIR BET multi-add flow v1
+/* MAMO BOAT — AIR BET multi-add flow v2
  * Keep users on the betting screen while they add multiple selections.
  * Final review happens only after the cart is built.
+ * Also gives race screens a one-tap return to the nationwide venue list.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MULTI_ADD_V1__) return;
+  if (window.__MAMO_AIR_BET_MULTI_ADD_V2__) return;
+  window.__MAMO_AIR_BET_MULTI_ADD_V2__ = true;
   window.__MAMO_AIR_BET_MULTI_ADD_V1__ = true;
 
   const previousReviewBet = window.reviewBet;
@@ -52,6 +54,27 @@
     node.classList.add(kind === "warn" ? "mamo-multi-warn" : "mamo-multi-good");
   }
 
+  function ensureVenueBackButton() {
+    if (document.body?.dataset?.screen !== "race") return;
+    const raceView = document.getElementById("raceView");
+    if (!raceView || raceView.querySelector("[data-mamo-back-venues]")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.mamoBackVenues = "1";
+    button.className = "mamo-back-venues";
+    button.setAttribute("aria-label", "全国24場の一覧へ戻る");
+    button.innerHTML = '<span aria-hidden="true">←</span><b>全国24場へ戻る</b><small>別の開催場を見る</small>';
+    button.addEventListener("click", () => {
+      window.go?.("venues");
+      window.MAMO_VENUE_LIVE_PRIORITY?.refresh?.();
+    });
+
+    const path = raceView.querySelector(".race-path");
+    if (path) path.insertAdjacentElement("beforebegin", button);
+    else raceView.prepend(button);
+  }
+
   function ensureFinalButton() {
     const betdesk = document.querySelector("#raceView .betdesk");
     const cartSum = document.getElementById("cartSum");
@@ -79,6 +102,8 @@
   }
 
   function enhance() {
+    ensureVenueBackButton();
+
     const betdesk = document.querySelector("#raceView .betdesk");
     if (!betdesk) return;
 
@@ -138,20 +163,26 @@
   };
 
   const style = document.createElement("style");
-  style.id = "mamoAirBetMultiAddStyleV1";
+  style.id = "mamoAirBetMultiAddStyleV2";
   style.textContent = `
+    .mamo-back-venues{width:100%;min-height:48px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin:0 0 10px;padding:9px 12px;border:1px solid #c7d4da;border-radius:10px;background:#fff;color:#0b3047;text-align:left;box-shadow:0 3px 0 rgba(11,48,71,.08)}
+    .mamo-back-venues>span{display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:#0b3047;color:#fff;font-size:18px;font-weight:1000;line-height:1}
+    .mamo-back-venues>b{font-size:13px;font-weight:1000;line-height:1.2}
+    .mamo-back-venues>small{color:#6d7e89;font-size:8px;font-weight:900;white-space:nowrap}
+    .mamo-back-venues:active{background:#f1f5f6;transform:translateY(1px)}
     .mamo-add-current-bet{margin-top:10px!important;background:#0b3047!important;color:#fff!important;box-shadow:0 4px 0 #d8a62e!important;font-size:15px!important}
     .mamo-final-review{margin-top:10px!important;min-height:52px!important;background:#e91d2b!important;color:#fff!important;box-shadow:0 4px 0 #9d111a!important;font-size:15px!important}
     .mamo-final-review:disabled{opacity:.42!important;box-shadow:none!important}
     .mamo-multi-good,.mamo-multi-warn{display:block!important;margin-top:8px!important;padding:10px 11px!important;border-radius:9px!important;font-size:10px!important;font-weight:900!important;line-height:1.5!important}
     .mamo-multi-good{border:1px solid #b9ddd8!important;background:#eefaf8!important;color:#0b625e!important}
     .mamo-multi-warn{border:1px solid #f0c7c9!important;background:#fff5f6!important;color:#a51f28!important}
+    @media(max-width:390px){.mamo-back-venues{grid-template-columns:auto 1fr;padding:8px 10px}.mamo-back-venues>small{grid-column:2}}
   `;
   document.head.appendChild(style);
 
   document.addEventListener("click", (event) => {
-    if (event.target?.closest?.("#nav-race, .racechip, .bettypebtn, #modeTabs button, .xbtn, .cart-tools button")) {
-      setTimeout(enhance, 0);
+    if (event.target?.closest?.("#nav-race, .racechip, .bettypebtn, #modeTabs button, .xbtn, .cart-tools button, .venue-card-main, .venue-switch-card, [onclick^='jumpRace']")) {
+      enhance();
     }
   }, false);
   window.addEventListener("mamo:air-bet-rendered", enhance);
