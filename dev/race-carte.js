@@ -1,311 +1,62 @@
-/* MAMO BOAT — Race Carte v3
- * Per-record race carte sheet for the existing records list.
- * iPhone Safari/PWA: fixed-height sheet + scoped background scroll lock.
+/* MAMO BOAT — Race Carte v4
+ * Unified summary + racer details for the existing records list.
+ * Keeps the existing iPhone Safari/PWA background scroll lock scoped to the sheet.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_V3__) return;
-  window.__MAMO_RACE_CARTE_V3__ = true;
+  if (window.__MAMO_RACE_CARTE_V4__) return;
+  window.__MAMO_RACE_CARTE_V4__ = true;
 
   const KEY = "mamoboat_v40_personal";
-  const VENUES = {
-    "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
-    "07":"蒲郡","08":"常滑","09":"津","10":"三国","11":"びわこ","12":"住之江",
-    "13":"尼崎","14":"鳴門","15":"丸亀","16":"児島","17":"宮島","18":"徳山",
-    "19":"下関","20":"若松","21":"芦屋","22":"福岡","23":"唐津","24":"大村"
+  const VENUES = {"01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖","07":"蒲郡","08":"常滑","09":"津","10":"三国","11":"びわこ","12":"住之江","13":"尼崎","14":"鳴門","15":"丸亀","16":"児島","17":"宮島","18":"徳山","19":"下関","20":"若松","21":"芦屋","22":"福岡","23":"唐津","24":"大村"};
+  const BET_LABEL = {trifecta:"3連単",trio:"3連複",exacta:"2連単",quinella:"2連複",wide:"拡連複",win:"単勝",place:"複勝"};
+  const MODE_LABEL = {normal:"通常",box:"BOX",form:"フォーメーション"};
+  const esc = v => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+  const num = v => Number(v || 0) || 0;
+  const fmt = v => Math.round(num(v)).toLocaleString("ja-JP");
+  const validText = v => {
+    const s = String(v ?? "").trim();
+    return s && !["undefined","null","nan","none","—","未保存"].includes(s.toLowerCase()) ? s : "";
   };
-  const BET_LABEL = { trifecta:"3連単",trio:"3連複",exacta:"2連単",quinella:"2連複",wide:"拡連複",win:"単勝",place:"複勝" };
-  const MODE_LABEL = { normal:"通常", box:"BOX", form:"フォーメーション" };
-
-  const esc = value => String(value ?? "")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
-  const num = value => Number(value || 0) || 0;
-  const fmt = value => Math.round(num(value)).toLocaleString("ja-JP");
-  const pct = value => Number.isFinite(value) ? `${value.toFixed(1)}%` : "—";
-
+  const valueOr = (v, fallback="—") => validText(v) || fallback;
+  const rate = v => Number.isFinite(Number(v)) ? Number(v).toFixed(2) : "—";
   let scrollLock = null;
 
-  function readState() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(KEY) || "null");
-      return raw && typeof raw === "object" ? raw : { records: [] };
-    } catch (_) {
-      return { records: [] };
-    }
-  }
+  function readState(){try{const raw=JSON.parse(localStorage.getItem(KEY)||"null");return raw&&typeof raw==="object"?raw:{records:[]};}catch(_){return{records:[]};}}
+  function records(){const s=readState();const a=Array.isArray(s.records)?s.records:Array.isArray(s.sets)?s.sets:[];return a.filter(Boolean).slice().sort((x,y)=>String(y.time||y.createdAt||y.raceDate||y.date||"").localeCompare(String(x.time||x.createdAt||x.raceDate||x.date||"")));}
+  function lines(r){if(Array.isArray(r?.lines)&&r.lines.length)return r.lines;if(Array.isArray(r?.combo))return[{combo:r.combo,stake:stake(r),betType:r.betType,mode:r.betMode}];return[];}
+  function stake(r){const ls=Array.isArray(r?.lines)?r.lines:[];return num(r?.stake??r?.total)||ls.reduce((s,l)=>s+num(l?.stake),0);}
+  function payout(r){return num(r?.payoutC??r?.payout??r?.refundC);}
+  function returnRate(r){const s=stake(r);return s>0?payout(r)/s*100:NaN;}
+  function settled(r){const s=String(r?.status||"").toLowerCase();return r?.settled===true||["hit","miss","refunded","won","lost"].includes(s);}
+  function hit(r){return["hit","won"].includes(String(r?.status||"").toLowerCase());}
+  function venueName(r){const raw=validText(r?.venue||r?.venueName);return raw||VENUES[String(r?.venueCode||"").padStart(2,"0")]||String(r?.venueCode||"開催場");}
+  function raceNo(r){return String(r?.raceNo??r?.race??"—").replace(/R$/i,"");}
+  function resultBoats(r){const direct=String(r?.resultCombo||r?.result?.combo||"").match(/\d+/g);if(direct?.length)return direct.slice(0,3).map(Number);const order=Array.isArray(r?.resultOrder)?r.resultOrder:Array.isArray(r?.finishOrder)?r.finishOrder:[];return order.map(i=>Number(i?.boatNumber??i)).filter(n=>n>=1&&n<=6).slice(0,3);}
+  function resultCombo(r){const b=resultBoats(r);return b.length?b.join("-"):"—";}
+  function technique(r){return valueOr(r?.kimarite||r?.winningMethod||r?.resultTechnique||r?.result?.kimarite||r?.result?.winningMethod,"未保存");}
+  function environment(r){const s=r?.environmentSnapshot||r?.weatherSnapshot||r?.conditions||r?.environment||{};return{weather:valueOr(s.weather||s.condition||r?.weather,"未保存"),windDirection:valueOr(s.windDirection||s.wind||r?.windDirection,"未保存"),windSpeed:s.windSpeed??r?.windSpeed??null,wave:s.waveHeight??s.wave??r?.waveHeight??null,air:s.airTemperature??s.temperature??r?.airTemperature??null,water:s.waterTemperature??r?.waterTemperature??null};}
+  function dateLabel(r){const v=r?.raceDate||r?.date||r?.time||r?.createdAt;if(!v)return"日付不明";try{const d=new Date(v);if(!Number.isNaN(d.getTime()))return new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d);}catch(_){}return String(v).slice(0,16);}
+  function entries(r){return Array.isArray(r?.entrySnapshot)?r.entrySnapshot:[];}
+  function entryByBoat(r,n){return entries(r).find(e=>Number(e?.boatNumber)===Number(n));}
+  function resultNames(r){return resultBoats(r).map((n,i)=>{const e=entryByBoat(r,n);return `<div class="mamo-finish-row"><b>${i+1}着</b><i>${n}</i><span>${esc(e?.name||`${n}号艇`)}</span></div>`;}).join("")||'<div class="mamo-carte-note">着順データ待ちです。</div>';}
+  function reviewText(r){if(!settled(r))return"結果確定後に、買い目と実結果を比較して振り返れます。";const target=resultCombo(r);const exact=lines(r).some(l=>(Array.isArray(l?.combo)?l.combo.join("-"):"")===target);return(hit(r)||exact)?`結果 ${target} を買い目に含めています。誰がその着順だったかも下の出走データで確認できます。`:`結果は ${target}。今回は不的中でした。選手・モーター条件と買い目のズレを後から分析できます。`;}
 
-  function records() {
-    const state = readState();
-    const list = Array.isArray(state.records) ? state.records : Array.isArray(state.sets) ? state.sets : [];
-    return list.filter(Boolean).slice().sort((a,b) => {
-      const aa = String(a.time || a.createdAt || a.raceDate || a.date || "");
-      const bb = String(b.time || b.createdAt || b.raceDate || b.date || "");
-      return bb.localeCompare(aa);
-    });
-  }
+  function lockBackground(){if(scrollLock||!document.body)return;const b=document.body,y=window.scrollY||window.pageYOffset||0;scrollLock={y,position:b.style.position,top:b.style.top,left:b.style.left,right:b.style.right,width:b.style.width,overflow:b.style.overflow};b.style.position="fixed";b.style.top=`-${y}px`;b.style.left="0";b.style.right="0";b.style.width="100%";b.style.overflow="hidden";document.documentElement.classList.add("mamo-carte-open");}
+  function unlockBackground(){if(!scrollLock||!document.body)return;const b=document.body,s=scrollLock;scrollLock=null;b.style.position=s.position;b.style.top=s.top;b.style.left=s.left;b.style.right=s.right;b.style.width=s.width;b.style.overflow=s.overflow;document.documentElement.classList.remove("mamo-carte-open");window.scrollTo(0,s.y);}
 
-  function lines(record) {
-    if (Array.isArray(record?.lines) && record.lines.length) return record.lines;
-    if (Array.isArray(record?.combo)) return [{ combo:record.combo, stake:stake(record), betType:record.betType, mode:record.betMode }];
-    return [];
-  }
+  function injectStyle(){if(document.getElementById("mamoRaceCarteStyleV4"))return;document.getElementById("mamoRaceCarteStyleV3")?.remove();const st=document.createElement("style");st.id="mamoRaceCarteStyleV4";st.textContent=`
+.mamo-carte-action{display:flex;justify-content:flex-end;margin-top:10px}.mamo-carte-btn{appearance:none;min-height:42px;padding:0 14px;border:1.5px solid #0a3554;border-radius:10px;background:#fff;color:#0a3554;font:900 12px/1 system-ui,-apple-system,sans-serif}.mamo-carte-btn::before{content:"▤";margin-right:7px}.mamo-carte-overlay[hidden]{display:none!important}.mamo-carte-overlay{position:fixed;inset:0;z-index:14000;display:flex;align-items:flex-start;justify-content:center;background:rgba(3,18,30,.66);padding:calc(env(safe-area-inset-top) + 34px) 0 env(safe-area-inset-bottom);box-sizing:border-box;overscroll-behavior:none}.mamo-carte-sheet{width:min(100%,620px);height:84dvh;max-height:calc(100dvh - env(safe-area-inset-top) - 44px);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#fff;border-radius:20px;padding:0 14px calc(18px + env(safe-area-inset-bottom));box-sizing:border-box}.mamo-carte-head{position:sticky;top:0;z-index:4;margin:0 -14px;padding:14px;background:#082b4a;color:#fff;display:flex;justify-content:space-between;align-items:center}.mamo-carte-head small{display:block;color:#b9d3df;font-size:8px;font-weight:900;letter-spacing:.12em}.mamo-carte-head strong{font-size:16px}.mamo-carte-close{width:36px;height:36px;border:0;border-radius:50%;background:#fff;color:#082b4a;font-size:20px;font-weight:900}.mamo-carte-hero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 2px 10px}.mamo-carte-hero h2{margin:0;color:#082b4a;font-size:22px}.mamo-carte-hero p{margin:3px 0 0;color:#71838c;font-size:9px}.mamo-carte-status{padding:7px 10px;border-radius:9px;background:#eef4f7;color:#082b4a;font-size:11px;font-weight:1000}.mamo-carte-status.hit{background:#fff2ca;color:#9b6b00}.mamo-carte-status.miss{background:#fff0f2;color:#b4232d}.mamo-carte-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 10px}.mamo-carte-tab{min-height:40px;border:1px solid #d5e1e7;border-radius:9px;background:#f6f9fb;color:#415f70;font-size:9px;font-weight:1000}.mamo-carte-tab.active{background:#082b4a;color:#fff;border-color:#082b4a}.mamo-carte-panel[hidden]{display:none!important}.mamo-carte-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.mamo-carte-kv{padding:10px 9px;border:1px solid #e0e8ec;border-radius:10px;background:#f8fbfc}.mamo-carte-kv span{display:block;color:#768891;font-size:8px;font-weight:900}.mamo-carte-kv b{display:block;margin-top:4px;color:#0b3150;font-size:14px;overflow-wrap:anywhere}.mamo-carte-kv.good b{color:#11823b}.mamo-carte-block{margin-top:10px;padding:11px;border:1px solid #dce5e9;border-radius:12px;background:#fff}.mamo-carte-block h3{margin:0 0 8px;color:#082b4a;font-size:12px}.mamo-carte-line{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #e6ecef;color:#17394e;font-size:10px}.mamo-carte-note{margin-top:10px;padding:10px 11px;border-left:4px solid #d3a331;border-radius:9px;background:#fffaf0;color:#17394e;font-size:10px;line-height:1.65}.mamo-finish{display:grid;gap:6px}.mamo-finish-row{display:grid;grid-template-columns:38px 30px 1fr;gap:7px;align-items:center;padding:7px 8px;border-radius:9px;background:#f6f9fb}.mamo-finish-row b{font-size:9px;color:#6b7e89}.mamo-finish-row i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#082b4a;color:#fff;font-style:normal;font-weight:1000}.mamo-finish-row span{font-size:11px;font-weight:900;color:#123952}.mamo-carte-racers{display:grid;gap:7px}.mamo-carte-racer{padding:9px;border-radius:10px;background:#f8fbfc;border:1px solid #e3ebef}.mamo-racer-head{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center}.mamo-racer-head i{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#082b4a;color:#fff;font-style:normal;font-weight:1000}.mamo-racer-head b{font-size:11px;color:#14384e}.mamo-racer-head em{font-style:normal;font-size:8px;color:#7c8d95}.mamo-racer-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;margin:7px 0 0 38px}.mamo-racer-stats span{font-size:8px;color:#607785}.mamo-racer-stats strong{color:#0a3554}.mamo-finish-tag{display:inline-flex;margin-left:5px;padding:2px 5px;border-radius:5px;background:#fff2ca;color:#8c6500;font-size:8px}.mamo-carte-foot{display:flex;justify-content:center;margin-top:12px}.mamo-carte-foot button{min-width:150px;min-height:44px;border:1px solid #cfdce2;border-radius:10px;background:#fff;color:#082b4a;font-weight:1000}`;document.head.appendChild(st);}
+  function ensureOverlay(){let o=document.getElementById("mamoRaceCarteOverlay");if(o)return o;o=document.createElement("div");o.id="mamoRaceCarteOverlay";o.className="mamo-carte-overlay";o.hidden=true;o.innerHTML='<section class="mamo-carte-sheet" role="dialog" aria-modal="true" aria-label="レースカルテ"><div id="mamoRaceCarteBody"></div></section>';o.addEventListener("click",e=>{if(e.target===o)closeCarte();});document.body.appendChild(o);return o;}
+  function tabButton(id,label,active=false){return`<button type="button" class="mamo-carte-tab${active?" active":""}" data-carte-tab="${id}">${label}</button>`;}
+  function lineHtml(r){const ls=lines(r);if(!ls.length)return'<div class="mamo-carte-line"><span>買い目記録なし</span><b>—</b><span>—</span></div>';return ls.map(l=>{const c=Array.isArray(l?.combo)?l.combo.join("-"):"—",t=BET_LABEL[l?.betType]||BET_LABEL[r?.betType]||"AIR BET",m=MODE_LABEL[l?.mode||r?.betMode]||"—";return`<div class="mamo-carte-line"><span>${esc(t)} ${esc(c)}</span><b>${fmt(l?.stake)}B</b><span>${esc(m)}</span></div>`;}).join("");}
+  function racersHtml(r){const es=entries(r),rb=resultBoats(r);if(!es.length)return'<div class="mamo-carte-note">選手詳細はまだ取得できていません。</div>';return`<div class="mamo-carte-racers">${es.slice(0,6).map(e=>{const pos=rb.indexOf(Number(e.boatNumber));return`<div class="mamo-carte-racer"><div class="mamo-racer-head"><i>${esc(e.boatNumber)}</i><b>${esc(e.name||`${e.boatNumber}号艇`)}${pos>=0?`<span class="mamo-finish-tag">${pos+1}着</span>`:""}</b><em>${esc(e.class||"")} ${esc(e.racerNumber||"")}</em></div><div class="mamo-racer-stats"><span>全国勝率 <strong>${rate(e.nationalWinRate)}</strong></span><span>当地勝率 <strong>${rate(e.localWinRate)}</strong></span><span>平均ST <strong>${rate(e.averageStart)}</strong></span><span>F/L <strong>${e.flyingCount??"—"}/${e.lateCount??"—"}</strong></span><span>モーター <strong>${e.motorNumber??"—"}号 / 2連率 ${rate(e.motor2Rate)}%</strong></span><span>ボート <strong>${e.boatNumberPart??"—"}号 / 2連率 ${rate(e.boat2Rate)}%</strong></span><span>展示 <strong>${rate(e.exhibitionTime)}</strong></span></div></div>`;}).join("")}</div>`;}
 
-  function stake(record) {
-    const ls = Array.isArray(record?.lines) ? record.lines : [];
-    return num(record?.stake ?? record?.total) || ls.reduce((sum,line) => sum + num(line?.stake), 0);
-  }
-  function payout(record) { return num(record?.payoutC ?? record?.payout ?? record?.refundC); }
-  function returnRate(record) { const s = stake(record); return s > 0 ? payout(record) / s * 100 : NaN; }
-  function settled(record) {
-    const status = String(record?.status || "").toLowerCase();
-    return record?.settled === true || ["hit","miss","refunded","won","lost"].includes(status);
-  }
-  function hit(record) { return ["hit","won"].includes(String(record?.status || "").toLowerCase()); }
-  function venueName(record) {
-    const raw = String(record?.venue || record?.venueName || "").trim();
-    if (raw) return raw;
-    return VENUES[String(record?.venueCode || "").padStart(2,"0")] || String(record?.venueCode || "開催場");
-  }
-  function raceNo(record) { return String(record?.raceNo ?? record?.race ?? "—").replace(/R$/i, ""); }
-  function resultCombo(record) {
-    const direct = String(record?.resultCombo || record?.result?.combo || "").match(/\d+/g);
-    if (direct?.length) return direct.slice(0,3).join("-");
-    const order = Array.isArray(record?.resultOrder) ? record.resultOrder : Array.isArray(record?.finishOrder) ? record.finishOrder : [];
-    const boats = order.map(item => Number(item?.boatNumber ?? item)).filter(n => n >= 1 && n <= 6);
-    return boats.length ? boats.slice(0,3).join("-") : "—";
-  }
-  function technique(record) {
-    return record?.kimarite || record?.winningMethod || record?.resultTechnique || record?.result?.kimarite || record?.result?.winningMethod || "未保存";
-  }
-  function environment(record) {
-    const source = record?.environmentSnapshot || record?.weatherSnapshot || record?.conditions || record?.environment || {};
-    return {
-      weather: source.weather || source.condition || record?.weather || "未保存",
-      windDirection: source.windDirection || source.wind || record?.windDirection || "未保存",
-      windSpeed: source.windSpeed ?? record?.windSpeed ?? null,
-      wave: source.waveHeight ?? source.wave ?? record?.waveHeight ?? null,
-      air: source.airTemperature ?? source.temperature ?? record?.airTemperature ?? null,
-      water: source.waterTemperature ?? record?.waterTemperature ?? null,
-    };
-  }
-  function dateLabel(record) {
-    const value = record?.raceDate || record?.date || record?.time || record?.createdAt;
-    if (!value) return "日付不明";
-    try {
-      const d = new Date(value);
-      if (!Number.isNaN(d.getTime())) return new Intl.DateTimeFormat("ja-JP", {
-        timeZone:"Asia/Tokyo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"
-      }).format(d);
-    } catch (_) {}
-    return String(value).slice(0,16);
-  }
-  function reviewText(record) {
-    if (!settled(record)) return "結果確定後に、買い目と実結果を比較して振り返れます。";
-    const target = resultCombo(record);
-    const exact = lines(record).some(line => (Array.isArray(line?.combo) ? line.combo.join("-") : "") === target);
-    if (hit(record) || exact) return `結果 ${target} を買い目に含めています。買い目ごとの配分と回収率も確認できます。`;
-    return `結果は ${target}。今回は不的中でした。今後のSILVER分析では、軸外し・相手抜け・着順違い・点数効率まで分解して蓄積します。`;
-  }
-
-  function lockBackground() {
-    if (scrollLock || !document.body) return;
-    const body = document.body;
-    const y = window.scrollY || window.pageYOffset || 0;
-    scrollLock = {
-      y,
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-      overflow: body.style.overflow,
-    };
-    body.style.position = "fixed";
-    body.style.top = `-${y}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
-    body.style.overflow = "hidden";
-    document.documentElement.classList.add("mamo-carte-open");
-  }
-
-  function unlockBackground() {
-    if (!scrollLock || !document.body) return;
-    const body = document.body;
-    const state = scrollLock;
-    scrollLock = null;
-    body.style.position = state.position;
-    body.style.top = state.top;
-    body.style.left = state.left;
-    body.style.right = state.right;
-    body.style.width = state.width;
-    body.style.overflow = state.overflow;
-    document.documentElement.classList.remove("mamo-carte-open");
-    window.scrollTo(0, state.y);
-  }
-
-  function injectStyle() {
-    if (document.getElementById("mamoRaceCarteStyleV3")) return;
-    document.getElementById("mamoRaceCarteStyleV2")?.remove();
-    const style = document.createElement("style");
-    style.id = "mamoRaceCarteStyleV3";
-    style.textContent = `
-      .mamo-carte-action{display:flex;justify-content:flex-end;margin-top:10px}
-      .mamo-carte-btn{appearance:none;min-height:42px;padding:0 14px;border:1.5px solid #0a3554;border-radius:10px;background:#fff;color:#0a3554;font:900 12px/1 system-ui,-apple-system,sans-serif;display:inline-flex;align-items:center;gap:7px;box-shadow:0 2px 0 rgba(8,43,74,.08)}
-      .mamo-carte-btn::before{content:"▤";font-size:15px}.mamo-carte-btn:active{transform:translateY(1px)}
-      .mamo-carte-overlay[hidden]{display:none!important}
-      .mamo-carte-overlay{position:fixed;inset:0;z-index:14000;display:flex;align-items:flex-start;justify-content:center;background:rgba(3,18,30,.66);padding:calc(env(safe-area-inset-top) + 46px) 0 env(safe-area-inset-bottom);box-sizing:border-box;overscroll-behavior:none}
-      .mamo-carte-sheet{width:min(100%,620px);height:min(82dvh,760px);max-height:calc(100dvh - env(safe-area-inset-top) - 58px);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#fff;border-radius:20px;padding:0 14px calc(18px + env(safe-area-inset-bottom));box-shadow:0 18px 50px rgba(0,0,0,.28);box-sizing:border-box}
-      .mamo-carte-head{position:sticky;top:0;z-index:3;margin:0 -14px;padding:14px 14px 12px;background:#082b4a;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px}.mamo-carte-head small{display:block;color:#b9d3df;font-size:8px;font-weight:900;letter-spacing:.12em}.mamo-carte-head strong{font-size:16px}.mamo-carte-close{width:36px;height:36px;border:0;border-radius:50%;background:#fff;color:#082b4a;font-size:20px;font-weight:900}
-      .mamo-carte-hero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 2px 10px}.mamo-carte-hero h2{margin:0;color:#082b4a;font-size:22px}.mamo-carte-hero p{margin:3px 0 0;color:#71838c;font-size:9px}.mamo-carte-status{padding:7px 10px;border-radius:9px;background:#eef4f7;color:#082b4a;font-size:11px;font-weight:1000}.mamo-carte-status.hit{background:#fff2ca;color:#9b6b00}.mamo-carte-status.miss{background:#fff0f2;color:#b4232d}
-      .mamo-carte-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:0 0 10px}.mamo-carte-tab{min-height:38px;border:1px solid #d5e1e7;border-radius:9px;background:#f6f9fb;color:#415f70;font-size:9px;font-weight:1000}.mamo-carte-tab.active{background:#082b4a;color:#fff;border-color:#082b4a}
-      .mamo-carte-panel[hidden]{display:none!important}.mamo-carte-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.mamo-carte-kv{padding:10px 9px;border:1px solid #e0e8ec;border-radius:10px;background:#f8fbfc}.mamo-carte-kv span{display:block;color:#768891;font-size:8px;font-weight:900}.mamo-carte-kv b{display:block;margin-top:4px;color:#0b3150;font-size:14px;overflow-wrap:anywhere}.mamo-carte-kv.good b{color:#11823b}
-      .mamo-carte-block{margin-top:10px;padding:11px;border:1px solid #dce5e9;border-radius:12px;background:#fff}.mamo-carte-block h3{margin:0 0 7px;color:#082b4a;font-size:12px}.mamo-carte-line{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #e6ecef;color:#17394e;font-size:10px}.mamo-carte-line:last-child{border-bottom:0}.mamo-carte-line b{color:#082b4a}.mamo-carte-note{margin-top:10px;padding:10px 11px;border-left:4px solid #d3a331;border-radius:9px;background:#fffaf0;color:#17394e;font-size:10px;line-height:1.65}
-      .mamo-carte-racers{display:grid;gap:6px}.mamo-carte-racer{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:8px;border-radius:9px;background:#f8fbfc}.mamo-carte-racer i{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#082b4a;color:#fff;font-style:normal;font-weight:1000}.mamo-carte-racer b{font-size:10px;color:#14384e}.mamo-carte-racer span{font-size:8px;color:#7c8d95}
-      .mamo-carte-foot{display:flex;justify-content:center;margin-top:12px}.mamo-carte-foot button{min-width:150px;min-height:44px;border:1px solid #cfdce2;border-radius:10px;background:#fff;color:#082b4a;font-weight:1000}
-      @media(max-width:390px){.mamo-carte-overlay{padding-top:calc(env(safe-area-inset-top) + 34px)}.mamo-carte-sheet{height:84dvh;max-height:calc(100dvh - env(safe-area-inset-top) - 44px);border-radius:18px}.mamo-carte-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mamo-carte-tabs{gap:4px}.mamo-carte-tab{font-size:8px}.mamo-carte-btn{min-height:40px;padding:0 12px}}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function ensureOverlay() {
-    let overlay = document.getElementById("mamoRaceCarteOverlay");
-    if (overlay) return overlay;
-    overlay = document.createElement("div");
-    overlay.id = "mamoRaceCarteOverlay";
-    overlay.className = "mamo-carte-overlay";
-    overlay.hidden = true;
-    overlay.innerHTML = '<section class="mamo-carte-sheet" role="dialog" aria-modal="true" aria-label="レースカルテ"><div id="mamoRaceCarteBody"></div></section>';
-    overlay.addEventListener("click", event => { if (event.target === overlay) closeCarte(); });
-    document.body.appendChild(overlay);
-    return overlay;
-  }
-
-  function tabButton(id,label,active=false) {
-    return `<button type="button" class="mamo-carte-tab${active?" active":""}" data-carte-tab="${id}">${label}</button>`;
-  }
-  function lineHtml(record) {
-    const ls = lines(record);
-    if (!ls.length) return '<div class="mamo-carte-line"><span>買い目記録なし</span><b>—</b><span>—</span></div>';
-    return ls.map(line => {
-      const combo = Array.isArray(line?.combo) ? line.combo.join("-") : "—";
-      const type = BET_LABEL[line?.betType] || BET_LABEL[record?.betType] || "AIR BET";
-      const mode = MODE_LABEL[line?.mode || record?.betMode] || "—";
-      return `<div class="mamo-carte-line"><span>${esc(type)} ${esc(combo)}</span><b>${fmt(line?.stake)}B</b><span>${esc(mode)}</span></div>`;
-    }).join("");
-  }
-  function racersHtml(record) {
-    const entries = Array.isArray(record?.entrySnapshot) ? record.entrySnapshot : [];
-    if (!entries.length) return '<div class="mamo-carte-note">AIR BET時点の選手スナップショットは、この過去記録には保存されていません。</div>';
-    return `<div class="mamo-carte-racers">${entries.slice(0,6).map(entry => `<div class="mamo-carte-racer"><i>${esc(entry.boatNumber)}</i><b>${esc(entry.name || `${entry.boatNumber}号艇`)}</b><span>${esc(entry.racerNumber || "")}</span></div>`).join("")}</div>`;
-  }
-
-  function openCarte(index) {
-    const record = records()[index];
-    if (!record) return;
-    const overlay = ensureOverlay();
-    const env = environment(record);
-    const body = overlay.querySelector("#mamoRaceCarteBody");
-    const statusText = settled(record) ? (hit(record) ? "B的中" : String(record?.status).toLowerCase() === "refunded" ? "返還" : "不的中") : "結果待ち";
-    const statusClass = hit(record) ? "hit" : settled(record) ? "miss" : "";
-    const rr = returnRate(record);
-    const result = resultCombo(record);
-
-    body.innerHTML = `
-      <header class="mamo-carte-head"><div><small>MAMO BOAT / RACE CARTE</small><strong>レースカルテ</strong></div><button class="mamo-carte-close" type="button" aria-label="閉じる">×</button></header>
-      <div class="mamo-carte-hero"><div><h2>${esc(venueName(record))} ${esc(raceNo(record))}R</h2><p>${esc(dateLabel(record))}</p></div><span class="mamo-carte-status ${statusClass}">${esc(statusText)}</span></div>
-      <nav class="mamo-carte-tabs" aria-label="カルテ表示切替">${tabButton("summary","サマリー",true)}${tabButton("bets","買い目")}${tabButton("racers","出走表")}${tabButton("env","環境情報")}</nav>
-      <section class="mamo-carte-panel" data-carte-panel="summary"><div class="mamo-carte-grid">
-        <div class="mamo-carte-kv"><span>実着順</span><b>${esc(result)}</b></div><div class="mamo-carte-kv"><span>決まり手</span><b>${esc(technique(record))}</b></div>
-        <div class="mamo-carte-kv"><span>参加額</span><b>${fmt(stake(record))}B</b></div><div class="mamo-carte-kv good"><span>払戻</span><b>${settled(record)?`${fmt(payout(record))}B`:"—"}</b></div>
-        <div class="mamo-carte-kv good"><span>回収率</span><b>${settled(record)?pct(rr):"—"}</b></div><div class="mamo-carte-kv"><span>買い目数</span><b>${lines(record).length}点</b></div>
-      </div><div class="mamo-carte-note"><b>このレースの振り返り</b><br>${esc(reviewText(record))}</div></section>
-      <section class="mamo-carte-panel" data-carte-panel="bets" hidden><div class="mamo-carte-block"><h3>あなたのAIR BET</h3>${lineHtml(record)}</div></section>
-      <section class="mamo-carte-panel" data-carte-panel="racers" hidden><div class="mamo-carte-block"><h3>AIR BET時点の選手情報</h3>${racersHtml(record)}</div></section>
-      <section class="mamo-carte-panel" data-carte-panel="env" hidden><div class="mamo-carte-grid">
-        <div class="mamo-carte-kv"><span>天候</span><b>${esc(env.weather)}</b></div><div class="mamo-carte-kv"><span>風向</span><b>${esc(env.windDirection)}</b></div>
-        <div class="mamo-carte-kv"><span>風速</span><b>${env.windSpeed==null?"未保存":`${esc(env.windSpeed)}m`}</b></div><div class="mamo-carte-kv"><span>波高</span><b>${env.wave==null?"未保存":`${esc(env.wave)}cm`}</b></div>
-        <div class="mamo-carte-kv"><span>気温</span><b>${env.air==null?"未保存":`${esc(env.air)}℃`}</b></div><div class="mamo-carte-kv"><span>水温</span><b>${env.water==null?"未保存":`${esc(env.water)}℃`}</b></div>
-      </div></section>
-      <div class="mamo-carte-foot"><button type="button" data-carte-close>閉じる</button></div>`;
-
-    body.querySelector(".mamo-carte-close")?.addEventListener("click", closeCarte);
-    body.querySelector("[data-carte-close]")?.addEventListener("click", closeCarte);
-    body.querySelectorAll("[data-carte-tab]").forEach(button => button.addEventListener("click", () => {
-      const id = button.dataset.carteTab;
-      body.querySelectorAll("[data-carte-tab]").forEach(node => node.classList.toggle("active", node === button));
-      body.querySelectorAll("[data-carte-panel]").forEach(panel => { panel.hidden = panel.dataset.cartePanel !== id; });
-      overlay.querySelector(".mamo-carte-sheet")?.scrollTo({ top:0, behavior:"auto" });
-    }));
-
-    lockBackground();
-    overlay.hidden = false;
-    overlay.querySelector(".mamo-carte-sheet")?.scrollTo({ top:0, behavior:"auto" });
-  }
-
-  function closeCarte() {
-    const overlay = document.getElementById("mamoRaceCarteOverlay");
-    if (overlay) overlay.hidden = true;
-    unlockBackground();
-  }
-
-  function recordMatch(cardText, list, used) {
-    const text = String(cardText || "").replace(/\s+/g, " ");
-    for (let index = 0; index < list.length; index += 1) {
-      if (used.has(index)) continue;
-      const record = list[index];
-      if (text.includes(venueName(record)) && text.includes(`${raceNo(record)}R`)) return index;
-    }
-    return -1;
-  }
-  function injectButtons() {
-    const recordList = document.getElementById("recordList");
-    if (!recordList) return;
-    const list = records();
-    const used = new Set();
-    Array.from(recordList.children).filter(node => node.nodeType === 1).forEach((card, visualIndex) => {
-      if (card.querySelector?.(".mamo-carte-action")) return;
-      let index = recordMatch(card.textContent, list, used);
-      if (index < 0 && visualIndex < list.length) index = visualIndex;
-      if (index < 0 || !list[index]) return;
-      used.add(index);
-      const action = document.createElement("div");
-      action.className = "mamo-carte-action";
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "mamo-carte-btn";
-      button.textContent = "レースカルテ";
-      button.dataset.raceCarteIndex = String(index);
-      button.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        openCarte(Number(button.dataset.raceCarteIndex));
-      });
-      action.appendChild(button);
-      card.appendChild(action);
-    });
-  }
-  function refreshSoon() {
-    injectButtons();
-    setTimeout(injectButtons,0);
-    setTimeout(injectButtons,120);
-  }
-  function boot() {
-    injectStyle();
-    ensureOverlay();
-    refreshSoon();
-    document.addEventListener("click", event => {
-      if (event.target?.closest?.("#nav-records,[data-rec]")) setTimeout(refreshSoon,0);
-    }, { passive:true });
-    window.addEventListener("storage", event => { if (event.key === KEY) refreshSoon(); });
-    window.addEventListener("pageshow", () => {
-      const overlay = document.getElementById("mamoRaceCarteOverlay");
-      if (!overlay || overlay.hidden) unlockBackground();
-    });
-  }
-
-  window.MAMO_RACE_CARTE = Object.freeze({ refresh:refreshSoon, open:openCarte, close:closeCarte });
-  document.addEventListener("keydown", event => { if (event.key === "Escape") closeCarte(); });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",boot,{once:true}); else boot();
+  function openCarte(index){const r=records()[index];if(!r)return;const o=ensureOverlay(),env=environment(r),body=o.querySelector("#mamoRaceCarteBody"),statusText=settled(r)?(hit(r)?"B的中":String(r?.status).toLowerCase()==="refunded"?"返還":"不的中"):"結果待ち",statusClass=hit(r)?"hit":settled(r)?"miss":"",rr=returnRate(r),result=resultCombo(r);body.innerHTML=`<header class="mamo-carte-head"><div><small>MAMO BOAT / RACE CARTE</small><strong>レースカルテ</strong></div><button class="mamo-carte-close" type="button">×</button></header><div class="mamo-carte-hero"><div><h2>${esc(venueName(r))} ${esc(raceNo(r))}R</h2><p>${esc(dateLabel(r))}</p></div><span class="mamo-carte-status ${statusClass}">${esc(statusText)}</span></div><nav class="mamo-carte-tabs">${tabButton("summary","カルテ",true)}${tabButton("bets","買い目")}${tabButton("env","環境情報")}</nav><section class="mamo-carte-panel" data-carte-panel="summary"><div class="mamo-carte-grid"><div class="mamo-carte-kv"><span>実着順</span><b>${esc(result)}</b></div><div class="mamo-carte-kv"><span>決まり手</span><b>${esc(technique(r))}</b></div><div class="mamo-carte-kv"><span>参加額</span><b>${fmt(stake(r))}B</b></div><div class="mamo-carte-kv good"><span>払戻 / 回収率</span><b>${settled(r)?`${fmt(payout(r))}B / ${Number.isFinite(rr)?rr.toFixed(1):"—"}%`:"—"}</b></div></div><div class="mamo-carte-block"><h3>実着順の選手</h3><div class="mamo-finish">${resultNames(r)}</div></div><div class="mamo-carte-block"><h3>出走データ・モーター</h3>${racersHtml(r)}</div><div class="mamo-carte-note"><b>このレースの振り返り</b><br>${esc(reviewText(r))}</div></section><section class="mamo-carte-panel" data-carte-panel="bets" hidden><div class="mamo-carte-block"><h3>あなたのAIR BET</h3>${lineHtml(r)}</div></section><section class="mamo-carte-panel" data-carte-panel="env" hidden><div class="mamo-carte-grid"><div class="mamo-carte-kv"><span>天候</span><b>${esc(env.weather)}</b></div><div class="mamo-carte-kv"><span>風向</span><b>${esc(env.windDirection)}</b></div><div class="mamo-carte-kv"><span>風速</span><b>${env.windSpeed==null?"未保存":`${esc(env.windSpeed)}m`}</b></div><div class="mamo-carte-kv"><span>波高</span><b>${env.wave==null?"未保存":`${esc(env.wave)}cm`}</b></div><div class="mamo-carte-kv"><span>気温</span><b>${env.air==null?"未保存":`${esc(env.air)}℃`}</b></div><div class="mamo-carte-kv"><span>水温</span><b>${env.water==null?"未保存":`${esc(env.water)}℃`}</b></div></div></section><div class="mamo-carte-foot"><button type="button" data-carte-close>閉じる</button></div>`;body.querySelector(".mamo-carte-close")?.addEventListener("click",closeCarte);body.querySelector("[data-carte-close]")?.addEventListener("click",closeCarte);body.querySelectorAll("[data-carte-tab]").forEach(btn=>btn.addEventListener("click",()=>{const id=btn.dataset.carteTab;body.querySelectorAll("[data-carte-tab]").forEach(n=>n.classList.toggle("active",n===btn));body.querySelectorAll("[data-carte-panel]").forEach(p=>{p.hidden=p.dataset.cartePanel!==id;});o.querySelector(".mamo-carte-sheet")?.scrollTo({top:0,behavior:"auto"});}));lockBackground();o.hidden=false;o.querySelector(".mamo-carte-sheet")?.scrollTo({top:0,behavior:"auto"});}
+  function closeCarte(){const o=document.getElementById("mamoRaceCarteOverlay");if(o)o.hidden=true;unlockBackground();}
+  function recordMatch(text,list,used){const t=String(text||"").replace(/\s+/g," ");for(let i=0;i<list.length;i++){if(used.has(i))continue;const r=list[i];if(t.includes(venueName(r))&&t.includes(`${raceNo(r)}R`))return i;}return-1;}
+  function injectButtons(){const root=document.getElementById("recordList");if(!root)return;const list=records(),used=new Set();Array.from(root.children).filter(n=>n.nodeType===1).forEach((card,visualIndex)=>{if(card.querySelector?.(".mamo-carte-action"))return;let index=recordMatch(card.textContent,list,used);if(index<0&&visualIndex<list.length)index=visualIndex;if(index<0||!list[index])return;used.add(index);const a=document.createElement("div");a.className="mamo-carte-action";const b=document.createElement("button");b.type="button";b.className="mamo-carte-btn";b.textContent="レースカルテ";b.dataset.raceCarteIndex=String(index);b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openCarte(Number(b.dataset.raceCarteIndex));});a.appendChild(b);card.appendChild(a);});}
+  function refreshSoon(){injectButtons();setTimeout(injectButtons,0);setTimeout(injectButtons,120);}
+  function boot(){injectStyle();ensureOverlay();refreshSoon();document.addEventListener("click",e=>{if(e.target?.closest?.("#nav-records,[data-rec]"))setTimeout(refreshSoon,0);},{passive:true});window.addEventListener("storage",e=>{if(e.key===KEY)refreshSoon();});window.addEventListener("pageshow",()=>{const o=document.getElementById("mamoRaceCarteOverlay");if(!o||o.hidden)unlockBackground();});}
+  window.MAMO_RACE_CARTE=Object.freeze({refresh:refreshSoon,open:openCarte,close:closeCarte});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCarte();});if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
