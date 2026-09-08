@@ -13,6 +13,7 @@ on:
       - "scripts/sync_official_data.py"
       - "scripts/fallback_openapi.py"
       - "scripts/enrich_race_carte_data.py"
+      - "scripts/repair_kimarite.py"
       - "requirements.txt"
       - ".github/workflows/sync-official-data.yml"
   schedule:
@@ -56,7 +57,7 @@ jobs:
         run: |
           FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
           if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
-            # Fast-result runs also capture Race Carte weather/preview data.
+            # Fast-result runs also capture Race Carte weather/preview data and kimarite.
             # BeautifulSoup is the only third-party dependency needed there.
             python -m pip install beautifulsoup4
             exit 0
@@ -70,6 +71,7 @@ jobs:
           python -m py_compile scripts/sync_official_data.py
           python -m py_compile scripts/fallback_openapi.py
           python -m py_compile scripts/enrich_race_carte_data.py
+          python -m py_compile scripts/repair_kimarite.py
 
       - name: Sync official data
         continue-on-error: true
@@ -140,6 +142,24 @@ jobs:
             export TARGET_DATE
           fi
           python scripts/enrich_race_carte_data.py
+
+      - name: Attach kimarite before publish
+        continue-on-error: true
+        env:
+          TARGET_DATE: ${{ inputs.target_date }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          # 決まり手は着順・払戻と同じ公開単位にする。
+          # このステップは Commit validated JSON より前に実行するため、
+          # 「結果だけ公開済み / 決まり手は後待ち」の中間状態をGitHub Pagesへ出さない。
+          if [ -n "$TARGET_DATE" ]; then
+            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 96 --sleep 0.03
+          elif [ "$SCHEDULE" = "35 15,20 * * *" ]; then
+            YESTERDAY_JST="$(TZ=Asia/Tokyo date -d yesterday +%F)"
+            python scripts/repair_kimarite.py --date "$YESTERDAY_JST" --max-races 96 --sleep 0.03
+          else
+            python scripts/repair_kimarite.py --max-races 96 --sleep 0.03
+          fi
 
       - name: Mirror official data into dev
         run: |
