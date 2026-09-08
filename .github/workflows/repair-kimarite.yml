@@ -26,7 +26,7 @@ concurrency:
 jobs:
   repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     env:
       TZ: Asia/Tokyo
     steps:
@@ -42,17 +42,40 @@ jobs:
       - name: Install parser dependency
         run: python -m pip install beautifulsoup4
 
-      - name: Validate repair script
-        run: python -m py_compile scripts/repair_kimarite.py
+      - name: Validate repair scripts
+        run: |
+          python -m py_compile scripts/sync_official_data.py
+          python -m py_compile scripts/repair_kimarite.py
+
+      - name: Refresh settled official results first
+        env:
+          TARGET_DATE: ${{ inputs.target_date }}
+        run: |
+          # Kimarite can only be repaired after the corresponding official result
+          # has been stored in data/today.json. Refresh all ended candidates first
+          # so an intermediate race such as Tsu 4R is not skipped by the small
+          # fast-result batch used by the normal 10-minute sync.
+          if [ -n "$TARGET_DATE" ]; then
+            python scripts/sync_official_data.py \
+              --date "$TARGET_DATE" \
+              --fast-results-only \
+              --result-grace-minutes 5 \
+              --result-max-races 96
+          else
+            python scripts/sync_official_data.py \
+              --fast-results-only \
+              --result-grace-minutes 5 \
+              --result-max-races 96
+          fi
 
       - name: Repair missing kimarite
         env:
           TARGET_DATE: ${{ inputs.target_date }}
         run: |
           if [ -n "$TARGET_DATE" ]; then
-            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 48
+            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 96
           else
-            python scripts/repair_kimarite.py --max-races 48
+            python scripts/repair_kimarite.py --max-races 96
           fi
 
       - name: Mirror official data into dev
