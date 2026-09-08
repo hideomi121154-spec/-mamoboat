@@ -39,8 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # The downloader rejects dates after the runner's local day. GitHub-hosted
-      # runners use UTC, so pin the whole job to JST before the date rolls over.
       TZ: Asia/Tokyo
     steps:
       - uses: actions/checkout@v4
@@ -56,8 +54,11 @@ jobs:
         env:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
-          if [ "$SCHEDULE" = "7,17,27,37,47,57 0-14,21-23 * * *" ]; then
-            echo "Fast-results mode uses Python standard library only"
+          FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
+          if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
+            # Fast-result runs also capture Race Carte weather/preview data.
+            # BeautifulSoup is the only third-party dependency needed there.
+            python -m pip install beautifulsoup4
             exit 0
           fi
           sudo apt-get update
@@ -90,16 +91,13 @@ jobs:
           fi
 
           if [ -n "$TARGET_DATE" ]; then
-            # 日付指定の手動実行では、その場で結果画面チェックも含める。
             python scripts/sync_official_data.py --date "$TARGET_DATE" "${GRADE_ARGS[@]}"
           elif [ -z "$SCHEDULE" ]; then
-            # 日付空欄の手動実行もJST当日として、結果画面チェックまで実行する。
             python scripts/sync_official_data.py "${GRADE_ARGS[@]}"
           elif [ "$SCHEDULE" = "35 15,20 * * *" ]; then
             YESTERDAY_JST="$(TZ=Asia/Tokyo date -d yesterday +%F)"
             python scripts/sync_official_data.py --date "$YESTERDAY_JST" --skip-fast-results "${GRADE_ARGS[@]}"
           else
-            # 通常15分同期ではLZH・オッズを担当。結果は10分の軽量ジョブに任せる。
             python scripts/sync_official_data.py --skip-fast-results "${GRADE_ARGS[@]}"
           fi
 
@@ -109,7 +107,6 @@ jobs:
           TARGET_DATE: ${{ inputs.target_date }}
           SCHEDULE: ${{ github.event.schedule }}
         run: |
-          # 履歴日を指定した手動実行と、前日成績の最終確認ではtoday.jsonを触らない。
           if [ -n "$TARGET_DATE" ]; then
             echo "Historical/manual target: skip current-day fallback"
             exit 0
@@ -128,7 +125,14 @@ jobs:
         run: |
           FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
           if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
-            echo "Skip race-carte enrichment in fast-results mode"
+            # Results can arrive before the next 15-minute full sync. Capture the
+            # same race's beforeinfo/weather now so a settled Race Carte never has
+            # a result while environment remains "未保存".
+            python scripts/enrich_race_carte_data.py \
+              --max-race-cards 0 \
+              --max-previews 24 \
+              --max-results 24 \
+              --sleep 0.05
             exit 0
           fi
           if [ "$SCHEDULE" = "35 15,20 * * *" ] && [ -z "$TARGET_DATE" ]; then
@@ -139,8 +143,6 @@ jobs:
 
       - name: Mirror official data into dev
         run: |
-          # /dev is a separate GitHub Pages path. Keep its data copy identical to
-          # production so the development UI never gets stuck on yesterday's JSON.
           mkdir -p dev/data
           cp -a data/. dev/data/
 
