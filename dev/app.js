@@ -2,6 +2,11 @@
   "use strict";
 
   const C = window.MamoCore;
+  const D = window.MamoAirBetDraftCore;
+  if (!C || !D) {
+    console.error("MAMO BOATのAIR BET初期化に必要なモジュールを読み込めませんでした。");
+    return;
+  }
   const APP_VERSION = "4.0.1";
   const WALLET_VERSION = 3;
   const LEGACY_BONUS_TYPES = new Set(["login_bonus", "defense_bonus"]);
@@ -225,6 +230,11 @@
   let box = new Set();
   let form = [new Set(), new Set(), new Set()];
   let cart = [];
+  let draftGeneration = 0;
+  let selectionRevision = 0;
+  let addRequestSerial = 0;
+  let activeAddRequest = 0;
+  let addRequestInFlight = false;
   let onboardStep = 0;
   let airBetOnboarding = false;
   let resultIndexRequested = false;
@@ -1513,9 +1523,14 @@
     <div id="betGuide" class="notice betguide"></div>
     <div id="modeTabs" class="bet-tabs"></div><div id="builder"></div>
     <div id="addedNotice" class="added-notice" aria-live="polite"></div>
-    <div class="title cart-title" style="margin-top:14px"><div><h2 style="font-size:16px">購入する買い目</h2><small>別の組み合わせ・舟券種も続けて追加できます</small></div><span id="cartCount">0点</span></div>
-    <div id="cart" class="cart"></div><div id="cartTools" class="cart-tools"></div><div id="cartSum" class="notice">買い目を作成してください。</div>
-    <button class="btn teal full" style="margin-top:9px" onclick="reviewBet()">AIR BETを確認</button>`;
+    <section id="airBetTray" class="air-bet-tray" aria-labelledby="airBetTrayTitle">
+      <div class="title cart-title"><div><h2 id="airBetTrayTitle">買い目トレイ</h2><small>方式を切り替えて、そのまま続けて追加できます</small></div><span id="cartCount">0点</span></div>
+      <p id="cartEmpty" class="air-bet-tray-empty">買い目を追加してください</p>
+      <div id="cart" class="cart" aria-live="polite"></div>
+      <div id="cartTools" class="cart-tools" hidden><button id="clearCartButton" class="clear" type="button" onclick="clearCart()">すべて削除</button></div>
+      <div id="cartSum" class="air-bet-tray-summary" role="status">買い目を追加してください</div>
+      <button id="reviewBetButton" data-mamo-final-review="1" class="btn teal full air-bet-review-button" type="button" onclick="reviewBet()" disabled>買い目・金額を確認する</button>
+    </section>`;
   }
 
   function allowedModes(type = betType) {
@@ -1532,6 +1547,10 @@
   }
 
   function resetBuilder() {
+    draftGeneration += 1;
+    selectionRevision += 1;
+    activeAddRequest = 0;
+    addRequestInFlight = false;
     betType = "trifecta";
     mode = "normal";
     resetSelections();
@@ -1542,6 +1561,7 @@
     if (!C.BET_TYPES[nextType]) return;
     betType = nextType;
     mode = "normal";
+    selectionRevision += 1;
     resetSelections();
     renderBuilder();
   };
@@ -1549,6 +1569,7 @@
   window.setMode = (nextMode) => {
     if (!allowedModes().includes(nextMode)) return;
     mode = nextMode;
+    selectionRevision += 1;
     resetSelections();
     renderBuilder();
   };
@@ -1595,46 +1616,104 @@
       html = Array.from({ length: spec.picks }, (_, index) => `<div class="rank"><h3>${positionLabel(index, spec)}</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="n-${index}-${boat}" class="pick b${boat}" onclick="pickNormal(${index},${boat})">${boat}</button>`
       ).join("")}</div></div>`).join("")
-        + '<button class="btn secondary full" onclick="addNormal()">買い目を追加</button>';
+        + '<button class="btn secondary full add-current-draft" type="button" data-add-current="normal" onclick="addNormal()" hidden disabled>＋ 買い目に追加</button>';
     } else if (mode === "box") {
       html = `<div class="rank"><h3>BOX（${spec.picks}艇以上）</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="b-${boat}" class="pick b${boat}" onclick="pickBox(${boat})">${boat}</button>`
-      ).join("")}</div></div><button class="btn secondary full" onclick="addBox()">BOXを追加</button>`;
+      ).join("")}</div></div><button class="btn secondary full add-current-draft" type="button" data-add-current="box" onclick="addBox()" hidden disabled>＋ 買い目に追加</button>`;
     } else {
       html = Array.from({ length: spec.picks }, (_, index) => `<div class="rank"><h3>${spec.ordered ? `${index + 1}着候補` : `${index + 1}艇目候補`}</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="f-${index}-${boat}" class="pick b${boat}" onclick="pickForm(${index},${boat})">${boat}</button>`
       ).join("")}</div></div>`).join("")
-        + '<button class="btn secondary full" onclick="addForm()">フォーメーションを追加</button>';
+        + '<button class="btn secondary full add-current-draft" type="button" data-add-current="form" onclick="addForm()" hidden disabled>＋ 買い目に追加</button>';
     }
     $("builder").innerHTML = html;
     refreshBuilder();
+    renderCart();
     notifyAirBetRendered();
   }
 
   window.pickNormal = (index, boat) => {
+    if (normal[index] === boat) {
+      normal[index] = null;
+      selectionRevision += 1;
+      refreshBuilder();
+      return;
+    }
     normal.forEach((value, other) => {
       if (other !== index && value === boat) normal[other] = null;
     });
     normal[index] = boat;
+    selectionRevision += 1;
     refreshBuilder();
   };
   window.pickBox = (boat) => {
     if (box.has(boat)) box.delete(boat);
     else box.add(boat);
+    selectionRevision += 1;
     refreshBuilder();
   };
   window.pickForm = (index, boat) => {
     if (form[index].has(boat)) form[index].delete(boat);
     else form[index].add(boat);
+    selectionRevision += 1;
     refreshBuilder();
   };
+
+  function currentSelectionComplete() {
+    const spec = C.BET_TYPES[betType];
+    if (mode === "normal") return normal.length === spec.picks && normal.every(Boolean);
+    if (mode === "box") return box.size >= spec.picks;
+    return form.length === spec.picks
+      && form.every((items) => items.size > 0)
+      && D.expandFormation(form).length > 0;
+  }
+
+  function syncAddButton() {
+    const button = $("builder")?.querySelector?.("[data-add-current]");
+    if (!button) return;
+    const complete = currentSelectionComplete();
+    const hidden = !complete;
+    const disabled = !complete || addRequestInFlight;
+    if (button.hidden !== hidden) button.hidden = hidden;
+    if (button.disabled !== disabled) button.disabled = disabled;
+    setText(button, addRequestInFlight ? "参考オッズを取得中…" : "＋ 買い目に追加");
+  }
+
+  function showAddedNotice(added, duplicates) {
+    const notice = $("addedNotice");
+    if (!notice) return;
+    const duplicateNames = duplicates.slice(0, 3).map((line) => line.combination).join("、");
+    const duplicateLabel = duplicates.length > 3
+      ? `${duplicateNames} ほか${duplicates.length - 3}点`
+      : duplicateNames;
+    notice.className = `added-notice ${added.length ? "show" : "duplicate"}`;
+    if (added.length && duplicates.length) {
+      notice.textContent = `${added.length}点追加しました。${duplicateLabel} はすでに追加されています。`;
+    } else if (added.length) {
+      notice.textContent = `${added.length}点追加しました。続けて別の買い目を選べます。`;
+    } else {
+      notice.textContent = `${duplicateLabel || "同じ買い目"} はすでに追加されています。`;
+    }
+  }
+
   async function addCombos(combos) {
-    const seen = new Set(cart.map(
-      (line) => `${C.normalizeBetType(line.betType)}:${C.canonicalCombo(line.combo, line.betType)}`
-    ));
-    let added = 0;
+    if (addRequestInFlight) return 0;
+    const requestType = betType;
+    const requestMode = mode;
+    const requestGeneration = draftGeneration;
+    const requestSelectionRevision = selectionRevision;
+    const requestId = ++addRequestSerial;
+    activeAddRequest = requestId;
+    addRequestInFlight = true;
+    syncAddButton();
+    syncTrayUI();
+
+    const canonicalCombos = combos.map(
+      (combo) => C.canonicalCombo(combo, requestType).split("-").map(Number)
+    );
     const raceItem = race(S.venue, S.raceNo);
-       let liveOdds = null;
+    let liveOdds = null;
 
     let liveOddsTimeout = null;
     const liveOddsController = typeof AbortController === "function" ? new AbortController() : null;
@@ -1650,7 +1729,7 @@
             date: DATA.date,
             venueCode: S.venue,
             raceNo: S.raceNo,
-            betType,
+            betType: requestType,
           }),
           ...(liveOddsController ? { signal: liveOddsController.signal } : {}),
         }
@@ -1683,47 +1762,45 @@
     } finally {
       if (liveOddsTimeout !== null) clearTimeout(liveOddsTimeout);
     }
-    combos.forEach((combo) => {
-      const canonical = C.canonicalCombo(combo, betType).split("-").map(Number);
-      const key = `${betType}:${canonical.join("-")}`;
-      if (!seen.has(key)) {
-        const liveKey = canonical.join("-");
-const liveValue = liveOdds?.values?.[liveKey];
-const reference = liveValue != null
-  ? {
-      value: String(liveValue),
-      updatedAt: liveOdds.updatedAt || liveOdds.fetchedAt || new Date().toISOString(),
-      timeSource: "fetched",
-    }
-  : referenceOdds(raceItem, betType, canonical);
-        cart.push({
-          combo: canonical,
-          betType,
-          stake: null,
-          odds: reference?.value || "",
-          oddsCapturedAt: reference?.updatedAt || null,
+    try {
+      if (requestGeneration !== draftGeneration) return 0;
+      const candidates = canonicalCombos.map((canonical) => {
+        const liveValue = liveOdds?.values?.[canonical.join("-")];
+        const reference = liveValue != null
+          ? {
+            value: liveValue,
+            updatedAt: liveOdds.updatedAt || liveOdds.fetchedAt || new Date().toISOString(),
+            timeSource: "fetched",
+          }
+          : referenceOdds(raceItem, requestType, canonical);
+        return {
+          betType: requestType,
+          mode: requestMode,
+          combination: canonical.join("-"),
+          amount: null,
+          referenceOdds: reference?.value ?? null,
+          oddsFetchedAt: reference?.updatedAt || null,
           oddsSource: reference ? "official-snapshot" : null,
           oddsTimeSource: reference?.timeSource || null,
-          mode,
-        });
-        seen.add(key);
-        added += 1;
+        };
+      });
+      const result = D.appendUnique(cart, candidates);
+      cart = result.lines;
+      showAddedNotice(result.added, result.duplicates);
+      if (result.added.length && selectionRevision === requestSelectionRevision) {
+        resetSelections();
+        selectionRevision += 1;
       }
-    });
-    if (added) {
-      resetSelections();
-      refreshBuilder();
-    } else {
       renderCart();
+      return result.added.length;
+    } finally {
+      if (activeAddRequest === requestId) {
+        activeAddRequest = 0;
+        addRequestInFlight = false;
+        syncAddButton();
+        syncTrayUI();
+      }
     }
-    const notice = $("addedNotice");
-    if (notice) {
-      notice.className = `added-notice ${added ? "show" : "duplicate"}`;
-      notice.textContent = added
-        ? `${added}点を追加しました。続けて別の買い目を選べます。`
-        : "同じ買い目はすでに追加されています。";
-    }
-    return added;
   }
 
   window.addNormal = () => {
@@ -1734,23 +1811,6 @@ const reference = liveValue != null
     return addCombos([[...normal]]);
   };
 
-  function selections(items, count, ordered) {
-    const output = [];
-    const walk = (selected, remaining) => {
-      if (selected.length === count) {
-        output.push(selected);
-        return;
-      }
-      remaining.forEach((boat, index) => {
-        walk([...selected, boat], ordered
-          ? remaining.filter((item) => item !== boat)
-          : remaining.slice(index + 1));
-      });
-    };
-    walk([], items);
-    return output;
-  }
-
   window.addBox = () => {
     const spec = C.BET_TYPES[betType];
     const boats = [...box];
@@ -1758,25 +1818,19 @@ const reference = liveValue != null
       alert(`${spec.picks}艇以上選択してください。`);
       return Promise.resolve(0);
     }
-    return addCombos(selections(boats, spec.picks, spec.ordered));
+    return addCombos(D.expandBox(boats, spec.picks, spec.ordered));
   };
   window.addForm = () => {
     if (form.some((items) => !items.size)) {
       alert("各候補を選択してください。");
       return Promise.resolve(0);
     }
-    const combos = [];
-    const walk = (index, selected) => {
-      if (index === form.length) {
-        combos.push(selected);
-        return;
-      }
-      form[index].forEach((boat) => {
-        if (!selected.includes(boat)) walk(index + 1, [...selected, boat]);
-      });
-    };
-    walk(0, []);
-    return addCombos(combos);
+    const combinations = D.expandFormation(form);
+    if (!combinations.length) {
+      alert("同じ艇を重ねず、成立する組み合わせを選択してください。");
+      return Promise.resolve(0);
+    }
+    return addCombos(combinations);
   };
 
   function refreshBuilder() {
@@ -1793,23 +1847,40 @@ const reference = liveValue != null
     for (let boat = 1; boat <= 6; boat += 1) {
       $(`b-${boat}`)?.classList.toggle("sel", box.has(boat));
     }
-    renderCart();
+    syncAddButton();
+    syncTrayUI();
   }
 
   function normalizeStake(value) {
-    const raw = String(value ?? "").replaceAll(",", "").trim();
-    if (!raw) return 0;
-    const numeric = Number(raw);
-    if (!Number.isFinite(numeric) || numeric < 100) return 0;
-    return Math.floor(numeric / 100) * 100;
+    return D.normalizeAmount(value) || 0;
+  }
+
+  function lineCombination(line) {
+    return D.normalizeCombination(line?.combination ?? line?.combo).split("-").filter(Boolean).map(Number);
+  }
+
+  function lineCombinationText(line) {
+    return D.normalizeCombination(line?.combination ?? line?.combo);
+  }
+
+  function lineAmount(line) {
+    return normalizeStake(line?.amount ?? line?.stake);
+  }
+
+  function lineReferenceOdds(line) {
+    return D.normalizeOdds(line?.referenceOdds ?? line?.odds);
+  }
+
+  function lineOddsFetchedAt(line) {
+    return line?.oddsFetchedAt || line?.oddsCapturedAt || null;
   }
 
   function cartIncompleteCount() {
-    return cart.filter((line) => normalizeStake(line.stake) === 0).length;
+    return D.incompleteCount(cart);
   }
 
   function cartTotal() {
-    return cart.reduce((sum, line) => sum + normalizeStake(line.stake), 0);
+    return D.total(cart);
   }
 
   function receiptMeta(lines) {
@@ -1819,71 +1890,59 @@ const reference = liveValue != null
     return [labels.join("・"), `${(lines || []).length}点`].filter(Boolean).join(" / ");
   }
 
-  function syncCartStakeUI() {
-    const total = cartTotal();
-    const incomplete = cartIncompleteCount();
-    const commonStake = cart.length && !incomplete && cart.every(
-      (line) => normalizeStake(line.stake) === normalizeStake(cart[0].stake)
-    ) ? normalizeStake(cart[0].stake) : null;
-
-    $("cart")?.querySelectorAll?.(".cartrow").forEach((row, index) => {
-      const amount = normalizeStake(cart[index]?.stake);
-      row.classList.toggle("stake-missing", amount === 0);
-      const input = row.querySelector(".cart-stake-input");
-      if (input && document.activeElement !== input) input.value = amount ? String(amount) : "";
-    });
-    document.querySelectorAll?.("#cartTools [data-stake]").forEach((button) => {
-      const selected = commonStake === Number(button.dataset.stake);
-      button.classList.toggle("active", selected);
-      button.setAttribute("aria-pressed", selected ? "true" : "false");
-    });
-
-    const custom = $("allStakeInput");
-    if (custom && document.activeElement !== custom) custom.value = commonStake ? String(commonStake) : "";
-    const summary = $("cartStakeSummary");
-    if (summary) {
-      summary.classList.toggle("is-required", incomplete > 0);
-      summary.textContent = incomplete
-        ? `ベット数を入力してください（${cart.length - incomplete}/${cart.length}点入力済み）`
-        : `${cart.length}点 / 合計 ${fmt(total)}B`;
+  function syncTrayUI() {
+    const hasLines = cart.length > 0;
+    const count = $("cartCount");
+    setText(count, `${cart.length}点`);
+    const empty = $("cartEmpty");
+    if (empty && empty.hidden !== hasLines) empty.hidden = hasLines;
+    const tools = $("cartTools");
+    if (tools && tools.hidden === hasLines) tools.hidden = !hasLines;
+    const summary = $("cartSum");
+    setText(summary, hasLines
+      ? `${cart.length}点を保持中。金額・参考オッズは次の画面で確認します。`
+      : "買い目を追加してください");
+    const review = $("reviewBetButton");
+    if (review) {
+      const disabled = !hasLines || addRequestInFlight;
+      if (review.disabled !== disabled) review.disabled = disabled;
+      setText(review, addRequestInFlight ? "買い目を追加中…" : "買い目・金額を確認する");
     }
+  }
 
-    const estimates = cart.filter((line) => normalizeStake(line.stake) > 0 && oddsNumber(line.odds) > 0)
-      .map((line) => normalizeStake(line.stake) * oddsNumber(line.odds));
-    $("cartSum").innerHTML = cart.length
-      ? incomplete
-        ? `<b>ベット数を入力してください。</b><br>各買い目に100B単位で設定できます。`
-        : `<b>${cart.length}点 / 合計 ${fmt(total)}B</b>${estimates.length
-        ? `<br>入力オッズの最低想定払戻 ${fmt(Math.min(...estimates))}B${Math.min(...estimates) < total ? " / トリガミ候補" : ""}`
-        : ""}<br>最終精算は公式の確定払戻で行います。`
-      : "買い目を作成してください。";
+  function syncCartStakeUI() {
+    syncTrayUI();
   }
 
   window.changeLine = (index, key, value) => {
     if (!cart[index]) return;
     if (key === "stake") {
       const amount = normalizeStake(value);
-      cart[index].stake = amount || null;
+      cart = D.setAmount(cart, index, amount);
       syncCartStakeUI();
       return amount ? String(amount) : "";
     } else {
-      cart[index].odds = value;
-      cart[index].oddsCapturedAt = oddsNumber(value) > 0 ? new Date().toISOString() : null;
-      cart[index].oddsSource = oddsNumber(value) > 0 ? "manual" : null;
-      cart[index].oddsTimeSource = null;
+      const referenceOdds = D.normalizeOdds(value);
+      cart[index] = {
+        ...cart[index],
+        referenceOdds,
+        oddsFetchedAt: referenceOdds ? new Date().toISOString() : null,
+        oddsSource: referenceOdds ? "manual" : null,
+        oddsTimeSource: null,
+      };
     }
     renderCart();
   };
   window.removeLine = (index) => {
     if (!cart[index]) return;
-    cart.splice(index, 1);
+    cart = D.removeAt(cart, index);
     renderCart();
   };
 
   window.setAllStakes = (amount) => {
     const value = normalizeStake(amount);
     if (!value) return;
-    cart.forEach((line) => { line.stake = value; });
+    cart = D.setAllAmounts(cart, value);
     syncCartStakeUI();
     syncReviewBetUI();
   };
@@ -1913,42 +1972,104 @@ const reference = liveValue != null
   window.clearCart = () => {
     if (!cart.length || !confirm("追加した買い目をすべて削除しますか？")) return;
     cart = [];
+    const notice = $("addedNotice");
+    if (notice) {
+      notice.className = "added-notice";
+      notice.textContent = "";
+    }
     renderCart();
   };
 
-  function renderCart() {
-    if (!$("cart")) return;
-    $("cart").innerHTML = cart.length
-      ? cart.map((line, index) => {
-        const amount = normalizeStake(line.stake);
-        return `<div class="cartrow${amount ? "" : " stake-missing"}"><b class="tickettype">${C.BET_TYPES[C.normalizeBetType(line.betType)].label}</b>
-          <b class="cart-combo">${line.combo.join("-")}</b>
-          <label class="cart-stake"><input class="cart-stake-input" type="number" min="100" step="100" value="${amount || ""}" inputmode="numeric" aria-label="${line.combo.join("-")}のベット数" placeholder="入力" oninput="changeLine(${index},'stake',this.value)" onchange="this.value=changeLine(${index},'stake',this.value)"><span>B</span></label>
-          ${line.oddsSource === "official-snapshot"
-            ? `<div class="cart-odds" aria-label="参考オッズ ${esc(line.odds)}倍"><b>${esc(line.odds)}倍</b><small>${timeText(line.oddsCapturedAt)} ${line.oddsTimeSource === "fetched" ? "取得" : "更新"}</small></div>`
-            : `<label class="odds-input"><input value="${esc(line.odds)}" inputmode="decimal" aria-label="参考オッズ" placeholder="倍率" onchange="changeLine(${index},'odds',this.value)">${line.oddsCapturedAt ? `<small>${timeText(line.oddsCapturedAt)} 入力</small>` : `<small>未取得</small>`}</label>`}
-          <button class="xbtn" type="button" aria-label="${line.combo.join("-")}を削除" onclick="removeLine(${index})">削除</button></div>`;
-      }).join("")
-      : '<div class="muted">買い目はまだありません。</div>';
-    $("cartCount").textContent = `${cart.length}点`;
-    $("cartTools").innerHTML = cart.length
-      ? `<span id="cartStakeSummary" role="status" aria-live="polite"></span>
-        <button type="button" data-stake="100" aria-pressed="false" onclick="setAllStakes(100)">100B</button>
-        <button type="button" data-stake="200" aria-pressed="false" onclick="setAllStakes(200)">200B</button>
-        <button type="button" data-stake="500" aria-pressed="false" onclick="setAllStakes(500)">500B</button>
-        <button type="button" data-stake="1000" aria-pressed="false" onclick="setAllStakes(1000)">1,000B</button>
-        <div class="cart-custom-stake"><label for="allStakeInput">まとめて入力（100B単位）</label><div><input id="allStakeInput" type="number" min="100" step="100" inputmode="numeric" aria-label="全点のベット数" placeholder="例 300"><span>B</span><button type="button" onclick="applyCustomStake()">全点に反映</button></div></div>
-        <button class="clear" type="button" onclick="clearCart()">全点を削除</button>`
-      : "";
-    syncCartStakeUI();
+  function createTrayRow() {
+    const row = document.createElement("article");
+    row.className = "cartrow air-bet-tray-row";
+    const identity = document.createElement("div");
+    identity.className = "air-bet-tray-identity";
+    const ticket = document.createElement("b");
+    ticket.className = "tickettype";
+    const modeNode = document.createElement("span");
+    modeNode.className = "cart-mode";
+    identity.append(ticket, modeNode);
+    const combo = document.createElement("b");
+    combo.className = "cart-combo";
+    const odds = document.createElement("span");
+    odds.className = "cart-reference-odds";
+    const remove = document.createElement("button");
+    remove.className = "xbtn";
+    remove.type = "button";
+    remove.textContent = "削除";
+    remove.onclick = () => window.removeLine(Number(row.dataset.cartIndex));
+    row.append(identity, combo, odds, remove);
+    return row;
   }
+
+  function setText(node, value) {
+    const next = String(value ?? "");
+    if (node && node.textContent !== next) node.textContent = next;
+  }
+
+  function updateTrayRow(row, line, index) {
+    const type = C.normalizeBetType(line.betType);
+    const combination = lineCombinationText(line);
+    const referenceOdds = lineReferenceOdds(line);
+    const fetchedAt = lineOddsFetchedAt(line);
+    const key = D.lineKey(line);
+    const indexText = String(index);
+    if (row.dataset.cartKey !== key) row.dataset.cartKey = key;
+    if (row.dataset.cartIndex !== indexText) row.dataset.cartIndex = indexText;
+    setText(row.querySelector(".tickettype"), C.BET_TYPES[type].label);
+    setText(row.querySelector(".cart-mode"), MODE_LABELS[line.mode] || "通常");
+    setText(row.querySelector(".cart-combo"), combination);
+    const odds = row.querySelector(".cart-reference-odds");
+    setText(odds, referenceOdds
+      ? `参考 ${referenceOdds}倍${fetchedAt ? `・${timeText(fetchedAt)}` : ""}`
+      : "参考オッズ未取得");
+    const remove = row.querySelector(".xbtn");
+    const removeLabel = `${combination}を削除`;
+    if (remove.getAttribute("aria-label") !== removeLabel) remove.setAttribute("aria-label", removeLabel);
+  }
+
+  function renderCart() {
+    const container = $("cart");
+    if (!container) return;
+    const existing = new Map([...container.querySelectorAll(".cartrow")].map(
+      (row) => [row.dataset.cartKey, row]
+    ));
+    const retained = new Set();
+    cart.forEach((line, index) => {
+      const key = D.lineKey(line);
+      const row = existing.get(key) || createTrayRow();
+      updateTrayRow(row, line, index);
+      retained.add(key);
+      const currentAtIndex = container.children[index];
+      if (currentAtIndex !== row) container.insertBefore(row, currentAtIndex || null);
+    });
+    existing.forEach((row, key) => {
+      if (!retained.has(key)) row.remove();
+    });
+    syncTrayUI();
+  }
+
+  window.MAMO_AIR_BET_DRAFT = Object.freeze({
+    snapshot: () => D.snapshot(cart),
+    status: () => ({
+      count: cart.length,
+      total: cartTotal(),
+      incomplete: cartIncompleteCount(),
+      adding: addRequestInFlight,
+      raceDate: DATA.date,
+      venueCode: S.venue,
+      raceNo: S.raceNo,
+    }),
+    refresh: renderCart,
+  });
 
   function betReceipt(lines, entries, betMode, title = "購入した買い目", options = {}) {
     const editable = options.editable === true;
     const validLines = (lines || []).map((line, index) => ({ line, index })).filter(
       ({ line }) => {
         const type = C.normalizeBetType(line.betType);
-        return Array.isArray(line.combo) && line.combo.length === C.BET_TYPES[type].picks;
+        return lineCombination(line).length === C.BET_TYPES[type].picks;
       }
     );
     if (!validLines.length) {
@@ -1963,16 +2084,18 @@ const reference = liveValue != null
         const type = C.normalizeBetType(line.betType);
         const ordered = C.BET_TYPES[type].ordered;
         const separator = ordered ? " → " : " - ";
-        const combo = line.combo.map(Number);
+        const combo = lineCombination(line);
         const racerNames = combo.map(
           (boat) => names.get(boat) ? `${boat}号艇 ${names.get(boat)}` : ""
         ).filter(Boolean);
         const lineMode = MODE_LABELS[line.mode || betMode] || "";
-        const amount = normalizeStake(line.stake);
-        return `<div class="betline${editable && !amount ? " stake-missing" : ""}"${editable ? ` data-cart-index="${index}"` : ""}><span class="bettype">${C.BET_TYPES[type].label}</span>
+        const amount = lineAmount(line);
+        const referenceOdds = lineReferenceOdds(line);
+        const fetchedAt = lineOddsFetchedAt(line);
+        return `<div class="betline${editable && !amount ? " stake-missing" : ""}"${editable ? ` data-cart-index="${index}"` : ""}><span class="bettype">${C.BET_TYPES[type].label}${lineMode ? ` / ${esc(lineMode)}` : ""}</span>
           <b class="betcombo">${combo.join(separator)}</b><b class="betline-current-stake${amount ? "" : " is-missing"}">${amount ? `${fmt(amount)}B` : "未入力"}</b>
-          ${racerNames.length === combo.length ? `<div class="betnames">${lineMode ? `${lineMode} / ` : ""}${racerNames.map(esc).join(separator)}</div>` : ""}
-          ${oddsNumber(line.odds) > 0 ? `<div class="betnames">参加時参考オッズ ${esc(line.odds)}倍${line.oddsCapturedAt ? ` / ${timeText(line.oddsCapturedAt)}${line.oddsTimeSource === "fetched" ? "取得" : line.oddsSource === "official-snapshot" ? "更新" : "入力"}` : ""}</div>` : ""}
+          ${racerNames.length === combo.length ? `<div class="betnames">${racerNames.map(esc).join(separator)}</div>` : ""}
+          <div class="betnames">参加時参考オッズ ${referenceOdds ? `${esc(referenceOdds)}倍${fetchedAt ? ` / ${timeText(fetchedAt)}${line.oddsTimeSource === "fetched" ? "取得" : line.oddsSource === "official-snapshot" ? "更新" : "入力"}` : ""}` : "未取得"}</div>
           ${editable ? `<div class="betline-edit"><label><span>この買い目のベット数</span><span class="betline-stake-control"><input class="betline-stake-input" type="number" min="100" step="100" inputmode="numeric" value="${amount || ""}" placeholder="入力" aria-label="${combo.join("-")}のベット数" oninput="updateReviewLineStake(${index},this.value)" onchange="this.value=updateReviewLineStake(${index},this.value)"><b>B</b></span></label><button class="betline-remove" type="button" onclick="removeReviewLine(${index})">この買い目を削除</button></div>` : ""}</div>`;
       }).join("")}</div></details>`;
   }
@@ -1981,8 +2104,8 @@ const reference = liveValue != null
     const total = cartTotal();
     const incomplete = cartIncompleteCount();
     const commonStake = cart.length && !incomplete && cart.every(
-      (line) => normalizeStake(line.stake) === normalizeStake(cart[0].stake)
-    ) ? normalizeStake(cart[0].stake) : null;
+      (line) => lineAmount(line) === lineAmount(cart[0])
+    ) ? lineAmount(cart[0]) : null;
     const summary = $("reviewBetSummary");
     if (summary) {
       summary.classList.toggle("stake-required-notice", incomplete > 0);
@@ -1997,7 +2120,7 @@ const reference = liveValue != null
     $("modal")?.querySelectorAll?.(".betline[data-cart-index]").forEach((row) => {
       const line = cart[Number(row.dataset.cartIndex)];
       if (!line) return;
-      const amount = normalizeStake(line.stake);
+      const amount = lineAmount(line);
       row.classList.toggle("stake-missing", amount === 0);
       const input = row.querySelector(".betline-stake-input");
       if (input && document.activeElement !== input) input.value = amount ? String(amount) : "";
@@ -2028,7 +2151,7 @@ const reference = liveValue != null
   window.updateReviewLineStake = (index, value) => {
     if (!cart[index]) return;
     const amount = normalizeStake(value);
-    cart[index].stake = amount || null;
+    cart = D.setAmount(cart, index, amount);
     syncCartStakeUI();
     syncReviewBetUI();
     return amount ? String(amount) : "";
@@ -2036,7 +2159,7 @@ const reference = liveValue != null
 
   window.removeReviewLine = (index) => {
     if (!cart[index]) return;
-    cart.splice(index, 1);
+    cart = D.removeAt(cart, index);
     renderCart();
     if (!cart.length) {
       window.closeModal();
@@ -2080,7 +2203,8 @@ const reference = liveValue != null
       venueCode: venueItem.code,
       raceNo: raceItem.number,
     });
-    openModal(`<h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
+    openModal(`<div data-air-bet-review="1"><button class="mamo-bet-modal-back" type="button" onclick="closeModal()">← AIR BET画面へ戻る</button></div>
+      <h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
       <div id="reviewBetSummary" class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <div id="reviewBetBalanceError" class="notice warn" hidden></div>
       <div id="reviewStakePrompt" class="review-stake-prompt" role="status"><b>ベット数を入力してください</b><span>各買い目に100B単位で設定します。まとめて入力もできます。</span></div>
@@ -2093,7 +2217,7 @@ const reference = liveValue != null
         <label class="review-stake-custom"><input id="reviewAllStakeInput" type="number" min="100" step="100" inputmode="numeric" placeholder="例 300" aria-label="全ての買い目のベット数"><b>B</b><button type="button" onclick="applyReviewAllStake()">全点に反映</button></label>
       </div>
       <div class="notice editorial-safety"><b>気持ちの採点はしません。</b><br>結果確認後の「次のレースを見るまで」「次のAIR BETまで」「公式サイトへ移動して戻るまで」を自動でつなぎ、普段の自分と比較します。</div>
-      <button class="btn teal full" onclick="placeBet()">AIR BETを確定する</button>`);
+      <button class="btn teal full air-bet-confirm-button" onclick="placeBet()">AIR BETを確定する</button>`);
     syncReviewBetUI();
   };
 
@@ -2110,6 +2234,7 @@ const reference = liveValue != null
     if (total > S.coins) return alert("Bメダル残高が不足しています。");
     const event = eventInfo(venueItem);
     const rewardChallenge = false;
+    const recordedModes = [...new Set(cart.map((line) => line.mode).filter(Boolean))];
     const recordId = window.crypto?.randomUUID ? window.crypto.randomUUID() : `r-${Date.now()}`;
     if (!postLedger("virtual_bet", -total, `bet:${recordId}`, {
       label: `${venueItem.name} ${raceItem.number}R 仮想投票`,
@@ -2132,18 +2257,19 @@ const reference = liveValue != null
       eventGrade: event.grade,
       eventGradeLabel: event.gradeLabel,
       eventDayLabel: event.dayLabel,
-      betMode: mode,
+      betMode: recordedModes.length === 1 ? recordedModes[0] : null,
+      betModes: recordedModes,
       entrySnapshot: (Array.isArray(raceItem.entries) ? raceItem.entries : []).map((entry) => ({
         boatNumber: entry.boatNumber,
         racerNumber: entry.racerNumber,
         name: entry.name,
       })),
       lines: cart.map((line) => ({
-        combo: [...line.combo],
+        combo: lineCombination(line),
         betType: C.normalizeBetType(line.betType),
-        stake: line.stake,
-        odds: line.odds,
-        oddsCapturedAt: line.oddsCapturedAt || null,
+        stake: lineAmount(line),
+        odds: lineReferenceOdds(line) || "",
+        oddsCapturedAt: lineOddsFetchedAt(line),
         oddsSource: line.oddsSource || null,
         oddsTimeSource: line.oddsTimeSource || null,
         mode: line.mode || mode,
@@ -2201,6 +2327,7 @@ const reference = liveValue != null
       line_count: record.lines.length,
       bet_types: [...new Set(record.lines.map((line) => line.betType))],
       bet_mode: record.betMode,
+      bet_modes: record.betModes,
       stake_b: record.stake,
       intended_yen: record.intendedYen,
       observation_version: record.observationVersion,

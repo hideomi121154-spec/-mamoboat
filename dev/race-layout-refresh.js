@@ -50,14 +50,14 @@
     #race .section-head.small h2{font-size:22px;color:#082238;}
     #race .betdesk{border:1px solid #dce3e4!important;border-top:3px solid var(--r-gold)!important;border-radius:14px;background:#fffdf8!important;box-shadow:0 6px 18px rgba(8,34,56,.06);}
     #raceView .bettypebar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px!important;padding:2px 0 10px!important;overflow:visible!important;}
-    #raceView .bettypebtn{min-width:0!important;width:auto!important;border-radius:9px;background:#fff;min-height:40px;padding:7px 4px;font-size:10px;}
+    #raceView .bettypebtn{min-width:0!important;width:auto!important;border-radius:9px;background:#fff;min-height:46px;padding:7px 4px;font-size:10px;}
     #raceView .bettypebtn.active{background:var(--r-navy);border-color:var(--r-navy);box-shadow:0 3px 0 var(--r-gold);}
     #raceView .bet-tabs{border-radius:10px;background:#edf1f1;padding:4px;}
     #raceView .bet-tab.active{border-radius:8px;box-shadow:none;}
     #raceView .pick{border-radius:10px;min-height:48px;}
     #raceView .pick.sel{outline:2px solid var(--r-gold);border-color:#082238;}
     #raceView .odds-now{border-color:#cbd9da;border-radius:9px;background:#fafcfc;}
-    #raceView .cart-tools{display:flex!important;flex-wrap:wrap!important;gap:6px!important;overflow:visible!important;align-items:center;}
+    #raceView .cart-tools:not([hidden]){display:flex!important;flex-wrap:wrap!important;gap:6px!important;overflow:visible!important;align-items:center;}
     #raceView .cart-tools span{width:100%;font-size:9px;color:#6b777d;font-weight:900;}
     #raceView .cart-tools button{flex:1 1 calc(25% - 6px);min-width:64px;min-height:38px;border-radius:9px;}
     #raceView .cart-tools button:not(.clear){background:#fff;border:1px solid #d8dfe0;color:#082238;font-weight:900;}

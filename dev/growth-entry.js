@@ -185,7 +185,7 @@
 (() => {
   if (document.querySelector('script[data-mamo-venue-live-priority="1"]')) return;
   const script = document.createElement("script");
-  script.src = "venue-live-priority.js?v=20260907-1";
+  script.src = "venue-live-priority.js?v=20260908-2";
   script.async = true;
   script.dataset.mamoVenueLivePriority = "1";
   document.head.appendChild(script);

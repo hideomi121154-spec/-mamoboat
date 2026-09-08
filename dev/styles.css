@@ -249,33 +249,89 @@ main { padding: 14px; }
 .added-notice { overflow: hidden; max-height: 0; margin-top: 0; padding: 0 9px; opacity: 0; color: var(--teal-dark); font-size: 10px; font-weight: 900; transition: .2s ease; }
 .added-notice.show, .added-notice.duplicate { max-height: 52px; margin-top: 9px; padding: 9px; opacity: 1; border-left: 4px solid var(--teal); background: var(--mint); }
 .added-notice.duplicate { border-left-color: var(--gold); background: var(--warn); color: #74540d; }
+.air-bet-tray { margin-top: 16px; padding: 13px; border: 2px solid #cbd9e1; border-top: 6px solid var(--navy); border-radius: 15px; background: #f8fafb; box-shadow: 0 6px 15px rgba(7, 27, 43, .07); }
+.cart-title { margin: 0 0 10px; }
 .cart-title > div { min-width: 0; }
-.cart-title h2 { margin: 0; }
-.cart-title small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; font-weight: 700; }
-.cart { display: grid; gap: 6px; }
-.cartrow { display: grid; grid-template-columns: 48px 58px 1fr 60px 30px; gap: 4px; align-items: center; padding: 6px; border: 1px solid var(--soft-line); background: white; }
-.cartrow.stake-missing { border-color: #d8a62e; background: #fffdf6; }
-.cartrow input { width: 100%; min-width: 0; min-height: 36px; border: 1px solid var(--line); padding: 4px; text-align: center; }
-.cart-stake { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-width: 0; border: 1px solid var(--line); background: white; }
-.cartrow.stake-missing .cart-stake { border-color: #d8a62e; box-shadow: 0 0 0 2px rgba(255, 200, 61, .18); }
-.cart-stake input { min-height: 36px; border: 0; }
-.cart-stake input::placeholder { color: #8a6a18; opacity: 1; font-size: 10px; }
-.cart-stake span { padding-right: 6px; color: var(--muted); font-size: 9px; font-weight: 900; }
-.odds-input { display: grid; gap: 2px; min-width: 0; }
-.odds-input small { color: var(--muted); font-size: 6px; text-align: center; white-space: nowrap; }
-.cart-tools { display: flex; align-items: center; gap: 4px; overflow-x: auto; margin: 7px 0; padding-bottom: 2px; }
-.cart-tools span { flex: 0 0 auto; color: var(--muted); font-size: 8px; font-weight: 900; }
-.cart-tools span.is-required { color: var(--navy); }
-.cart-tools button { flex: 0 0 auto; min-height: 30px; border: 1px solid var(--line); border-radius: 4px; padding: 4px 7px; background: white; color: var(--navy); font-size: 8px; font-weight: 900; }
-.cart-tools button[aria-pressed="true"] { border-color: var(--navy); background: var(--navy); color: white; box-shadow: 0 3px 0 var(--gold); }
-.cart-custom-stake { display: grid; gap: 4px; }
-.cart-custom-stake > label { color: var(--muted); font-size: 8px; font-weight: 900; }
-.cart-custom-stake > div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 5px; }
-.cart-custom-stake input { width: 100%; min-width: 0; min-height: 38px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: white; color: var(--navy); font-size: 16px; font-weight: 900; text-align: right; }
-.cart-custom-stake span { padding-right: 2px; color: var(--navy); font-size: 10px; }
-.cart-tools button.clear { border-color: #efc3bf; color: #9c3d36; }
+.cart-title h2 { margin: 0; color: var(--navy); font-size: 17px; }
+.cart-title small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; font-weight: 700; }
+.cart-title > span { min-width: 48px; padding: 6px 8px; border-radius: 999px; background: var(--navy); color: white; text-align: center; font-size: 11px; font-weight: 1000; }
+.air-bet-tray-empty { margin: 0; padding: 18px 10px; border: 1px dashed #b9c8d0; border-radius: 10px; background: white; color: #657986; text-align: center; font-size: 12px; font-weight: 900; }
+.air-bet-tray-empty[hidden], .cart-tools[hidden], .add-current-draft[hidden] { display: none !important; }
+.cart { display: grid; gap: 7px; max-height: 350px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.air-bet-tray-row { display: grid; grid-template-columns: minmax(78px, .9fr) minmax(72px, 1fr) minmax(92px, 1.15fr) 54px; gap: 7px; align-items: center; min-height: 62px; padding: 9px; border: 1px solid #d6e0e5; border-left: 5px solid var(--gold); border-radius: 11px; background: white; }
+.air-bet-tray-identity { min-width: 0; }
+.air-bet-tray-identity .tickettype { display: block; color: #b51d28; font-size: 10px; font-weight: 1000; }
+.air-bet-tray-identity .cart-mode { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; font-weight: 900; }
+.air-bet-tray-row .cart-combo { min-width: 0; color: var(--navy); font-size: 18px; text-align: center; white-space: nowrap; }
+.cart-reference-odds { color: #55717f; font-size: 9px; font-weight: 900; line-height: 1.35; text-align: right; }
+.air-bet-tray-row .xbtn { min-height: 44px; border: 1px solid #efc3bf; border-radius: 9px; background: #fff7f6; color: #9c3d36; font-size: 9px; font-weight: 1000; }
+.cart-tools { display: flex; justify-content: flex-end; margin-top: 8px; }
+.cart-tools .clear { min-height: 42px; border: 1px solid #efc3bf; border-radius: 9px; padding: 7px 14px; background: #fff7f6; color: #9c3d36; font-size: 10px; font-weight: 1000; }
+.air-bet-tray-summary { margin-top: 8px; color: #5d7380; font-size: 10px; font-weight: 900; line-height: 1.45; }
+.air-bet-review-button { min-height: 56px; margin-top: 10px; border-radius: 13px; background: #e51f2a !important; box-shadow: 0 5px 0 #a5131c !important; font-size: 15px; }
+.air-bet-review-button:disabled { opacity: .42; box-shadow: none !important; }
+.add-current-draft { min-height: 54px; margin-top: 8px; border-color: var(--navy) !important; border-radius: 12px; background: var(--navy) !important; color: white !important; box-shadow: 0 4px 0 var(--gold); font-size: 15px; }
+.mamo-bet-modal-back { width: 100%; min-height: 46px; margin: 0 0 12px; border: 1px solid #b9c9d1; border-radius: 10px; background: white; color: var(--navy); font-size: 11px; font-weight: 1000; }
+.air-bet-confirm-button { min-height: 56px; margin-top: 12px; border-radius: 12px; font-size: 15px; }
+.air-bet-confirm-button:disabled { opacity: .42; box-shadow: none !important; }
+.mamo-back-venues { width: 100%; min-height: 48px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin: 0 0 10px; padding: 9px 12px; border: 1px solid #c7d4da; border-radius: 10px; background: white; color: var(--navy); text-align: left; box-shadow: 0 3px 0 rgba(11, 48, 71, .08); }
+.mamo-back-venues > span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: var(--navy); color: white; font-size: 18px; font-weight: 1000; line-height: 1; }
+.mamo-back-venues > b { font-size: 13px; font-weight: 1000; line-height: 1.2; }
+.mamo-back-venues > small { color: var(--muted); font-size: 8px; font-weight: 900; white-space: nowrap; }
+.mamo-back-venues:active { background: #f1f5f6; transform: translateY(1px); }
 .tickettype, .bettype { color: var(--teal-dark); font-size: 8px; font-weight: 1000; }
-.xbtn { height: 31px; border: 0; background: #edf1f2; }
+
+/* AIR BET keeps the existing racer/picker table while app.js owns all actions. */
+.betdesk #modeTabs { min-height: 48px; margin: 0 0 10px; }
+.betdesk #modeTabs .bet-tab { min-height: 48px; font-size: 14px; font-weight: 950; }
+.betdesk .bettypebar { gap: 7px; margin: 0 0 9px; }
+.betdesk .bettypebar .bettypebtn { min-height: 46px; padding: 8px 6px; font-size: 12px; font-weight: 950; }
+.betdesk #betGuide { margin: 0 0 8px; padding: 8px 10px; border: 1px solid #dce7ec; background: #f3f8fb; }
+.betdesk #betGuide > div:first-child { margin: 0; font-size: 11px; line-height: 1.45; }
+.betdesk .odds-snapshot, .betdesk .odds-caution, .betdesk .odds-now { display: none; }
+
+#builder.mamo-selection-matrix { display: grid; gap: 6px; align-items: start; margin-top: 0; }
+#builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="1"] { grid-template-columns: minmax(142px, 1.55fr) minmax(86px, 1fr); }
+#builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="2"] { grid-template-columns: minmax(126px, 1.45fr) repeat(2, minmax(70px, 1fr)); }
+#builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="3"] { grid-template-columns: minmax(120px, 1.5fr) repeat(3, minmax(58px, 1fr)); }
+#builder.mamo-selection-matrix[data-mamo-has-racers="false"][data-mamo-picker-columns="1"] { grid-template-columns: 1fr; }
+#builder.mamo-selection-matrix[data-mamo-has-racers="false"][data-mamo-picker-columns="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#builder.mamo-selection-matrix[data-mamo-has-racers="false"][data-mamo-picker-columns="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#builder.mamo-selection-matrix > .rank { width: auto; min-width: 0; margin: 0; }
+#builder.mamo-selection-matrix > .rank h3, .mamo-racer-head { display: grid; place-items: center; min-height: 40px; margin: 0 0 6px; padding: 6px 3px; border: 1px solid #cfdbe2; border-radius: 9px; background: #eef3f7; color: #082b4a; font-size: 10px; font-weight: 1000; }
+#builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="1"] h3 { border-top: 4px solid #dc2029; }
+#builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="2"] h3 { border-top: 4px solid #082b4a; }
+#builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="3"] h3 { border-top: 4px solid #3a6792; }
+#builder.mamo-selection-matrix > .rank .betgrid, .mamo-racer-rows { display: grid; grid-template-columns: 1fr; gap: 6px; }
+#builder.mamo-selection-matrix > .rank .pick { --mamo-boat-accent: #cad4da; position: relative; min-width: 0; min-height: 55px; padding: 6px 2px; border: 1px solid #cad7de; border-radius: 9px; outline: 0; background: white; color: #082b4a; box-shadow: inset 4px 0 var(--mamo-boat-accent); transform: none; font-size: 17px; font-weight: 1000; }
+#builder.mamo-selection-matrix > .rank .pick.b1 { --mamo-boat-accent: #d6dade; }
+#builder.mamo-selection-matrix > .rank .pick.b2 { --mamo-boat-accent: #33383d; }
+#builder.mamo-selection-matrix > .rank .pick.b3 { --mamo-boat-accent: #d74449; }
+#builder.mamo-selection-matrix > .rank .pick.b4 { --mamo-boat-accent: #376ed0; }
+#builder.mamo-selection-matrix > .rank .pick.b5 { --mamo-boat-accent: #f0cf40; }
+#builder.mamo-selection-matrix > .rank .pick.b6 { --mamo-boat-accent: #41a56b; }
+#builder.mamo-selection-matrix > .rank .pick.sel::after { content: "\2713"; position: absolute; top: 4px; right: 6px; font-size: 9px; font-weight: 1000; }
+#builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="1"] .pick.sel { border-color: #dc2029; background: #dc2029; color: white; box-shadow: inset 4px 0 rgba(255,255,255,.9), 0 3px 9px rgba(220,32,41,.2); }
+#builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="2"] .pick.sel { border-color: #082b4a; background: #082b4a; color: white; box-shadow: inset 4px 0 rgba(255,255,255,.85), 0 3px 9px rgba(8,43,74,.17); }
+#builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="3"] .pick.sel { border-color: #3a6792; background: #3a6792; color: white; box-shadow: inset 4px 0 rgba(255,255,255,.85), 0 3px 9px rgba(58,103,146,.17); }
+#builder.mamo-selection-matrix[data-mamo-picker-mode="box"] > .rank .pick.sel { border-color: #082b4a; background: #082b4a; color: white; box-shadow: inset 5px 0 #dc2029, 0 3px 9px rgba(8,43,74,.17); }
+#builder.mamo-selection-matrix > .btn { grid-column: 1 / -1; }
+
+.mamo-racer-list { min-width: 0; margin: 0; }
+.mamo-racer-head { border-top: 4px solid #d8a62e; }
+.mamo-racer-row { display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; gap: 7px; min-height: 55px; overflow: hidden; padding: 3px 5px 3px 3px; border: 1px solid #dbe4e8; border-radius: 9px; background: white; }
+.mamo-lane { display: grid; place-items: center; width: 29px; height: 40px; border-radius: 7px; background: #f4f4f4; color: #092b49; font-size: 16px; font-weight: 1000; }
+.mamo-lane.b1 { border: 2px solid #cfd5d8; background: #f4f4f4; color: #0b2438; }
+.mamo-lane.b2 { background: #303438; color: white; }
+.mamo-lane.b3 { background: #e34a4f; color: white; }
+.mamo-lane.b4 { background: #3975d6; color: white; }
+.mamo-lane.b5 { background: #f0cf3d; color: #111; }
+.mamo-lane.b6 { background: #3ca568; color: white; }
+.mamo-racer-copy { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-width: 0; }
+.mamo-racer-identity { display: block; min-width: 0; }
+.mamo-racer-identity > b { display: block; min-width: 0; overflow: hidden; color: #082b4a; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 1000; }
+.mamo-racer-meta { display: block; margin-top: 2px; color: #657886; font-size: 9px; font-weight: 900; line-height: 1.15; white-space: nowrap; }
+.mamo-official-button { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-height: 30px; padding: 4px 6px; border: 1px solid #7fbdf0; border-radius: 8px; background: #f7fbff; color: #0871cf; text-decoration: none; white-space: nowrap; font-size: 8px; font-weight: 1000; }
 
 .btn { min-height: 45px; border: 0; padding: 10px 13px; font-weight: 1000; }
 .btn.primary { background: var(--navy); color: white; box-shadow: 4px 4px 0 var(--teal); }
@@ -1590,4 +1646,36 @@ body { background: #e8dfd2; }
 }
 @media (max-width: 390px) {
   .masthead-character { object-position: 57% 14%; }
+}
+
+/* v4.0.3 — AIR BET draft tray mobile fit */
+@media (max-width: 620px) {
+  .air-bet-tray-row { grid-template-columns: minmax(78px, .9fr) minmax(72px, 1fr) minmax(92px, 1.15fr) 54px; gap: 7px; padding: 9px; }
+}
+@media (max-width: 390px) {
+  .betdesk #modeTabs { min-height: 46px; }
+  .betdesk #modeTabs .bet-tab { min-height: 46px; font-size: 13px; }
+  .betdesk .bettypebar { gap: 6px; }
+  .betdesk .bettypebar .bettypebtn { min-height: 44px; padding: 6px 3px; font-size: 11px; }
+  #builder.mamo-selection-matrix { gap: 5px; }
+  #builder.mamo-selection-matrix[data-mamo-has-racers="true"][data-mamo-picker-columns="3"] { grid-template-columns: minmax(112px, 1.48fr) repeat(3, minmax(54px, 1fr)); }
+  #builder.mamo-selection-matrix > .rank h3, .mamo-racer-head { min-height: 37px; margin-bottom: 5px; font-size: 9px; }
+  #builder.mamo-selection-matrix > .rank .betgrid, .mamo-racer-rows { gap: 5px; }
+  #builder.mamo-selection-matrix > .rank .pick, .mamo-racer-row { min-height: 52px; }
+  #builder.mamo-selection-matrix > .rank .pick { font-size: 16px; }
+  .mamo-racer-row { grid-template-columns: 27px minmax(0, 1fr); gap: 5px; padding: 2px 4px 2px 2px; }
+  .mamo-lane { width: 27px; height: 37px; font-size: 15px; }
+  .mamo-racer-copy { display: block; }
+  .mamo-racer-identity > b { font-size: 10px; line-height: 1.2; }
+  .mamo-racer-meta { font-size: 8px; }
+  .mamo-official-button { min-height: 20px; margin-top: 2px; padding: 1px 4px; border-radius: 6px; font-size: 7px; }
+  .air-bet-tray { padding: 10px; }
+  .mamo-back-venues { grid-template-columns: auto 1fr; padding: 8px 10px; }
+  .mamo-back-venues > small { grid-column: 2; }
+  .air-bet-tray-row { grid-template-columns: minmax(72px, .9fr) minmax(84px, 1fr) 52px; grid-template-areas: "identity combo remove" "odds odds remove"; min-height: 72px; padding: 8px; }
+  .air-bet-tray-identity { grid-area: identity; }
+  .air-bet-tray-row .cart-combo { grid-area: combo; font-size: 16px; }
+  .cart-reference-odds { grid-area: odds; text-align: left; }
+  .air-bet-tray-row .xbtn { grid-area: remove; align-self: stretch; min-height: 48px; }
+  .review-stake-tools > button { min-height: 44px; }
 }

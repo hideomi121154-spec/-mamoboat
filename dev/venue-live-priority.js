@@ -209,11 +209,12 @@
   window.MAMO_VENUE_LIVE_PRIORITY = Object.freeze({ refresh:enhance });
 })();
 
-/* Load same-screen multi-selection AIR BET flow after core/review flow. */
+/* Preserve the presentation-only race-to-venues shortcut. AIR BET actions are
+ * owned exclusively by app.js. */
 (() => {
   if (document.querySelector('script[data-mamo-air-bet-multi-add="1"]')) return;
   const script = document.createElement("script");
-  script.src = "air-bet-multi-add.js?v=20260907-1";
+  script.src = "air-bet-multi-add.js?v=20260908-2";
   script.async = true;
   script.dataset.mamoAirBetMultiAdd = "1";
   document.head.appendChild(script);

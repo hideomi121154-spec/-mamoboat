@@ -5,6 +5,7 @@ const vm = require("node:vm");
 const { webcrypto } = require("node:crypto");
 
 const C = require(path.join(__dirname, "..", "core.js"));
+const Draft = require(path.join(__dirname, "..", "air-bet-draft-core.js"));
 const dataset = JSON.parse(fs.readFileSync(
   path.join(__dirname, "..", "data", "today.json"),
   "utf8"
@@ -180,6 +181,7 @@ const context = {
     setItem: (key, value) => storage.set(key, String(value)),
   },
   MamoCore: C,
+  MamoAirBetDraftCore: Draft,
   MAMOBOAT_PILOT: {
     studyId: "mamoboat-pilot-v1",
     collector: {
