@@ -63,6 +63,40 @@ assert.match(renderCartBody, /if \(currentAtIndex !== row\) container\.insertBef
 assert.match(renderCartBody, /row\.remove\(\)/);
 const refreshBuilderBody = app.match(/function refreshBuilder\(\) \{([\s\S]*?)\n  \}\n\n  function normalizeStake/)?.[1] || "";
 assert(refreshBuilderBody);
+// Run the actual post-add reset and picker painter together. Previously the
+// state cleared but .sel/.dim remained, so the compatibility helper toggled
+// an already-cleared boat back on.
+const resetBody = app.match(/function resetSelections\(\) \{([\s\S]*?)\n  \}/)[1];
+const postAddReset = app.match(/if \(result.added.length && selectionRevision === requestSelectionRevision\) \{[\s\S]*?\n      \}/)[0];
+for (const kind of ["normal", "box", "form"]) {
+  const nodes = new Map();
+  for (let rank = 0; rank < 3; rank++) {
+    for (let boat = 1; boat <= 6; boat++) {
+      for (const id of [`n-${rank}-${boat}`, `f-${rank}-${boat}`, `b-${boat}`]) {
+        const classes = new Set();
+        nodes.set(id, { classList: { toggle(k, on) { on ? classes.add(k) : classes.delete(k); } }, classes });
+      }
+    }
+  }
+  const context = {
+    C: { BET_TYPES: { trifecta: { picks: 3 } } }, betType: "trifecta",
+    normal: kind === "normal" ? [1, 2, 3] : [null, null, null],
+    box: new Set(kind === "box" ? [1, 2, 3] : []),
+    form: kind === "form" ? [new Set([1]), new Set([5]), new Set([2, 3])] : [new Set(), new Set(), new Set()],
+    selectionRevision: 1, requestSelectionRevision: 1, result: { added: [{}] },
+    $: (id) => nodes.get(id), syncAddButton() {}, syncTrayUI() {},
+  };
+  vm.createContext(context);
+  vm.runInContext(`function resetSelections() {${resetBody}} function refreshBuilder() {${refreshBuilderBody}} refreshBuilder();`, context);
+  assert([...nodes.values()].some((node) => node.classes.has("sel")));
+  vm.runInContext(postAddReset, context);
+  assert([...nodes.values()].every((node) => !node.classes.has("sel") && !node.classes.has("dim")), `${kind}: all picker highlights must clear after adding`);
+  context.normal = [4, null, null];
+  context.selectionRevision = 3;
+  vm.runInContext("refreshBuilder();", context);
+  vm.runInContext(postAddReset, context);
+  assert(nodes.get("n-0-4").classes.has("sel"), "an in-flight add must preserve a newer selection");
+}
 assert.doesNotMatch(refreshBuilderBody, /renderCart\(\)/, "selection taps must not touch existing tray rows");
 assert.match(app, /id="airBetTray"/);
 assert.match(app, />買い目トレイ</);
@@ -134,10 +168,11 @@ assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
 assert.match(index, /styles\.css\?v=20260908-2/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260908-2[\s\S]*app\.js\?v=20260908-2/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260908-2[\s\S]*app\.js\?v=20260909-2/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260908-2/);
-assert.match(serviceWorker, /mamoboat-v429-air-bet-draft-tray-67-dev/);
+assert.match(serviceWorker, /mamoboat-v431-air-bet-selection-sync-69-dev/);
+assert.match(serviceWorker, /app\.js\?v=20260909-2/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260908-2/);
 assert.match(serviceWorker, /air-bet-multi-add\.js\?v=20260908-2/);
 

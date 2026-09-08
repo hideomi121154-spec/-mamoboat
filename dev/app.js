@@ -1790,6 +1790,7 @@
       if (result.added.length && selectionRevision === requestSelectionRevision) {
         resetSelections();
         selectionRevision += 1;
+        refreshBuilder();
       }
       renderCart();
       return result.added.length;

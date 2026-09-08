@@ -1,7 +1,7 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v430-air-bet-selection-reset-68-dev";
+const CACHE = "mamoboat-v431-air-bet-selection-sync-69-dev";
 const SHELL = [
-  "./","./index.html","./styles.css?v=20260908-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260908-2","./pilot-config.js?v=20260908-2","./app.js?v=20260908-2",
+  "./","./index.html","./styles.css?v=20260908-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260908-2","./pilot-config.js?v=20260908-2","./app.js?v=20260909-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
   "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260908-2","./air-bet-multi-add.js?v=20260908-2","./air-bet-selection-reset.js?v=20260909-1","./race-layout-refresh.js?v=20260908-2","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260908-3","./record-unified-layout-v2.js?v=20260908-3","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
