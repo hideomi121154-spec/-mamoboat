@@ -1,11 +1,12 @@
-/* MAMO BOAT — Race Carte live state fix v1
- * Prevents official fields from flashing "未保存" while the synced snapshot is still loading.
+/* MAMO BOAT — Race Carte live state fix v2
+ * Prevents official fields from remaining "未保存" when the synced snapshot has newer data.
  * Triggers bounded enrichment when Carte/environment is opened and refreshes the open sheet.
+ * Legacy AIR BET records without an id are refreshed through snapshot backfill as well.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_LIVE_STATE_FIX_V1__) return;
-  window.__MAMO_RACE_CARTE_LIVE_STATE_FIX_V1__ = true;
+  if (window.__MAMO_RACE_CARTE_LIVE_STATE_FIX_V2__) return;
+  window.__MAMO_RACE_CARTE_LIVE_STATE_FIX_V2__ = true;
 
   const KEY = "mamoboat_v40_personal";
   const loadingText = "取得中…";
@@ -45,35 +46,69 @@
     ].find(v => v !== undefined && v !== null && String(v).trim() !== "");
   }
 
+  function hasTechnique(record){
+    return !![
+      record?.resultTechnique,
+      record?.resultSnapshot?.kimarite,
+      record?.resultSnapshot?.winningMethod,
+      record?.resultSnapshot?.technique,
+      record?.kimarite,
+      record?.winningMethod,
+      record?.technique
+    ].find(v => v !== undefined && v !== null && String(v).trim() !== "" && String(v).trim() !== "未保存");
+  }
+
   function paintLoadingIfNeeded(){
     const overlay = document.getElementById("mamoRaceCarteOverlay");
     if (!overlay || overlay.hidden) return;
     const record = activeRecord();
-    if (!record || hasEnvironment(record)) return;
+    if (!record) return;
 
     const activeTab = [...overlay.querySelectorAll(".mamo-carte-tab")].find(t => t.classList.contains("active"));
-    if (!activeTab || !/環境情報/.test(activeTab.textContent || "")) return;
+    if (activeTab && /環境情報/.test(activeTab.textContent || "") && !hasEnvironment(record)) {
+      overlay.querySelectorAll(".mamo-carte-kv b").forEach(el => {
+        const t = String(el.textContent || "").trim();
+        if (t === "未保存" || t === "—") el.textContent = loadingText;
+      });
+    }
 
-    overlay.querySelectorAll(".mamo-carte-kv b").forEach(el => {
-      const t = String(el.textContent || "").trim();
-      if (t === "未保存" || t === "—") el.textContent = loadingText;
-    });
+    if (!hasTechnique(record)) {
+      overlay.querySelectorAll(".mamo-carte-kv").forEach(card => {
+        const label = String(card.querySelector("span")?.textContent || "").trim();
+        const value = card.querySelector("b");
+        if (value && /決まり手/.test(label) && ["未保存","—"].includes(String(value.textContent || "").trim())) {
+          value.textContent = loadingText;
+        }
+      });
+    }
   }
 
   async function enrichActive(){
     const record = activeRecord();
-    if (!record?.id) return;
+    if (!record) return;
     paintLoadingIfNeeded();
     try {
-      const changed = await window.MAMO_RACE_CARTE_SNAPSHOT?.enrichRecordById?.(record.id);
+      const api = window.MAMO_RACE_CARTE_SNAPSHOT;
+      let changed = false;
+      if (record.id && api?.enrichRecordById) {
+        changed = !!(await api.enrichRecordById(record.id));
+      }
+      // Older records do not always have an id. Also use backfill when the
+      // id-based refresh found nothing, so newly published kimarite can reach
+      // an already settled local AIR BET record.
+      if ((!record.id || !changed || !hasTechnique(record)) && api?.backfill) {
+        changed = !!(await api.backfill(100)) || changed;
+      }
       if (!changed) window.MAMO_RACE_CARTE?.refresh?.();
-    } catch (_) {}
+    } catch (_) {
+      window.MAMO_RACE_CARTE?.refresh?.();
+    }
   }
 
   function boundedEnrich(){
     enrichActive();
-    setTimeout(enrichActive, 250);
-    setTimeout(enrichActive, 900);
+    setTimeout(enrichActive, 300);
+    setTimeout(enrichActive, 1100);
   }
 
   document.addEventListener("click", event => {
@@ -82,13 +117,25 @@
       return;
     }
     const tab = event.target?.closest?.(".mamo-carte-tab");
-    if (tab && /環境情報/.test(tab.textContent || "")) setTimeout(boundedEnrich, 0);
+    if (tab && /環境情報|カルテ/.test(tab.textContent || "")) setTimeout(boundedEnrich, 0);
   }, true);
 
   window.addEventListener("mamo:race-carte-snapshot", () => {
     const record = activeRecord();
-    if (record && hasEnvironment(record)) window.MAMO_RACE_CARTE?.open?.(orderedRecords().findIndex(r => r?.id === record.id));
+    if (!record) return;
+    const list = orderedRecords();
+    const index = record.id
+      ? list.findIndex(r => r?.id === record.id)
+      : list.findIndex(r => r === record || (
+          String(r?.venue || r?.venueName || "") === String(record?.venue || record?.venueName || "") &&
+          String(r?.raceNo || r?.race || "") === String(record?.raceNo || record?.race || "") &&
+          String(r?.raceDate || r?.date || "") === String(record?.raceDate || record?.date || "")
+        ));
+    if (index >= 0) window.MAMO_RACE_CARTE?.open?.(index);
   });
 
-  window.addEventListener("pageshow", () => setTimeout(paintLoadingIfNeeded, 0));
+  window.addEventListener("pageshow", () => {
+    setTimeout(paintLoadingIfNeeded, 0);
+    setTimeout(() => window.MAMO_RACE_CARTE_SNAPSHOT?.backfill?.(100), 150);
+  });
 })();
