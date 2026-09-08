@@ -106,6 +106,10 @@
 
   function enhanceCard(card, record) {
     if (!card || !record) return;
+    if (card.querySelector(":scope > .rx2-stats")) {
+      card.querySelector(":scope > .rx-financial-restore")?.remove();
+      return;
+    }
     const odds = oddsSummary(record);
     const payout = officialPayout(record);
 

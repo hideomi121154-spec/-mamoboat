@@ -75,7 +75,7 @@
         #records .rx2-stats{grid-template-columns:1fr 1fr!important}
       }
 
-      @media(max-width:390px){
+      @media(max-width:350px){
         #records .rx2-line{column-gap:8px!important}
         #records .rx2-combo{font-size:20px!important}
         #records .rx2-stake{font-size:15px!important}

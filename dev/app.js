@@ -848,8 +848,14 @@
   }
 
   async function settleAllPending() {
+    const candidates = S.records.filter((record) =>
+      record.raceDate && (
+        !record.settled
+        || record.resultPayoutsScope !== "all-official"
+      )
+    );
     const dates = [...new Set(
-      S.records.filter((record) => !record.settled).map((record) => record.raceDate).filter(Boolean)
+      candidates.map((record) => record.raceDate)
     )];
     let changed = false;
     const cache = liveLoaded ? { [DATA.date]: DATA } : {};
@@ -863,9 +869,11 @@
           continue;
         }
       }
-      for (const record of S.records.filter(
-        (item) => !item.settled && item.raceDate === date
-      )) {
+      for (const record of candidates.filter((item) => item.raceDate === date)) {
+        if (record.settled) {
+          if (C.syncRecordOfficialPayouts?.(record, dataset)) changed = true;
+          continue;
+        }
         const result = C.settleRecord(record, dataset);
         if (!result.changed) continue;
         changed = true;

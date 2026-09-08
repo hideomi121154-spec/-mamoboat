@@ -97,6 +97,34 @@ assert.equal(allTypesRecord.status, "hit");
 assert.equal(allTypesRecord.payoutC, 2460);
 assert.equal(allTypesRecord.resultPayouts.length, 10);
 
+const trifectaOnlyRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  lines: [{ betType: "trifecta", combo: [1, 3, 2], stake: 100 }],
+};
+C.settleRecord(trifectaOnlyRecord, allTypesDataset);
+assert.equal(trifectaOnlyRecord.resultPayout, 660);
+assert.equal(trifectaOnlyRecord.resultPayouts.length, 10);
+assert.deepEqual(
+  [...new Set(trifectaOnlyRecord.resultPayouts.map((item) => item.betType))],
+  ["win", "place", "exacta", "quinella", "wide", "trifecta", "trio"]
+);
+assert.equal(trifectaOnlyRecord.resultPayoutsScope, "all-official");
+
+const legacySettledRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: true,
+  resultPayouts: [{ betType: "trifecta", combo: "1-3-2", payout: 660 }],
+};
+assert(C.syncRecordOfficialPayouts(legacySettledRecord, allTypesDataset));
+assert.equal(legacySettledRecord.resultPayouts.length, 10);
+assert.equal(legacySettledRecord.resultPayoutsScope, "all-official");
+assert.equal(C.syncRecordOfficialPayouts(legacySettledRecord, allTypesDataset), false);
+
 const partialDataset = resultDataset([]);
 partialDataset.venues[0].races[0].result.payoutStatus = "partial";
 partialDataset.venues[0].races[0].result.notEstablishedTypes = [

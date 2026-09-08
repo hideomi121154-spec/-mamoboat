@@ -74,6 +74,35 @@
       .filter((item) => item.combination && item.payout > 0);
   }
 
+  function officialPayouts(result) {
+    return Object.keys(BET_TYPES).flatMap((type) =>
+      payoutList(result, type).map((item) => ({
+        betType: type,
+        combo: item.combination,
+        payout: item.payout,
+        popularity: item.popularity,
+      }))
+    );
+  }
+
+  function syncRecordOfficialPayouts(record, dataset) {
+    if (!record || !record.settled || !dataset || record.raceDate !== dataset.date) {
+      return false;
+    }
+    const race = findRace(dataset, record.venueCode, record.raceNo);
+    if (!race?.result || race.result.settleable === false) return false;
+
+    const payouts = officialPayouts(race.result);
+    const current = Array.isArray(record.resultPayouts) ? record.resultPayouts : [];
+    const unchanged = record.resultPayoutsScope === "all-official"
+      && JSON.stringify(current) === JSON.stringify(payouts);
+    if (unchanged) return false;
+
+    record.resultPayouts = payouts;
+    record.resultPayoutsScope = "all-official";
+    return true;
+  }
+
   function findRace(dataset, venueCode, raceNo) {
     const venue = (dataset && dataset.venues || []).find(
       (item) => String(item.code).padStart(2, "0") === String(venueCode).padStart(2, "0")
@@ -188,6 +217,7 @@
       record.resultCombo = "不成立";
       record.resultPayout = null;
       record.resultPayouts = [];
+      record.resultPayoutsScope = "all-official";
       record.settled = true;
       stampResultTiming(record, race, reflectedAt);
       return { changed: true, payoutAdded: refund, hit: false, refunded: true };
@@ -251,7 +281,8 @@
       }))
     );
     record.resultPayout = relevantPayouts[0]?.payout || null;
-    record.resultPayouts = relevantPayouts;
+    record.resultPayouts = officialPayouts(race.result);
+    record.resultPayoutsScope = "all-official";
     record.settled = true;
     stampResultTiming(record, race, reflectedAt);
     return {
@@ -589,6 +620,8 @@
     normalizeCombo,
     canonicalCombo,
     payoutList,
+    officialPayouts,
+    syncRecordOfficialPayouts,
     findRace,
     settleRecord,
     resultLatencyStats,

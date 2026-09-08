@@ -98,6 +98,34 @@ assert.equal(allTypesRecord.status, "hit");
 assert.equal(allTypesRecord.payoutC, 2460);
 assert.equal(allTypesRecord.resultPayouts.length, 10);
 
+const trifectaOnlyRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: false,
+  lines: [{ betType: "trifecta", combo: [1, 3, 2], stake: 100 }],
+};
+C.settleRecord(trifectaOnlyRecord, allTypesDataset);
+assert.equal(trifectaOnlyRecord.resultPayout, 660);
+assert.equal(trifectaOnlyRecord.resultPayouts.length, 10);
+assert.deepEqual(
+  [...new Set(trifectaOnlyRecord.resultPayouts.map((item) => item.betType))],
+  ["win", "place", "exacta", "quinella", "wide", "trifecta", "trio"]
+);
+assert.equal(trifectaOnlyRecord.resultPayoutsScope, "all-official");
+
+const legacySettledRecord = {
+  raceDate: "2026-08-09",
+  venueCode: "12",
+  raceNo: 1,
+  settled: true,
+  resultPayouts: [{ betType: "trifecta", combo: "1-3-2", payout: 660 }],
+};
+assert(C.syncRecordOfficialPayouts(legacySettledRecord, allTypesDataset));
+assert.equal(legacySettledRecord.resultPayouts.length, 10);
+assert.equal(legacySettledRecord.resultPayoutsScope, "all-official");
+assert.equal(C.syncRecordOfficialPayouts(legacySettledRecord, allTypesDataset), false);
+
 const partialDataset = resultDataset([]);
 partialDataset.venues[0].races[0].result.payoutStatus = "partial";
 partialDataset.venues[0].races[0].result.notEstablishedTypes = [
@@ -350,9 +378,9 @@ assert.match(indexSource, /cast-ui\.js\?v=20260827-3/);
 assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=20260815-10/);
 assert.match(indexSource, /onboard-cover-art/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
-assert.match(indexSource, /core\.js\?v=401/);
-assert.match(indexSource, /pilot-config\.js\?v=20260906-4/);
-assert.match(indexSource, /app\.js\?v=20260906-5/);
+assert.match(indexSource, /core\.js\?v=20260908-1/);
+assert.match(indexSource, /pilot-config\.js\?v=20260908-1/);
+assert.match(indexSource, /app\.js\?v=20260908-1/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
 assert.match(indexSource, /加音 守/);
@@ -364,7 +392,7 @@ assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v418-air-bet-live-stake-56-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v426-record-payout-details-64-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
