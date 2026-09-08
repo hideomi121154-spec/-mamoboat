@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v401-motion-20";
+const CACHE = "mamoboat-v434-root-record-today-72";
 const SHELL = [
   "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
@@ -21,6 +21,20 @@ self.addEventListener("activate",event=>{
       .then(()=>self.clients.claim())
   );
 });
+
+function enhanceDevHtml(response,url){
+  if(!response || !response.ok || !url.pathname.startsWith("/dev/")) return Promise.resolve(response);
+  const type=response.headers.get("content-type")||"";
+  if(!type.includes("text/html")) return Promise.resolve(response);
+  return response.text().then(html=>{
+    if(!html.includes("record-today-search.js")){
+      html=html.replace("</body>",'<script src="/dev/record-today-search.js?v=20260909-3"></script></body>');
+    }
+    const headers=new Headers(response.headers);
+    headers.delete("content-length");
+    return new Response(html,{status:response.status,statusText:response.statusText,headers});
+  });
+}
 
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET") return;
@@ -58,9 +72,16 @@ self.addEventListener("fetch",event=>{
       const cache=await caches.open(CACHE);
       try{
         const fresh=await fetch(event.request,{cache:"no-store"});
-        if(fresh.ok) await cache.put("./index.html",fresh.clone());
-        return fresh;
+        const enhanced=await enhanceDevHtml(fresh,url);
+        if(enhanced.ok){
+          const key=url.pathname.startsWith("/dev/")?"./dev/index.html":"./index.html";
+          await cache.put(key,enhanced.clone());
+        }
+        return enhanced;
       }catch(_){
+        if(url.pathname.startsWith("/dev/")){
+          return (await cache.match("./dev/index.html"))||Response.error();
+        }
         return (await cache.match("./index.html"))||(await cache.match("./"))||Response.error();
       }
     })());
