@@ -67,7 +67,10 @@
   function rebuildBetRows(card, record){
     const details = card.querySelector(".rx-bets");
     if (!details) return;
-    details.open = true;
+    if (details.dataset.rxCollapseInit !== "1") {
+      details.open = false;
+      details.dataset.rxCollapseInit = "1";
+    }
     const sourceLines = Array.isArray(record?.lines) ? record.lines : [];
     const existing = [...details.querySelectorAll(".rx-line")];
     const rows = sourceLines.length ? sourceLines : existing.map(row => ({
@@ -79,7 +82,7 @@
     }));
 
     const summary = details.querySelector("summary");
-    if (summary) summary.innerHTML = `あなたの買い目 <b>${rows.length}点</b>`;
+    if (summary) summary.innerHTML = `購入した買い目 <b>${rows.length}点</b>`;
 
     let body = details.querySelector(":scope > div");
     if (!body) {
@@ -167,9 +170,12 @@
       #records .rx-summary-money{gap:9px!important;margin:12px 0!important}
       #records .rx-summary-money span{padding:8px 10px!important}
       #records .rx-bets{margin-top:12px!important;border:1.5px solid #d2e0e6!important;border-radius:13px!important;padding:0 12px 12px!important;background:#fff!important}
-      #records .rx-bets>summary{padding:14px 0 12px!important;color:#082b4a!important;font-size:16px!important;font-weight:1000!important;list-style:none!important}
+      #records .rx-bets>summary{display:flex!important;align-items:center!important;gap:10px!important;min-height:58px!important;padding:14px 0 12px!important;color:#082b4a!important;font-size:16px!important;font-weight:1000!important;list-style:none!important;cursor:pointer!important;-webkit-tap-highlight-color:transparent!important}
       #records .rx-bets>summary::-webkit-details-marker{display:none}
-      #records .rx-bets>summary:before{content:"▼";margin-right:6px;font-size:9px}
+      #records .rx-bets>summary:before{content:"▶";display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;border-radius:8px;background:#082b4a;color:#fff;font-size:12px;line-height:1;box-shadow:0 2px 5px rgba(8,43,74,.18)}
+      #records .rx-bets[open]>summary:before{content:"▼"}
+      #records .rx-bets>summary:after{content:"開く";margin-left:auto;color:#607582;font-size:10px;font-weight:1000}
+      #records .rx-bets[open]>summary:after{content:"閉じる"}
       #records .rx2-table-head,#records .rx2-line{display:grid;grid-template-columns:34px minmax(86px,.9fr) minmax(96px,1.1fr) 78px 86px;gap:8px;align-items:center}
       #records .rx2-table-head{padding:9px 7px;background:#f2f6f8;border-radius:8px;color:#657985;font-size:10px;font-weight:900}
       #records .rx2-line{min-height:64px;padding:9px 7px;border-bottom:1px solid #e1e8ec}
