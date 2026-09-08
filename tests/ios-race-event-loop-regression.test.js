@@ -12,6 +12,7 @@ const styles = read("dev/styles.css");
 const index = read("dev/index.html");
 const compatibility = read("dev/decision-event-api-compat.js");
 const growth = read("dev/growth-entry.js");
+const venuePriority = read("dev/venue-live-priority.js");
 const serviceWorker = read("dev/sw.js");
 const shop = read("dev/mamo-shop.js");
 
@@ -102,6 +103,16 @@ assert.match(app, /id="airBetTray"/);
 assert.match(app, />買い目トレイ</);
 assert.match(app, />買い目を追加してください</);
 assert.match(app, /data-add-current="normal"[\s\S]*?＋ 買い目に追加/);
+
+// Opening 24 venues, including the race-screen back button, always restores
+// the actionable live-only view without wrapping go() or adding redraw timers.
+const goBody = app.match(/window\.go = \(id\) => \{([\s\S]*?)\n  \};\n  function renderOnboard/)?.[1] || "";
+assert(goBody, "go implementation must be extractable");
+assert.match(goBody, /if \(id === "venues"\) S\.filter = "active";[\s\S]*renderCurrent\(id\);[\s\S]*dispatchEvent\(new CustomEvent\("mamo:venues-opened"\)\)/);
+assert.match(venuePriority, /let liveOnly = true;/);
+assert.match(venuePriority, /addEventListener\("mamo:venues-opened", \(\) => \{\s*liveOnly = true;\s*enhance\(\);/);
+assert.doesNotMatch(venuePriority, /window\.go\s*=/);
+assert.doesNotMatch(venuePriority, /MutationObserver|setTimeout|setInterval|requestAnimationFrame|visualViewport|scrollIntoView|scrollTo|scrollBy/);
 assert.match(app, /data-add-current="box"[\s\S]*?＋ 買い目に追加/);
 assert.match(app, /data-add-current="form"[\s\S]*?＋ 買い目に追加/);
 assert.match(app, />買い目・金額を確認する</);
@@ -168,11 +179,12 @@ assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
 assert.match(index, /styles\.css\?v=20260908-2/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260908-2[\s\S]*app\.js\?v=20260909-2/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260908-2[\s\S]*app\.js\?v=20260909-3/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
-assert.match(growth, /venue-live-priority\.js\?v=20260908-2/);
-assert.match(serviceWorker, /mamoboat-v431-air-bet-selection-sync-69-dev/);
-assert.match(serviceWorker, /app\.js\?v=20260909-2/);
+assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
+assert.match(serviceWorker, /mamoboat-v432-live-venues-default-70-dev/);
+assert.match(serviceWorker, /app\.js\?v=20260909-3/);
+assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260908-2/);
 assert.match(serviceWorker, /air-bet-multi-add\.js\?v=20260908-2/);
 

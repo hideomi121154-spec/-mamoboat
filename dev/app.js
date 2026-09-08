@@ -1005,6 +1005,10 @@
     if (event.target.id === "modalBg") window.closeModal();
   };
   window.go = (id) => {
+    // The 24-venue screen always opens from the actionable list. A filter the
+    // user selected during the previous visit must not hide live venues when
+    // they return from a race or tap the bottom navigation again.
+    if (id === "venues") S.filter = "active";
     document.body.dataset.screen = id;
     document.querySelectorAll(".screen").forEach(
       (item) => item.classList.toggle("active", item.id === id)
@@ -1013,6 +1017,7 @@
       (item) => item.classList.toggle("active", item.id === `nav-${id}`)
     );
     renderCurrent(id);
+    if (id === "venues") window.dispatchEvent(new CustomEvent("mamo:venues-opened"));
     trackEvent("screen_view", { destination: id }, {
       venueCode: S.venue,
       raceNo: id === "race" ? S.raceNo : null,

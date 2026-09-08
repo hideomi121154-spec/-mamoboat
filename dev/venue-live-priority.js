@@ -8,7 +8,9 @@
   window.__MAMO_VENUE_LIVE_PRIORITY_V1__ = true;
 
   const STYLE_ID = "mamoVenueLivePriorityV1";
-  let liveOnly = false;
+  // Every entry to the 24-venue screen starts with races that still accept
+  // AIR BET. Manual filter changes remain valid until the user leaves it.
+  let liveOnly = true;
 
   function installStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -190,8 +192,11 @@
         enhance();
         return;
       }
-      if (event.target?.closest?.("#nav-venues")) enhance();
     }, false);
+    window.addEventListener("mamo:venues-opened", () => {
+      liveOnly = true;
+      enhance();
+    });
     window.addEventListener("pageshow", () => {
       if (document.body?.dataset?.screen === "venues") enhance();
     });
