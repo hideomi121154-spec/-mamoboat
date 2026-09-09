@@ -1,12 +1,12 @@
-/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v8.
+/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v9.
  * Keeps the existing one-tap venue return, live-odds preview, and review helpers
- * without re-rendering the race/builder DOM. Bulk stake buttons use direct
- * handlers so they keep working after delete/reselect/review cycles on iPhone.
+ * without re-rendering the race/builder DOM. Bulk stake uses draft state rather
+ * than live input nodes, so it survives delete/reselect/review cycles on iPhone.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MULTI_ADD_V8__) return;
-  window.__MAMO_AIR_BET_MULTI_ADD_V8__ = true;
+  if (window.__MAMO_AIR_BET_MULTI_ADD_V9__) return;
+  window.__MAMO_AIR_BET_MULTI_ADD_V9__ = true;
 
   let oddsAbort = null;
   let oddsRequestKey = "";
@@ -89,12 +89,10 @@
   function addStakeToAll(amount) {
     const value = Math.max(0, Number(amount) || 0);
     if (!value) return;
-    const inputs = [...document.querySelectorAll(".betreceipt[data-editable-cart='true'] .betline-stake-input")];
-    inputs.forEach((input) => {
-      const row = input.closest(".betline[data-cart-index]");
-      const index = Number(row?.dataset?.cartIndex);
-      if (!Number.isInteger(index)) return;
-      const current = Math.max(0, Number(input.value) || 0);
+    const lines = window.MAMO_AIR_BET_DRAFT?.snapshot?.() || [];
+    if (!lines.length) return;
+    lines.forEach((line, index) => {
+      const current = Math.max(0, Number(line?.amount) || 0);
       window.updateReviewLineStake?.(index, current + value);
     });
   }
@@ -105,16 +103,13 @@
     button.textContent = `＋${value.toLocaleString("ja-JP")}B`;
     button.removeAttribute("onclick");
     button.setAttribute("aria-label", `全ての買い目に${value.toLocaleString("ja-JP")}B追加`);
-    button.onclick = (event) => {
-      event.preventDefault();
-      addStakeToAll(value);
-    };
   }
 
   function enhanceReviewStakeTools() {
     const tools = document.getElementById("reviewStakeTools");
     if (!tools) return;
-    tools.hidden = false;
+    const hasLines = (window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) > 0;
+    tools.hidden = !hasLines;
     const title = tools.querySelector(":scope > span");
     if (title) title.textContent = "全ての買い目にまとめて追加";
     const buttons = [...tools.querySelectorAll("button[data-review-stake]")];
@@ -190,20 +185,29 @@
     if (!target) return;
     if (target.matches("#nav-race, .racechip, .venue-card-main, .venue-switch-card, [onclick^='jumpRace']")) refresh();
     if (target.matches("#builder .pick[id^='n-']")) queueMicrotask(showReferenceOdds);
+    if (target.matches("[data-mamo-stake-increment]")) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      addStakeToAll(Number(target.dataset.mamoStakeIncrement) || 0);
+      return;
+    }
     if (target.matches("[data-mamo-clear-review]")) {
       event.preventDefault();
       event.stopImmediatePropagation();
       clearAllReviewLines();
+      return;
     }
     if (target.matches(".betline-remove") && (window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) === 1) {
       event.preventDefault();
       event.stopImmediatePropagation();
       clearLastReviewLineWithoutClosing();
+      return;
     }
     if (target.matches("[data-mamo-reselect-bets]")) {
       event.preventDefault();
       event.stopImmediatePropagation();
       returnToAirBetSelection();
+      return;
     }
     if (target.matches("#reviewBetButton, [onclick='reviewBet()']")) setTimeout(enhanceReviewStakeTools, 0);
   }, true);
@@ -214,5 +218,5 @@
   window.addEventListener("pageshow", refresh);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh, { once: true });
   else refresh();
-  window.MAMO_AIR_BET_MULTI_ADD = Object.freeze({ refresh, showReferenceOdds, enhanceReviewStakeTools });
+  window.MAMO_AIR_BET_MULTI_ADD = Object.freeze({ refresh, showReferenceOdds, enhanceReviewStakeTools, addStakeToAll });
 })();
