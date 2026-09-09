@@ -1,12 +1,11 @@
-/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v9.
- * Keeps the existing one-tap venue return, live-odds preview, and review helpers
- * without re-rendering the race/builder DOM. Bulk stake uses draft state rather
- * than live input nodes, so it survives delete/reselect/review cycles on iPhone.
+/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v10.
+ * Keep review helpers isolated and idempotent so repeated DOM mutations on iPhone
+ * do not interfere with the main AIR BET picker buttons.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MULTI_ADD_V9__) return;
-  window.__MAMO_AIR_BET_MULTI_ADD_V9__ = true;
+  if (window.__MAMO_AIR_BET_MULTI_ADD_V10__) return;
+  window.__MAMO_AIR_BET_MULTI_ADD_V10__ = true;
 
   let oddsAbort = null;
   let oddsRequestKey = "";
@@ -74,7 +73,10 @@
     oddsAbort?.abort?.();
     oddsAbort = new AbortController();
     fetch("https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-odds", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(context), signal: oddsAbort.signal,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(context),
+      signal: oddsAbort.signal,
     }).then((response) => response.ok ? response.json() : null).then((payload) => {
       if (requestKey !== oddsRequestKey) return;
       const value = payload?.ok && payload.status === "available" ? payload.odds?.values?.[combo] : null;
@@ -90,24 +92,16 @@
     const value = Math.max(0, Number(amount) || 0);
     if (!value) return;
     const lines = window.MAMO_AIR_BET_DRAFT?.snapshot?.() || [];
-    if (!lines.length) return;
     lines.forEach((line, index) => {
       const current = Math.max(0, Number(line?.amount) || 0);
       window.updateReviewLineStake?.(index, current + value);
     });
   }
 
-  function bindIncrementButton(button, value) {
-    button.dataset.reviewStake = String(value);
-    button.dataset.mamoStakeIncrement = String(value);
-    button.textContent = `＋${value.toLocaleString("ja-JP")}B`;
-    button.removeAttribute("onclick");
-    button.setAttribute("aria-label", `全ての買い目に${value.toLocaleString("ja-JP")}B追加`);
-  }
-
   function enhanceReviewStakeTools() {
     const tools = document.getElementById("reviewStakeTools");
-    if (!tools) return;
+    if (!tools || tools.dataset.mamoReviewEnhanced === "1") return;
+    tools.dataset.mamoReviewEnhanced = "1";
     const hasLines = (window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) > 0;
     tools.hidden = !hasLines;
     const title = tools.querySelector(":scope > span");
@@ -115,14 +109,20 @@
     const buttons = [...tools.querySelectorAll("button[data-review-stake]")];
     const increments = [100, 1000, 10000];
     buttons.forEach((button, index) => {
-      if (index >= increments.length) { button.remove(); return; }
-      bindIncrementButton(button, increments[index]);
+      if (index >= increments.length) {
+        button.remove();
+        return;
+      }
+      const value = increments[index];
+      button.dataset.reviewStake = String(value);
+      button.dataset.mamoStakeIncrement = String(value);
+      button.textContent = `＋${value.toLocaleString("ja-JP")}B`;
+      button.removeAttribute("onclick");
+      button.setAttribute("aria-label", `全ての買い目に${value.toLocaleString("ja-JP")}B追加`);
     });
     const custom = tools.querySelector(".review-stake-custom");
-    if (custom) {
-      const input = custom.querySelector("input");
-      if (input) input.placeholder = "直接入力";
-    }
+    const input = custom?.querySelector("input");
+    if (input) input.placeholder = "直接入力";
     if (!tools.querySelector("[data-mamo-clear-review]")) {
       const clear = document.createElement("button");
       clear.type = "button";
@@ -132,7 +132,6 @@
       clear.setAttribute("aria-label", "全ての買い目をまとめて削除");
       tools.append(clear);
     }
-    tools.dataset.mamoIncrementV1 = "1";
   }
 
   function showEmptyReview() {
@@ -158,10 +157,6 @@
 
   function returnToAirBetSelection() {
     window.closeModal?.();
-    queueMicrotask(() => {
-      const builder = document.getElementById("builder");
-      if (builder) builder.scrollIntoView({ block: "start" });
-    });
   }
 
   function clearAllReviewLines() {
@@ -177,23 +172,24 @@
   function refresh() {
     ensureVenueBackButton();
     window.MAMO_AIR_BET_DRAFT?.refresh?.();
-    enhanceReviewStakeTools();
   }
 
   document.addEventListener("click", (event) => {
     const target = event.target?.closest?.("button, a");
     if (!target) return;
-    if (target.matches("#nav-race, .racechip, .venue-card-main, .venue-switch-card, [onclick^='jumpRace']")) refresh();
-    if (target.matches("#builder .pick[id^='n-']")) queueMicrotask(showReferenceOdds);
+
+    if (target.matches("#builder .pick[id^='n-']")) {
+      queueMicrotask(showReferenceOdds);
+      return;
+    }
+
     if (target.matches("[data-mamo-stake-increment]")) {
       event.preventDefault();
-      event.stopImmediatePropagation();
       addStakeToAll(Number(target.dataset.mamoStakeIncrement) || 0);
       return;
     }
     if (target.matches("[data-mamo-clear-review]")) {
       event.preventDefault();
-      event.stopImmediatePropagation();
       clearAllReviewLines();
       return;
     }
@@ -205,18 +201,23 @@
     }
     if (target.matches("[data-mamo-reselect-bets]")) {
       event.preventDefault();
-      event.stopImmediatePropagation();
       returnToAirBetSelection();
       return;
     }
-    if (target.matches("#reviewBetButton, [onclick='reviewBet()']")) setTimeout(enhanceReviewStakeTools, 0);
+    if (target.matches("#reviewBetButton, [onclick='reviewBet()']")) {
+      setTimeout(enhanceReviewStakeTools, 0);
+    }
   }, true);
 
-  const observer = new MutationObserver(() => enhanceReviewStakeTools());
-  if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true });
   window.addEventListener("mamo:air-bet-rendered", refresh);
   window.addEventListener("pageshow", refresh);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh, { once: true });
   else refresh();
-  window.MAMO_AIR_BET_MULTI_ADD = Object.freeze({ refresh, showReferenceOdds, enhanceReviewStakeTools, addStakeToAll });
+
+  window.MAMO_AIR_BET_MULTI_ADD = Object.freeze({
+    refresh,
+    showReferenceOdds,
+    enhanceReviewStakeTools,
+    addStakeToAll,
+  });
 })();
