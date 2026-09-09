@@ -1,7 +1,6 @@
-/* MAMO BOAT — compact AIR BET review layout v6.
- * Remove duplicated stake prompts and the review notice, then give the freed
- * vertical room to the ticket list. Use an explicit iPhone-safe scroll height
- * so Safari does not depend on percentage heights through <details>.
+/* MAMO BOAT — compact AIR BET review layout v7.
+ * Keep the modal fixed, remove duplicated review prompts, and make the purchase
+ * frame itself the single explicit-height scroll container on iPhone/PWA.
  */
 .air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt,
@@ -9,12 +8,23 @@
   display: none !important;
 }
 
+/* IMPORTANT: give Safari one real box with a definite height to scroll.
+ * Do not depend on percentage heights through <details> or nested scrollers. */
 .air-bet-review-shell > .air-bet-review-tickets {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 100%;
+  height: clamp(300px, 36dvh, 430px) !important;
+  max-height: clamp(300px, 36dvh, 430px) !important;
   min-height: 0;
-  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y !important;
+  scrollbar-width: thin;
 }
 
+/* Receipt and rows simply grow naturally inside the scroll frame. */
 .air-bet-review-tickets > .betreceipt {
   display: block;
   width: 100%;
@@ -22,41 +32,34 @@
   min-height: 0;
   margin: 0;
   box-sizing: border-box;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .air-bet-review-tickets > .betreceipt > summary {
   display: block;
-  min-height: 34px;
   box-sizing: border-box;
 }
 
-/* Safari/PWA fix: do not calculate this from a percentage-height <details>.
- * Give the rows their own definite viewport-relative height and scroll them. */
 .air-bet-review-tickets .betreceipt > .betlines {
   display: grid;
-  height: clamp(300px, 36dvh, 430px) !important;
+  height: auto !important;
+  max-height: none !important;
   min-height: 0;
-  max-height: clamp(300px, 36dvh, 430px) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y !important;
-  scrollbar-width: thin;
-  padding-bottom: 10px;
+  overflow: visible !important;
+  touch-action: auto !important;
+  padding-bottom: 12px;
 }
 
 @media (max-height: 740px) {
-  .air-bet-review-tickets .betreceipt > .betlines {
-    height: 260px !important;
-    max-height: 260px !important;
+  .air-bet-review-shell > .air-bet-review-tickets {
+    height: 270px !important;
+    max-height: 270px !important;
   }
 }
 
 @media (max-height: 640px) {
-  .air-bet-review-tickets .betreceipt > .betlines {
-    height: 220px !important;
-    max-height: 220px !important;
+  .air-bet-review-shell > .air-bet-review-tickets {
+    height: 230px !important;
+    max-height: 230px !important;
   }
 }
