@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v436-record-owner-74-dev";
+const CACHE = "mamoboat-v437-air-bet-review-cleanup-75-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260908-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260908-2","./pilot-config.js?v=20260909-4","./app.js?v=20260909-4",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
@@ -46,6 +46,10 @@ function withLiveVenueLoader(response){
     }
     if(!html.includes("air-bet-selection-reset.js")){
       html=html.replace("</body>",'<script src="air-bet-selection-reset.js?v=20260909-1"></script></body>');
+    }
+    // Keep AIR BET review behavior intact; only remove the three redundant visual notices.
+    if(!html.includes("mamo-air-bet-review-cleanup")){
+      html=html.replace("</head>",'<style id="mamo-air-bet-review-cleanup">[data-air-bet-review]~#reviewBetSummary,.review-stake-prompt,.editorial-safety{display:none!important}</style></head>');
     }
     const headers=new Headers(response.headers);
     headers.delete("content-length");
