@@ -1,12 +1,14 @@
-/* MAMO BOAT — legacy AIR BET multi-add compatibility v3.
- * The canonical draft flow now lives in app.js. This file only preserves the
- * existing one-tap venue return for cached and current pages; it never wraps
- * reviewBet, placeBet, or navigation functions.
+/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v4.
+ * Keeps the existing one-tap venue return and adds a tiny, isolated live-odds
+ * preview in #addedNotice. It never re-renders the race/builder DOM.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MULTI_ADD_V3__) return;
-  window.__MAMO_AIR_BET_MULTI_ADD_V3__ = true;
+  if (window.__MAMO_AIR_BET_MULTI_ADD_V4__) return;
+  window.__MAMO_AIR_BET_MULTI_ADD_V4__ = true;
+
+  let oddsAbort = null;
+  let oddsRequestKey = "";
 
   function ensureVenueBackButton() {
     if (document.body?.dataset?.screen !== "race") return;
@@ -37,16 +39,90 @@
     else raceView.prepend(button);
   }
 
-  const refresh = () => {
+  function currentContext() {
+    const oddsLink = document.getElementById("officialOddsMain");
+    if (!oddsLink?.href) return null;
+    try {
+      const url = new URL(oddsLink.href, location.href);
+      const venueCode = url.searchParams.get("jcd");
+      const raceNo = Number(url.searchParams.get("rno"));
+      const hd = url.searchParams.get("hd") || "";
+      const date = /^\d{8}$/.test(hd)
+        ? `${hd.slice(0, 4)}-${hd.slice(4, 6)}-${hd.slice(6, 8)}`
+        : "";
+      const activeType = document.querySelector(".bettypebtn.active[id^='type-']")?.id?.replace("type-", "") || "";
+      return venueCode && raceNo && date && activeType
+        ? { date, venueCode, raceNo, betType: activeType }
+        : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function selectedNormalCombo() {
+    const selected = [...document.querySelectorAll("#builder .pick.sel[id^='n-']")]
+      .map((button) => {
+        const match = button.id.match(/^n-(\d+)-(\d+)$/);
+        return match ? { index: Number(match[1]), boat: Number(match[2]) } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.index - b.index);
+    const ranks = [...new Set([...document.querySelectorAll("#builder .pick[id^='n-']")].map((button) => Number(button.id.split("-")[1])))];
+    if (!ranks.length || selected.length !== ranks.length) return null;
+    if (selected.some((item, index) => item.index !== ranks.sort((a, b) => a - b)[index])) return null;
+    return selected.map((item) => item.boat).join("-");
+  }
+
+  function showReferenceOdds() {
+    const notice = document.getElementById("addedNotice");
+    const context = currentContext();
+    const combo = selectedNormalCombo();
+    if (!notice || !context || !combo) return;
+
+    const requestKey = `${context.date}:${context.venueCode}:${context.raceNo}:${context.betType}:${combo}`;
+    if (requestKey === oddsRequestKey) return;
+    oddsRequestKey = requestKey;
+    oddsAbort?.abort?.();
+    oddsAbort = new AbortController();
+
+    fetch("https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-odds", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(context),
+      signal: oddsAbort.signal,
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        if (requestKey !== oddsRequestKey) return;
+        const value = payload?.ok && payload.status === "available"
+          ? payload.odds?.values?.[combo]
+          : null;
+        if (value == null || value === "") return;
+        notice.className = "added-notice show reference-odds-preview";
+        notice.textContent = `参考オッズ　${value}倍`;
+      })
+      .catch((error) => {
+        if (error?.name !== "AbortError") console.warn("選択中の参考オッズ取得に失敗しました", error);
+      });
+  }
+
+  function refresh() {
     ensureVenueBackButton();
     window.MAMO_AIR_BET_DRAFT?.refresh?.();
-  };
+  }
+
   document.addEventListener("click", (event) => {
-    if (event.target?.closest?.("#nav-race, .racechip, .venue-card-main, .venue-switch-card, [onclick^='jumpRace']")) refresh();
+    const target = event.target?.closest?.("button, a");
+    if (!target) return;
+    if (target.matches("#nav-race, .racechip, .venue-card-main, .venue-switch-card, [onclick^='jumpRace']")) refresh();
+    if (target.matches("#builder .pick[id^='n-']")) {
+      queueMicrotask(showReferenceOdds);
+    }
   });
+
   window.addEventListener("mamo:air-bet-rendered", refresh);
   window.addEventListener("pageshow", refresh);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh, { once: true });
   else refresh();
-  window.MAMO_AIR_BET_MULTI_ADD = Object.freeze({ refresh });
+  window.MAMO_AIR_BET_MULTI_ADD = Object.freeze({ refresh, showReferenceOdds });
 })();
