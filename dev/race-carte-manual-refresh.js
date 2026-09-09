@@ -1,10 +1,12 @@
-/* MAMO BOAT — Race Carte manual official-data refresh v1
+/* MAMO BOAT — Race Carte manual official-data refresh v2
  * Adds a user-triggered refresh button to the open Race Carte.
  * Reuses the existing snapshot/backfill path so app/navigation/render ownership stays untouched.
+ * Keeps the button present even when the Carte body is re-rendered after snapshot enrichment.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V1__) return;
+  if (window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V2__) return;
+  window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V2__ = true;
   window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V1__ = true;
 
   const KEY = "mamoboat_v40_personal";
@@ -14,6 +16,7 @@
     "13":"尼崎","14":"鳴門","15":"丸亀","16":"児島","17":"宮島","18":"徳山",
     "19":"下関","20":"若松","21":"芦屋","22":"福岡","23":"唐津","24":"大村"
   };
+  let bodyObserver = null;
 
   function readState() {
     try { return JSON.parse(localStorage.getItem(KEY) || "null") || {}; }
@@ -65,7 +68,7 @@
     const style = document.createElement("style");
     style.id = "mamoCarteManualRefreshStyle";
     style.textContent = `
-      .mamo-carte-manual-refresh{margin:0 0 10px;padding:10px;border:1px solid #d8e3e8;border-radius:12px;background:#f8fbfc}
+      .mamo-carte-manual-refresh{margin:0 0 10px;padding:9px;border:1px solid #d8e3e8;border-radius:12px;background:#f8fbfc}
       .mamo-carte-manual-refresh button{width:100%;min-height:44px;border:1.5px solid #0a3554;border-radius:10px;background:#fff;color:#0a3554;font:900 12px/1.2 system-ui,-apple-system,sans-serif}
       .mamo-carte-manual-refresh button:disabled{opacity:.62}
       .mamo-carte-manual-refresh p{margin:7px 2px 0;color:#617783;font:700 9px/1.55 system-ui,-apple-system,sans-serif}
@@ -84,7 +87,7 @@
     const tabs = body.querySelector(".mamo-carte-tabs");
     const box = document.createElement("div");
     box.className = "mamo-carte-manual-refresh";
-    box.innerHTML = '<button type="button" data-mamo-carte-refresh>↻ 公式データを再確認</button><p data-mamo-carte-refresh-status>未保存の項目がある時に、最新の公式取得済みデータを読み直します。</p>';
+    box.innerHTML = '<button type="button" data-mamo-carte-refresh>↻ 公式データを再確認</button><p data-mamo-carte-refresh-status>未保存の項目がある時に、最新の取得済み公式データを読み直します。</p>';
     if (tabs?.parentNode) tabs.parentNode.insertBefore(box, tabs.nextSibling);
     else body.prepend(box);
   }
@@ -114,26 +117,41 @@
 
       const after = activeRecord();
       const value = technique(after);
-      if (status) {
+      const currentStatus = document.querySelector("[data-mamo-carte-refresh-status]") || status;
+      if (currentStatus) {
         if (value) {
-          status.className = "ok";
-          status.textContent = `更新しました。決まり手：${value}`;
+          currentStatus.className = "ok";
+          currentStatus.textContent = `更新しました。決まり手：${value}`;
         } else {
-          status.className = "wait";
-          status.textContent = changed
-            ? "取得できた公式データを更新しました。決まり手はまだ公式取得データにありません。"
-            : "最新データを確認しました。決まり手はまだ公式取得データにありません。";
+          currentStatus.className = "wait";
+          currentStatus.textContent = changed
+            ? "取得済み公式データを更新しました。決まり手はまだ取得データにありません。"
+            : "最新取得データを確認しました。決まり手はまだ取得データにありません。";
         }
       }
     } catch (_) {
-      if (status) {
-        status.className = "wait";
-        status.textContent = "更新に失敗しました。通信状態を確認して、もう一度お試しください。";
+      const currentStatus = document.querySelector("[data-mamo-carte-refresh-status]") || status;
+      if (currentStatus) {
+        currentStatus.className = "wait";
+        currentStatus.textContent = "更新に失敗しました。通信状態を確認して、もう一度お試しください。";
       }
     } finally {
-      button.disabled = false;
-      button.textContent = "↻ 公式データを再確認";
+      const currentButton = document.querySelector("[data-mamo-carte-refresh]") || button;
+      currentButton.disabled = false;
+      currentButton.textContent = "↻ 公式データを再確認";
     }
+  }
+
+  function attachBodyObserver() {
+    const body = document.getElementById("mamoRaceCarteBody");
+    if (!body || bodyObserver) return;
+    bodyObserver = new MutationObserver(() => ensureButton());
+    bodyObserver.observe(body, { childList: true });
+  }
+
+  function boot() {
+    attachBodyObserver();
+    ensureButton();
   }
 
   document.addEventListener("click", event => {
@@ -144,10 +162,15 @@
       return;
     }
     if (event.target?.closest?.(".mamo-carte-btn,[data-rx-carte]")) {
-      setTimeout(ensureButton, 0);
+      setTimeout(() => {
+        attachBodyObserver();
+        ensureButton();
+      }, 0);
     }
   }, true);
 
   window.addEventListener("mamo:race-carte-snapshot", () => setTimeout(ensureButton, 0));
-  window.addEventListener("pageshow", () => setTimeout(ensureButton, 0));
+  window.addEventListener("pageshow", () => setTimeout(boot, 0));
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true });
+  else boot();
 })();
