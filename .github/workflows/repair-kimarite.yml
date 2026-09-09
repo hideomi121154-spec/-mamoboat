@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - "scripts/repair_kimarite.py"
+      - "scripts/repair_race_carte_environment.py"
       - ".github/workflows/repair-kimarite.yml"
   schedule:
     # During active race hours, refresh ended races every 5 minutes.
@@ -27,7 +28,7 @@ concurrency:
 jobs:
   repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     env:
       TZ: Asia/Tokyo
     steps:
@@ -47,6 +48,7 @@ jobs:
         run: |
           python -m py_compile scripts/sync_official_data.py
           python -m py_compile scripts/repair_kimarite.py
+          python -m py_compile scripts/repair_race_carte_environment.py
 
       - name: Refresh settled official results first
         env:
@@ -77,6 +79,19 @@ jobs:
             python scripts/repair_kimarite.py --max-races 144 --sleep 0.03
           fi
 
+      - name: Repair missing Race Carte environment
+        env:
+          TARGET_DATE: ${{ inputs.target_date }}
+        run: |
+          # The normal preview collector only watches a narrow close-time window.
+          # Revisit finished races so missed weather/wind/wave/temperature fields
+          # do not remain 未保存 forever.
+          if [ -n "$TARGET_DATE" ]; then
+            python scripts/repair_race_carte_environment.py --date "$TARGET_DATE" --max-races 48 --sleep 0.03
+          else
+            python scripts/repair_race_carte_environment.py --max-races 48 --sleep 0.03
+          fi
+
       - name: Mirror official data into dev
         run: |
           mkdir -p dev/data
@@ -88,10 +103,10 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data dev/data
           if git diff --cached --quiet; then
-            echo "No kimarite changes"
+            echo "No Race Carte detail changes"
             exit 0
           fi
-          git commit -m "Repair BOAT RACE kimarite"
+          git commit -m "Repair BOAT RACE Race Carte detail"
           for attempt in 1 2 3 4; do
             git pull --rebase origin main
             if git push origin HEAD:main; then
