@@ -99,7 +99,10 @@ function cloneInto(window, value) {
     assert(window.document.getElementById("modal").classList.contains("air-bet-review-modal"));
     const shell = window.document.querySelector(".air-bet-review-shell[data-air-bet-review]");
     assert(shell, "review content must use the fixed modal shell");
-    assert(shell.querySelector(".betreceipt > .betlines"), "only the ticket list may be the review scroller");
+    const tickets = shell.querySelector(".air-bet-review-tickets");
+    assert(tickets, "review tickets must use a dedicated Safari-compatible scroller");
+    assert(tickets.querySelector(".betreceipt > .betlines"), "the receipt must stay inside the ticket scroller");
+    assert(window.document.getElementById("modalBg").classList.contains("air-bet-review-bg"));
     assert.equal(window.document.querySelectorAll("[data-review-stake-increment]").length, 3);
   };
 
