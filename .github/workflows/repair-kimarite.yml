@@ -13,8 +13,9 @@ on:
       - "scripts/repair_kimarite.py"
       - ".github/workflows/repair-kimarite.yml"
   schedule:
-    # Existing fast-result sync runs at :07/:17/... . Repair result detail two minutes later.
-    - cron: "9,19,29,39,49,59 0-14,21-23 * * *"
+    # During active race hours, refresh ended races every 5 minutes.
+    # This reduces the window where a settled Race Carte can show 未保存.
+    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 0-14,21-23 * * *"
 
 permissions:
   contents: write
@@ -51,21 +52,19 @@ jobs:
         env:
           TARGET_DATE: ${{ inputs.target_date }}
         run: |
-          # Kimarite can only be repaired after the corresponding official result
-          # has been stored in data/today.json. Refresh all ended candidates first
-          # so an intermediate race such as Tsu 4R is not skipped by the small
-          # fast-result batch used by the normal 10-minute sync.
+          # Refresh all ended candidates first. A large batch prevents a race from
+          # being skipped when many venues settle around the same time.
           if [ -n "$TARGET_DATE" ]; then
             python scripts/sync_official_data.py \
               --date "$TARGET_DATE" \
               --fast-results-only \
-              --result-grace-minutes 5 \
-              --result-max-races 96
+              --result-grace-minutes 3 \
+              --result-max-races 144
           else
             python scripts/sync_official_data.py \
               --fast-results-only \
-              --result-grace-minutes 5 \
-              --result-max-races 96
+              --result-grace-minutes 3 \
+              --result-max-races 144
           fi
 
       - name: Repair missing kimarite
@@ -73,9 +72,9 @@ jobs:
           TARGET_DATE: ${{ inputs.target_date }}
         run: |
           if [ -n "$TARGET_DATE" ]; then
-            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 96
+            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 144 --sleep 0.03
           else
-            python scripts/repair_kimarite.py --max-races 96
+            python scripts/repair_kimarite.py --max-races 144 --sleep 0.03
           fi
 
       - name: Mirror official data into dev
