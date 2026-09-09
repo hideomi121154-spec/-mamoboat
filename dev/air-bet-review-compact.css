@@ -1,0 +1,25 @@
+/* MAMO BOAT — compact AIR BET review layout.
+ * Keep the modal stable on iPhone/PWA while giving the ticket list more room.
+ * The per-ticket "未入力" state remains visible inside each ticket row.
+ */
+.air-bet-review-shell #reviewBetSummary,
+.air-bet-review-shell #reviewStakePrompt {
+  display: none !important;
+}
+
+.air-bet-review-shell > .air-bet-review-tickets {
+  flex: 1 1 0;
+  min-height: clamp(220px, 34vh, 420px);
+}
+
+@media (max-height: 740px) {
+  .air-bet-review-shell > .air-bet-review-tickets {
+    min-height: 180px;
+  }
+}
+
+@media (max-height: 640px) {
+  .air-bet-review-shell > .air-bet-review-tickets {
+    min-height: 150px;
+  }
+}
