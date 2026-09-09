@@ -1,6 +1,7 @@
-/* MAMO BOAT — compact AIR BET review layout v5.
+/* MAMO BOAT — compact AIR BET review layout v6.
  * Remove duplicated stake prompts and the review notice, then give the freed
- * vertical room to the ticket list. Keep exactly one iPhone-safe scroller.
+ * vertical room to the ticket list. Use an explicit iPhone-safe scroll height
+ * so Safari does not depend on percentage heights through <details>.
  */
 .air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt,
@@ -8,19 +9,16 @@
   display: none !important;
 }
 
-/* This section consumes all free room between the heading and stake controls. */
 .air-bet-review-shell > .air-bet-review-tickets {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden !important;
 }
 
-/* <details> itself stays fixed. Safari is more reliable when the child list,
- * rather than the details/outer flex item, owns the scrolling gesture. */
 .air-bet-review-tickets > .betreceipt {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto !important;
   min-height: 0;
   margin: 0;
   box-sizing: border-box;
@@ -33,31 +31,32 @@
   box-sizing: border-box;
 }
 
-/* The rows are the only scrollable area. 34px reserves the receipt summary. */
+/* Safari/PWA fix: do not calculate this from a percentage-height <details>.
+ * Give the rows their own definite viewport-relative height and scroll them. */
 .air-bet-review-tickets .betreceipt > .betlines {
   display: grid;
-  height: calc(100% - 34px);
+  height: clamp(300px, 36dvh, 430px) !important;
   min-height: 0;
-  max-height: none !important;
+  max-height: clamp(300px, 36dvh, 430px) !important;
   overflow-x: hidden !important;
-  overflow-y: scroll !important;
-  overscroll-behavior: contain;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  touch-action: pan-y !important;
   scrollbar-width: thin;
-}
-
-/* Give the finger gesture some breathing room at the bottom of the list. */
-.air-bet-review-tickets .betreceipt > .betlines::after {
-  content: "";
-  display: block;
-  height: 8px;
+  padding-bottom: 10px;
 }
 
 @media (max-height: 740px) {
-  .air-bet-review-shell > .air-bet-review-tickets { min-height: 220px; }
+  .air-bet-review-tickets .betreceipt > .betlines {
+    height: 260px !important;
+    max-height: 260px !important;
+  }
 }
 
 @media (max-height: 640px) {
-  .air-bet-review-shell > .air-bet-review-tickets { min-height: 180px; }
+  .air-bet-review-tickets .betreceipt > .betlines {
+    height: 220px !important;
+    max-height: 220px !important;
+  }
 }
