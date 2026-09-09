@@ -1,11 +1,11 @@
-/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v5.
- * Keeps the existing one-tap venue return, live-odds preview, and adds review
- * helpers without re-rendering the race/builder DOM.
+/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v6.
+ * Keeps the existing one-tap venue return, live-odds preview, and review helpers
+ * without re-rendering the race/builder DOM. Emptying the review stays in place.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MULTI_ADD_V5__) return;
-  window.__MAMO_AIR_BET_MULTI_ADD_V5__ = true;
+  if (window.__MAMO_AIR_BET_MULTI_ADD_V6__) return;
+  window.__MAMO_AIR_BET_MULTI_ADD_V6__ = true;
 
   let oddsAbort = null;
   let oddsRequestKey = "";
@@ -129,9 +129,33 @@
     });
   }
 
+  function showEmptyReview() {
+    const summary = document.getElementById("reviewBetSummary");
+    if (summary) {
+      summary.classList.remove("stake-required-notice");
+      summary.innerHTML = "<b>0点 / 0B</b>";
+    }
+    const receipt = document.querySelector(".betreceipt[data-editable-cart='true']");
+    if (receipt) {
+      const meta = receipt.querySelector("#reviewBetReceiptMeta");
+      if (meta) meta.textContent = "0点";
+      const lines = receipt.querySelector(".betlines");
+      if (lines) lines.innerHTML = '<div class="notice warn" data-mamo-empty-review="1">買い目はありません。</div>';
+    }
+    const input = document.getElementById("reviewAllStakeInput");
+    if (input) input.value = "";
+    const confirmButton = document.querySelector("#modal button[onclick='placeBet()']");
+    if (confirmButton) confirmButton.disabled = true;
+  }
+
   function clearAllReviewLines() {
     window.clearCart?.();
-    if ((window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) === 0) window.closeModal?.();
+    if ((window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) === 0) showEmptyReview();
+  }
+
+  function clearLastReviewLineWithoutClosing() {
+    window.clearCart?.();
+    if ((window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) === 0) showEmptyReview();
   }
 
   function refresh() {
@@ -154,6 +178,11 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       clearAllReviewLines();
+    }
+    if (target.matches(".betline-remove") && (window.MAMO_AIR_BET_DRAFT?.status?.().count || 0) === 1) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      clearLastReviewLineWithoutClosing();
     }
     if (target.matches("#reviewBetButton, [onclick='reviewBet()']")) setTimeout(enhanceReviewStakeTools, 0);
   }, true);
