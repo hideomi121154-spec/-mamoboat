@@ -1,11 +1,13 @@
-/* MAMO BOAT — Race Carte manual official-data refresh v2
+/* MAMO BOAT — Race Carte manual official-data refresh v3
  * Adds a user-triggered refresh button to the open Race Carte.
  * Reuses the existing snapshot/backfill path so app/navigation/render ownership stays untouched.
  * Keeps the button present even when the Carte body is re-rendered after snapshot enrichment.
+ * Never treats literal undefined/null placeholders as valid official values.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V2__) return;
+  if (window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V3__) return;
+  window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V3__ = true;
   window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V2__ = true;
   window.__MAMO_RACE_CARTE_MANUAL_REFRESH_V1__ = true;
 
@@ -50,6 +52,15 @@
     }) || null;
   }
 
+  function cleanOfficialValue(value) {
+    if (value == null) return "";
+    const text = String(value).trim();
+    if (!text) return "";
+    const normalized = text.toLowerCase();
+    if (["undefined", "null", "nan", "未保存", "—", "-"].includes(normalized)) return "";
+    return text;
+  }
+
   function technique(record) {
     const values = [
       record?.resultTechnique,
@@ -60,7 +71,11 @@
       record?.result?.kimarite,
       record?.result?.winningMethod
     ];
-    return String(values.find(value => value != null && String(value).trim() && String(value).trim() !== "未保存") || "").trim();
+    for (const value of values) {
+      const cleaned = cleanOfficialValue(value);
+      if (cleaned) return cleaned;
+    }
+    return "";
   }
 
   function ensureStyle() {
@@ -125,8 +140,8 @@
         } else {
           currentStatus.className = "wait";
           currentStatus.textContent = changed
-            ? "取得済み公式データを更新しました。決まり手はまだ取得データにありません。"
-            : "最新取得データを確認しました。決まり手はまだ取得データにありません。";
+            ? "取得済み公式データを更新しました。決まり手はまだ取得できていません。"
+            : "最新取得データを確認しました。決まり手はまだ取得できていません。";
         }
       }
     } catch (_) {
@@ -137,8 +152,10 @@
       }
     } finally {
       const currentButton = document.querySelector("[data-mamo-carte-refresh]") || button;
-      currentButton.disabled = false;
-      currentButton.textContent = "↻ 公式データを再確認";
+      if (currentButton) {
+        currentButton.disabled = false;
+        currentButton.textContent = "↻ 公式データを再確認";
+      }
     }
   }
 
