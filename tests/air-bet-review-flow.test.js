@@ -37,7 +37,7 @@ function cloneInto(window, value) {
     confirms.push(String(message));
     return true;
   };
-  window.Date.now = () => Date.parse("2026-09-09T05:00:00.000Z");
+  window.Date.now = () => Date.parse(`${dataset.date}T05:00:00.000Z`);
   window.fetch = async (input) => {
     const url = String(input);
     if (url.includes("boatrace-odds")) {
@@ -96,6 +96,10 @@ function cloneInto(window, value) {
   const openReview = () => {
     clickId("reviewBetButton");
     assert(window.document.getElementById("modalBg").classList.contains("show"));
+    assert(window.document.getElementById("modal").classList.contains("air-bet-review-modal"));
+    const shell = window.document.querySelector(".air-bet-review-shell[data-air-bet-review]");
+    assert(shell, "review content must use the fixed modal shell");
+    assert(shell.querySelector(".betreceipt > .betlines"), "only the ticket list may be the review scroller");
     assert.equal(window.document.querySelectorAll("[data-review-stake-increment]").length, 3);
   };
 

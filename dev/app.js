@@ -976,7 +976,12 @@
   }
 
   function openModal(html) {
-    $("modal").innerHTML = html;
+    const modal = $("modal");
+    modal.innerHTML = html;
+    modal.classList.toggle(
+      "air-bet-review-modal",
+      Boolean(modal.querySelector("[data-air-bet-review]"))
+    );
     $("modalBg").classList.add("show");
     document.documentElement?.classList?.toggle("modal-open", true);
     document.body?.classList?.toggle("modal-open", true);
@@ -2302,7 +2307,7 @@
       venueCode: venueItem.code,
       raceNo: raceItem.number,
     });
-    openModal(`<div data-air-bet-review="1"><button class="mamo-bet-modal-back" type="button" onclick="closeModal()">← AIR BET画面へ戻る</button></div>
+    openModal(`<div class="air-bet-review-shell" data-air-bet-review="1"><button class="mamo-bet-modal-back" type="button" onclick="closeModal()">← AIR BET画面へ戻る</button>
       <h2>${esc(venueItem.name)} ${raceItem.number}R</h2>
       <div id="reviewBetSummary" class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <div id="reviewBetBalanceError" class="notice warn" hidden></div>
@@ -2316,7 +2321,7 @@
         <button class="mamo-clear-review" type="button" onclick="clearReviewCart()">入力したベット数を削除</button>
       </div>
       <div class="notice editorial-safety"><b>気持ちの採点はしません。</b><br>結果確認後の「次のレースを見るまで」「次のAIR BETまで」「公式サイトへ移動して戻るまで」を自動でつなぎ、普段の自分と比較します。</div>
-      <button class="btn teal full air-bet-confirm-button" type="button" onclick="placeBet()">AIR BETを確定する</button>`);
+      <button class="btn teal full air-bet-confirm-button" type="button" onclick="placeBet()">AIR BETを確定する</button></div>`);
     syncReviewBetUI();
   };
 

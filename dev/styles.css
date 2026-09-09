@@ -1212,11 +1212,54 @@ body { padding-right: 0; }
   scrollbar-gutter: stable;
 }
 
+/* 購入確認は外枠を固定し、増減する買い目一覧だけをスクロールする。 */
+.modal.air-bet-review-modal {
+  height: calc(100vh - 24px);
+  height: calc(100dvh - 24px);
+  max-height: none;
+  overflow: hidden;
+  overscroll-behavior: none;
+  scrollbar-gutter: auto;
+}
+.air-bet-review-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.air-bet-review-shell > * { flex: 0 0 auto; }
+.air-bet-review-shell > .betreceipt {
+  min-height: 0;
+  overflow: hidden;
+}
+.air-bet-review-shell > .betreceipt[open] {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+.air-bet-review-shell > .betreceipt > summary { flex: 0 0 auto; }
+.air-bet-review-shell > .betreceipt > .betlines {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
 @media (max-height: 680px) {
   .modal-bg { align-items: stretch; padding: 8px; }
   .modal {
     max-height: calc(100vh - 16px);
     max-height: calc(100dvh - 16px);
+  }
+  .modal.air-bet-review-modal {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
   }
 }
 

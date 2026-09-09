@@ -182,7 +182,12 @@ assert.doesNotMatch(setAllStakesBody, /renderCart\(\)/, "quick amounts must not 
 // Modal/body scrolling and bottom navigation keep the existing iOS safeguards.
 assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", true\)/);
 assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", false\)/);
+assert.match(app, /modal\.classList\.toggle\([\s\S]*?"air-bet-review-modal"[\s\S]*?modal\.querySelector\("\[data-air-bet-review\]"\)/);
+assert.match(app, /class="air-bet-review-shell" data-air-bet-review="1"/);
 assert.match(styles, /html\.modal-open, body\.modal-open \{ overflow: hidden !important; overscroll-behavior: none; \}/);
+assert.match(styles, /\.modal\.air-bet-review-modal \{[\s\S]*?height: calc\(100dvh - 24px\);[\s\S]*?overflow: hidden;/);
+assert.match(styles, /\.air-bet-review-shell \{[\s\S]*?height: 100%;[\s\S]*?overflow: hidden;/);
+assert.match(styles, /\.air-bet-review-shell > \.betreceipt > \.betlines \{[\s\S]*?max-height: none;[\s\S]*?overflow-y: auto;/);
 assert.match(styles, /\.bottom-nav \{ position: fixed;/);
 assert.match(styles, /\.air-bet-tray-row \.xbtn \{ min-height: 44px;/);
 assert.match(styles, /\.air-bet-review-button \{ min-height: 56px;/);
@@ -198,12 +203,13 @@ assert.match(layout, /class="mamo-racer-meta"/);
 assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
-assert.match(index, /styles\.css\?v=20260909-3/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260909-6/);
+assert.match(index, /styles\.css\?v=20260910-1/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260910-1/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v457-air-bet-stake-clear-94-dev/);
-assert.match(serviceWorker, /app\.js\?v=20260909-6/);
+assert.match(serviceWorker, /mamoboat-v459-air-bet-fixed-review-96-dev/);
+assert.match(serviceWorker, /styles\.css\?v=20260910-1/);
+assert.match(serviceWorker, /app\.js\?v=20260910-1/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-2/);
 assert.doesNotMatch(serviceWorker, /air-bet-multi-add|air-bet-selection-reset|mamo-air-bet-review-cleanup/);
