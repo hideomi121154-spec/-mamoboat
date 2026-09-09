@@ -14,8 +14,7 @@ on:
       - "scripts/repair_race_carte_environment.py"
       - ".github/workflows/repair-kimarite.yml"
   schedule:
-    # During active race hours, refresh ended races every 5 minutes.
-    # This reduces the window where a settled Race Carte can show 未保存.
+    # During active race hours, refresh ended races and pre-race environment every 5 minutes.
     - cron: "2,7,12,17,22,27,32,37,42,47,52,57 0-14,21-23 * * *"
 
 permissions:
@@ -79,17 +78,17 @@ jobs:
             python scripts/repair_kimarite.py --max-races 144 --sleep 0.03
           fi
 
-      - name: Repair missing Race Carte environment
+      - name: Capture and repair Race Carte environment
         env:
           TARGET_DATE: ${{ inputs.target_date }}
         run: |
-          # The normal preview collector only watches a narrow close-time window.
-          # Revisit finished races so missed weather/wind/wave/temperature fields
-          # do not remain 未保存 forever.
+          # Poll beforeinfo before close as well as after settlement. This avoids
+          # making a user wait for a post-race repair cycle before weather/wind/
+          # wave/temperature appears in the Race Carte.
           if [ -n "$TARGET_DATE" ]; then
-            python scripts/repair_race_carte_environment.py --date "$TARGET_DATE" --max-races 48 --sleep 0.03
+            python scripts/repair_race_carte_environment.py --date "$TARGET_DATE" --max-races 144 --sleep 0.03
           else
-            python scripts/repair_race_carte_environment.py --max-races 48 --sleep 0.03
+            python scripts/repair_race_carte_environment.py --max-races 144 --sleep 0.03
           fi
 
       - name: Mirror official data into dev
