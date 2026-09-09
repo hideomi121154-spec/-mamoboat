@@ -8,7 +8,6 @@
   <link rel="manifest" href="manifest.webmanifest?v=401">
   <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css?v=20260910-2">
-  <link rel="stylesheet" href="air-bet-review-compact.css?v=20260910-7">
   <link rel="stylesheet" href="brand-theme.css?v=20260827-2">
   <title>MAMO BOAT v4.0.1</title>
 </head>
@@ -176,52 +175,69 @@
           <p>GOLD / MAMO PRESSの発行設定です。現在のPILOT版では端末内に発行し、料金は発生しません。</p>
           <label class="check"><input id="morningToggle" type="checkbox" onchange="togglePressSetting('morningEnabled', this.checked)"><span><b>MAMO朝刊</b><small>前日に記録があるときだけ発行</small></span></label>
           <label class="check"><input id="weeklyToggle" type="checkbox" onchange="togglePressSetting('weeklyEnabled', this.checked)"><span><b>MAMO週間</b><small>直近7日を前の7日と比較</small></span></label>
-          <label class="check"><input id="monthlyToggle" type="checkbox" onchange="togglePressSetting('monthlyEnabled', this.checked)"><span><b>MAMO月刊</b><small>直近30日を前の30日と比較</small></span></label>
+          <label class="check"><input id="monthlyToggle" type="checkbox" onchange="togglePressSetting('monthlyEnabled', this.checked)"><span><b>MAMO月刊</b><small>長期傾向を月単位で確認</small></span></label>
+        </div>
+        <div class="section-head small"><div><span class="section-number">DATA</span><h2>匿名の利用状況</h2></div><span class="section-meta">任意</span></div>
+        <div class="panel settings-panel">
+          <p>サービス改善のため、画面遷移・漫画の読了・AIR BETの利用状況を匿名テスター番号で集計できます。氏名・メールアドレス・自由記述・決済情報は送信しません。</p>
+          <label class="field"><span>匿名テスター番号</span><input id="pilotParticipantId" type="text" maxlength="40" autocomplete="off" spellcheck="false"></label>
+          <label class="check"><input id="pilotConsent" type="checkbox"><span><b>匿名データの送信に同意する</b><small>OFFでもAIR BETと端末内記録は利用できます</small></span></label>
+          <div id="pilotStatus" class="sync-detail"></div>
+          <div class="action-stack">
+            <button class="btn primary full" type="button" onclick="savePilotSettings()">計測設定を保存</button>
+            <button class="btn secondary full" type="button" onclick="sendPilotDataNow(this)">未送信データを送る</button>
+          </div>
         </div>
       </section>
     </main>
 
-    <nav class="bottom-nav" aria-label="メインナビゲーション">
-      <button type="button" data-screen="home" onclick="go('home')"><span>⌂</span><small>ホーム</small></button>
-      <button type="button" data-screen="venues" onclick="go('venues')"><span>⚑</span><small>24場</small></button>
-      <button type="button" data-screen="race" onclick="go('race')"><span>⑥</span><small>レース</small></button>
-      <button type="button" data-screen="records" onclick="go('records')"><span>▤</span><small>記録</small></button>
-      <button type="button" data-screen="analysis" onclick="go('analysis')"><span>▤</span><small>編集部</small></button>
-      <button type="button" data-screen="shop" onclick="go('shop')"><span>▣</span><small>SHOP</small></button>
+    <nav class="bottom-nav" aria-label="メインメニュー">
+      <button id="nav-home" class="nav active" onclick="go('home')"><b>⌂</b><span>ホーム</span></button>
+      <button id="nav-venues" class="nav" onclick="go('venues')"><b>⚑</b><span>24場</span></button>
+      <button id="nav-race" class="nav" onclick="go('race')"><b>⑥</b><span>レース</span></button>
+      <button id="nav-records" class="nav" onclick="go('records')"><b>▤</b><span>記録</span></button>
+      <button id="nav-analysis" class="nav" onclick="go('analysis')"><b>▤</b><span>編集部</span></button>
+      <button id="nav-settings" class="nav" onclick="go('settings')"><b>⚙</b><span>設定</span></button>
     </nav>
   </div>
 
-  <div id="modalBg" class="modal-bg" hidden><div id="modal" class="modal"></div></div>
+  <div id="onboard" class="onboard">
+    <div class="onboard-shell">
+      <div class="onboard-top"><span class="brand-mark">B</span><span>MAMO BOAT / FIRST VOYAGE</span></div>
+      <div class="onboard-panel active" data-onboard="0">
+        <div class="onboard-copy"><span class="kicker">WELCOME ABOARD</span><h1>勝負の主導権を、<br><em>自分に！</em></h1><p>実レースの緊張感はそのまま。現金だけを使わない、あなた専用の投票席です。</p></div>
+        <img class="onboard-cover-art" src="assets/EFE288D7-4C85-4906-A6E9-1590E55E7070.png?v=20260815-10" alt="加音 守、木月 美留、一曲 瞬が表紙を飾るMAMO BOAT PRESS">
+        <button class="btn primary onboard-next" onclick="onboardNext()">タップして進む <span>→</span></button>
+      </div>
+      <div class="onboard-panel" data-onboard="1">
+        <div class="onboard-copy"><span class="kicker">HOW IT WORKS</span><h1>実レースから、<br><em>行動分析まで。</em></h1></div>
+        <div class="onboard-route">
+          <div><b>01</b><span>場・レースを選ぶ</span></div><div><b>02</b><span>AIR BETで仮想投票</span></div><div><b>03</b><span>実結果で自動精算</span></div><div><b>04</b><span>加音 守の新聞で振り返る</span></div>
+        </div>
+        <p class="onboard-editorial">AIが見るのはレースの勝敗ではなく、あなたが勝負を選んだ過程です。艇・買い目・賭け金は勧めません。</p>
+        <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button class="btn primary" onclick="onboardNext()">次へ →</button></div>
+      </div>
+      <div class="onboard-panel" data-onboard="2">
+        <div class="onboard-copy"><span class="kicker">FINAL CHECK</span><h1>これは現金ではなく、<br><em>Bメダルです。</em></h1><p>初回残高は100,000Bです。任意追加・自動復活・換金はできません。AIR BETで減り、的中時は公式確定払戻と同額のBが加算されます。返還時は対象Bだけ戻り、記録は原則この端末内に保存されます。</p></div>
+        <label class="check"><input id="age" type="checkbox" onchange="checkStart()"><span><b>私は20歳以上です</b><small>成人向けの自己管理ツールとして利用します</small></span></label>
+        <label class="check"><input id="value" type="checkbox" onchange="checkStart()"><span><b>Bメダルに金銭的価値がないことを理解しました</b><small>換金・購入・入出金・譲渡はできません</small></span></label>
+        <label class="check"><input id="pilotConsentOnboard" type="checkbox"><span><b>匿名の利用状況を送信する（任意）</b><small>氏名・メール・自由記述は送信せず、画面遷移やAIR BETの利用状況だけを改善に使います</small></span></label>
+        <div class="onboard-actions"><button class="btn ghost" onclick="onboardBack()">← 戻る</button><button id="startBtn" class="btn coral-btn" disabled onclick="startApp()">航海を始める</button></div>
+      </div>
+      <div class="onboard-dots"><i class="active"></i><i></i><i></i></div>
+    </div>
+  </div>
 
+  <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
   <script src="core.js?v=20260908-1"></script>
   <script src="air-bet-draft-core.js?v=20260909-2"></script>
   <script src="pilot-config.js?v=20260909-4"></script>
+  <script data-mamo-module="air-outcome" src="air-outcome-experience.js?v=20260909-5"></script>
   <script src="app.js?v=20260910-2"></script>
-  <script src="decision-event-schema.js"></script>
-  <script src="decision-conflict-core.js"></script>
-  <script src="decision-conflict-guard.js?v=20260906-2"></script>
-  <script src="decision-event-collector.js"></script>
-  <script src="decision-event-api-compat.js?v=20260908-2"></script>
-  <script src="bet-review-flow.js?v=20260908-2"></script>
-  <script src="decision-transition-model.js"></script>
+  <script src="race-carte.js?v=20260907-6"></script>
+  <script src="race-carte-snapshot.js?v=20260907-6"></script>
+  <script src="race-carte-official-payouts.js?v=20260907-2"></script>
   <script src="growth-entry.js?v=20260908-2"></script>
-  <script src="venue-live-priority.js?v=20260909-1"></script>
-  <script src="air-bet-mode-stability.js?v=20260909-4"></script>
-  <script src="race-layout-refresh.js?v=20260908-2"></script>
-  <script src="race-airbet-first.js?v=20260909-5"></script>
-  <script src="general-grade-theme.js?v=20260908-1"></script>
-  <script src="air-outcome-experience.js?v=20260909-5"></script>
-  <script src="record-unified-layout-v2.js?v=20260909-5"></script>
-  <script src="record-mobile-layout-fix.js?v=20260908-2"></script>
-  <script src="race-carte-live-state-fix.js?v=20260908-3"></script>
-  <script src="race-carte-manual-refresh.js?v=20260909-3"></script>
-  <script src="mamokamo.js?v=20260823-4"></script>
-  <script src="behavior-pattern-profile.js?v=20260828-3"></script>
-  <script src="behavior-science.js?v=20260829-2"></script>
-  <script src="mamo-shop.js?v=20260830-2"></script>
-  <script src="mamo-shop-value-core.js?v=20260822-1"></script>
-  <script src="mamo-shop-marketplace.js?v=20260828-8"></script>
-  <script src="mamo-shop-record-benefits.js?v=20260830-1"></script>
-  <script src="motion-experience.js?v=20260827-1"></script>
+  <script src="cast-ui.js?v=20260827-3"></script>
 </body>
 </html>
