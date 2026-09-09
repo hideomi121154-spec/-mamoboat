@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Repair missing Race Carte environment snapshots from BOAT RACE beforeinfo.
 
-The normal enrichment job intentionally focuses on a narrow window around the
-race close time. If that window is missed because many venues settle together,
-a finished Race Carte can keep showing 未保存 forever. This repair pass revisits
-settled/current-day races whose environment is still incomplete.
+The normal enrichment job can miss a race when many venues are active at once.
+This fast repair pass therefore does not wait for settlement: it starts polling
+missing environment data up to 75 minutes before close, then keeps revisiting
+finished/current-day races until the snapshot is complete.
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ ENV_FIELDS = (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", default=os.getenv("TARGET_DATE") or "")
-    parser.add_argument("--max-races", type=int, default=48)
+    parser.add_argument("--max-races", type=int, default=144)
     parser.add_argument("--sleep", type=float, default=0.03)
     return parser.parse_args()
 
@@ -71,18 +71,22 @@ def main() -> int:
         code = str(venue.get("code") or "").zfill(2)
         for race in venue.get("races") or []:
             close = close_dt(race)
-            if not close or close > now:
+            if not close:
                 continue
-            # Revisit races that have settled or are old enough that beforeinfo is
-            # stable, but only when at least one environment field is still empty.
+            minutes_to_close = (close - now).total_seconds() / 60
+            # Start collecting beforeinfo while the race is still open. This is
+            # the important latency fix: a Race Carte can already contain weather,
+            # wind, wave and temperature when the user opens it after AIR BET,
+            # instead of waiting for the post-race repair cycle.
+            if minutes_to_close > 75:
+                continue
             if missing_environment(race):
                 targets.append((code, race))
 
-    # Most recent finished races first so a user opening a fresh Race Carte gets
-    # repaired before older history. Repeated 5-minute runs will catch the rest.
+    # Nearest-to-close first. Upcoming races and freshly finished races therefore
+    # beat old history when many venues are active at the same time.
     targets.sort(
-        key=lambda item: (close_dt(item[1]) or datetime(1970, 1, 1, tzinfo=JST)).timestamp(),
-        reverse=True,
+        key=lambda item: abs(((close_dt(item[1]) or now) - now).total_seconds())
     )
 
     changed = False
