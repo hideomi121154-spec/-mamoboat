@@ -1,7 +1,6 @@
-/* MAMO BOAT — compact AIR BET review layout v2.
- * Remove the duplicated stake prompts and use the freed vertical space for the
- * purchase-list frame itself. The page/modal stays fixed; only the ticket list
- * scrolls when there are more tickets than fit.
+/* MAMO BOAT — compact AIR BET review layout v3.
+ * Remove duplicated stake prompts, expand the purchase-list frame, and keep
+ * the whole purchase area as the single scroll container on iPhone/PWA.
  */
 .air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt {
@@ -12,31 +11,31 @@
 .air-bet-review-shell > .air-bet-review-tickets {
   flex: 1 1 0;
   min-height: 0;
-  overflow: hidden;
-}
-
-/* Stretch the visible purchase frame, instead of leaving blank space below it. */
-.air-bet-review-tickets > .betreceipt {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-/* Only the rows inside the expanded purchase frame scroll. */
-.air-bet-review-tickets .betreceipt > .betlines {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: none;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+}
+
+/* Let the receipt grow with every ticket; the parent frame performs scrolling. */
+.air-bet-review-tickets > .betreceipt {
+  display: block;
+  width: 100%;
+  min-height: 100%;
+  height: auto;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* Do not create a second nested scroll area inside the receipt. */
+.air-bet-review-tickets .betreceipt > .betlines {
+  display: grid;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  touch-action: auto;
 }
 
 /* Keep useful room for the list on shorter iPhones without shrinking controls. */
