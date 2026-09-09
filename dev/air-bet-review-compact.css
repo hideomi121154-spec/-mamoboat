@@ -1,44 +1,58 @@
-/* MAMO BOAT — compact AIR BET review layout v3.
- * Remove duplicated stake prompts, expand the purchase-list frame, and keep
- * the whole purchase area as the single scroll container on iPhone/PWA.
+/* MAMO BOAT — compact AIR BET review layout v4.
+ * Remove duplicated stake prompts, expand the purchase frame, and keep exactly
+ * one iPhone-safe scroller: the ticket rows inside the receipt.
  */
 .air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt {
   display: none !important;
 }
 
-/* The purchase section owns the free space between the heading and stake tools. */
+/* This section consumes the free room between the heading and stake controls. */
 .air-bet-review-shell > .air-bet-review-tickets {
   flex: 1 1 0;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  overflow: hidden !important;
 }
 
-/* Let the receipt grow with every ticket; the parent frame performs scrolling. */
+/* <details> itself stays fixed. Safari is more reliable when the child list,
+ * rather than the details/outer flex item, owns the scrolling gesture. */
 .air-bet-review-tickets > .betreceipt {
   display: block;
   width: 100%;
-  min-height: 100%;
-  height: auto;
+  height: 100%;
+  min-height: 0;
   margin: 0;
   box-sizing: border-box;
-  overflow: visible;
+  overflow: hidden !important;
 }
 
-/* Do not create a second nested scroll area inside the receipt. */
+.air-bet-review-tickets > .betreceipt > summary {
+  display: block;
+  min-height: 34px;
+  box-sizing: border-box;
+}
+
+/* The rows are the only scrollable area. 34px reserves the receipt summary. */
 .air-bet-review-tickets .betreceipt > .betlines {
   display: grid;
-  max-height: none;
+  height: calc(100% - 34px);
   min-height: 0;
-  overflow: visible;
-  touch-action: auto;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: thin;
 }
 
-/* Keep useful room for the list on shorter iPhones without shrinking controls. */
+/* Give the finger gesture some breathing room at the bottom of the list. */
+.air-bet-review-tickets .betreceipt > .betlines::after {
+  content: "";
+  display: block;
+  height: 8px;
+}
+
 @media (max-height: 740px) {
   .air-bet-review-shell > .air-bet-review-tickets { min-height: 150px; }
 }
