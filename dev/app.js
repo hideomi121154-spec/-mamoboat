@@ -235,6 +235,8 @@
   let addRequestSerial = 0;
   let activeAddRequest = 0;
   let addRequestInFlight = false;
+  let selectionOddsAbort = null;
+  let selectionOddsRequestKey = "";
   let onboardStep = 0;
   let airBetOnboarding = false;
   let resultIndexRequested = false;
@@ -1527,6 +1529,7 @@
     ).join("")}</div>
     <div id="betGuide" class="notice betguide"></div>
     <div id="modeTabs" class="bet-tabs"></div><div id="builder"></div>
+    <div id="selectionOddsPreview" class="added-notice" aria-live="polite"></div>
     <div id="addedNotice" class="added-notice" aria-live="polite"></div>
     <section id="airBetTray" class="air-bet-tray" aria-labelledby="airBetTrayTitle">
       <div class="title cart-title"><div><h2 id="airBetTrayTitle">買い目トレイ</h2><small>方式を切り替えて、そのまま続けて追加できます</small></div><span id="cartCount">0点</span></div>
@@ -1556,6 +1559,9 @@
     selectionRevision += 1;
     activeAddRequest = 0;
     addRequestInFlight = false;
+    selectionOddsAbort?.abort?.();
+    selectionOddsAbort = null;
+    selectionOddsRequestKey = "";
     betType = "trifecta";
     mode = "normal";
     resetSelections();
@@ -1672,6 +1678,60 @@
     return form.length === spec.picks
       && form.every((items) => items.size > 0)
       && D.expandFormation(form).length > 0;
+  }
+
+  function syncSelectionReferenceOdds() {
+    const notice = $("selectionOddsPreview");
+    const venueItem = venue(S.venue);
+    const raceItem = race(venueItem?.code, S.raceNo);
+    if (!notice || mode !== "normal" || !currentSelectionComplete() || !raceItem) {
+      selectionOddsAbort?.abort?.();
+      selectionOddsAbort = null;
+      selectionOddsRequestKey = "";
+      if (notice) {
+        notice.className = "added-notice";
+        setText(notice, "");
+      }
+      return;
+    }
+
+    const combination = C.canonicalCombo(normal, betType);
+    const localReference = referenceOdds(raceItem, betType, normal);
+    notice.className = "added-notice show reference-odds-preview";
+    setText(notice, localReference?.value
+      ? `選択中 ${combination} / 参考オッズ ${localReference.value}倍`
+      : `選択中 ${combination} / 参考オッズを確認中…`);
+
+    const requestKey = `${DATA.date}:${venueItem.code}:${raceItem.number}:${betType}:${combination}`;
+    if (requestKey === selectionOddsRequestKey) return;
+    selectionOddsRequestKey = requestKey;
+    selectionOddsAbort?.abort?.();
+    selectionOddsAbort = typeof AbortController === "function" ? new AbortController() : null;
+    fetch("https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-odds", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: DATA.date,
+        venueCode: venueItem.code,
+        raceNo: raceItem.number,
+        betType,
+      }),
+      ...(selectionOddsAbort ? { signal: selectionOddsAbort.signal } : {}),
+    }).then((response) => response.ok ? response.json() : null).then((payload) => {
+      if (selectionOddsRequestKey !== requestKey) return;
+      const liveValue = payload?.ok && payload.status === "available"
+        ? payload.odds?.values?.[combination]
+        : null;
+      if (liveValue != null && liveValue !== "") {
+        setText(notice, `選択中 ${combination} / 参考オッズ ${liveValue}倍`);
+      } else if (!localReference?.value) {
+        setText(notice, `選択中 ${combination} / 参考オッズ未取得（追加時に再確認します）`);
+      }
+    }).catch((error) => {
+      if (error?.name !== "AbortError" && selectionOddsRequestKey === requestKey && !localReference?.value) {
+        setText(notice, `選択中 ${combination} / 参考オッズ未取得（追加時に再確認します）`);
+      }
+    });
   }
 
   function syncAddButton() {
@@ -1855,6 +1915,7 @@
     }
     syncAddButton();
     syncTrayUI();
+    syncSelectionReferenceOdds();
   }
 
   function normalizeStake(value) {
@@ -1942,6 +2003,7 @@
   window.removeLine = (index) => {
     if (!cart[index]) return;
     cart = D.removeAt(cart, index);
+    if (!cart.length) clearAddedNotice();
     renderCart();
   };
 
@@ -1949,6 +2011,14 @@
     const value = normalizeStake(amount);
     if (!value) return;
     cart = D.setAllAmounts(cart, value);
+    syncCartStakeUI();
+    syncReviewBetUI();
+  };
+
+  window.addReviewStakeToAll = (increment) => {
+    const value = normalizeStake(increment);
+    if (!value || !cart.length) return;
+    cart = D.addAllAmounts(cart, value);
     syncCartStakeUI();
     syncReviewBetUI();
   };
@@ -1975,14 +2045,18 @@
     window.setAllStakes(value);
   };
 
-  window.clearCart = () => {
-    if (!cart.length || !confirm("追加した買い目をすべて削除しますか？")) return;
-    cart = [];
+  function clearAddedNotice() {
     const notice = $("addedNotice");
     if (notice) {
       notice.className = "added-notice";
       notice.textContent = "";
     }
+  }
+
+  window.clearCart = () => {
+    if (!cart.length || !confirm("追加した買い目をすべて削除しますか？")) return;
+    cart = [];
+    clearAddedNotice();
     renderCart();
   };
 
@@ -2106,6 +2180,24 @@
       }).join("")}</div></details>`;
   }
 
+  function showEmptyReviewReceipt() {
+    const lines = $("modal")?.querySelector?.(".betreceipt[data-editable-cart='true'] .betlines");
+    if (!lines) return;
+    lines.replaceChildren();
+    const notice = document.createElement("div");
+    notice.className = "notice warn empty-bet-review";
+    notice.dataset.emptyBetReview = "1";
+    const message = document.createElement("b");
+    message.textContent = "買い目はありません。";
+    const button = document.createElement("button");
+    button.className = "btn secondary full";
+    button.type = "button";
+    button.textContent = "買い目を選び直す";
+    button.addEventListener("click", () => window.closeModal());
+    notice.append(message, button);
+    lines.append(notice);
+  }
+
   function syncReviewBetUI() {
     const total = cartTotal();
     const incomplete = cartIncompleteCount();
@@ -2136,10 +2228,8 @@
         current.textContent = amount ? `${fmt(amount)}B` : "未入力";
       }
     });
-    document.querySelectorAll?.("#reviewStakeTools [data-review-stake]").forEach((button) => {
-      const selected = commonStake === Number(button.dataset.reviewStake);
-      button.setAttribute("aria-pressed", selected ? "true" : "false");
-    });
+    const tools = $("reviewStakeTools");
+    if (tools) tools.hidden = !cart.length;
     const reviewCustom = $("reviewAllStakeInput");
     if (reviewCustom && document.activeElement !== reviewCustom) {
       reviewCustom.value = commonStake ? String(commonStake) : "";
@@ -2166,9 +2256,11 @@
   window.removeReviewLine = (index) => {
     if (!cart[index]) return;
     cart = D.removeAt(cart, index);
+    if (!cart.length) clearAddedNotice();
     renderCart();
     if (!cart.length) {
-      window.closeModal();
+      showEmptyReviewReceipt();
+      syncReviewBetUI();
       return;
     }
     const modal = $("modal");
@@ -2182,6 +2274,15 @@
       row.querySelector(".betline-stake-input")?.setAttribute("onchange", `this.value=updateReviewLineStake(${nextIndex},this.value)`);
       row.querySelector(".betline-remove")?.setAttribute("onclick", `removeReviewLine(${nextIndex})`);
     });
+    syncReviewBetUI();
+  };
+
+  window.clearReviewCart = () => {
+    if (!cart.length || !confirm("購入する買い目をすべて削除しますか？")) return;
+    cart = [];
+    clearAddedNotice();
+    renderCart();
+    showEmptyReviewReceipt();
     syncReviewBetUI();
   };
 
@@ -2199,7 +2300,6 @@
     }
     if (!cart.length) return alert("買い目を追加してください。");
     const total = cartTotal();
-    if (total > S.coins) return alert("Bメダル残高が不足しています。");
     trackEvent("bet_review_opened", {
       line_count: cart.length,
       stake_b: total,
@@ -2215,15 +2315,15 @@
       <div id="reviewBetBalanceError" class="notice warn" hidden></div>
       <div id="reviewStakePrompt" class="review-stake-prompt" role="status"><b>ベット数を入力してください</b><span>各買い目に100B単位で設定します。まとめて入力もできます。</span></div>
       <h3>購入内容</h3>${betReceipt(cart, raceItem.entries, mode, "購入する買い目", { editable: true })}
-      <div id="reviewStakeTools" class="review-stake-tools"><span>全ての買い目を同じベット数にする</span>
-        <button type="button" data-review-stake="100" aria-pressed="false" onclick="setAllStakes(100)">100B</button>
-        <button type="button" data-review-stake="200" aria-pressed="false" onclick="setAllStakes(200)">200B</button>
-        <button type="button" data-review-stake="500" aria-pressed="false" onclick="setAllStakes(500)">500B</button>
-        <button type="button" data-review-stake="1000" aria-pressed="false" onclick="setAllStakes(1000)">1,000B</button>
-        <label class="review-stake-custom"><input id="reviewAllStakeInput" type="number" min="100" step="100" inputmode="numeric" placeholder="例 300" aria-label="全ての買い目のベット数"><b>B</b><button type="button" onclick="applyReviewAllStake()">全点に反映</button></label>
+      <div id="reviewStakeTools" class="review-stake-tools"><span>全ての買い目にまとめて追加</span>
+        <button type="button" data-review-stake-increment="100" onclick="addReviewStakeToAll(100)" aria-label="全ての買い目に100B追加">+100B</button>
+        <button type="button" data-review-stake-increment="1000" onclick="addReviewStakeToAll(1000)" aria-label="全ての買い目に1,000B追加">+1,000B</button>
+        <button type="button" data-review-stake-increment="10000" onclick="addReviewStakeToAll(10000)" aria-label="全ての買い目に10,000B追加">+10,000B</button>
+        <label class="review-stake-custom"><input id="reviewAllStakeInput" type="number" min="100" step="100" inputmode="numeric" placeholder="直接入力" aria-label="全ての買い目のベット数"><b>B</b><button type="button" onclick="applyReviewAllStake()">全点に反映</button></label>
+        <button class="mamo-clear-review" type="button" onclick="clearReviewCart()">全買い目を削除</button>
       </div>
       <div class="notice editorial-safety"><b>気持ちの採点はしません。</b><br>結果確認後の「次のレースを見るまで」「次のAIR BETまで」「公式サイトへ移動して戻るまで」を自動でつなぎ、普段の自分と比較します。</div>
-      <button class="btn teal full air-bet-confirm-button" onclick="placeBet()">AIR BETを確定する</button>`);
+      <button class="btn teal full air-bet-confirm-button" type="button" onclick="placeBet()">AIR BETを確定する</button>`);
     syncReviewBetUI();
   };
 

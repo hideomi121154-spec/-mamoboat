@@ -51,6 +51,7 @@ jobs:
           node --check dev/air-bet-multi-add.js
           node --check dev/app.js
           node --check dev/bet-review-flow.js
+          node --check tests/air-bet-review-flow.test.js
           node --check dev/venue-live-priority.js
           node --check dev/behavior-science.js
           node --check dev/decision-conflict-core.js
@@ -81,6 +82,7 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/mamo-record-tests" --no-save --no-package-lock jsdom@26.1.0
           NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/record-today-search.test.js
+          NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/air-bet-review-flow.test.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v

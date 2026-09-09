@@ -374,14 +374,17 @@ main { padding: 14px; }
 .review-stake-prompt[hidden] { display: none; }
 .review-stake-prompt b { font-size: 13px; }
 .review-stake-prompt span { color: #6f5d2a; font-size: 9px; line-height: 1.5; }
-.review-stake-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 9px 0 12px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: #f3f7f8; }
+.review-stake-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 9px 0 12px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: #f3f7f8; }
+.review-stake-tools[hidden] { display: none; }
 .review-stake-tools > span { grid-column: 1 / -1; color: var(--navy); font-size: 9px; font-weight: 1000; }
 .review-stake-tools > button { min-width: 0; min-height: 38px; border: 1px solid var(--line); border-radius: 7px; padding: 5px 2px; background: white; color: var(--navy); font-size: 9px; font-weight: 1000; }
-.review-stake-tools > button[aria-pressed="true"] { border-color: var(--navy); background: var(--navy); color: white; box-shadow: 0 3px 0 var(--gold); }
 .review-stake-custom { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(86px, .7fr); align-items: center; gap: 6px; }
 .review-stake-custom input { min-width: 0; min-height: 42px; border: 1px solid var(--line); border-radius: 7px; padding: 7px 8px; background: white; color: var(--navy); font-size: 16px; font-weight: 900; text-align: right; }
 .review-stake-custom > b { color: var(--muted); font-size: 10px; }
 .review-stake-custom > button { min-width: 0; min-height: 42px; border: 0; border-radius: 7px; padding: 6px; background: var(--teal-dark); color: white; font-size: 9px; font-weight: 1000; }
+.review-stake-tools > .mamo-clear-review { grid-column: 1 / -1; min-height: 44px; border-color: #efc3bf; background: #fff7f6; color: #9c3d36; }
+.empty-bet-review { display: grid; gap: 10px; }
+.empty-bet-review .btn { min-height: 46px; margin: 0; }
 .stake-required-notice { border-color: #e8d28e; background: #fff9e8; color: var(--navy); }
 .mamo-air-review-confirm:disabled { opacity: .42; box-shadow: none !important; }
 .recgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px; }

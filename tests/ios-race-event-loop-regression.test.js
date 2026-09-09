@@ -48,7 +48,9 @@ assert.equal(window.reviewBet, originalReviewBet, "layout events must not wrap t
 assert.doesNotMatch(layout, /window\.reviewBet\s*=/);
 assert.doesNotMatch(legacyMultiAdd, /window\.reviewBet\s*=/);
 assert.doesNotMatch(legacyMultiAdd, /window\.placeBet\s*=/);
-assert.match(legacyMultiAdd, /dataset\.mamoBackVenues = "1"/);
+assert.match(legacyMultiAdd, /retired AIR BET compatibility shim v11/);
+assert.match(legacyMultiAdd, /Object\.freeze\(\{ retired: true \}\)/);
+assert.doesNotMatch(legacyMultiAdd, /addEventListener|preventDefault|stopPropagation|stopImmediatePropagation/);
 for (const helper of [layout, legacyMultiAdd]) {
   assert.doesNotMatch(helper, /MutationObserver|setTimeout|setInterval|requestAnimationFrame|visualViewport|scrollIntoView|scrollTo|scrollBy/);
 }
@@ -85,7 +87,7 @@ for (const kind of ["normal", "box", "form"]) {
     box: new Set(kind === "box" ? [1, 2, 3] : []),
     form: kind === "form" ? [new Set([1]), new Set([5]), new Set([2, 3])] : [new Set(), new Set(), new Set()],
     selectionRevision: 1, requestSelectionRevision: 1, result: { added: [{}] },
-    $: (id) => nodes.get(id), syncAddButton() {}, syncTrayUI() {},
+    $: (id) => nodes.get(id), syncAddButton() {}, syncTrayUI() {}, syncSelectionReferenceOdds() {},
   };
   vm.createContext(context);
   vm.runInContext(`function resetSelections() {${resetBody}} function refreshBuilder() {${refreshBuilderBody}} refreshBuilder();`, context);
@@ -115,6 +117,8 @@ assert.doesNotMatch(venuePriority, /window\.go\s*=/);
 assert.doesNotMatch(venuePriority, /MutationObserver|setTimeout|setInterval|requestAnimationFrame|visualViewport|scrollIntoView|scrollTo|scrollBy/);
 assert.match(app, /data-add-current="box"[\s\S]*?＋ 買い目に追加/);
 assert.match(app, /data-add-current="form"[\s\S]*?＋ 買い目に追加/);
+assert.match(app, /function syncSelectionReferenceOdds\(\)/);
+assert.match(app, /syncTrayUI\(\);\s*syncSelectionReferenceOdds\(\);/);
 assert.match(app, />買い目・金額を確認する</);
 assert.match(app, /\$\{added\.length\}点追加しました。続けて別の買い目を選べます。/);
 assert.match(app, /はすでに追加されています。/);
@@ -154,7 +158,20 @@ assert.match(app, /id="reviewAllStakeInput"[^>]*step="100"/);
 assert.match(app, /class="betline-stake-input"[^>]*step="100"/);
 assert.match(app, /window\.updateReviewLineStake = \(index, value\) =>/);
 assert.match(app, /window\.applyReviewAllStake = \(\) =>/);
+assert.match(app, /window\.addReviewStakeToAll = \(increment\) =>/);
+assert.match(app, /D\.addAllAmounts\(cart, value\)/);
+assert.match(app, /data-review-stake-increment="100"[\s\S]*?>\+100B</);
+assert.match(app, /data-review-stake-increment="1000"[\s\S]*?>\+1,000B</);
+assert.match(app, /data-review-stake-increment="10000"[\s\S]*?>\+10,000B</);
 assert.match(app, /window\.removeReviewLine = \(index\) =>/);
+assert.match(app, /window\.clearReviewCart = \(\) =>/);
+const removeReviewLineBody = app.match(/window\.removeReviewLine = \(index\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+const clearReviewCartBody = app.match(/window\.clearReviewCart = \(\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+assert(removeReviewLineBody && clearReviewCartBody);
+assert.doesNotMatch(removeReviewLineBody, /closeModal/);
+assert.doesNotMatch(clearReviewCartBody, /closeModal/);
+assert.match(removeReviewLineBody, /showEmptyReviewReceipt\(\)/);
+assert.match(clearReviewCartBody, /showEmptyReviewReceipt\(\)/);
 const setAllStakesBody = app.match(/window\.setAllStakes = \(amount\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
 assert.match(setAllStakesBody, /syncCartStakeUI\(\)/);
 assert.doesNotMatch(setAllStakesBody, /renderCart\(\)/, "quick amounts must not rebuild tray controls");
@@ -178,15 +195,15 @@ assert.match(layout, /class="mamo-racer-meta"/);
 assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
-assert.match(index, /styles\.css\?v=20260908-2/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260909-4/);
+assert.match(index, /styles\.css\?v=20260909-3/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260909-1[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260909-5/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v436-record-owner-74-dev/);
-assert.match(serviceWorker, /app\.js\?v=20260909-4/);
+assert.match(serviceWorker, /mamoboat-v456-air-bet-canonical-flow-93-dev/);
+assert.match(serviceWorker, /app\.js\?v=20260909-5/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260908-2/);
-assert.match(serviceWorker, /air-bet-multi-add\.js\?v=20260908-2/);
+assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-1/);
+assert.doesNotMatch(serviceWorker, /air-bet-multi-add|air-bet-selection-reset|mamo-air-bet-review-cleanup/);
 
 // SHOP remains native-only; the abandoned horizontal-navigation layer stays out.
 assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);

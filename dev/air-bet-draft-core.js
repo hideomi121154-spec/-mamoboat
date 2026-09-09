@@ -90,6 +90,19 @@
     return (lines || []).map((line) => ({ ...createLine(line), amount: normalized })).filter((line) => line.betType);
   }
 
+  function addAllAmounts(lines, increment) {
+    const normalizedIncrement = normalizeAmount(increment);
+    if (!normalizedIncrement) return snapshot(lines);
+    return (lines || []).map((line) => {
+      const normalized = createLine(line);
+      if (!normalized) return null;
+      return {
+        ...normalized,
+        amount: (normalized.amount || 0) + normalizedIncrement,
+      };
+    }).filter(Boolean);
+  }
+
   function total(lines) {
     return (lines || []).reduce((sum, line) => sum + (createLine(line)?.amount || 0), 0);
   }
@@ -137,6 +150,7 @@
   }
 
   return Object.freeze({
+    addAllAmounts,
     appendUnique,
     createLine,
     expandBox,

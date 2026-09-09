@@ -62,6 +62,15 @@ assert.equal(Draft.total(draft), 7000);
 assert.equal(Draft.incompleteCount(draft), 0);
 assert(draft.every((item) => item.amount === 1000));
 
+const beforeIncrement = draft;
+draft = Draft.addAllAmounts(draft, 100);
+assert.equal(beforeIncrement[0].amount, 1000, "bulk increment must preserve the prior state");
+assert(draft.every((item) => item.amount === 1100));
+draft = Draft.addAllAmounts(draft, "1,000");
+assert(draft.every((item) => item.amount === 2100));
+assert.equal(Draft.addAllAmounts([line("normal", "2-3-4")], 100)[0].amount, 100,
+  "bulk increment must start an empty amount at zero");
+
 const stored = Draft.snapshot(draft);
 assert.deepEqual(Object.keys(stored[0]), [
   "betType",
