@@ -1,25 +1,49 @@
-/* MAMO BOAT — compact AIR BET review layout.
- * Keep the modal stable on iPhone/PWA while giving the ticket list more room.
- * The per-ticket "未入力" state remains visible inside each ticket row.
+/* MAMO BOAT — compact AIR BET review layout v2.
+ * Remove the duplicated stake prompts and use the freed vertical space for the
+ * purchase-list frame itself. The page/modal stays fixed; only the ticket list
+ * scrolls when there are more tickets than fit.
  */
 .air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt {
   display: none !important;
 }
 
+/* The purchase section owns the free space between the heading and stake tools. */
 .air-bet-review-shell > .air-bet-review-tickets {
   flex: 1 1 0;
-  min-height: clamp(220px, 34vh, 420px);
+  min-height: 0;
+  overflow: hidden;
 }
 
+/* Stretch the visible purchase frame, instead of leaving blank space below it. */
+.air-bet-review-tickets > .betreceipt {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Only the rows inside the expanded purchase frame scroll. */
+.air-bet-review-tickets .betreceipt > .betlines {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* Keep useful room for the list on shorter iPhones without shrinking controls. */
 @media (max-height: 740px) {
-  .air-bet-review-shell > .air-bet-review-tickets {
-    min-height: 180px;
-  }
+  .air-bet-review-shell > .air-bet-review-tickets { min-height: 150px; }
 }
 
 @media (max-height: 640px) {
-  .air-bet-review-shell > .air-bet-review-tickets {
-    min-height: 150px;
-  }
+  .air-bet-review-shell > .air-bet-review-tickets { min-height: 120px; }
 }
