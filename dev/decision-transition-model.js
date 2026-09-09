@@ -164,29 +164,10 @@
     raceView.appendChild(panel);
   }
 
+  // REAL self-report UI is intentionally not rendered on the live race screen.
+  // Keep journey tracking active in the background without consuming vertical space.
   function ensurePanel() {
-    const context = currentRace();
-    const raceView = document.getElementById("raceView");
-    if (!context || !raceView) return;
-    let panel = document.getElementById("mamoAirRealBridge");
-    if (!panel) panel = createPanel();
-    placePanel(panel, raceView);
-
-    const row = findRow(context);
-    panel.dataset.raceKey = keyOf(context);
-    panel.querySelector("[data-marb-summary]").textContent = airText(row);
-    const same = panel.querySelector("[data-marb-same]");
-    const real = panel.querySelector("[data-marb-real]");
-    const airOnly = panel.querySelector("[data-marb-air]");
-    if (row?.air) {
-      same.hidden = false;
-      real.querySelector("strong").textContent = "内容を変えて買った";
-      airOnly.hidden = false;
-    } else {
-      same.hidden = true;
-      real.querySelector("strong").textContent = "REALだけ買った";
-      airOnly.hidden = true;
-    }
+    document.getElementById("mamoAirRealBridge")?.remove();
   }
 
   function openForm(mode) {
@@ -259,8 +240,7 @@
   }
 
   function boot() {
-    styles(); scanAir(); ensurePanel();
-    document.addEventListener("click", onClick, true);
+    scanAir(); ensurePanel();
     setInterval(() => { scanAir(); ensurePanel(); }, SCAN_MS);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once:true }); else boot();
