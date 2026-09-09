@@ -1,13 +1,14 @@
-/* MAMO BOAT — compact AIR BET review layout v4.
- * Remove duplicated stake prompts, expand the purchase frame, and keep exactly
- * one iPhone-safe scroller: the ticket rows inside the receipt.
+/* MAMO BOAT — compact AIR BET review layout v5.
+ * Remove duplicated stake prompts and the review notice, then give the freed
+ * vertical room to the ticket list. Keep exactly one iPhone-safe scroller.
  */
 .air-bet-review-shell #reviewBetSummary,
-.air-bet-review-shell #reviewStakePrompt {
+.air-bet-review-shell #reviewStakePrompt,
+.air-bet-review-shell > .editorial-safety {
   display: none !important;
 }
 
-/* This section consumes the free room between the heading and stake controls. */
+/* This section consumes all free room between the heading and stake controls. */
 .air-bet-review-shell > .air-bet-review-tickets {
   flex: 1 1 0;
   min-height: 0;
@@ -54,9 +55,9 @@
 }
 
 @media (max-height: 740px) {
-  .air-bet-review-shell > .air-bet-review-tickets { min-height: 150px; }
+  .air-bet-review-shell > .air-bet-review-tickets { min-height: 220px; }
 }
 
 @media (max-height: 640px) {
-  .air-bet-review-shell > .air-bet-review-tickets { min-height: 120px; }
+  .air-bet-review-shell > .air-bet-review-tickets { min-height: 180px; }
 }
