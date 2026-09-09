@@ -103,6 +103,13 @@
     }).filter(Boolean);
   }
 
+  function clearAllAmounts(lines) {
+    return (lines || []).map((line) => {
+      const normalized = createLine(line);
+      return normalized ? { ...normalized, amount: null } : null;
+    }).filter(Boolean);
+  }
+
   function total(lines) {
     return (lines || []).reduce((sum, line) => sum + (createLine(line)?.amount || 0), 0);
   }
@@ -152,6 +159,7 @@
   return Object.freeze({
     addAllAmounts,
     appendUnique,
+    clearAllAmounts,
     createLine,
     expandBox,
     expandFormation,

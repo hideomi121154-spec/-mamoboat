@@ -30,9 +30,13 @@ function cloneInto(window, value) {
   });
   const { window } = dom;
   const alerts = [];
+  const confirms = [];
   window.scrollTo = () => {};
   window.alert = (message) => alerts.push(String(message));
-  window.confirm = () => true;
+  window.confirm = (message) => {
+    confirms.push(String(message));
+    return true;
+  };
   window.Date.now = () => Date.parse("2026-09-09T05:00:00.000Z");
   window.fetch = async (input) => {
     const url = String(input);
@@ -169,16 +173,30 @@ function cloneInto(window, value) {
     assert(draft().slice(1).every((line) => line.amount === 1500));
     assert.equal(window.document.getElementById("topCoins").textContent, "100,000 B");
 
-    // Clear-all stays in the review modal and leaves an explicit disabled
-    // empty state. No implicit navigation or modal close is allowed.
+    // Clear-all removes only entered amounts. Tickets stay visible so the
+    // user can immediately enter new numbers without selecting them again.
+    const combinationsBeforeClear = draft().map((line) => line.combination);
     click(".mamo-clear-review");
-    assert.equal(status().count, 0);
+    assert.equal(status().count, 7);
+    assert.deepEqual(draft().map((line) => line.combination), combinationsBeforeClear);
+    assert(draft().every((line) => line.amount === null));
     assert(window.document.getElementById("modalBg").classList.contains("show"));
-    assert.equal(window.document.getElementById("reviewBetSummary").textContent.trim(), "0点 / 0B");
+    assert.equal(window.document.getElementById("reviewBetSummary").textContent.trim(), "7点 / ベット数未入力");
     assert.equal(window.document.querySelector(".air-bet-confirm-button").disabled, true);
-    assert.equal(window.document.getElementById("reviewStakeTools").hidden, true);
-    assert.equal(window.document.getElementById("addedNotice").textContent, "");
+    assert.equal(window.document.getElementById("reviewStakeTools").hidden, false);
+    assert.equal(window.document.querySelectorAll(".betline").length, 7);
+    assert([...window.document.querySelectorAll(".betline-stake-input")].every((input) => input.value === ""));
+    assert(!window.document.getElementById("modal").textContent.includes("買い目を選び直す"));
+    assert.equal(confirms.at(-1), "入力したベット数をすべて削除しますか？");
+
+    click('[data-review-stake-increment="100"]');
+    assert(draft().every((line) => line.amount === 100));
+    assert.equal(window.document.getElementById("reviewBetSummary").textContent.trim(), "7点 / 700B");
+    assert.equal(window.document.querySelector(".air-bet-confirm-button").disabled, false);
     click(".mamo-bet-modal-back");
+
+    while (status().count) click("#cart .xbtn");
+    assert.equal(status().count, 0);
 
     // Re-enter twice after an empty review. Each physical click adds exactly
     // once, proving no listener multiplication after clear/reselect cycles.
@@ -194,6 +212,7 @@ function cloneInto(window, value) {
         assert.equal(status().count, 0, "deleting the final line must keep an empty review");
         assert(window.document.getElementById("modalBg").classList.contains("show"));
         assert.equal(window.document.querySelector(".air-bet-confirm-button").disabled, true);
+        assert(!window.document.getElementById("modal").textContent.includes("買い目を選び直す"));
         click(".mamo-bet-modal-back");
       }
     }

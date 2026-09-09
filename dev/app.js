@@ -2189,12 +2189,7 @@
     notice.dataset.emptyBetReview = "1";
     const message = document.createElement("b");
     message.textContent = "買い目はありません。";
-    const button = document.createElement("button");
-    button.className = "btn secondary full";
-    button.type = "button";
-    button.textContent = "買い目を選び直す";
-    button.addEventListener("click", () => window.closeModal());
-    notice.append(message, button);
+    notice.append(message);
     lines.append(notice);
   }
 
@@ -2278,11 +2273,9 @@
   };
 
   window.clearReviewCart = () => {
-    if (!cart.length || !confirm("購入する買い目をすべて削除しますか？")) return;
-    cart = [];
-    clearAddedNotice();
-    renderCart();
-    showEmptyReviewReceipt();
+    if (!cart.length || !confirm("入力したベット数をすべて削除しますか？")) return;
+    cart = D.clearAllAmounts(cart);
+    syncCartStakeUI();
     syncReviewBetUI();
   };
 
@@ -2320,7 +2313,7 @@
         <button type="button" data-review-stake-increment="1000" onclick="addReviewStakeToAll(1000)" aria-label="全ての買い目に1,000B追加">+1,000B</button>
         <button type="button" data-review-stake-increment="10000" onclick="addReviewStakeToAll(10000)" aria-label="全ての買い目に10,000B追加">+10,000B</button>
         <label class="review-stake-custom"><input id="reviewAllStakeInput" type="number" min="100" step="100" inputmode="numeric" placeholder="直接入力" aria-label="全ての買い目のベット数"><b>B</b><button type="button" onclick="applyReviewAllStake()">全点に反映</button></label>
-        <button class="mamo-clear-review" type="button" onclick="clearReviewCart()">全買い目を削除</button>
+        <button class="mamo-clear-review" type="button" onclick="clearReviewCart()">入力したベット数を削除</button>
       </div>
       <div class="notice editorial-safety"><b>気持ちの採点はしません。</b><br>結果確認後の「次のレースを見るまで」「次のAIR BETまで」「公式サイトへ移動して戻るまで」を自動でつなぎ、普段の自分と比較します。</div>
       <button class="btn teal full air-bet-confirm-button" type="button" onclick="placeBet()">AIR BETを確定する</button>`);

@@ -71,6 +71,20 @@ assert(draft.every((item) => item.amount === 2100));
 assert.equal(Draft.addAllAmounts([line("normal", "2-3-4")], 100)[0].amount, 100,
   "bulk increment must start an empty amount at zero");
 
+const beforeClearAmounts = draft;
+const combinationsBeforeClear = draft.map((item) => item.combination);
+draft = Draft.clearAllAmounts(draft);
+assert(beforeClearAmounts.every((item) => item.amount === 2100),
+  "clearing amounts must preserve the prior state");
+assert.deepEqual(draft.map((item) => item.combination), combinationsBeforeClear,
+  "clearing amounts must keep every selected ticket");
+assert(draft.every((item) => item.amount === null));
+assert.equal(Draft.total(draft), 0);
+assert.equal(Draft.incompleteCount(draft), draft.length);
+draft = Draft.addAllAmounts(draft, 100);
+assert(draft.every((item) => item.amount === 100),
+  "amounts must be immediately re-enterable after clearing");
+
 const stored = Draft.snapshot(draft);
 assert.deepEqual(Object.keys(stored[0]), [
   "betType",

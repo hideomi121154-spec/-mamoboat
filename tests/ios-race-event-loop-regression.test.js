@@ -171,7 +171,10 @@ assert(removeReviewLineBody && clearReviewCartBody);
 assert.doesNotMatch(removeReviewLineBody, /closeModal/);
 assert.doesNotMatch(clearReviewCartBody, /closeModal/);
 assert.match(removeReviewLineBody, /showEmptyReviewReceipt\(\)/);
-assert.match(clearReviewCartBody, /showEmptyReviewReceipt\(\)/);
+assert.match(clearReviewCartBody, /D\.clearAllAmounts\(cart\)/);
+assert.doesNotMatch(clearReviewCartBody, /cart\s*=\s*\[\]/);
+assert.doesNotMatch(clearReviewCartBody, /showEmptyReviewReceipt\(\)/);
+assert.doesNotMatch(app, /買い目を選び直す/);
 const setAllStakesBody = app.match(/window\.setAllStakes = \(amount\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
 assert.match(setAllStakesBody, /syncCartStakeUI\(\)/);
 assert.doesNotMatch(setAllStakesBody, /renderCart\(\)/, "quick amounts must not rebuild tray controls");
@@ -196,13 +199,13 @@ assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
 assert.match(index, /styles\.css\?v=20260909-3/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260909-1[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260909-5/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260909-6/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v456-air-bet-canonical-flow-93-dev/);
-assert.match(serviceWorker, /app\.js\?v=20260909-5/);
+assert.match(serviceWorker, /mamoboat-v457-air-bet-stake-clear-94-dev/);
+assert.match(serviceWorker, /app\.js\?v=20260909-6/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-1/);
+assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-2/);
 assert.doesNotMatch(serviceWorker, /air-bet-multi-add|air-bet-selection-reset|mamo-air-bet-review-cleanup/);
 
 // SHOP remains native-only; the abandoned horizontal-navigation layer stays out.
