@@ -179,11 +179,11 @@ assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
 assert.match(index, /styles\.css\?v=20260908-2/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260908-2[\s\S]*app\.js\?v=20260909-3/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260908-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260909-4/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v432-live-venues-default-70-dev/);
-assert.match(serviceWorker, /app\.js\?v=20260909-3/);
+assert.match(serviceWorker, /mamoboat-v436-record-owner-74-dev/);
+assert.match(serviceWorker, /app\.js\?v=20260909-4/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260908-2/);
 assert.match(serviceWorker, /air-bet-multi-add\.js\?v=20260908-2/);

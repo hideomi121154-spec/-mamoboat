@@ -78,7 +78,7 @@ assert.match(source, /\[open\]>summary::after\{content:"閉じる"\}/);
 assert.match(source, /min-height:58px/);
 
 const pilot = fs.readFileSync(path.join(root, "dev", "pilot-config.js"), "utf8");
-assert.match(pilot, /record-unified-layout-v2\.js\?v=20260908-3/);
+assert.match(pilot, /record-unified-layout-v2\.js\?v=20260909-4/);
 assert.match(pilot, /record-mobile-layout-fix\.js\?v=20260908-2/);
 
 console.log("record card UI tests passed");

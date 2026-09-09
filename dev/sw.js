@@ -1,9 +1,9 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v435-remove-official-result-search-73-dev";
+const CACHE = "mamoboat-v436-record-owner-74-dev";
 const SHELL = [
-  "./","./index.html","./styles.css?v=20260908-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260908-2","./pilot-config.js?v=20260908-2","./app.js?v=20260909-3",
+  "./","./index.html","./styles.css?v=20260908-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260908-2","./pilot-config.js?v=20260909-4","./app.js?v=20260909-4",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
-  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-multi-add.js?v=20260908-2","./air-bet-selection-reset.js?v=20260909-1","./race-layout-refresh.js?v=20260908-2","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260908-3","./record-unified-layout-v2.js?v=20260908-3","./record-mobile-layout-fix.js?v=20260908-2","./record-today-search.js?v=20260909-3","./remove-official-result-search.js?v=20260909-1","./race-carte-live-state-fix.js?v=20260908-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
+  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-multi-add.js?v=20260908-2","./air-bet-selection-reset.js?v=20260909-1","./race-layout-refresh.js?v=20260908-2","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-4","./record-unified-layout-v2.js?v=20260909-4","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
 ];
@@ -19,7 +19,7 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
-      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE && /^mamoboat-.*-dev$/.test(k)).map(k=>caches.delete(k))))
       .then(()=>self.clients.claim())
   );
 });
@@ -36,16 +36,10 @@ function withLiveVenueLoader(response){
       html=html.replace("</body>",'<script src="general-grade-theme.js?v=20260908-1"></script></body>');
     }
     if(!html.includes("record-unified-layout-v2.js")){
-      html=html.replace("</body>",'<script src="record-unified-layout-v2.js?v=20260908-3"></script></body>');
+      html=html.replace("</body>",'<script src="record-unified-layout-v2.js?v=20260909-4"></script></body>');
     }
     if(!html.includes("record-mobile-layout-fix.js")){
       html=html.replace("</body>",'<script src="record-mobile-layout-fix.js?v=20260908-2"></script></body>');
-    }
-    if(!html.includes("record-today-search.js")){
-      html=html.replace("</body>",'<script src="record-today-search.js?v=20260909-3"></script></body>');
-    }
-    if(!html.includes("remove-official-result-search.js")){
-      html=html.replace("</body>",'<script src="remove-official-result-search.js?v=20260909-1"></script></body>');
     }
     if(!html.includes("race-carte-live-state-fix.js")){
       html=html.replace("</body>",'<script src="race-carte-live-state-fix.js?v=20260908-3"></script></body>');

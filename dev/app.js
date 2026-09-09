@@ -2731,18 +2731,7 @@
   };
 
   function renderRecords() {
-    document.querySelectorAll(".filter[data-rec]").forEach(
-      (button) => button.classList.toggle("active", button.dataset.rec === S.recFilter)
-    );
-    let records = [...S.records].reverse();
-    if (S.recFilter === "pending") records = records.filter((item) => !item.settled);
-    if (S.recFilter === "saved") records = records.filter((item) => item.saved > 0);
-    if (S.recFilter === "hit") records = records.filter((item) => item.status === "hit");
-    $("recordCount").textContent = `${records.length}件`;
-    $("recordList").innerHTML = records.length
-      ? records.map(recCard).join("")
-      : '<div class="card muted">該当する記録はありません。</div>';
-    initializeResultSearch();
+    window.MAMO_AIR_OUTCOME_VIEW?.refresh();
   }
 
   function initializeResultSearch() {

@@ -1,40 +1,13 @@
 /* MAMO BOAT — unified record layout compatibility layer v3.
  * The AIR outcome renderer owns the record-card markup. This late-loaded layer
- * only normalizes cached/PWA cards and removes older duplicate financial panels.
+ * only supplies styles; it never rebuilds the record list or its cards.
  */
 (() => {
   "use strict";
   if (window.__MAMO_RECORD_UNIFIED_LAYOUT_V3__) return;
   window.__MAMO_RECORD_UNIFIED_LAYOUT_V3__ = true;
 
-  function enhanceCard(card) {
-    if (!card) return;
-    card.classList.add("rx-readable-v2");
-
-    card.querySelectorAll(":scope > .rx-financial-restore, :scope > .rx-unified-stats, :scope > .rx-details")
-      .forEach((element) => { element.hidden = true; });
-
-    card.querySelectorAll(":scope > .rx-bets, :scope > .rx-odds-details, :scope > .rx-payout-details")
-      .forEach((details) => {
-        details.classList.add("rx-fold");
-        if (details.dataset.rxCollapseInit !== "1") {
-          details.open = false;
-          details.dataset.rxCollapseInit = "1";
-        }
-      });
-
-    card.querySelectorAll(".rx-actions [data-rx-carte]")
-      .forEach((button) => { button.textContent = "▤ レースカルテで分析"; });
-  }
-
-  function enhanceAll() {
-    style();
-    document.querySelectorAll("#records .rx-card.rx-unified").forEach(enhanceCard);
-  }
-
-  function boundedRefresh() {
-    [0, 100, 300, 700, 1500, 3000, 5000].forEach((ms) => setTimeout(enhanceAll, ms));
-  }
+  function boundedRefresh() { style(); }
 
   function removeDuplicateCarteBetTab() {
     const overlay = document.getElementById("mamoRaceCarteOverlay");

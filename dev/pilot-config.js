@@ -130,10 +130,10 @@ const raceLayoutRefresh = MAMO_SCRIPTS.find(([, key]) => key === "race-layout-re
 if (raceLayoutRefresh) raceLayoutRefresh[0] = "race-layout-refresh.js?v=20260908-2";
 {
   const airOutcome = MAMO_SCRIPTS.find(([, key]) => key === "air-outcome");
-  if (airOutcome) airOutcome[0] = "air-outcome-experience.js?v=20260908-3";
+  if (airOutcome) airOutcome[0] = "air-outcome-experience.js?v=20260909-4";
   const airIndex = MAMO_SCRIPTS.indexOf(airOutcome);
   MAMO_SCRIPTS.splice(airIndex + 1, 0,
-    ["record-unified-layout-v2.js?v=20260908-3", "record-unified-layout-v3"],
+    ["record-unified-layout-v2.js?v=20260909-4", "record-unified-layout-v3"],
     ["record-mobile-layout-fix.js?v=20260908-2", "record-mobile-layout"]
   );
 }

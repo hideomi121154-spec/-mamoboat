@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v434-root-record-today-72";
+const CACHE = "mamoboat-v436-root-pass-through-74";
 const SHELL = [
   "./","./index.html","./styles.css","./brand-theme.css?v=20260827-2","./core.js","./pilot-config.js","./app.js",
   "./decision-event-schema.js","./decision-event-collector.js","./decision-event-api-compat.js",
@@ -17,24 +17,12 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
-      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE && k.startsWith("mamoboat-") && !k.endsWith("-dev")).map(k=>caches.delete(k))))
       .then(()=>self.clients.claim())
   );
 });
 
-function enhanceDevHtml(response,url){
-  if(!response || !response.ok || !url.pathname.startsWith("/dev/")) return Promise.resolve(response);
-  const type=response.headers.get("content-type")||"";
-  if(!type.includes("text/html")) return Promise.resolve(response);
-  return response.text().then(html=>{
-    if(!html.includes("record-today-search.js")){
-      html=html.replace("</body>",'<script src="/dev/record-today-search.js?v=20260909-3"></script></body>');
-    }
-    const headers=new Headers(response.headers);
-    headers.delete("content-length");
-    return new Response(html,{status:response.status,statusText:response.statusText,headers});
-  });
-}
+function enhanceDevHtml(response){ return Promise.resolve(response); }
 
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET") return;
@@ -42,7 +30,7 @@ self.addEventListener("fetch",event=>{
   if(url.origin!==location.origin) return;
   // GENBA MEMORY is an isolated POC. Do not let MAMO BOAT's root service worker
   // cache or rewrite its navigations.
-  if(url.pathname.startsWith("/genba-memory-poc/")) return;
+  if(url.pathname.startsWith("/genba-memory-poc/") || url.pathname.startsWith("/dev/")) return;
 
   if(url.pathname.includes("/data/")&&url.pathname.endsWith(".json")){
     const canonical=new Request(url.origin+url.pathname,{method:"GET"});

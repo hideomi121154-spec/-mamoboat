@@ -110,7 +110,7 @@ test("the intervention is transparent, optional, and does not ask for a rating",
 test("the decision-conflict modules are available offline", () => {
   assert.match(serviceWorker, /decision-conflict-core\.js/);
   assert.match(serviceWorker, /decision-conflict-guard\.js\?v=20260906-2/);
-  assert.match(serviceWorker, /mamoboat-v432-live-venues-default-70-dev/);
+  assert.match(serviceWorker, /mamoboat-v436-record-owner-74-dev/);
 });
 
 test("AIR BET amount edits remain observable after the compact cart update", () => {

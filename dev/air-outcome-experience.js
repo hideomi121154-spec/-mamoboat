@@ -6,23 +6,51 @@
 
   const KEY = "mamoboat_v40_personal";
   let unifiedFilter = "all";
+  let displayedRecords = [];
+  const archive = {date:"", venue:"", searched:false};
+  const VENUES = ["桐生","戸田","江戸川","平和島","多摩川","浜名湖","蒲郡","常滑","津","三国","びわこ","住之江","尼崎","鳴門","丸亀","児島","宮島","徳山","下関","若松","芦屋","福岡","唐津","大村"];
 
   const read = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (_) { return {}; } };
   const esc = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
   const fmt = (v) => Math.round(Number(v)||0).toLocaleString("ja-JP");
   const bfmt = (v) => `${fmt(v)}B`;
-  const records = () => Array.isArray(read().records) ? read().records : [];
-  const time = r => new Date(r.time || r.createdAt || 0).getTime();
+  const records = () => { const state=read(); return Array.isArray(state.records) ? state.records.filter(Boolean) : []; };
+  function time(r){
+    for(const value of [r.placedAt,r.createdAt,r.time,r.betAt,r.submittedAt,r.raceDate]){
+      if(value == null || value === "") continue;
+      // Legacy date/time strings without a zone represent Japanese local time.
+      let input=value;
+      if(typeof input === "string"){
+        input=input.trim().replace(/\//g,"-");
+        if(/^\d{4}-\d{2}-\d{2}$/.test(input)) input += "T00:00:00+09:00";
+        else if(/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(input)) input=input.replace(" ","T")+"+09:00";
+      }
+      const ms=new Date(input).getTime();
+      if(Number.isFinite(ms)) return ms;
+    }
+    return NaN;
+  }
+  function dateKey(ms){
+    if(!Number.isFinite(ms)) return "";
+    const parts=Object.fromEntries(new Intl.DateTimeFormat("en",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date(ms)).map(p=>[p.type,p.value]));
+    return `${parts.year}-${parts.month}-${parts.day}`;
+  }
+  const recordDate = r => dateKey(time(r));
+  const todayKey = () => dateKey(Date.now());
+  const isTodayRecord = r => recordDate(r) === todayKey();
+  const venueName = r => String(r.venue || r.venueName || VENUES[Number(r.venueCode)-1] || "").trim();
+  const pastRecords = (list,date,venue) => list.filter(r=>{
+    const day=recordDate(r);
+    return day && day < todayKey() && (!date || day===date) && (!venue || venueName(r)===venue);
+  });
   const stake = r => Number(r.stake ?? r.total ?? r.intendedYen ?? 0) || (Array.isArray(r.lines) ? r.lines.reduce((s,l)=>s+(Number(l?.stake)||0),0) : 0);
   const payout = r => Number(r.payoutC ?? r.payout ?? 0) || 0;
   const settled = r => !!r.settled && String(r.status || "") !== "pending";
-  const fmtDate = r => { try { return new Date(r.time || r.createdAt).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}); } catch (_) { return ""; } };
+  const fmtDate = r => Number.isFinite(time(r)) ? new Date(time(r)).toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "日時未保存";
   const sortedRecords = () => [...records()].sort((a,b)=>time(b)-time(a));
 
   function todayRecords(){
-    const now = new Date();
-    const start = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
-    return records().filter(r => time(r) >= start);
+    return records().filter(isTodayRecord);
   }
 
   function resultLabel(r){
@@ -166,7 +194,7 @@
     const x = resultLabel(r);
     const s = stake(r);
     const shiftYen = Number(r.virtualShiftYen ?? r.intendedYen ?? s) || s;
-    return `<article class="rx-card rx-unified ${x.tone}">
+    return `<article class="rx-card rx-unified rx-readable-v2 ${x.tone}">
       <header><div><small>${esc(x.eyebrow)}</small><h3>${esc(r.venue||r.venueName||"")} ${Number(r.raceNo||r.race)||""}R</h3></div><time>${esc(fmtDate(r))}</time></header>
       <div class="rx-result-row"><div><span>実着順</span><strong>${esc(resultCombo(r))}</strong></div><div><span>AIR結果</span><strong>${esc(x.title)}</strong></div></div>
       <div class="rx-summary-money"><span>参加額 <b>${bfmt(s)}</b></span><span>${esc(payoutLine(r))}</span>${Number(r.refundC)>0?`<span>一部返還 +${bfmt(r.refundC)}</span>`:""}</div>
@@ -208,27 +236,69 @@
     const screen=document.getElementById("records"); if(!screen) return;
     const intro=screen.querySelector(".record-intro");
     if(intro){
-      const kicker=intro.querySelector(".kicker"); if(kicker) kicker.textContent="MAMO RECORD";
-      const h1=intro.querySelector("h1"); if(h1) h1.textContent="参加記録";
-      const p=intro.querySelector("p"); if(p) p.textContent="AIR BETした内容・実着順・公式払戻・B精算・レースカルテを1レース1枚で確認。";
+      const kicker=intro.querySelector(".kicker"); if(kicker) kicker.textContent="TODAY / MAMO RECORD";
+      const h1=intro.querySelector("h1"); if(h1) h1.textContent="本日の参加記録";
+      const p=intro.querySelector("p"); if(p) p.textContent="今日AIR BETした記録を表示しています。過去分は日付・開催場から検索できます。";
     }
 
     markLegacyRecordArea(screen);
     const legacyHeading = screen.querySelector(".section-head.small.rx-legacy-hidden") || screen.querySelector(".section-head.small");
     let block=document.getElementById("airOutcomeBlock");
-    if(!block){ block=document.createElement("section"); block.id="airOutcomeBlock"; block.className="rx-record-block"; (legacyHeading || screen.firstElementChild)?.insertAdjacentElement("beforebegin",block); }
+    if(!block){
+      block=document.createElement("section"); block.id="airOutcomeBlock"; block.className="rx-record-block";
+      (legacyHeading || screen.firstElementChild)?.insertAdjacentElement("beforebegin",block);
+      block.innerHTML='<div class="rx-today-summary"></div><div class="rx-latest"></div>';
+      const panel=document.createElement("section"); panel.className="rx-past-search"; panel.id="rxPastRecordSearch";
+      panel.innerHTML=`<h3>過去の記録を探す</h3><form id="rxPastForm"><div class="rx-past-form"><label>日付<input id="rxPastDate" type="date"></label><label>開催場<select id="rxPastVenue"><option value="">すべての場</option>${VENUES.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("")}</select></label></div><div class="rx-past-actions"><button type="submit">検索</button><button type="button" data-rx-past-clear>条件をクリア</button></div></form><p id="rxPastStatus" role="status">日付または開催場を選んで検索してください。</p><div id="rxPastResults"></div>`;
+      block.appendChild(panel);
+    }
 
     const all=sortedRecords();
-    const shown=filtered(all);
-    const done=all.filter(settled).length;
-    const waiting=all.length-done;
-    block.innerHTML=`<div class="rx-record-hero"><small>MAMO RECORD / ONE RACE ONE CARD</small><h2>参加から結果まで、1枚で。</h2><p>買い目・金額・実着順・払戻・仮想置換・レースカルテを同じ記録にまとめました。</p><div><span>全${all.length}件</span><b>確定 ${done}</b><b>結果待ち ${waiting}</b></div></div>
+    const today=all.filter(isTodayRecord);
+    const shown=filtered(today);
+    const done=today.filter(settled).length;
+    const waiting=today.length-done;
+    const signature=JSON.stringify([todayKey(),unifiedFilter,all]);
+    if(block.dataset.recordSignature===signature) return;
+    block.dataset.recordSignature=signature;
+    displayedRecords=all;
+    block.querySelector(".rx-today-summary").innerHTML=`<div class="rx-record-hero"><small>TODAY / MAMO RECORD</small><h2>本日の参加記録</h2><p>今日AIR BETした記録だけを表示しています。</p><div><span>本日 ${today.length}件</span><b>確定 ${done}</b><b>結果待ち ${waiting}</b></div></div>
       <div class="rx-filter" role="tablist" aria-label="記録の絞り込み">
-        <button type="button" data-rx-filter="all" class="${unifiedFilter==="all"?"active":""}">すべて ${all.length}</button>
+        <button type="button" data-rx-filter="all" class="${unifiedFilter==="all"?"active":""}">本日すべて ${today.length}</button>
         <button type="button" data-rx-filter="pending" class="${unifiedFilter==="pending"?"active":""}">結果待ち ${waiting}</button>
         <button type="button" data-rx-filter="settled" class="${unifiedFilter==="settled"?"active":""}">確定 ${done}</button>
-      </div>
-      <div class="rx-latest">${shown.length?shown.map(r=>unifiedCard(r,all.indexOf(r))).join(""):'<div class="rx-empty">該当する記録はありません。</div>'}</div>`;
+      </div>`;
+    block.querySelector(".rx-latest").innerHTML=shown.length?shown.map(r=>unifiedCard(r,all.indexOf(r))).join(""):'<div class="rx-empty">本日の該当する記録はありません。</div>';
+    document.getElementById("rxPastDate").max=dateKey(Date.now()-86400000);
+    if(archive.searched) renderSearchResults();
+  }
+
+  function renderSearchResults(){
+    const out=document.getElementById("rxPastResults"), status=document.getElementById("rxPastStatus");
+    if(!out || !status) return;
+    if(!archive.searched){out.replaceChildren();status.textContent="日付または開催場を選んで検索してください。";return;}
+    const matches=pastRecords(displayedRecords,archive.date,archive.venue);
+    status.textContent=matches.length?`${matches.length}件見つかりました。`:"条件に一致する過去の記録はありません。";
+    out.innerHTML=matches.map(r=>`<details class="rx-past-row" data-rx-past-index="${displayedRecords.indexOf(r)}"><summary><time>${recordDate(r).replaceAll("-","/")}</time><strong>${esc(venueName(r))} ${Number(r.raceNo||r.race)||""}R</strong><span>${bfmt(stake(r))}</span><b>${resultLabel(r).status}</b><span>詳細</span></summary><div class="rx-past-detail"></div></details>`).join("");
+  }
+
+  function runSearch(){
+    archive.date=document.getElementById("rxPastDate")?.value||"";
+    archive.venue=document.getElementById("rxPastVenue")?.value||"";
+    archive.searched=Boolean(archive.date||archive.venue);
+    renderRecords();
+    renderSearchResults();
+  }
+
+  function openRecordCarte(index){
+    const chosen=displayedRecords[index];
+    if(!chosen) return;
+    // Race Carte uses its legacy order; resolve the selected record again so a
+    // JST sort or a newly saved AIR BET cannot redirect to a different record.
+    const list=records().sort((x,y)=>String(y.time||y.createdAt||y.raceDate||y.date||"").localeCompare(String(x.time||x.createdAt||x.raceDate||x.date||"")));
+    const identity=r=>JSON.stringify([r.time,r.createdAt,r.placedAt,r.raceDate,r.venue,r.venueCode,r.raceNo,r.lines]);
+    const current=list.findIndex(r=>chosen.id ? r.id===chosen.id : identity(r)===identity(chosen));
+    if(current>=0) window.MAMO_RACE_CARTE?.open?.(current);
   }
 
   function style(){
@@ -236,6 +306,11 @@
     document.getElementById("airOutcomeStyleV2")?.remove();
     const s=document.createElement("style"); s.id="airOutcomeStyleV3";
     s.textContent=`
+      .rx-past-search{margin:18px 0;padding:14px;border:1px solid #ccdbe2;border-radius:14px;background:#fff}
+      .rx-past-form,.rx-past-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+      .rx-past-form label{display:grid;gap:6px;min-width:0}.rx-past-form input,.rx-past-form select{min-width:0;width:100%;box-sizing:border-box;min-height:44px;font-size:16px;border:1px solid #ccdbe2;border-radius:8px;padding:8px;background:#fff;color:#082b4a}
+      .rx-past-actions button{min-height:44px;background:#082b4a;color:#fff;border:0;border-radius:8px;font-weight:900}
+      .rx-past-row{border:1px solid #dfe7ea;border-radius:10px;margin:8px 0}.rx-past-row>summary{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:12px;min-height:44px;align-items:center;cursor:pointer;color:#082b4a}.rx-past-row>summary:after{content:"▶"}.rx-past-row[open]>summary:after{content:"▼"}.rx-past-detail{padding:0 8px 8px}.rx-past-row time{font-size:12px}
       #records .rx-legacy-hidden{display:none!important}
       .rx-summary{margin:11px 0 4px;padding:14px;background:#fff;border:1px solid #dde3e5;border-top:3px solid #0aa39a;border-radius:13px;box-shadow:0 4px 12px rgba(8,35,61,.055)}
       .rx-summary-head{display:flex;justify-content:space-between;align-items:end;gap:10px}.rx-summary-head small,.rx-record-hero>small{color:#087d77;font-size:8px;font-weight:1000;letter-spacing:.12em}.rx-summary-head h3{margin:3px 0 0;font-size:17px}.rx-summary-head button{border:0;background:transparent;color:#087d77;font-size:10px;font-weight:1000}.rx-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.rx-summary-grid>div{padding:9px;background:#f6f8f8;border-radius:8px;text-align:center}.rx-summary-grid span{display:block;color:#718087;font-size:7px}.rx-summary-grid strong{display:block;margin-top:2px;color:#08233d;font-size:18px}
@@ -310,17 +385,28 @@
     if(filter){ unifiedFilter = filter.dataset.rxFilter || "all"; renderRecords(); return; }
     const carte = event.target?.closest?.("[data-rx-carte]");
     if(carte){
-      const index = Number(carte.dataset.rxCarte);
-      if(Number.isFinite(index) && window.MAMO_RACE_CARTE?.open) window.MAMO_RACE_CARTE.open(index);
+      openRecordCarte(Number(carte.dataset.rxCarte));
       return;
     }
-    if(event.target?.closest?.("#nav-records")) queueMicrotask(renderRecords);
+    if(event.target?.closest?.("[data-rx-past-clear]")){
+      archive.date="";archive.venue="";archive.searched=false;
+      document.getElementById("rxPastDate").value="";
+      document.getElementById("rxPastVenue").value="";
+      renderSearchResults();
+    }
   }
 
   function boot(){
     style();
     render();
     document.addEventListener("click",onClick,false);
+    document.addEventListener("submit",event=>{if(event.target?.id==="rxPastForm"){event.preventDefault();runSearch();}});
+    document.addEventListener("toggle",event=>{
+      const row=event.target;
+      if(!row?.matches?.("details[data-rx-past-index]") || !row.open) return;
+      const body=row.querySelector(".rx-past-detail"), index=Number(row.dataset.rxPastIndex);
+      if(body && !body.hasChildNodes() && displayedRecords[index]) body.innerHTML=unifiedCard(displayedRecords[index],index);
+    },true);
     window.addEventListener("storage",e=>{ if(e.key===KEY) render(); });
     window.addEventListener("pageshow",()=>{ if(document.getElementById("records")?.classList.contains("active")) renderRecords(); });
   }
@@ -329,6 +415,9 @@
     cardHtml: unifiedCard,
     financialHtml,
     payoutRows,
+    recordDate,
+    isTodayRecord,
+    pastRecords,
     refresh: renderRecords,
   });
 

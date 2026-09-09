@@ -379,7 +379,7 @@ assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=
 assert.match(indexSource, /onboard-cover-art/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=20260908-1/);
-assert.match(indexSource, /pilot-config\.js\?v=20260908-2/);
+assert.match(indexSource, /pilot-config\.js\?v=20260909-4/);
 assert.match(indexSource, /app\.js\?v=20260908-2/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /MAMO編集部/);
@@ -392,7 +392,7 @@ assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v432-live-venues-default-70-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v436-record-owner-74-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);

@@ -117,19 +117,6 @@
           <button class="filter" data-rec="hit" onclick="setRecFilter('hit')">B的中</button>
         </div>
         <div id="recordList" class="record-list"></div>
-        <div class="section-head small result-search-heading"><div><span class="section-number">R</span><h2>公式結果を検索</h2></div><span class="section-meta">永久保存アーカイブ</span></div>
-        <div class="panel result-search-panel">
-          <div class="result-search-grid">
-            <label><span>日付</span><input id="resultSearchDate" type="date"></label>
-            <label><span>開催場</span><select id="resultSearchVenue"><option value="">すべての場</option></select></label>
-            <label><span>レース</span><select id="resultSearchRace"><option value="">全レース</option></select></label>
-            <label class="result-keyword"><span>選手名・大会名</span><input id="resultSearchKeyword" type="search" placeholder="例：峰竜太、GⅠ"></label>
-          </div>
-          <div id="resultArchiveDates" class="result-archive-dates" aria-label="保存済みの日付"></div>
-          <button class="btn primary full" type="button" onclick="searchOfficialResults()">結果を検索</button>
-          <div id="resultSearchStatus" class="result-search-status">日付を選んで検索してください。</div>
-          <div id="resultSearchList" class="official-result-list"></div>
-        </div>
       </section>
 
       <section id="analysis" class="screen">
@@ -244,8 +231,9 @@
   <div id="modalBg" class="modal-bg" onclick="bgClose(event)"><div id="modal" class="modal"></div></div>
   <script src="core.js?v=20260908-1"></script>
   <script src="air-bet-draft-core.js?v=20260908-2"></script>
-  <script src="pilot-config.js?v=20260908-2"></script>
-  <script src="app.js?v=20260909-3"></script>
+  <script src="pilot-config.js?v=20260909-4"></script>
+  <script data-mamo-module="air-outcome" src="air-outcome-experience.js?v=20260909-4"></script>
+  <script src="app.js?v=20260909-4"></script>
   <script src="race-carte.js?v=20260907-6"></script>
   <script src="race-carte-snapshot.js?v=20260907-6"></script>
   <script src="race-carte-official-payouts.js?v=20260907-2"></script>

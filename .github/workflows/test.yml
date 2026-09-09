@@ -69,12 +69,18 @@ jobs:
           node tests/air-bet-draft-flow.test.js
           node tests/ios-race-event-loop-regression.test.js
           node tests/race-carte-data-flow.test.js
+          node tests/record-card-ui.test.js
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/brand-theme.test.js
           node --test dev/tests/shop-coupon.test.js
           node --test dev/tests/mamo-record-timing.test.js
           node --test dev/tests/behavior-science.test.js
           node --test dev/tests/decision-conflict.test.js
+
+      - name: Verify today records and personal archive DOM
+        run: |
+          npm install --prefix "$RUNNER_TEMP/mamo-record-tests" --no-save --no-package-lock jsdom@26.1.0
+          NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/record-today-search.test.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v
