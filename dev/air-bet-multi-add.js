@@ -1,12 +1,12 @@
-/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v7.
+/* MAMO BOAT — AIR BET multi-add compatibility + selection reference odds v8.
  * Keeps the existing one-tap venue return, live-odds preview, and review helpers
- * without re-rendering the race/builder DOM. Emptying the review stays in place
- * and offers an explicit path to select buy lines again.
+ * without re-rendering the race/builder DOM. Bulk stake buttons use direct
+ * handlers so they keep working after delete/reselect/review cycles on iPhone.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MULTI_ADD_V7__) return;
-  window.__MAMO_AIR_BET_MULTI_ADD_V7__ = true;
+  if (window.__MAMO_AIR_BET_MULTI_ADD_V8__) return;
+  window.__MAMO_AIR_BET_MULTI_ADD_V8__ = true;
 
   let oddsAbort = null;
   let oddsRequestKey = "";
@@ -86,22 +86,42 @@
     });
   }
 
+  function addStakeToAll(amount) {
+    const value = Math.max(0, Number(amount) || 0);
+    if (!value) return;
+    const inputs = [...document.querySelectorAll(".betreceipt[data-editable-cart='true'] .betline-stake-input")];
+    inputs.forEach((input) => {
+      const row = input.closest(".betline[data-cart-index]");
+      const index = Number(row?.dataset?.cartIndex);
+      if (!Number.isInteger(index)) return;
+      const current = Math.max(0, Number(input.value) || 0);
+      window.updateReviewLineStake?.(index, current + value);
+    });
+  }
+
+  function bindIncrementButton(button, value) {
+    button.dataset.reviewStake = String(value);
+    button.dataset.mamoStakeIncrement = String(value);
+    button.textContent = `＋${value.toLocaleString("ja-JP")}B`;
+    button.removeAttribute("onclick");
+    button.setAttribute("aria-label", `全ての買い目に${value.toLocaleString("ja-JP")}B追加`);
+    button.onclick = (event) => {
+      event.preventDefault();
+      addStakeToAll(value);
+    };
+  }
+
   function enhanceReviewStakeTools() {
     const tools = document.getElementById("reviewStakeTools");
-    if (!tools || tools.dataset.mamoIncrementV1 === "1") return;
-    tools.dataset.mamoIncrementV1 = "1";
+    if (!tools) return;
+    tools.hidden = false;
     const title = tools.querySelector(":scope > span");
     if (title) title.textContent = "全ての買い目にまとめて追加";
     const buttons = [...tools.querySelectorAll("button[data-review-stake]")];
     const increments = [100, 1000, 10000];
     buttons.forEach((button, index) => {
       if (index >= increments.length) { button.remove(); return; }
-      const value = increments[index];
-      button.dataset.reviewStake = String(value);
-      button.dataset.mamoStakeIncrement = String(value);
-      button.textContent = `＋${value.toLocaleString("ja-JP")}B`;
-      button.removeAttribute("onclick");
-      button.setAttribute("aria-label", `全ての買い目に${value.toLocaleString("ja-JP")}B追加`);
+      bindIncrementButton(button, increments[index]);
     });
     const custom = tools.querySelector(".review-stake-custom");
     if (custom) {
@@ -117,17 +137,7 @@
       clear.setAttribute("aria-label", "全ての買い目をまとめて削除");
       tools.append(clear);
     }
-  }
-
-  function addStakeToAll(amount) {
-    const inputs = [...document.querySelectorAll("[data-air-bet-review] ~ .betreceipt .betline-stake-input, .betreceipt[data-editable-cart='true'] .betline-stake-input")];
-    inputs.forEach((input) => {
-      const row = input.closest(".betline[data-cart-index]");
-      const index = Number(row?.dataset?.cartIndex);
-      if (!Number.isInteger(index)) return;
-      const current = Math.max(0, Number(input.value) || 0);
-      window.updateReviewLineStake?.(index, current + amount);
-    });
+    tools.dataset.mamoIncrementV1 = "1";
   }
 
   function showEmptyReview() {
@@ -180,11 +190,6 @@
     if (!target) return;
     if (target.matches("#nav-race, .racechip, .venue-card-main, .venue-switch-card, [onclick^='jumpRace']")) refresh();
     if (target.matches("#builder .pick[id^='n-']")) queueMicrotask(showReferenceOdds);
-    if (target.matches("[data-mamo-stake-increment]")) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      addStakeToAll(Number(target.dataset.mamoStakeIncrement) || 0);
-    }
     if (target.matches("[data-mamo-clear-review]")) {
       event.preventDefault();
       event.stopImmediatePropagation();
