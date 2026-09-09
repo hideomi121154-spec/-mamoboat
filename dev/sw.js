@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v460-air-bet-ticket-scroll-97-dev";
+const CACHE = "mamoboat-v461-air-bet-review-trim-98-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260910-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260909-4","./app.js?v=20260910-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
@@ -19,6 +19,8 @@ function withLiveVenueLoader(response){
   const type=response.headers.get("content-type")||"";
   if(!type.includes("text/html")) return response;
   return response.text().then(html=>{
+    const airBetReviewTrimStyle='<style id="airBetReviewTrimStyle">#reviewBetSummary,#reviewStakePrompt,.air-bet-review-shell>.editorial-safety{display:none!important}</style>';
+    if(!html.includes("airBetReviewTrimStyle")) html=html.replace("</head>",airBetReviewTrimStyle+"</head>");
     if(!html.includes("venue-live-priority.js")) html=html.replace("</body>",'<script src="venue-live-priority.js?v=20260909-1"></script></body>');
     if(!html.includes("general-grade-theme.js")) html=html.replace("</body>",'<script src="general-grade-theme.js?v=20260908-1"></script></body>');
     if(!html.includes("record-unified-layout-v2.js")) html=html.replace("</body>",'<script src="record-unified-layout-v2.js?v=20260909-5"></script></body>');
