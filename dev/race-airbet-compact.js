@@ -1,6 +1,6 @@
 /* MAMO BOAT race AIR BET compact layout v3
  * Keeps only the venue and race selector in the race path.
- * The existing AIR BET-first structural controller remains responsible for outer DOM order.
+ * Preserves AIR BET before the official-information panel with direct DOM order only.
  * No stylesheet overrides, scroll locking, or unrelated UI changes.
  */
 (() => {
@@ -26,6 +26,17 @@
     node.style.fontSize = "20px";
     node.style.fontWeight = "900";
     node.style.lineHeight = "1";
+  }
+
+  function keepAirBetBeforeOfficial(raceView) {
+    const raceboard = raceView.querySelector(":scope > .panel.raceboard");
+    const betdesk = raceView.querySelector(":scope > .panel.betdesk");
+    if (!raceboard || !betdesk) return;
+    const heading = Array.from(raceView.querySelectorAll(":scope > .section-head.small"))
+      .find((node) => node.querySelector("h2")?.textContent?.trim() === "AIR BET")
+      || (betdesk.previousElementSibling?.classList?.contains("section-head") ? betdesk.previousElementSibling : null);
+    if (heading) raceView.insertBefore(heading, raceboard);
+    raceView.insertBefore(betdesk, raceboard);
   }
 
   function compactRaceAirBet() {
@@ -77,6 +88,7 @@
 
     raceView.querySelector(":scope > .event-banner")?.remove();
     raceView.querySelector(":scope > .racechips")?.remove();
+    keepAirBetBeforeOfficial(raceView);
   }
 
   window.addEventListener("mamo:air-bet-rendered", compactRaceAirBet);
