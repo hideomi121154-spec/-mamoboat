@@ -1,6 +1,6 @@
-/* MAMO BOAT — compact AIR BET review layout v7.
- * Keep the modal fixed, remove duplicated review prompts, and make the purchase
- * frame itself the single explicit-height scroll container on iPhone/PWA.
+/* MAMO BOAT — compact AIR BET review layout v8.
+ * Keep the modal fixed and make ONLY the rows inside "購入する買い目"
+ * scrollable. The outer purchase frame and stake tools remain fixed.
  */
 .air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt,
@@ -8,58 +8,74 @@
   display: none !important;
 }
 
-/* IMPORTANT: give Safari one real box with a definite height to scroll.
- * Do not depend on percentage heights through <details> or nested scrollers. */
+/* One definite purchase frame. */
 .air-bet-review-shell > .air-bet-review-tickets {
   flex: 0 0 auto;
   width: 100%;
-  height: clamp(300px, 36dvh, 430px) !important;
-  max-height: clamp(300px, 36dvh, 430px) !important;
+  height: clamp(330px, 39dvh, 460px) !important;
+  max-height: clamp(330px, 39dvh, 460px) !important;
   min-height: 0;
-  overflow-x: hidden !important;
-  overflow-y: scroll !important;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y !important;
-  scrollbar-width: thin;
+  overflow: hidden !important;
 }
 
-/* Receipt and rows simply grow naturally inside the scroll frame. */
+/* The editable receipt fills the purchase frame. The summary stays fixed and
+ * the ticket rows below it own the vertical scrolling gesture. */
 .air-bet-review-tickets > .betreceipt {
-  display: block;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr);
   width: 100%;
-  height: auto !important;
-  min-height: 0;
+  height: 100% !important;
+  min-height: 0 !important;
   margin: 0;
   box-sizing: border-box;
-  overflow: visible !important;
+  overflow: hidden !important;
 }
 
 .air-bet-review-tickets > .betreceipt > summary {
   display: block;
+  grid-row: 1;
+  min-height: 38px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  background: inherit;
 }
 
+/* THIS is the intended scroll area: the individual purchase cards including
+ * their per-ticket stake input and delete button. */
 .air-bet-review-tickets .betreceipt > .betlines {
+  grid-row: 2;
   display: grid;
+  align-content: start;
   height: auto !important;
+  min-height: 0 !important;
   max-height: none !important;
-  min-height: 0;
-  overflow: visible !important;
-  touch-action: auto !important;
-  padding-bottom: 12px;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y !important;
+  scrollbar-width: thin;
+  padding-bottom: 16px;
+}
+
+/* Do not let a ticket card become the scroll container itself. */
+.air-bet-review-tickets .betline,
+.air-bet-review-tickets .betline-edit,
+.air-bet-review-tickets .betline-stake-control {
+  touch-action: manipulation;
 }
 
 @media (max-height: 740px) {
   .air-bet-review-shell > .air-bet-review-tickets {
-    height: 270px !important;
-    max-height: 270px !important;
+    height: 300px !important;
+    max-height: 300px !important;
   }
 }
 
 @media (max-height: 640px) {
   .air-bet-review-shell > .air-bet-review-tickets {
-    height: 230px !important;
-    max-height: 230px !important;
+    height: 250px !important;
+    max-height: 250px !important;
   }
 }
