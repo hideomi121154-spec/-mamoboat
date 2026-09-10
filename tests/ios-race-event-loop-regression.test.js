@@ -210,13 +210,13 @@ assert.match(index, /styles\.css\?v=20260910-3/);
 assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260910-4/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v492-airbet-racer-roster-dev/);
+assert.match(serviceWorker, /mamoboat-v493-airbet-racer-official-dev/);
 assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
 assert.match(serviceWorker, /app\.js\?v=20260910-4/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-2/);
-assert.match(serviceWorker, /air-bet-selection-fixed\.css\?v=20260910-3/);
-assert.match(serviceWorker, /race-airbet-compact\.js\?v=20260910-5/);
+assert.match(serviceWorker, /air-bet-selection-fixed\.css\?v=20260910-4/);
+assert.match(serviceWorker, /race-airbet-compact\.js\?v=20260910-6/);
 assert.doesNotMatch(serviceWorker, /air-bet-multi-add|air-bet-selection-reset|mamo-air-bet-review-cleanup/);
 
 // SHOP remains native-only; the abandoned horizontal-navigation layer stays out.
