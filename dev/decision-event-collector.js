@@ -1,14 +1,13 @@
 /*
- * MAMO BOAT Decision Event Collector v1
+ * MAMO BOAT Decision Event Collector v2
  *
- * Adds decision-process telemetry without taking ownership of app rendering.
- * - Uses the existing pilot consent and Supabase RPC collector.
- * - Records explicit skips and decision transitions.
- * - Detects new AIR BET records from the existing local state.
- * - Exposes a small API for REAL-intent and MAMO intervention integrations.
+ * Decision telemetry only. The standalone race-screen "今回は見送る" control
+ * was retired from the live race UI; no visual controls or styles are injected.
  */
 (() => {
   "use strict";
+  if (window.__MAMO_DECISION_EVENT_COLLECTOR_V2__) return;
+  window.__MAMO_DECISION_EVENT_COLLECTOR_V2__ = true;
 
   const STORAGE_KEY = "mamoboat_v40_personal";
   const CONFIG = window.MAMOBOAT_PILOT || {};
@@ -31,11 +30,8 @@
   }
 
   function loadState() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-    } catch (_) {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {}; }
+    catch (_) { return {}; }
   }
 
   function participantId(state = loadState()) {
@@ -73,11 +69,12 @@
   }
 
   function currentRace(state = loadState()) {
-    const screen = document.body?.dataset?.screen || "home";
-    const venueCode = String(state?.venue || "") || null;
-    const raceNo = Number(state?.raceNo) || null;
-    const raceDate = window.MamoCore?.jstDate?.() || null;
-    return { screen, venueCode, raceNo, raceDate };
+    return {
+      screen: document.body?.dataset?.screen || "home",
+      venueCode: String(state?.venue || "") || null,
+      raceNo: Number(state?.raceNo) || null,
+      raceDate: window.MamoCore?.jstDate?.() || null,
+    };
   }
 
   function raceKey(context) {
@@ -90,7 +87,6 @@
     if (!eventName || !consented(state) || !ready() || !participantId(state)) {
       return { ok: false, reason: "disabled" };
     }
-
     const row = {
       event_id: uid(),
       study_id: String(CONFIG.studyId || "mamoboat-pilot-v1").slice(0, 80),
@@ -105,7 +101,6 @@
       race_no: context.raceNo == null ? null : Number(context.raceNo),
       payload: safe({ decision_schema_version: 1, ...payload }),
     };
-
     try {
       const headers = { "Content-Type": "application/json", Prefer: "return=minimal" };
       const key = clientKey();
@@ -113,10 +108,7 @@
       if (/^eyJ/.test(key)) headers.Authorization = `Bearer ${key}`;
       const body = COLLECTOR.transport === "rpc" ? { p_events: [row] } : [row];
       const response = await fetch(String(COLLECTOR.endpoint), {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-        keepalive: true,
+        method: "POST", headers, body: JSON.stringify(body), keepalive: true,
       });
       return { ok: response.ok, status: response.status };
     } catch (error) {
@@ -129,99 +121,16 @@
     const previous = key ? lastDecisionByRace.get(key) || null : null;
     if (key) lastDecisionByRace.set(key, next);
     if (previous && previous !== next) {
-      send(EVENTS.DECISION_CHANGED || "decision_changed", {
-        from: previous,
-        to: next,
-        ...details,
-      }, context);
+      send(EVENTS.DECISION_CHANGED || "decision_changed", { from: previous, to: next, ...details }, context);
     }
-  }
-
-  function skipReasonLabel(code) {
-    const labels = {
-      confidence_low: "自信がない",
-      stake_risk: "金額が大きくなりそう",
-      too_many_races: "参加が続いている",
-      after_loss_pause: "不的中後なので休む",
-      mamo_prompt: "MAMOを見て見送る",
-      planned_skip: "最初から見送る予定",
-      other: "その他",
-    };
-    return labels[code] || code;
-  }
-
-  function injectStyle() {
-    if (document.getElementById("mamoDecisionCollectorStyle")) return;
-    const style = document.createElement("style");
-    style.id = "mamoDecisionCollectorStyle";
-    style.textContent = `
-      .mamo-decision-skip{margin:10px 0 14px;border:1px solid rgba(14,64,78,.14);border-radius:12px;background:#fff;padding:10px}
-      .mamo-decision-skip>button{width:100%;min-height:42px;border:1px solid rgba(14,64,78,.24);border-radius:9px;background:#f7fafb;color:#17333d;font-weight:800}
-      .mamo-decision-reasons{display:none;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
-      .mamo-decision-reasons.show{display:grid}
-      .mamo-decision-reasons button{min-height:40px;border:1px solid rgba(14,64,78,.16);border-radius:8px;background:#fff;color:#29434d;font-size:12px;font-weight:700;padding:7px}
-      .mamo-decision-note{display:none;margin:9px 0 0;text-align:center;font-size:12px;color:#49636d}
-      .mamo-decision-note.show{display:block}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function ensureSkipControl() {
-    const raceScreen = document.getElementById("race");
-    const raceView = document.getElementById("raceView");
-    if (!raceScreen?.classList.contains("active") || !raceView) return;
-    if (raceView.querySelector(".mamo-decision-skip")) return;
-
-    const anchor = raceView.querySelector(".mamo-official-link-row")
-      || raceView.querySelector(".officialmenu")
-      || raceView.querySelector(".mamo-ai-actions")
-      || raceView.lastElementChild;
-    if (!anchor) return;
-
-    const box = document.createElement("div");
-    box.className = "mamo-decision-skip";
-    box.innerHTML = `
-      <button type="button" data-decision-skip-toggle>今回は見送る</button>
-      <div class="mamo-decision-reasons" data-decision-skip-reasons>
-        ${(SCHEMA.skipReasons || ["confidence_low","stake_risk","too_many_races","after_loss_pause","mamo_prompt","planned_skip","other"])
-          .map((reason) => `<button type="button" data-decision-skip-reason="${reason}">${skipReasonLabel(reason)}</button>`).join("")}
-      </div>
-      <p class="mamo-decision-note" data-decision-skip-note>見送りを記録しました。勝敗ではなく、選んだ行動として残します。</p>`;
-    anchor.insertAdjacentElement("afterend", box);
   }
 
   function handleClick(event) {
-    const toggle = event.target.closest?.("[data-decision-skip-toggle]");
-    if (toggle) {
-      const reasons = toggle.parentElement?.querySelector("[data-decision-skip-reasons]");
-      reasons?.classList.toggle("show");
-      return;
-    }
-
-    const reasonButton = event.target.closest?.("[data-decision-skip-reason]");
-    if (reasonButton) {
-      const context = currentRace();
-      const reason = reasonButton.dataset.decisionSkipReason || "other";
-      send(EVENTS.SKIP_RECORDED || "decision_skip_recorded", {
-        reason,
-        reason_label: skipReasonLabel(reason),
-        explicit: true,
-      }, context);
-      recordDecision("skip", { reason }, context);
-      const box = reasonButton.closest(".mamo-decision-skip");
-      box?.querySelector("[data-decision-skip-reasons]")?.classList.remove("show");
-      box?.querySelector("[data-decision-skip-note]")?.classList.add("show");
-      const top = box?.querySelector("[data-decision-skip-toggle]");
-      if (top) top.textContent = "✓ 今回は見送ると記録済み";
-      return;
-    }
-
     const link = event.target.closest?.("a[href]");
     if (!link) return;
     const href = String(link.href || "");
     const text = String(link.textContent || "").replace(/\s+/g, " ").trim();
-    if (!/boatrace\.jp/i.test(href)) return;
-    if (!/(投票|舟券|購入)/.test(text)) return;
+    if (!/boatrace\.jp/i.test(href) || !/(投票|舟券|購入)/.test(text)) return;
     const context = currentRace();
     send(EVENTS.REAL_INTENT_OPENED || "decision_real_intent_opened", {
       source: "official-link",
@@ -262,9 +171,7 @@
     const context = input.context || currentRace();
     const interventionId = String(input.id || uid()).slice(0, 80);
     interventions.set(interventionId, {
-      shownAt: Date.now(),
-      context,
-      kind: String(input.kind || "reflection").slice(0, 80),
+      shownAt: Date.now(), context, kind: String(input.kind || "reflection").slice(0, 80),
     });
     send(EVENTS.INTERVENTION_SHOWN || "decision_intervention_shown", {
       intervention_id: interventionId,
@@ -297,15 +204,13 @@
   function trackRealIntent(details = {}) {
     const context = details.context || currentRace();
     send(EVENTS.REAL_INTENT_OPENED || "decision_real_intent_opened", {
-      source: details.source || "app",
-      ...details,
-      context: undefined,
+      source: details.source || "app", ...details, context: undefined,
     }, context);
     recordDecision("real_intent", { source: details.source || "app" }, context);
   }
 
   window.MAMO_DECISION_EVENTS = Object.freeze({
-    version: 1,
+    version: 2,
     track: send,
     trackRealIntent,
     interventionShown,
@@ -314,19 +219,11 @@
   });
 
   function boot() {
-    injectStyle();
-    ensureSkipControl();
     scanForNewAirBets();
     document.addEventListener("click", handleClick, true);
-    setInterval(() => {
-      ensureSkipControl();
-      scanForNewAirBets();
-    }, 1200);
+    setInterval(scanForNewAirBets, 1200);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once: true });
-  } else {
-    boot();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
 })();
