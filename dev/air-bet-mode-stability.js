@@ -1,16 +1,12 @@
-/* MAMO BOAT — AIR BET compact selector stability v6
- * Replaces the existing mode/type button rows in-place with two native selects.
- * No extra stylesheet, no scroll manipulation, no outer race DOM reordering.
+/* MAMO BOAT — AIR BET compact selector stability v7
+ * Structural replacement: create a dedicated two-select row and keep the
+ * legacy mode/type controls hidden only as state hooks for app.js.
+ * No injected stylesheet, no scroll manipulation, no outer race DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V6__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V6__ = true;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V5__ = true;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V4__ = true;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V3__ = true;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V2__ = true;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V1__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V7__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V7__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -22,134 +18,100 @@
     win: "単勝",
     place: "複勝"
   };
+  const MODE_VALUES = ["normal", "box", "form"];
   const MODE_LABELS = {
     normal: "通常",
     box: "BOX",
     form: "フォーメーション"
   };
 
-  function applySelectStyle(select) {
+  function readType(typeBar) {
+    const active = typeBar?.querySelector(".bettypebtn.active[id^='type-']");
+    const value = active?.id.replace("type-", "");
+    return TYPE_VALUES.includes(value) ? value : "trifecta";
+  }
+
+  function readMode(modeTabs) {
+    const active = modeTabs?.querySelector("button.active");
+    const label = String(active?.textContent || "").trim();
+    const value = MODE_VALUES.find((key) => MODE_LABELS[key] === label);
+    return value || "normal";
+  }
+
+  function makeSelect(id, label, values, labels, value, onChange) {
+    const select = document.createElement("select");
+    select.id = id;
+    select.setAttribute("aria-label", label);
+    values.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item;
+      option.textContent = labels[item];
+      select.appendChild(option);
+    });
+    select.value = value;
+    select.addEventListener("change", () => onChange(select.value));
+
     select.style.display = "block";
     select.style.width = "100%";
     select.style.minWidth = "0";
     select.style.height = "48px";
     select.style.boxSizing = "border-box";
-    select.style.padding = "0 38px 0 14px";
+    select.style.padding = "0 42px 0 16px";
     select.style.border = "1.5px solid #c8d6de";
     select.style.borderRadius = "12px";
-    select.style.backgroundColor = "#fff";
+    select.style.background = "#fff";
     select.style.color = "#082b4a";
-    select.style.font = "900 17px/1.2 system-ui,-apple-system,sans-serif";
+    select.style.font = "900 17px/1.2 -apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif";
     select.style.opacity = "1";
-  }
-
-  function currentType(typeBar) {
-    const active = typeBar.querySelector(".bettypebtn.active[id^='type-']");
-    const fromButton = active?.id.replace("type-", "");
-    if (TYPE_VALUES.includes(fromButton)) return fromButton;
-    const fromSelect = typeBar.querySelector("#mamoBetTypeSelect")?.value;
-    return TYPE_VALUES.includes(fromSelect) ? fromSelect : "trifecta";
-  }
-
-  function currentMode(modeTabs) {
-    const active = modeTabs.querySelector("button.active");
-    if (active) {
-      const label = String(active.textContent || "").trim();
-      return Object.keys(MODE_LABELS).find((key) => MODE_LABELS[key] === label) || "normal";
-    }
-    const fromSelect = modeTabs.querySelector("#mamoModeSelect")?.value;
-    return Object.prototype.hasOwnProperty.call(MODE_LABELS, fromSelect) ? fromSelect : "normal";
-  }
-
-  function buildTypeSelect(typeBar) {
-    const selected = currentType(typeBar);
-    let select = typeBar.querySelector("#mamoBetTypeSelect");
-    if (!select) {
-      select = document.createElement("select");
-      select.id = "mamoBetTypeSelect";
-      select.setAttribute("aria-label", "券種を選択");
-      TYPE_VALUES.forEach((type) => {
-        const option = document.createElement("option");
-        option.value = type;
-        option.textContent = TYPE_LABELS[type];
-        select.appendChild(option);
-      });
-      select.addEventListener("change", () => window.setBetType?.(select.value));
-      typeBar.replaceChildren(select);
-    }
-    applySelectStyle(select);
-    select.value = TYPE_VALUES.includes(selected) ? selected : "trifecta";
     return select;
   }
 
-  function buildModeSelect(modeTabs) {
-    const selected = currentMode(modeTabs);
-    let select = modeTabs.querySelector("#mamoModeSelect");
-    if (!select) {
-      select = document.createElement("select");
-      select.id = "mamoModeSelect";
-      select.setAttribute("aria-label", "買い方を選択");
-      Object.entries(MODE_LABELS).forEach(([value, label]) => {
-        const option = document.createElement("option");
-        option.value = value;
-        option.textContent = label;
-        select.appendChild(option);
-      });
-      select.addEventListener("change", () => window.setMode?.(select.value));
-      modeTabs.replaceChildren(select);
-    }
-    applySelectStyle(select);
-    select.value = Object.prototype.hasOwnProperty.call(MODE_LABELS, selected) ? selected : "normal";
-    return select;
-  }
-
-  function compactControls() {
+  function rebuildControls() {
     const betdesk = document.querySelector("#raceView .panel.betdesk");
     if (!betdesk) return false;
-    const typeBar = betdesk.querySelector(".bettypebar");
-    const modeTabs = betdesk.querySelector("#modeTabs");
-    const guide = betdesk.querySelector("#betGuide");
-    if (!typeBar || !modeTabs || !guide) return false;
 
-    buildModeSelect(modeTabs);
-    buildTypeSelect(typeBar);
+    const legacyTypeBar = betdesk.querySelector(":scope > .bettypebar");
+    const legacyModeTabs = betdesk.querySelector(":scope > #modeTabs");
+    const guide = betdesk.querySelector(":scope > #betGuide");
+    const builder = betdesk.querySelector(":scope > #builder");
+    if (!legacyTypeBar || !legacyModeTabs || !builder) return false;
 
-    let row = betdesk.querySelector(".mamo-bet-selector-row");
+    const currentType = readType(legacyTypeBar);
+    const currentMode = readMode(legacyModeTabs);
+
+    let row = betdesk.querySelector(":scope > .mamo-bet-selector-row");
     if (!row) {
       row = document.createElement("div");
       row.className = "mamo-bet-selector-row";
-      betdesk.insertBefore(row, guide);
+      betdesk.insertBefore(row, legacyTypeBar);
     }
+
+    row.replaceChildren(
+      makeSelect("mamoModeSelect", "買い方を選択", MODE_VALUES, MODE_LABELS, currentMode, (value) => window.setMode?.(value)),
+      makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => window.setBetType?.(value))
+    );
     row.style.display = "grid";
-    row.style.gridTemplateColumns = "minmax(0, 1fr) minmax(0, 1fr)";
+    row.style.gridTemplateColumns = "minmax(0,1fr) minmax(0,1fr)";
     row.style.gap = "10px";
     row.style.width = "100%";
-    row.style.margin = "0 0 6px";
+    row.style.margin = "0 0 8px";
     row.style.padding = "0";
     row.style.boxSizing = "border-box";
 
-    if (modeTabs.parentElement !== row) row.appendChild(modeTabs);
-    if (typeBar.parentElement !== row) row.appendChild(typeBar);
+    // app.js continues to update these legacy hooks, but they no longer affect layout.
+    legacyTypeBar.hidden = true;
+    legacyTypeBar.setAttribute("aria-hidden", "true");
+    legacyTypeBar.style.display = "none";
+    legacyModeTabs.hidden = true;
+    legacyModeTabs.setAttribute("aria-hidden", "true");
+    legacyModeTabs.style.display = "none";
 
-    [modeTabs, typeBar].forEach((node) => {
-      node.style.display = "block";
-      node.style.width = "100%";
-      node.style.minWidth = "0";
-      node.style.margin = "0";
-      node.style.padding = "0";
-      node.style.minHeight = "0";
-      node.style.background = "transparent";
-      node.style.border = "0";
-      node.style.gridTemplateColumns = "none";
-    });
-
-    guide.hidden = true;
-    guide.setAttribute("aria-hidden", "true");
+    if (guide) guide.remove();
     return true;
   }
 
-  compactControls();
-  window.addEventListener("mamo:air-bet-rendered", compactControls);
-  window.addEventListener("pageshow", compactControls);
-  window.MAMO_AIR_BET_MODE_STABILITY = Object.freeze({ refresh: compactControls });
+  rebuildControls();
+  window.addEventListener("mamo:air-bet-rendered", rebuildControls);
+  window.addEventListener("pageshow", rebuildControls);
+  window.MAMO_AIR_BET_MODE_STABILITY = Object.freeze({ refresh: rebuildControls });
 })();
