@@ -19,11 +19,15 @@
     const race = document.getElementById("race");
     const raceView = document.getElementById("raceView");
     if (!race || !raceView || !race.classList.contains("active")) return;
-    if (raceView.querySelector(".mamo-official-link-row")) return;
 
-    const aiActions = raceView.querySelector(".mamo-ai-actions");
-    const officialMenu = raceView.querySelector(".officialmenu");
-    const target = aiActions || officialMenu || raceView.firstElementChild;
+    const dock = document.getElementById("mamoHomeOfficialDock")
+      || window.MAMO_HOME_OFFICIAL_DOCK?.ensure?.();
+    const scope = dock || raceView;
+    if (scope.querySelector(".mamo-official-link-row")) return;
+
+    const aiActions = scope.querySelector(".mamo-ai-actions");
+    const officialMenu = scope.querySelector(".officialmenu");
+    const target = aiActions || officialMenu || scope.firstElementChild;
     if (!target) return;
 
     const row = document.createElement("div");
