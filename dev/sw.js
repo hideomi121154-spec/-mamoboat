@@ -1,7 +1,7 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v486-home-official-dock-dev";
+const CACHE = "mamoboat-v487-force-pilot-config-dev";
 const SHELL = [
-  "./","./index.html","./styles.css?v=20260910-2","./air-bet-review-compact.css?v=20260910-9","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260909-4","./app.js?v=20260910-2",
+  "./","./index.html","./styles.css?v=20260910-2","./air-bet-review-compact.css?v=20260910-9","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
   "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260910-10","./race-layout-refresh.js?v=20260910-1","./race-airbet-compact.js?v=20260910-3","./race-airbet-first.js?v=20260910-4","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
@@ -23,6 +23,7 @@ function withLiveVenueLoader(response){
     // Current ai-safe is loaded once by pilot-config.js; official-link is retired there.
     html=html.replace(/\s*<script[^>]+src=["'][^"']*ai-safe\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
     html=html.replace(/\s*<script[^>]+src=["'][^"']*official-link\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
+    html=html.replace(/pilot-config\.js\?v=[^"']+/g,"pilot-config.js?v=20260910-6");
     html=html.replace(/race-airbet-compact\.js\?v=[^"']+/g,"race-airbet-compact.js?v=20260910-3");
     html=html.replace(/race-airbet-first\.js\?v=[^"']+/g,"race-airbet-first.js?v=20260910-4");
     html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260910-10");
@@ -56,8 +57,7 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(event.request,{cache:"no-store"}).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(canonical,r.clone()));return r;}).catch(()=>caches.match(canonical)));
     return;
   }
-  // The two bootstrap files must never be allowed to fall back to an older body
-  // just because the query string is unchanged in index.html.
+  // Bootstrap files are always network-first so an old query string cannot pin stale logic.
   if(url.pathname.endsWith("/pilot-config.js") || url.pathname.endsWith("/ai-safe.js")){
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
