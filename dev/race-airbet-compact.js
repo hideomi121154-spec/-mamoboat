@@ -1,14 +1,13 @@
-/* MAMO BOAT race AIR BET compact layout v6
+/* MAMO BOAT race AIR BET compact layout v5
  * Keeps venue, race selector and a separate AIR BET mark in one compact row.
  * Removes the large standalone AIR BET heading so the betting panel moves up.
  * Removes the lower raceboard details (racer details/source note) from the live race view.
- * Outer race panel ordering is owned only by race-airbet-first.js.
- * No outer DOM reordering, scroll locking, or unrelated UI changes.
+ * Preserves AIR BET before the official-information panel with direct DOM order only.
+ * No stylesheet overrides, scroll locking, or unrelated UI changes.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_AIRBET_COMPACT_V6__) return;
-  window.__MAMO_RACE_AIRBET_COMPACT_V6__ = true;
+  if (window.__MAMO_RACE_AIRBET_COMPACT_V5__) return;
   window.__MAMO_RACE_AIRBET_COMPACT_V5__ = true;
 
   function currentRaceNumber(path) {
@@ -29,13 +28,15 @@
     node.style.lineHeight = "1";
   }
 
-  function removeStandaloneAirBetHeading(raceView) {
+  function keepAirBetBeforeOfficial(raceView) {
+    const raceboard = raceView.querySelector(":scope > .panel.raceboard");
     const betdesk = raceView.querySelector(":scope > .panel.betdesk");
-    if (!betdesk) return;
+    if (!raceboard || !betdesk) return;
     const heading = Array.from(raceView.querySelectorAll(":scope > .section-head.small"))
       .find((node) => node.querySelector("h2")?.textContent?.trim() === "AIR BET")
       || (betdesk.previousElementSibling?.classList?.contains("section-head") ? betdesk.previousElementSibling : null);
     heading?.remove();
+    raceView.insertBefore(betdesk, raceboard);
   }
 
   function removeLowerRaceboardDetails(raceView) {
@@ -117,7 +118,7 @@
 
     raceView.querySelector(":scope > .event-banner")?.remove();
     raceView.querySelector(":scope > .racechips")?.remove();
-    removeStandaloneAirBetHeading(raceView);
+    keepAirBetBeforeOfficial(raceView);
     removeLowerRaceboardDetails(raceView);
   }
 
