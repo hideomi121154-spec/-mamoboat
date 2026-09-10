@@ -1,12 +1,12 @@
-/* MAMO BOAT — AIR BET compact selector stability v9
+/* MAMO BOAT — AIR BET compact selector stability v10
  * Keep the compact two-select UI in lockstep with app.js state.
  * Preserve app.js-owned DOM hooks even when hidden so renderBuilder can complete.
  * No injected stylesheet, no scroll manipulation, no outer race DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V9__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V9__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V10__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V10__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -62,7 +62,7 @@
     select.style.minWidth = "0";
     select.style.height = "48px";
     select.style.boxSizing = "border-box";
-    select.style.padding = "0 42px 0 16px";
+    select.style.padding = "0 38px 0 14px";
     select.style.border = "1.5px solid #c8d6de";
     select.style.borderRadius = "12px";
     select.style.background = "#fff";
@@ -100,17 +100,23 @@
       betdesk.insertBefore(row, legacyTypeBar);
     }
 
-    row.replaceChildren(
-      makeSelect("mamoModeSelect", "買い方を選択", allowedModes, MODE_LABELS, currentMode, (value) => {
-        if (!allowedModes.includes(value)) return;
-        window.setMode?.(value);
-      }),
-      makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => {
-        window.setBetType?.(value);
-      })
-    );
+    const modeSelect = makeSelect("mamoModeSelect", "買い方を選択", allowedModes, MODE_LABELS, currentMode, (value) => {
+      if (!allowedModes.includes(value)) return;
+      window.setMode?.(value);
+    });
+    const typeSelect = makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => {
+      window.setBetType?.(value);
+    });
+
+    // The mode label is longer (especially フォーメーション), so give it more room.
+    modeSelect.style.fontSize = currentMode === "form" ? "15px" : "17px";
+    modeSelect.style.paddingLeft = "12px";
+    modeSelect.style.paddingRight = "34px";
+    typeSelect.style.fontSize = "17px";
+
+    row.replaceChildren(modeSelect, typeSelect);
     row.style.display = "grid";
-    row.style.gridTemplateColumns = "minmax(0,1fr) minmax(0,1fr)";
+    row.style.gridTemplateColumns = "minmax(0,1.22fr) minmax(0,0.88fr)";
     row.style.gap = "10px";
     row.style.width = "100%";
     row.style.margin = "0 0 8px";
