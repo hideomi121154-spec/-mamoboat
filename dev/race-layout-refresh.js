@@ -49,7 +49,6 @@
     #race .section-head.small .section-number{background:var(--r-gold);color:#082238;border-radius:7px;transform:none;}
     #race .section-head.small h2{font-size:22px;color:#082238;}
     #race .betdesk{border:1px solid #dce3e4!important;border-top:3px solid var(--r-gold)!important;border-radius:14px;background:#fffdf8!important;box-shadow:0 6px 18px rgba(8,34,56,.06);}
-    #raceView .bettypebar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px!important;padding:2px 0 10px!important;overflow:visible!important;}
     #raceView .bettypebtn{min-width:0!important;width:auto!important;border-radius:9px;background:#fff;min-height:46px;padding:7px 4px;font-size:10px;}
     #raceView .bettypebtn.active{background:var(--r-navy);border-color:var(--r-navy);box-shadow:0 3px 0 var(--r-gold);}
     #raceView .bet-tabs{border-radius:10px;background:#edf1f1;padding:4px;}
@@ -72,7 +71,6 @@
       #raceView .boat>div:nth-child(2)>b{font-size:15px;}
       #raceView .raceclock{min-width:98px;flex-basis:98px;}
       #raceView .officialmenu{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-      #raceView .bettypebar{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
     }
   `;
   document.head.appendChild(s);
