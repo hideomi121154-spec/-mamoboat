@@ -19,6 +19,18 @@ assert.doesNotMatch(compact, /builder\.replaceChildren\s*\(/);
 assert.doesNotMatch(compact, /cloneNode\s*\(/);
 assert.doesNotMatch(compact, /\bouterHTML\b/);
 
+// Class and official links are read from the already-rendered official racer
+// data. The existing official DOM is not moved or cloned into the picker.
+assert.match(compact, /boat\.dataset\.racerClass/);
+assert.match(compact, /boat\.getAttribute\("href"\)/);
+assert.match(compact, /function safeOfficialUrl\(/);
+assert.match(compact, /https:\\\/\\\/www\\\.boatrace\\\.jp/);
+assert.match(compact, /mamo-racer-class/);
+assert.match(compact, /mamo-racer-official/);
+assert.match(compact, /official\.target = "_blank"/);
+assert.match(compact, /official\.rel = "noopener noreferrer"/);
+assert.match(compact, /event\.stopPropagation\(\)/);
+
 // This enhancement must not add another iPhone timing/scroll controller.
 assert.doesNotMatch(compact, /setInterval\s*\(/);
 assert.doesNotMatch(compact, /setTimeout\s*\(/);
@@ -33,7 +45,9 @@ assert.match(css, /#raceView \.mamo-racer-roster \{ display: none; \}/);
 assert.match(css, /#builder\.mamo-selection-matrix/);
 assert.match(css, /#builder > \.mamo-racer-roster[\s\S]*display: flex/);
 assert.match(css, /\.mamo-racer-name[\s\S]*text-overflow: ellipsis/);
-assert.match(css, /grid-template-columns: minmax\(88px, 1\.15fr\) repeat\(3, minmax\(0, 1fr\)\)/);
+assert.match(css, /\.mamo-racer-class/);
+assert.match(css, /\.mamo-racer-official/);
+assert.match(css, /grid-template-columns: minmax\(124px, 1\.45fr\) repeat\(3, minmax\(0, 1fr\)\)/);
 
 // Existing selection hooks are still present in app.js for normal/BOX/form.
 assert.match(app, /pickNormal\(/);
@@ -42,10 +56,11 @@ assert.match(app, /pickForm\(/);
 assert.match(app, /addNormal\(/);
 assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
+assert.match(app, /function racerUrl\(/);
 
 // PWA shell and transformed HTML must point to the same new assets.
-assert.match(sw, /mamoboat-v492-airbet-racer-roster-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260910-3/);
-assert.match(sw, /race-airbet-compact\.js\?v=20260910-5/);
+assert.match(sw, /mamoboat-v493-airbet-racer-official-dev/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260910-4/);
+assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
 
 console.log("AIR BET racer roster regression contract: OK");
