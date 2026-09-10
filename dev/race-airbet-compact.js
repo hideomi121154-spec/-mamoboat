@@ -1,16 +1,19 @@
-/* MAMO BOAT race AIR BET compact layout v6
+/* MAMO BOAT race AIR BET compact layout v7
  * Keeps venue, race selector and a separate AIR BET mark in one compact row.
  * Removes the large standalone AIR BET heading so the betting panel moves up.
- * Preserves the six racer names in a presentation-only picker roster before
- * the lower raceboard details are removed from the live race view.
+ * Preserves racer name, class and the existing BOAT RACE official profile URL
+ * in a presentation-only picker roster before lower raceboard details are removed.
  * Existing pick button IDs, handlers and betting state remain app.js-owned.
+ * Official profile links are copied as URL data only; existing official DOM is not moved or cloned.
  * Preserves AIR BET before the official-information panel with direct DOM order only.
  * No stylesheet injection, scroll locking, timer loop, or unrelated UI changes.
  */
 (() => {
   "use strict";
+  /* Keep the established owner guard so stale/new PWA assets cannot both bind this helper. */
   if (window.__MAMO_RACE_AIRBET_COMPACT_V6__) return;
   window.__MAMO_RACE_AIRBET_COMPACT_V6__ = true;
+  window.__MAMO_RACE_AIRBET_COMPACT_V7__ = true;
   window.__MAMO_RACE_AIRBET_COMPACT_V5__ = true;
 
   let cachedRosterKey = "";
@@ -38,20 +41,33 @@
     return venueName ? `${venueName}:${raceNo}` : "";
   }
 
+  function safeOfficialUrl(value) {
+    const url = String(value || "").trim();
+    return /^https:\/\/www\.boatrace\.jp\/owpc\/pc\/data\/racersearch\/profile\?/i.test(url)
+      ? url
+      : "";
+  }
+
   function readLiveRoster(raceView) {
     const boats = [...raceView.querySelectorAll(":scope > .panel.raceboard .race-racer-details .boat")];
     if (boats.length !== 6) return [];
     const roster = boats.map((boat, index) => {
       const boatNumber = Number(boat.querySelector(".num")?.textContent) || index + 1;
       const name = String(boat.querySelector("div:nth-child(2) > b")?.textContent || "").trim();
-      return { boatNumber, name };
+      const racerClass = String(boat.dataset.racerClass || "").trim();
+      const officialUrl = safeOfficialUrl(boat.getAttribute("href"));
+      return { boatNumber, name, racerClass, officialUrl };
     }).sort((left, right) => left.boatNumber - right.boatNumber);
     const valid = roster.length === 6
       && roster.every((entry, index) => entry.boatNumber === index + 1 && entry.name);
     return valid ? roster : [];
   }
 
-  function makeRosterRow(boatNumber, name) {
+  function makeRosterRow(boatNumber, entry) {
+    const name = entry?.name || "";
+    const racerClass = entry?.racerClass || "";
+    const officialUrl = entry?.officialUrl || "";
+
     const row = document.createElement("div");
     row.className = `mamo-racer-row${name ? "" : " is-missing"}`;
     row.dataset.boatNumber = String(boatNumber);
@@ -60,12 +76,35 @@
     number.className = "mamo-racer-number";
     number.textContent = String(boatNumber);
 
+    const classBadge = document.createElement("span");
+    classBadge.className = "mamo-racer-class";
+    classBadge.textContent = racerClass || "—";
+    classBadge.setAttribute("aria-label", racerClass ? `級別 ${racerClass}` : "級別未取得");
+
     const racerName = document.createElement("strong");
     racerName.className = "mamo-racer-name";
     racerName.textContent = name || "—";
     if (name) racerName.title = name;
 
-    row.append(number, racerName);
+    let official;
+    if (officialUrl && name) {
+      official = document.createElement("a");
+      official.className = "mamo-racer-official";
+      official.href = officialUrl;
+      official.target = "_blank";
+      official.rel = "noopener noreferrer";
+      official.textContent = "公式↗";
+      official.setAttribute("aria-label", `${name}選手のBOAT RACE公式情報を開く`);
+      /* Defensive separation from any future delegated picker click owner. */
+      official.addEventListener("click", (event) => event.stopPropagation());
+    } else {
+      official = document.createElement("span");
+      official.className = "mamo-racer-official is-disabled";
+      official.textContent = "公式—";
+      official.setAttribute("aria-label", "公式情報未取得");
+    }
+
+    row.append(number, classBadge, racerName, official);
     return row;
   }
 
@@ -88,7 +127,7 @@
       cachedRosterKey = key;
       cachedRoster = liveRoster;
     } else if (key !== cachedRosterKey) {
-      /* Fail safe: never carry names from another venue/race into a new race. */
+      /* Fail safe: never carry names, grades or URLs from another venue/race. */
       cachedRosterKey = key;
       cachedRoster = [];
     }
@@ -107,13 +146,13 @@
 
     const head = document.createElement("div");
     head.className = "mamo-racer-head";
-    head.textContent = "選手";
+    head.textContent = "選手・級別";
 
     const rows = document.createElement("div");
     rows.className = "mamo-racer-rows";
     for (let boatNumber = 1; boatNumber <= 6; boatNumber += 1) {
-      const name = roster.find((entry) => entry.boatNumber === boatNumber)?.name || "";
-      rows.appendChild(makeRosterRow(boatNumber, name));
+      const entry = roster.find((item) => item.boatNumber === boatNumber) || null;
+      rows.appendChild(makeRosterRow(boatNumber, entry));
     }
     /* Only our presentation node is rebuilt. Pick buttons are never copied or replaced. */
     rosterNode.replaceChildren(head, rows);
