@@ -82,17 +82,29 @@
 
   function ensureDecisionButtons() {
     const raceView = document.getElementById("raceView");
-    if (!raceView || !document.getElementById("race")?.classList.contains("active")) return;
-    if (raceView.querySelector(".mamo-ai-actions")) return;
-    const anchorPoint = raceView.querySelector(".officialmenu") || raceView.firstElementChild;
-    if (!anchorPoint) return;
+    const home = document.getElementById("home");
+    const nextRaces = document.getElementById("nextRaces");
+    if (!raceView || !home || !nextRaces) return;
+
+    // LIVE / REAL belong to Home. Remove only the legacy race-screen action box.
+    raceView.querySelectorAll(":scope .mamo-ai-actions").forEach(node => node.remove());
+
     const liveExisting = [...raceView.querySelectorAll("a")].find(a=>/race\.boatcast\.jp/.test(a.href||"") || /映像|LIVE/.test(a.textContent||""));
     const liveUrl = liveExisting?.href || "https://race.boatcast.jp/";
     const realUrl = matchMedia("(max-width:744px)").matches ? SP_REAL : PC_REAL;
-    const box = document.createElement("div");
-    box.className = "mamo-ai-actions";
+
+    let box = document.getElementById("mamoHomeLiveRealActions");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "mamoHomeLiveRealActions";
+      box.className = "mamo-ai-actions";
+      box.dataset.homeActions = "1";
+      nextRaces.insertAdjacentElement("afterend", box);
+    } else if (box.previousElementSibling !== nextRaces) {
+      nextRaces.insertAdjacentElement("afterend", box);
+    }
+
     box.innerHTML = `<a data-mamo-action="live" href="${esc(liveUrl)}" target="_blank" rel="noopener noreferrer">▶ LIVE</a><a class="real" data-mamo-action="real" href="${esc(realUrl)}" target="_blank" rel="noopener noreferrer">REAL投票 ↗</a><small>LIVEとREALは別々に記録。REALは公式投票サイトを開いた事実のみで、購入完了とは扱いません。</small>`;
-    anchorPoint.insertAdjacentElement("afterend", box);
   }
 
   function rangeStatsBetween(startMs, endMs) {
