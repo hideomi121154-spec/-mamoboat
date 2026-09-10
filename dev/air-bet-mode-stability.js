@@ -1,11 +1,12 @@
-/* MAMO BOAT — AIR BET compact selector stability v8
+/* MAMO BOAT — AIR BET compact selector stability v9
  * Keep the compact two-select UI in lockstep with app.js state.
+ * Preserve app.js-owned DOM hooks even when hidden so renderBuilder can complete.
  * No injected stylesheet, no scroll manipulation, no outer race DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V8__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V8__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V9__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V9__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -17,7 +18,6 @@
     win: "単勝",
     place: "複勝"
   };
-  const MODE_VALUES = ["normal", "box", "form"];
   const MODE_LABELS = {
     normal: "通常",
     box: "BOX",
@@ -40,7 +40,7 @@
     const allowed = allowedModesFor(type);
     const active = modeTabs?.querySelector("button.active");
     const label = String(active?.textContent || "").trim();
-    const value = MODE_VALUES.find((key) => MODE_LABELS[key] === label);
+    const value = Object.keys(MODE_LABELS).find((key) => MODE_LABELS[key] === label);
     return allowed.includes(value) ? value : "normal";
   }
 
@@ -72,6 +72,13 @@
     return select;
   }
 
+  function hideLegacyHook(node) {
+    if (!node) return;
+    node.hidden = true;
+    node.setAttribute("aria-hidden", "true");
+    node.style.display = "none";
+  }
+
   function rebuildControls() {
     const betdesk = document.querySelector("#raceView .panel.betdesk");
     if (!betdesk) return false;
@@ -80,7 +87,7 @@
     const legacyModeTabs = betdesk.querySelector(":scope > #modeTabs");
     const guide = betdesk.querySelector(":scope > #betGuide");
     const builder = betdesk.querySelector(":scope > #builder");
-    if (!legacyTypeBar || !legacyModeTabs || !builder) return false;
+    if (!legacyTypeBar || !legacyModeTabs || !guide || !builder) return false;
 
     const currentType = readType(legacyTypeBar);
     const allowedModes = allowedModesFor(currentType);
@@ -110,14 +117,10 @@
     row.style.padding = "0";
     row.style.boxSizing = "border-box";
 
-    legacyTypeBar.hidden = true;
-    legacyTypeBar.setAttribute("aria-hidden", "true");
-    legacyTypeBar.style.display = "none";
-    legacyModeTabs.hidden = true;
-    legacyModeTabs.setAttribute("aria-hidden", "true");
-    legacyModeTabs.style.display = "none";
-
-    if (guide) guide.remove();
+    // These nodes are app.js state/render hooks. Keep them in the DOM and only hide them.
+    hideLegacyHook(legacyTypeBar);
+    hideLegacyHook(legacyModeTabs);
+    hideLegacyHook(guide);
     return true;
   }
 
