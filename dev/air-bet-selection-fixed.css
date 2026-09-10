@@ -84,16 +84,16 @@
   body[data-screen="race"] #raceView #builder[data-mamo-picker-columns="1"] { grid-template-columns: 1fr; }
   body[data-screen="race"] #raceView #builder[data-mamo-picker-columns="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  /* Racer names are presentation-only. Existing pick buttons keep their IDs,
-     onclick handlers and selection state; the roster is a separate sibling. */
+  /* Racer info is presentation-only. Existing pick buttons keep their IDs,
+     onclick handlers and selection state; this is a separate sibling column. */
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix {
-    grid-template-columns: minmax(88px, 1.15fr) repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(124px, 1.45fr) repeat(3, minmax(0, 1fr));
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix[data-mamo-picker-columns="2"] {
-    grid-template-columns: minmax(100px, 1.05fr) repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(132px, 1.25fr) repeat(2, minmax(0, 1fr));
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix[data-mamo-picker-columns="1"] {
-    grid-template-columns: minmax(112px, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(142px, 1.05fr) minmax(0, 1fr);
   }
   body[data-screen="race"] #raceView #builder > .mamo-racer-roster {
     min-width: 0; min-height: 0; display: flex; flex-direction: column;
@@ -111,8 +111,8 @@
   }
   body[data-screen="race"] #raceView .mamo-racer-row {
     min-width: 0; min-height: 0; display: grid;
-    grid-template-columns: 22px minmax(0, 1fr); align-items: center; gap: 3px;
-    box-sizing: border-box; padding: 2px 4px 2px 3px; overflow: hidden;
+    grid-template-columns: 19px 24px minmax(0, 1fr) 31px; align-items: center; gap: 2px;
+    box-sizing: border-box; padding: 2px 3px 2px 2px; overflow: hidden;
     border: 1px solid #cfdbe2; border-left: 5px solid #c7c9c5; border-radius: 8px;
     background: #fff; color: #082b4a;
   }
@@ -124,11 +124,26 @@
   body[data-screen="race"] #raceView .mamo-racer-number {
     font-size: 11px; font-weight: 900; text-align: center; line-height: 1;
   }
+  body[data-screen="race"] #raceView .mamo-racer-class {
+    min-width: 0; padding: 2px 1px; box-sizing: border-box; border-radius: 5px;
+    background: #eef3f6; color: #0b5fb5; text-align: center;
+    font-size: 8px; font-weight: 900; line-height: 1.1; white-space: nowrap; overflow: hidden;
+  }
   body[data-screen="race"] #raceView .mamo-racer-name {
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-size: 10px; font-weight: 900; line-height: 1.15; letter-spacing: -0.03em;
+    font-size: 9px; font-weight: 900; line-height: 1.15; letter-spacing: -0.04em;
   }
-  body[data-screen="race"] #raceView .mamo-racer-row.is-missing .mamo-racer-name {
+  body[data-screen="race"] #raceView .mamo-racer-official {
+    min-width: 0; padding: 3px 1px; box-sizing: border-box; border: 1px solid #9fb5c4;
+    border-radius: 5px; background: #fff; color: #082b4a; text-align: center;
+    font-size: 7px; font-weight: 900; line-height: 1; white-space: nowrap;
+    text-decoration: none; touch-action: manipulation;
+  }
+  body[data-screen="race"] #raceView .mamo-racer-official.is-disabled {
+    border-color: transparent; background: transparent; color: #9aa5ac;
+  }
+  body[data-screen="race"] #raceView .mamo-racer-row.is-missing .mamo-racer-name,
+  body[data-screen="race"] #raceView .mamo-racer-row.is-missing .mamo-racer-class {
     color: #8a969d; font-weight: 700;
   }
 
