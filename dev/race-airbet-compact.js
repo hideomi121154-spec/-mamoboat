@@ -11,6 +11,8 @@
   window.__MAMO_RACE_AIRBET_COMPACT_V5__ = true;
 
   function currentRaceNumber(path) {
+    const selected = Number(path.querySelector("select")?.value);
+    if (selected >= 1 && selected <= 12) return selected;
     const raceText = [...path.querySelectorAll("span")]
       .map((node) => String(node.textContent || "").trim())
       .find((text) => /^\d{1,2}R$/.test(text));

@@ -1,0 +1,126 @@
+/* Only the live AIR BET picker owns a fixed viewport. Modal ticket lists,
+   closed races and all other screens keep their existing scroll behavior. */
+.air-bet-feedback { position: relative; flex: 0 0 34px; height: 34px; margin: 4px 0; }
+.air-bet-feedback > .added-notice {
+  position: absolute; inset: 0; margin: 0; padding: 5px 8px;
+  max-height: none; line-height: 1.2; font-size: 11px; transition: none;
+  display: flex; align-items: center;
+}
+.air-bet-feedback:has(.reference-odds-preview) > #addedNotice { visibility: hidden; }
+.air-bet-selection-footer { display: flex; align-items: center; gap: 8px; }
+.air-bet-selection-footer > #cartCount {
+  flex: 0 0 auto; min-width: 42px; color: #082b4a;
+  text-align: center; font-size: 14px; font-weight: 900;
+}
+.air-bet-selection-footer > #reviewBetButton { flex: 1; min-width: 0; margin: 0; }
+
+@media (max-width: 743px) {
+  html:has(body[data-screen="race"] #builder):has(.mamo-bet-selector-row),
+  body[data-screen="race"]:has(#builder):has(.mamo-bet-selector-row) {
+    overflow: hidden !important; overscroll-behavior: none;
+  }
+  body[data-screen="race"]:has(#builder):has(.mamo-bet-selector-row) .topbar { display: none; }
+  body[data-screen="race"]:has(#builder):has(.mamo-bet-selector-row) #race {
+    animation: none !important; transform: none !important;
+  }
+  body[data-screen="race"]:has(#builder):has(.mamo-bet-selector-row) #raceView {
+    position: fixed; top: env(safe-area-inset-top); left: 0; right: 0;
+    height: calc(100vh - env(safe-area-inset-top) - 68px - env(safe-area-inset-bottom));
+    height: calc(100dvh - env(safe-area-inset-top) - 68px - env(safe-area-inset-bottom));
+    z-index: 40; display: flex !important; flex-direction: column; gap: 5px;
+    box-sizing: border-box; padding: 6px 10px 8px; margin: 0;
+    background: #f8fbfd; overflow: hidden !important; overscroll-behavior: none;
+  }
+  /* Keep venue and race selectors; 24場 remains available in the bottom nav. */
+  body[data-screen="race"]:has(#builder) #raceView > .mamo-race-quickbar,
+  body[data-screen="race"]:has(#builder) #raceView > .event-banner,
+  body[data-screen="race"]:has(#builder) #raceView > .racechips,
+  body[data-screen="race"]:has(#builder) #raceView > .section-head { display: none !important; }
+  body[data-screen="race"]:has(#builder) #raceView > .race-path {
+    display: flex !important; flex: 0 0 40px; margin: 0; padding: 0; overflow: hidden;
+  }
+  body[data-screen="race"]:has(#builder) #raceView > .race-path > * {
+    height: 40px !important; min-height: 40px !important; font-size: 16px !important;
+  }
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline {
+    flex: 0 0 auto; margin: 0; padding: 4px 8px; min-height: 32px;
+  }
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline .eyebrow,
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline .race-venue-button,
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline .racename strong { display: none; }
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline .racename { font-size: 12px; }
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline .tiny { font-size: 9px; }
+  body[data-screen="race"]:has(#builder) #raceView > .raceheadline .raceclock {
+    font-size: 10px; padding: 2px 4px; min-width: 95px; flex-basis: 95px;
+  }
+  /* ai-safe moves the official links to Home. Until it loads, keep them
+     accessible in a compact row instead of clipping or deleting the links. */
+  body[data-screen="race"]:has(#builder) #raceView > .raceboard {
+    flex: 0 0 auto; margin: 0; padding: 0; border: 0; box-shadow: none;
+  }
+  body[data-screen="race"]:has(#builder) #raceView > .raceboard:empty { display: none; }
+  body[data-screen="race"]:has(#builder) #raceView .officialmenu {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important; margin: 0 !important;
+  }
+  body[data-screen="race"]:has(#builder) #raceView .officiallink { min-height: 32px; padding: 3px; }
+  body[data-screen="race"]:has(#builder) #raceView > .betdesk {
+    flex: 1 1 0; min-height: 0; display: flex; flex-direction: column;
+    margin: 0; padding: 7px !important; overflow: hidden;
+  }
+  body[data-screen="race"] #raceView .mamo-bet-selector-row { flex: 0 0 40px; }
+  body[data-screen="race"] #raceView .mamo-bet-selector-row select { font-size: 16px !important; }
+  body[data-screen="race"] #raceView #builder {
+    flex: 1 1 0; min-height: 0; margin: 0; display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr) 44px; gap: 5px !important;
+    align-items: stretch; overflow: hidden;
+  }
+  body[data-screen="race"] #raceView #builder > .rank {
+    min-height: 0; display: flex; flex-direction: column; margin: 0;
+  }
+  body[data-screen="race"] #raceView #builder[data-mamo-picker-columns="1"] { grid-template-columns: 1fr; }
+  body[data-screen="race"] #raceView #builder[data-mamo-picker-columns="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-screen="race"] #raceView #builder > .rank h3 {
+    flex: 0 0 25px; min-height: 25px !important; margin: 0 0 3px !important;
+    padding: 3px !important; font-size: 10px !important;
+  }
+  body[data-screen="race"] #raceView #builder > .rank .betgrid {
+    flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, minmax(0, 1fr)); gap: 4px !important;
+  }
+  body[data-screen="race"] #raceView #builder > .rank .pick {
+    min-height: 0 !important; height: 100%; padding: 2px !important;
+    font-size: 17px !important; transform: none; touch-action: manipulation;
+  }
+  body[data-screen="race"] #raceView #builder > .add-current-draft {
+    grid-column: 1 / -1; min-height: 44px !important; height: 44px;
+    margin: 0 !important; padding: 6px; box-shadow: none; font-size: 14px !important;
+  }
+  body[data-screen="race"] #raceView .air-bet-selection-footer { flex: 0 0 44px; }
+  body[data-screen="race"] #raceView #reviewBetButton {
+    min-height: 44px !important; height: 44px; margin: 0 !important;
+    padding: 6px; font-size: 13px !important; box-shadow: none !important;
+  }
+  body[data-screen="race"]:has(#builder):has(.mamo-bet-selector-row) .bottom-nav {
+    height: calc(68px + env(safe-area-inset-bottom)); min-height: 0;
+    padding: 3px 4px calc(3px + env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box; display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important; overflow: hidden !important;
+  }
+  body[data-screen="race"]:has(#builder):has(.mamo-bet-selector-row) .bottom-nav .nav {
+    width: auto !important; min-width: 0 !important; max-width: none !important;
+    min-height: 0 !important; margin: 0; padding: 5px 2px !important;
+  }
+}
+
+/* On a very short landscape viewport, only the picker may scroll. Keep the
+   add/review actions visible and avoid making the six boat targets too small. */
+@media (max-width: 743px) and (max-height: 540px) {
+  body[data-screen="race"] #raceView #builder {
+    overflow-y: auto; grid-template-rows: minmax(240px, 1fr) 44px;
+    overscroll-behavior: contain; touch-action: pan-y;
+  }
+  body[data-screen="race"] #raceView #builder > .add-current-draft {
+    position: sticky; bottom: 0;
+  }
+}

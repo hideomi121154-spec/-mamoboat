@@ -1537,16 +1537,14 @@
     ).join("")}</div>
     <div id="betGuide" class="notice betguide"></div>
     <div id="modeTabs" class="bet-tabs"></div><div id="builder"></div>
-    <div id="selectionOddsPreview" class="added-notice" aria-live="polite"></div>
-    <div id="addedNotice" class="added-notice" aria-live="polite"></div>
-    <section id="airBetTray" class="air-bet-tray" aria-labelledby="airBetTrayTitle">
-      <div class="title cart-title"><div><h2 id="airBetTrayTitle">買い目トレイ</h2><small>方式を切り替えて、そのまま続けて追加できます</small></div><span id="cartCount">0点</span></div>
-      <p id="cartEmpty" class="air-bet-tray-empty">買い目を追加してください</p>
-      <div id="cart" class="cart" aria-live="polite"></div>
-      <div id="cartTools" class="cart-tools" hidden><button id="clearCartButton" class="clear" type="button" onclick="clearCart()">すべて削除</button></div>
-      <div id="cartSum" class="air-bet-tray-summary" role="status">買い目を追加してください</div>
+    <div class="air-bet-feedback">
+      <div id="selectionOddsPreview" class="added-notice" aria-live="polite"></div>
+      <div id="addedNotice" class="added-notice" aria-live="polite"></div>
+    </div>
+    <div class="air-bet-selection-footer">
+      <span id="cartCount" role="status" aria-label="追加済みの買い目">0点</span>
       <button id="reviewBetButton" data-mamo-final-review="1" class="btn teal full air-bet-review-button" type="button" onclick="reviewBet()" disabled>買い目・金額を確認する</button>
-    </section>`;
+    </div>`;
   }
 
   function allowedModes(type = betType) {
@@ -1635,16 +1633,16 @@
       html = Array.from({ length: spec.picks }, (_, index) => `<div class="rank"><h3>${positionLabel(index, spec)}</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="n-${index}-${boat}" class="pick b${boat}" onclick="pickNormal(${index},${boat})">${boat}</button>`
       ).join("")}</div></div>`).join("")
-        + '<button class="btn secondary full add-current-draft" type="button" data-add-current="normal" onclick="addNormal()" hidden disabled>＋ 買い目に追加</button>';
+        + '<button class="btn secondary full add-current-draft" type="button" data-add-current="normal" onclick="addNormal()" disabled>＋ 買い目に追加</button>';
     } else if (mode === "box") {
       html = `<div class="rank"><h3>BOX（${spec.picks}艇以上）</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="b-${boat}" class="pick b${boat}" onclick="pickBox(${boat})">${boat}</button>`
-      ).join("")}</div></div><button class="btn secondary full add-current-draft" type="button" data-add-current="box" onclick="addBox()" hidden disabled>＋ 買い目に追加</button>`;
+      ).join("")}</div></div><button class="btn secondary full add-current-draft" type="button" data-add-current="box" onclick="addBox()" disabled>＋ 買い目に追加</button>`;
     } else {
       html = Array.from({ length: spec.picks }, (_, index) => `<div class="rank"><h3>${spec.ordered ? `${index + 1}着候補` : `${index + 1}艇目候補`}</h3><div class="betgrid">${[1, 2, 3, 4, 5, 6].map(
         (boat) => `<button id="f-${index}-${boat}" class="pick b${boat}" onclick="pickForm(${index},${boat})">${boat}</button>`
       ).join("")}</div></div>`).join("")
-        + '<button class="btn secondary full add-current-draft" type="button" data-add-current="form" onclick="addForm()" hidden disabled>＋ 買い目に追加</button>';
+        + '<button class="btn secondary full add-current-draft" type="button" data-add-current="form" onclick="addForm()" disabled>＋ 買い目に追加</button>';
     }
     $("builder").innerHTML = html;
     refreshBuilder();
@@ -1746,9 +1744,7 @@
     const button = $("builder")?.querySelector?.("[data-add-current]");
     if (!button) return;
     const complete = currentSelectionComplete();
-    const hidden = !complete;
     const disabled = !complete || addRequestInFlight;
-    if (button.hidden !== hidden) button.hidden = hidden;
     if (button.disabled !== disabled) button.disabled = disabled;
     setText(button, addRequestInFlight ? "参考オッズを取得中…" : "＋ 買い目に追加");
   }
@@ -1969,14 +1965,6 @@
     const hasLines = cart.length > 0;
     const count = $("cartCount");
     setText(count, `${cart.length}点`);
-    const empty = $("cartEmpty");
-    if (empty && empty.hidden !== hasLines) empty.hidden = hasLines;
-    const tools = $("cartTools");
-    if (tools && tools.hidden === hasLines) tools.hidden = !hasLines;
-    const summary = $("cartSum");
-    setText(summary, hasLines
-      ? `${cart.length}点を保持中。金額・参考オッズは次の画面で確認します。`
-      : "買い目を追加してください");
     const review = $("reviewBetButton");
     if (review) {
       const disabled = !hasLines || addRequestInFlight;
@@ -2068,73 +2056,14 @@
     renderCart();
   };
 
-  function createTrayRow() {
-    const row = document.createElement("article");
-    row.className = "cartrow air-bet-tray-row";
-    const identity = document.createElement("div");
-    identity.className = "air-bet-tray-identity";
-    const ticket = document.createElement("b");
-    ticket.className = "tickettype";
-    const modeNode = document.createElement("span");
-    modeNode.className = "cart-mode";
-    identity.append(ticket, modeNode);
-    const combo = document.createElement("b");
-    combo.className = "cart-combo";
-    const odds = document.createElement("span");
-    odds.className = "cart-reference-odds";
-    const remove = document.createElement("button");
-    remove.className = "xbtn";
-    remove.type = "button";
-    remove.textContent = "削除";
-    remove.onclick = () => window.removeLine(Number(row.dataset.cartIndex));
-    row.append(identity, combo, odds, remove);
-    return row;
-  }
-
   function setText(node, value) {
     const next = String(value ?? "");
     if (node && node.textContent !== next) node.textContent = next;
   }
 
-  function updateTrayRow(row, line, index) {
-    const type = C.normalizeBetType(line.betType);
-    const combination = lineCombinationText(line);
-    const referenceOdds = lineReferenceOdds(line);
-    const fetchedAt = lineOddsFetchedAt(line);
-    const key = D.lineKey(line);
-    const indexText = String(index);
-    if (row.dataset.cartKey !== key) row.dataset.cartKey = key;
-    if (row.dataset.cartIndex !== indexText) row.dataset.cartIndex = indexText;
-    setText(row.querySelector(".tickettype"), C.BET_TYPES[type].label);
-    setText(row.querySelector(".cart-mode"), MODE_LABELS[line.mode] || "通常");
-    setText(row.querySelector(".cart-combo"), combination);
-    const odds = row.querySelector(".cart-reference-odds");
-    setText(odds, referenceOdds
-      ? `参考 ${referenceOdds}倍${fetchedAt ? `・${timeText(fetchedAt)}` : ""}`
-      : "参考オッズ未取得");
-    const remove = row.querySelector(".xbtn");
-    const removeLabel = `${combination}を削除`;
-    if (remove.getAttribute("aria-label") !== removeLabel) remove.setAttribute("aria-label", removeLabel);
-  }
-
+  // Draft lines are displayed only in the review modal. The picker keeps a
+  // constant-size count/footer, regardless of how many lines have been added.
   function renderCart() {
-    const container = $("cart");
-    if (!container) return;
-    const existing = new Map([...container.querySelectorAll(".cartrow")].map(
-      (row) => [row.dataset.cartKey, row]
-    ));
-    const retained = new Set();
-    cart.forEach((line, index) => {
-      const key = D.lineKey(line);
-      const row = existing.get(key) || createTrayRow();
-      updateTrayRow(row, line, index);
-      retained.add(key);
-      const currentAtIndex = container.children[index];
-      if (currentAtIndex !== row) container.insertBefore(row, currentAtIndex || null);
-    });
-    existing.forEach((row, key) => {
-      if (!retained.has(key)) row.remove();
-    });
     syncTrayUI();
   }
 

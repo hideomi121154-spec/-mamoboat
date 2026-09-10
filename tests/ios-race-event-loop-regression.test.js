@@ -57,13 +57,12 @@ for (const helper of [layout, legacyMultiAdd]) {
 assert.match(app, /const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered"/);
 assert.match(app, /refreshBuilder\(\);\s*renderCart\(\);\s*notifyAirBetRendered\(\);/);
 
-// The tray is persistent within a race and only its keyed rows are changed.
+// Updating the selection footer must never create a growing ticket list.
 const renderCartBody = app.match(/function renderCart\(\) \{([\s\S]*?)\n  \}\n\n  window\.MAMO_AIR_BET_DRAFT/)?.[1] || "";
 assert(renderCartBody, "renderCart implementation must be extractable");
 assert.doesNotMatch(renderCartBody, /innerHTML/);
-assert.match(renderCartBody, /existing = new Map/);
-assert.match(renderCartBody, /if \(currentAtIndex !== row\) container\.insertBefore\(row, currentAtIndex \|\| null\)/);
-assert.match(renderCartBody, /row\.remove\(\)/);
+assert.match(renderCartBody, /syncTrayUI\(\)/);
+assert.doesNotMatch(renderCartBody, /createElement|insertBefore|append|replaceChildren/);
 const refreshBuilderBody = app.match(/function refreshBuilder\(\) \{([\s\S]*?)\n  \}\n\n  function normalizeStake/)?.[1] || "";
 assert(refreshBuilderBody);
 // Run the actual post-add reset and picker painter together. Previously the
@@ -101,9 +100,9 @@ for (const kind of ["normal", "box", "form"]) {
   assert(nodes.get("n-0-4").classes.has("sel"), "an in-flight add must preserve a newer selection");
 }
 assert.doesNotMatch(refreshBuilderBody, /renderCart\(\)/, "selection taps must not touch existing tray rows");
-assert.match(app, /id="airBetTray"/);
-assert.match(app, />買い目トレイ</);
-assert.match(app, />買い目を追加してください</);
+assert.doesNotMatch(app, /id="airBetTray"/);
+assert.match(app, /class="air-bet-selection-footer"/);
+assert.match(app, /id="cartCount"/);
 assert.match(app, /data-add-current="normal"[\s\S]*?＋ 買い目に追加/);
 
 // Opening 24 venues, including the race-screen back button, always restores
@@ -208,12 +207,12 @@ assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
 assert.match(index, /styles\.css\?v=20260910-2/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260910-2/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260910-3/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v460-air-bet-ticket-scroll-97-dev/);
+assert.match(serviceWorker, /mamoboat-v490-fixed-picker-dev/);
 assert.match(serviceWorker, /styles\.css\?v=20260910-2/);
-assert.match(serviceWorker, /app\.js\?v=20260910-2/);
+assert.match(serviceWorker, /app\.js\?v=20260910-3/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-2/);
 assert.doesNotMatch(serviceWorker, /air-bet-multi-add|air-bet-selection-reset|mamo-air-bet-review-cleanup/);

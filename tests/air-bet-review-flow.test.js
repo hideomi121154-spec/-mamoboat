@@ -70,7 +70,11 @@ function cloneInto(window, value) {
 
   window.eval(read("dev/core.js"));
   window.eval(read("dev/air-bet-draft-core.js"));
+  window.eval(read("dev/race-airbet-compact.js"));
   window.eval(read("dev/app.js"));
+  window.eval(read("dev/bet-review-flow.js"));
+  window.eval(read("dev/air-bet-mode-stability.js"));
+  window.eval(read("dev/race-airbet-first.js"));
 
   const click = (selector) => {
     const node = window.document.querySelector(selector);
@@ -115,6 +119,12 @@ function cloneInto(window, value) {
     clickId("nav-race");
     await waitFor(() => window.document.getElementById("builder"), "AIR BET builder did not render");
 
+    const initialAdd = window.document.querySelector("#builder [data-add-current]");
+    assert.equal(initialAdd.hidden, false, "add action must have a permanent position before selection");
+    assert.equal(initialAdd.disabled, true);
+    assert.equal(window.document.getElementById("airBetTray"), null);
+    assert.equal(window.document.getElementById("cart"), null);
+    const pickerChildren = window.document.querySelector(".betdesk").children.length;
     // The real inline number-button handlers must remain actionable.
     chooseNormal(1, 2, 3);
     await addCurrent(1);
@@ -151,6 +161,10 @@ function cloneInto(window, value) {
     clickId("b-3");
     await addCurrent(8);
     assert.equal(status().count, 8, "normal, formation and BOX lines must coexist");
+    assert.equal(window.document.querySelector(".betdesk").children.length, pickerChildren,
+      "adding mixed tickets must not grow the picker DOM");
+    assert.equal(window.document.getElementById("cartCount").textContent, "8点");
+    assert.equal(window.document.querySelector("#builder [data-add-current]").hidden, false);
 
     clickId("bt-normal");
     chooseNormal(1, 2, 3);
@@ -159,9 +173,9 @@ function cloneInto(window, value) {
     await waitFor(() => status().adding === false, "duplicate request did not settle");
     assert.equal(status().count, 8, "the same final combination must not be duplicated");
 
-    click("#cart .xbtn");
-    assert.equal(status().count, 7, "one tray line must be independently removable");
     openReview();
+    click(".betline-remove");
+    assert.equal(status().count, 7, "one review line must be independently removable");
     click('[data-review-stake-increment="1000"]');
     assert(draft().every((line) => line.amount >= 1000), "bulk increment must apply to every line");
 
@@ -202,7 +216,9 @@ function cloneInto(window, value) {
     assert.equal(window.document.querySelector(".air-bet-confirm-button").disabled, false);
     click(".mamo-bet-modal-back");
 
-    while (status().count) click("#cart .xbtn");
+    openReview();
+    while (status().count) click(".betline-remove");
+    click(".mamo-bet-modal-back");
     assert.equal(status().count, 0);
 
     // Re-enter twice after an empty review. Each physical click adds exactly
