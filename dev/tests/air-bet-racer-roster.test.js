@@ -58,7 +58,9 @@ assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
 assert.match(app, /function racerUrl\(/);
 
-// PWA shell and transformed HTML must point to the same new assets.
+// PWA shell and transformed HTML must point to the same racer-official release.
+// This test-only edit intentionally triggers one clean Pages deployment after
+// the previous overlapping deployment finished; runtime code is unchanged.
 assert.match(sw, /mamoboat-v493-airbet-racer-official-dev/);
 assert.match(sw, /air-bet-selection-fixed\.css\?v=20260910-4/);
 assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
