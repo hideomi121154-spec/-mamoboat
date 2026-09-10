@@ -1,19 +1,21 @@
-/* MAMO BOAT — race screen AIR BET first v6
+/* MAMO BOAT — race screen official-first ordering v7
  * Structural fix for iPhone Safari/PWA:
- * - Do NOT use flex/order to visually reorder the live race screen.
- * - AIR BET heading is owned by race-airbet-compact.js and no longer occupies a row.
- * - Move only the existing AIR BET panel once when a fresh race DOM is rendered.
- * - Builder-only rerenders never move the outer DOM.
+ * - Do NOT clone or rebuild the official-information panel.
+ * - Move the existing raceboard node itself before AIR BET.
+ * - Keep LIVE / REAL / official links and their existing handlers inside the same node.
+ * - Builder-only rerenders never rebuild or copy the outer race DOM.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_AIRBET_FIRST_V6__) return;
+  if (window.__MAMO_RACE_AIRBET_FIRST_V7__) return;
+  window.__MAMO_RACE_AIRBET_FIRST_V7__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V6__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V5__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V4__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V3__ = true;
 
   let lastBetdesk = null;
+  let lastRaceboard = null;
 
   function installStyle() {
     document.getElementById("mamoRaceAirBetFirstV4")?.remove();
@@ -27,7 +29,7 @@
       .mamo-race-quickbar .mamo-race-back{flex:1;min-height:48px;border:1.5px solid #c9d7de;border-radius:14px;background:#fff;color:#0a3554;font:900 15px/1.2 system-ui,-apple-system,sans-serif;text-align:left;padding:0 14px}
       .mamo-race-quickbar .mamo-race-deadline{display:flex;min-width:118px;align-items:center;justify-content:center;border:1.5px solid #7bd5bf;border-radius:14px;background:#f2fffb;color:#087a63;font:900 13px/1.25 system-ui,-apple-system,sans-serif;text-align:center;padding:8px 10px}
       .mamo-race-old-back-card{display:none!important}
-      #raceView>.panel.betdesk{overflow-anchor:none}
+      #raceView>.panel.betdesk,#raceView>.panel.raceboard{overflow-anchor:none}
       @media(max-width:420px){
         .mamo-race-quickbar{gap:8px}
         .mamo-race-quickbar .mamo-race-back{font-size:14px;padding:0 12px}
@@ -87,17 +89,18 @@
     if (!raceboard || !betdesk) return false;
 
     const bar = ensureQuickbar(root);
-
-    const freshRaceDom = betdesk !== lastBetdesk;
+    const freshRaceDom = betdesk !== lastBetdesk || raceboard !== lastRaceboard;
     const wrongOrder = !(
-      bar.nextElementSibling === betdesk
-      && betdesk.nextElementSibling === raceboard
+      bar.nextElementSibling === raceboard
+      && raceboard.nextElementSibling === betdesk
     );
 
     if (freshRaceDom || wrongOrder) {
-      root.insertBefore(bar, raceboard);
-      root.insertBefore(betdesk, raceboard);
+      // Preserve the nodes themselves. No innerHTML copy, cloneNode, or listener rebinding.
+      root.insertBefore(bar, betdesk);
+      root.insertBefore(raceboard, betdesk);
       lastBetdesk = betdesk;
+      lastRaceboard = raceboard;
     }
 
     const deadline = bar.querySelector(".mamo-race-deadline");
