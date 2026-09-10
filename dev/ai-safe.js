@@ -83,10 +83,14 @@
   function ensureDecisionButtons() {
     const raceView = document.getElementById("raceView");
     if (!raceView || !document.getElementById("race")?.classList.contains("active")) return;
-    if (raceView.querySelector(".mamo-ai-actions")) return;
-    const anchorPoint = raceView.querySelector(".officialmenu") || raceView.firstElementChild;
+    const dock = document.getElementById("mamoHomeOfficialDock") || window.MAMO_HOME_OFFICIAL_DOCK?.ensure?.();
+    const scope = dock || raceView;
+    if (scope.querySelector(".mamo-ai-actions")) return;
+    const officialMenu = scope.querySelector(".officialmenu") || raceView.querySelector(".officialmenu");
+    const anchorPoint = officialMenu || scope.firstElementChild;
     if (!anchorPoint) return;
-    const liveExisting = [...raceView.querySelectorAll("a")].find(a=>/race\.boatcast\.jp/.test(a.href||"") || /映像|LIVE/.test(a.textContent||""));
+    const linksScope = officialMenu || raceView;
+    const liveExisting = [...linksScope.querySelectorAll("a")].find(a=>/race\.boatcast\.jp/.test(a.href||"") || /映像|LIVE/.test(a.textContent||""));
     const liveUrl = liveExisting?.href || "https://race.boatcast.jp/";
     const realUrl = matchMedia("(max-width:744px)").matches ? SP_REAL : PC_REAL;
     const box = document.createElement("div");
