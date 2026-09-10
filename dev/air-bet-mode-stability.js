@@ -1,12 +1,11 @@
-/* MAMO BOAT — AIR BET compact selector stability v7
- * Structural replacement: create a dedicated two-select row and keep the
- * legacy mode/type controls hidden only as state hooks for app.js.
+/* MAMO BOAT — AIR BET compact selector stability v8
+ * Keep the compact two-select UI in lockstep with app.js state.
  * No injected stylesheet, no scroll manipulation, no outer race DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V7__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V7__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V8__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V8__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -25,17 +24,24 @@
     form: "フォーメーション"
   };
 
+  function allowedModesFor(type) {
+    if (type === "win" || type === "place") return ["normal"];
+    if (type === "wide") return ["normal", "box"];
+    return ["normal", "box", "form"];
+  }
+
   function readType(typeBar) {
     const active = typeBar?.querySelector(".bettypebtn.active[id^='type-']");
     const value = active?.id.replace("type-", "");
     return TYPE_VALUES.includes(value) ? value : "trifecta";
   }
 
-  function readMode(modeTabs) {
+  function readMode(modeTabs, type) {
+    const allowed = allowedModesFor(type);
     const active = modeTabs?.querySelector("button.active");
     const label = String(active?.textContent || "").trim();
     const value = MODE_VALUES.find((key) => MODE_LABELS[key] === label);
-    return value || "normal";
+    return allowed.includes(value) ? value : "normal";
   }
 
   function makeSelect(id, label, values, labels, value, onChange) {
@@ -48,7 +54,7 @@
       option.textContent = labels[item];
       select.appendChild(option);
     });
-    select.value = value;
+    select.value = values.includes(value) ? value : values[0];
     select.addEventListener("change", () => onChange(select.value));
 
     select.style.display = "block";
@@ -77,7 +83,8 @@
     if (!legacyTypeBar || !legacyModeTabs || !builder) return false;
 
     const currentType = readType(legacyTypeBar);
-    const currentMode = readMode(legacyModeTabs);
+    const allowedModes = allowedModesFor(currentType);
+    const currentMode = readMode(legacyModeTabs, currentType);
 
     let row = betdesk.querySelector(":scope > .mamo-bet-selector-row");
     if (!row) {
@@ -87,8 +94,13 @@
     }
 
     row.replaceChildren(
-      makeSelect("mamoModeSelect", "買い方を選択", MODE_VALUES, MODE_LABELS, currentMode, (value) => window.setMode?.(value)),
-      makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => window.setBetType?.(value))
+      makeSelect("mamoModeSelect", "買い方を選択", allowedModes, MODE_LABELS, currentMode, (value) => {
+        if (!allowedModes.includes(value)) return;
+        window.setMode?.(value);
+      }),
+      makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => {
+        window.setBetType?.(value);
+      })
     );
     row.style.display = "grid";
     row.style.gridTemplateColumns = "minmax(0,1fr) minmax(0,1fr)";
@@ -98,7 +110,6 @@
     row.style.padding = "0";
     row.style.boxSizing = "border-box";
 
-    // app.js continues to update these legacy hooks, but they no longer affect layout.
     legacyTypeBar.hidden = true;
     legacyTypeBar.setAttribute("aria-hidden", "true");
     legacyTypeBar.style.display = "none";
