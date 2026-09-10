@@ -1,13 +1,15 @@
-/* MAMO BOAT — race screen official-first ordering v7
- * Structural fix for iPhone Safari/PWA:
- * - Do NOT clone or rebuild the official-information panel.
- * - Move the existing raceboard node itself before AIR BET.
- * - Keep LIVE / REAL / official links and their existing handlers inside the same node.
- * - Builder-only rerenders never rebuild or copy the outer race DOM.
+/* MAMO BOAT — targeted official-action dock v8
+ * iPhone Safari/PWA structural fix:
+ * - Restore the stable outer order: quickbar -> official actions -> AIR BET -> raceboard.
+ * - NEVER move the whole raceboard above AIR BET.
+ * - Move only the existing official action nodes; do not clone/copy innerHTML.
+ * - Existing LIVE / REAL / official-link handlers stay attached to the same DOM nodes.
+ * - Builder-only rerenders do not rebuild the outer race DOM.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_AIRBET_FIRST_V7__) return;
+  if (window.__MAMO_RACE_OFFICIAL_DOCK_V8__) return;
+  window.__MAMO_RACE_OFFICIAL_DOCK_V8__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V7__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V6__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V5__ = true;
@@ -29,6 +31,8 @@
       .mamo-race-quickbar .mamo-race-back{flex:1;min-height:48px;border:1.5px solid #c9d7de;border-radius:14px;background:#fff;color:#0a3554;font:900 15px/1.2 system-ui,-apple-system,sans-serif;text-align:left;padding:0 14px}
       .mamo-race-quickbar .mamo-race-deadline{display:flex;min-width:118px;align-items:center;justify-content:center;border:1.5px solid #7bd5bf;border-radius:14px;background:#f2fffb;color:#087a63;font:900 13px/1.25 system-ui,-apple-system,sans-serif;text-align:center;padding:8px 10px}
       .mamo-race-old-back-card{display:none!important}
+      .mamo-race-official-dock{display:block;margin:0 0 10px}
+      .mamo-race-official-dock:empty{display:none}
       #raceView>.panel.betdesk,#raceView>.panel.raceboard{overflow-anchor:none}
       @media(max-width:420px){
         .mamo-race-quickbar{gap:8px}
@@ -79,6 +83,30 @@
     return bar;
   }
 
+  function ensureOfficialDock(root, betdesk) {
+    let dock = root.querySelector(":scope > .mamo-race-official-dock");
+    if (!dock) {
+      dock = document.createElement("div");
+      dock.className = "mamo-race-official-dock";
+      dock.setAttribute("aria-label", "公式情報・公式導線");
+      root.insertBefore(dock, betdesk);
+    }
+    return dock;
+  }
+
+  function moveOfficialActions(root, dock) {
+    const raceboard = root.querySelector(":scope > .panel.raceboard");
+    const officialMenu = raceboard?.querySelector(":scope > .officialmenu")
+      || root.querySelector(".officialmenu");
+    const aiActions = root.querySelector(".mamo-ai-actions");
+    const officialLink = root.querySelector(".mamo-official-link-row");
+
+    // Move the original nodes themselves. No cloning, no innerHTML copying.
+    [officialMenu, aiActions, officialLink].forEach((node) => {
+      if (node && node.parentElement !== dock) dock.appendChild(node);
+    });
+  }
+
   function arrangeFreshRaceDom() {
     installStyle();
     const root = document.getElementById("raceView");
@@ -89,19 +117,25 @@
     if (!raceboard || !betdesk) return false;
 
     const bar = ensureQuickbar(root);
+    const dock = ensureOfficialDock(root, betdesk);
     const freshRaceDom = betdesk !== lastBetdesk || raceboard !== lastRaceboard;
+
+    // Restore only the outer order. Never move raceboard above AIR BET.
     const wrongOrder = !(
-      bar.nextElementSibling === raceboard
-      && raceboard.nextElementSibling === betdesk
+      bar.nextElementSibling === dock
+      && dock.nextElementSibling === betdesk
+      && betdesk.nextElementSibling === raceboard
     );
 
     if (freshRaceDom || wrongOrder) {
-      // Preserve the nodes themselves. No innerHTML copy, cloneNode, or listener rebinding.
       root.insertBefore(bar, betdesk);
-      root.insertBefore(raceboard, betdesk);
+      root.insertBefore(dock, betdesk);
+      root.insertBefore(betdesk, raceboard);
       lastBetdesk = betdesk;
       lastRaceboard = raceboard;
     }
+
+    moveOfficialActions(root, dock);
 
     const deadline = bar.querySelector(".mamo-race-deadline");
     if (deadline) deadline.innerText = closeTimeText(root);
