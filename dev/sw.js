@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v481-race-headline-stable-dev";
+const CACHE = "mamoboat-v483-home-live-real-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260910-2","./air-bet-review-compact.css?v=20260910-9","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260909-4","./app.js?v=20260910-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
