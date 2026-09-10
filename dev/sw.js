@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v484-ai-safe-home-actions-dev";
+const CACHE = "mamoboat-v485-single-ai-safe-load-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260910-2","./air-bet-review-compact.css?v=20260910-9","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260909-4","./app.js?v=20260910-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
@@ -19,11 +19,14 @@ function withLiveVenueLoader(response){
   const type=response.headers.get("content-type")||"";
   if(!type.includes("text/html")) return response;
   return response.text().then(html=>{
+    // Remove only legacy SW-injected ai-safe/official-link script tags.
+    // Current ai-safe is loaded once by pilot-config.js; official-link is retired there.
+    html=html.replace(/\s*<script[^>]+src=["'][^"']*ai-safe\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
+    html=html.replace(/\s*<script[^>]+src=["'][^"']*official-link\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
     html=html.replace(/race-airbet-compact\.js\?v=[^"']+/g,"race-airbet-compact.js?v=20260910-3");
     html=html.replace(/race-airbet-first\.js\?v=[^"']+/g,"race-airbet-first.js?v=20260910-4");
     html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260910-10");
     html=html.replace(/decision-event-collector\.js(?:\?v=[^"']+)?/g,"decision-event-collector.js?v=20260910-2");
-    html=html.replace(/ai-safe\.js(?:\?v=[^"']+)?/g,"ai-safe.js?v=20260910-4");
     if(html.includes("air-bet-review-compact.css")) {
       html=html.replace(/air-bet-review-compact\.css\?v=[^"']+/g,"air-bet-review-compact.css?v=20260910-9");
     } else {
@@ -40,7 +43,6 @@ function withLiveVenueLoader(response){
     if(!html.includes("race-layout-refresh.js")) html=html.replace("</body>",'<script src="race-layout-refresh.js?v=20260910-1"></script></body>');
     if(!html.includes("race-airbet-compact.js")) html=html.replace("</body>",'<script src="race-airbet-compact.js?v=20260910-3"></script></body>');
     if(!html.includes("race-airbet-first.js")) html=html.replace("</body>",'<script src="race-airbet-first.js?v=20260910-4"></script></body>');
-    if(!html.includes("ai-safe.js")) html=html.replace("</body>",'<script src="ai-safe.js?v=20260910-4"></script></body>');
     const headers=new Headers(response.headers);headers.delete("content-length");
     return new Response(html,{status:response.status,statusText:response.statusText,headers});
   });
@@ -52,6 +54,21 @@ self.addEventListener("fetch",event=>{
   if(url.pathname.includes("/data/")&&url.pathname.endsWith(".json")){
     const canonical=new Request(url.origin+url.pathname,{method:"GET"});
     event.respondWith(fetch(event.request,{cache:"no-store"}).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(canonical,r.clone()));return r;}).catch(()=>caches.match(canonical)));
+    return;
+  }
+  // The two bootstrap files must never be allowed to fall back to an older body
+  // just because the query string is unchanged in index.html.
+  if(url.pathname.endsWith("/pilot-config.js") || url.pathname.endsWith("/ai-safe.js")){
+    event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);
+      try{
+        const fresh=await fetch(event.request,{cache:"no-store"});
+        if(fresh.ok) await cache.put(event.request,fresh.clone());
+        return fresh;
+      }catch(_){
+        return (await cache.match(event.request))||Response.error();
+      }
+    })());
     return;
   }
   if(event.request.mode==="navigate"){
