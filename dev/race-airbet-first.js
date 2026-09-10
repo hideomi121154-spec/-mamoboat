@@ -1,15 +1,14 @@
-/* MAMO BOAT — race headline placement v7
+/* MAMO BOAT — race headline placement v8
  * Structural fix for iPhone Safari/PWA:
- * - Start from the stable AIR BET-first layout.
  * - Keep the 24-venue/back + deadline quickbar in its original position.
- * - Move only the existing race headline (venue / race / status) above AIR BET.
+ * - Move only the existing race headline above AIR BET.
+ * - Compact only race-screen spacing; no behavior changes.
  * - Never move the whole raceboard and never clone/copy its contents.
- * - Builder-only rerenders do not move the outer DOM again.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_HEADLINE_V7__) return;
-  window.__MAMO_RACE_HEADLINE_V7__ = true;
+  if (window.__MAMO_RACE_HEADLINE_V8__) return;
+  window.__MAMO_RACE_HEADLINE_V8__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V6__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V5__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V4__ = true;
@@ -21,23 +20,24 @@
   function installStyle() {
     document.getElementById("mamoRaceAirBetFirstV4")?.remove();
     document.getElementById("mamoRaceAirBetFirstV5")?.remove();
-    if (document.getElementById("mamoRaceHeadlineV7")) return;
     document.getElementById("mamoRaceAirBetFirstV6")?.remove();
+    document.getElementById("mamoRaceHeadlineV7")?.remove();
+    if (document.getElementById("mamoRaceHeadlineV8")) return;
     const style = document.createElement("style");
-    style.id = "mamoRaceHeadlineV7";
+    style.id = "mamoRaceHeadlineV8";
     style.textContent = `
       #raceView{display:block!important}
-      .mamo-race-quickbar{display:flex;align-items:stretch;gap:10px;margin:8px 0 10px}
-      .mamo-race-quickbar .mamo-race-back{flex:1;min-height:48px;border:1.5px solid #c9d7de;border-radius:14px;background:#fff;color:#0a3554;font:900 15px/1.2 system-ui,-apple-system,sans-serif;text-align:left;padding:0 14px}
-      .mamo-race-quickbar .mamo-race-deadline{display:flex;min-width:118px;align-items:center;justify-content:center;border:1.5px solid #7bd5bf;border-radius:14px;background:#f2fffb;color:#087a63;font:900 13px/1.25 system-ui,-apple-system,sans-serif;text-align:center;padding:8px 10px}
+      .mamo-race-quickbar{display:flex;align-items:stretch;gap:7px;margin:4px 0 6px}
+      .mamo-race-quickbar .mamo-race-back{flex:1;min-height:40px;border:1.5px solid #c9d7de;border-radius:12px;background:#fff;color:#0a3554;font:900 14px/1.15 system-ui,-apple-system,sans-serif;text-align:left;padding:0 12px}
+      .mamo-race-quickbar .mamo-race-deadline{display:flex;min-width:104px;align-items:center;justify-content:center;border:1.5px solid #7bd5bf;border-radius:12px;background:#f2fffb;color:#087a63;font:900 11px/1.2 system-ui,-apple-system,sans-serif;text-align:center;padding:5px 8px}
       .mamo-race-old-back-card{display:none!important}
-      #raceView>.raceheadline{margin:0 0 10px;padding:18px 20px;background:#fffdf8;border:1px solid #e7e2d8;border-radius:0;box-sizing:border-box;overflow-anchor:none}
+      #raceView>.raceheadline{margin:0 0 6px;padding:10px 12px;background:#fffdf8;border:1px solid #e7e2d8;border-radius:0;box-sizing:border-box;overflow-anchor:none}
       #raceView>.panel.betdesk{overflow-anchor:none}
       @media(max-width:420px){
-        .mamo-race-quickbar{gap:8px}
-        .mamo-race-quickbar .mamo-race-back{font-size:14px;padding:0 12px}
-        .mamo-race-quickbar .mamo-race-deadline{min-width:106px;font-size:12px}
-        #raceView>.raceheadline{padding:16px 14px}
+        .mamo-race-quickbar{gap:6px;margin:3px 0 5px}
+        .mamo-race-quickbar .mamo-race-back{min-height:38px;font-size:13px;padding:0 10px}
+        .mamo-race-quickbar .mamo-race-deadline{min-width:98px;font-size:10px;padding:4px 7px}
+        #raceView>.raceheadline{margin-bottom:5px;padding:8px 10px}
       }
     `;
     document.head.appendChild(style);
@@ -108,7 +108,6 @@
     );
 
     if (freshRaceDom || wrongOrder) {
-      // Move only the existing headline node. The raceboard itself stays below AIR BET.
       root.insertBefore(bar, betdesk);
       root.insertBefore(headline, betdesk);
       root.insertBefore(betdesk, raceboard);
