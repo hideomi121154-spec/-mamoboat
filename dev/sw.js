@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v487-force-pilot-config-dev";
+const CACHE = "mamoboat-v488-retire-baseline-intervention-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260910-2","./air-bet-review-compact.css?v=20260910-9","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
@@ -57,8 +57,12 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(event.request,{cache:"no-store"}).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(canonical,r.clone()));return r;}).catch(()=>caches.match(canonical)));
     return;
   }
-  // Bootstrap files are always network-first so an old query string cannot pin stale logic.
-  if(url.pathname.endsWith("/pilot-config.js") || url.pathname.endsWith("/ai-safe.js")){
+  // Bootstrap/runtime compatibility files are network-first so an old query string cannot pin stale logic.
+  if(
+    url.pathname.endsWith("/pilot-config.js")
+    || url.pathname.endsWith("/ai-safe.js")
+    || url.pathname.endsWith("/baseline-intervention.js")
+  ){
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
       try{
