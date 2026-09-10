@@ -1,10 +1,11 @@
-/* MAMO BOAT — AIR BET compact selector stability v5
+/* MAMO BOAT — AIR BET compact selector stability v6
  * Replaces the existing mode/type button rows in-place with two native selects.
  * No extra stylesheet, no scroll manipulation, no outer race DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V5__) return;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V6__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V6__ = true;
   window.__MAMO_AIR_BET_MODE_STABILITY_V5__ = true;
   window.__MAMO_AIR_BET_MODE_STABILITY_V4__ = true;
   window.__MAMO_AIR_BET_MODE_STABILITY_V3__ = true;
@@ -28,21 +29,26 @@
   };
 
   function applySelectStyle(select) {
+    select.style.display = "block";
     select.style.width = "100%";
+    select.style.minWidth = "0";
     select.style.height = "48px";
     select.style.boxSizing = "border-box";
     select.style.padding = "0 38px 0 14px";
     select.style.border = "1.5px solid #c8d6de";
     select.style.borderRadius = "12px";
-    select.style.background = "#fff";
+    select.style.backgroundColor = "#fff";
     select.style.color = "#082b4a";
-    select.style.font = "900 16px/1.2 system-ui,-apple-system,sans-serif";
+    select.style.font = "900 17px/1.2 system-ui,-apple-system,sans-serif";
+    select.style.opacity = "1";
   }
 
   function currentType(typeBar) {
-    return typeBar.querySelector(".bettypebtn.active[id^='type-']")?.id.replace("type-", "")
-      || typeBar.querySelector("#mamoBetTypeSelect")?.value
-      || "trifecta";
+    const active = typeBar.querySelector(".bettypebtn.active[id^='type-']");
+    const fromButton = active?.id.replace("type-", "");
+    if (TYPE_VALUES.includes(fromButton)) return fromButton;
+    const fromSelect = typeBar.querySelector("#mamoBetTypeSelect")?.value;
+    return TYPE_VALUES.includes(fromSelect) ? fromSelect : "trifecta";
   }
 
   function currentMode(modeTabs) {
@@ -51,7 +57,8 @@
       const label = String(active.textContent || "").trim();
       return Object.keys(MODE_LABELS).find((key) => MODE_LABELS[key] === label) || "normal";
     }
-    return modeTabs.querySelector("#mamoModeSelect")?.value || "normal";
+    const fromSelect = modeTabs.querySelector("#mamoModeSelect")?.value;
+    return Object.prototype.hasOwnProperty.call(MODE_LABELS, fromSelect) ? fromSelect : "normal";
   }
 
   function buildTypeSelect(typeBar) {
@@ -68,10 +75,10 @@
         select.appendChild(option);
       });
       select.addEventListener("change", () => window.setBetType?.(select.value));
-      applySelectStyle(select);
       typeBar.replaceChildren(select);
     }
-    select.value = selected;
+    applySelectStyle(select);
+    select.value = TYPE_VALUES.includes(selected) ? selected : "trifecta";
     return select;
   }
 
@@ -89,10 +96,10 @@
         select.appendChild(option);
       });
       select.addEventListener("change", () => window.setMode?.(select.value));
-      applySelectStyle(select);
       modeTabs.replaceChildren(select);
     }
-    select.value = selected;
+    applySelectStyle(select);
+    select.value = Object.prototype.hasOwnProperty.call(MODE_LABELS, selected) ? selected : "normal";
     return select;
   }
 
@@ -111,26 +118,33 @@
     if (!row) {
       row = document.createElement("div");
       row.className = "mamo-bet-selector-row";
-      row.style.display = "grid";
-      row.style.gridTemplateColumns = "1fr 1fr";
-      row.style.gap = "8px";
-      row.style.margin = "0 0 8px";
       betdesk.insertBefore(row, guide);
     }
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "minmax(0, 1fr) minmax(0, 1fr)";
+    row.style.gap = "10px";
+    row.style.width = "100%";
+    row.style.margin = "0 0 6px";
+    row.style.padding = "0";
+    row.style.boxSizing = "border-box";
 
     if (modeTabs.parentElement !== row) row.appendChild(modeTabs);
     if (typeBar.parentElement !== row) row.appendChild(typeBar);
 
     [modeTabs, typeBar].forEach((node) => {
       node.style.display = "block";
+      node.style.width = "100%";
+      node.style.minWidth = "0";
       node.style.margin = "0";
       node.style.padding = "0";
       node.style.minHeight = "0";
       node.style.background = "transparent";
       node.style.border = "0";
+      node.style.gridTemplateColumns = "none";
     });
-    guide.style.marginTop = "0";
-    guide.style.marginBottom = "8px";
+
+    guide.hidden = true;
+    guide.setAttribute("aria-hidden", "true");
     return true;
   }
 
