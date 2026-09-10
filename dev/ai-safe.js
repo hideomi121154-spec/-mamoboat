@@ -8,6 +8,7 @@
   const MAX_EVENTS = 5000;
   const PC_REAL = "https://ib.mbrace.or.jp/";
   const SP_REAL = "https://spweb.brtb.jp/";
+  const BOATRACE_OFFICIAL = "https://www.boatrace.jp/owpc/pc/race/index";
   let visibleFrom = document.hidden ? null : Date.now();
 
   const readJson = (key, fallback) => {
@@ -86,10 +87,29 @@
     const nextRaces = document.getElementById("nextRaces");
     if (!raceView || !home || !nextRaces) return;
 
-    // LIVE / REAL belong to Home. Remove only the legacy race-screen action box.
-    raceView.querySelectorAll(":scope .mamo-ai-actions").forEach(node => node.remove());
+    let dock = document.getElementById("mamoHomeOfficialDock");
+    if (!dock) {
+      dock = document.createElement("section");
+      dock.id = "mamoHomeOfficialDock";
+      dock.className = "mamo-home-official-dock";
+      nextRaces.insertAdjacentElement("afterend", dock);
+    } else if (dock.previousElementSibling !== nextRaces) {
+      nextRaces.insertAdjacentElement("afterend", dock);
+    }
 
-    const liveExisting = [...raceView.querySelectorAll("a")].find(a=>/race\.boatcast\.jp/.test(a.href||"") || /映像|LIVE/.test(a.textContent||""));
+    // Move the actual four-link official menu; never copy/clone it.
+    const raceOfficialMenu = raceView.querySelector(".officialmenu");
+    const dockOfficialMenu = dock.querySelector(":scope > .officialmenu");
+    if (raceOfficialMenu && raceOfficialMenu !== dockOfficialMenu) {
+      dockOfficialMenu?.remove();
+      dock.prepend(raceOfficialMenu);
+    }
+
+    // Remove only legacy race-screen LIVE/REAL boxes. Home owns the actions now.
+    raceView.querySelectorAll(".mamo-ai-actions").forEach(node => node.remove());
+
+    const officialMenu = dock.querySelector(":scope > .officialmenu");
+    const liveExisting = [...(officialMenu?.querySelectorAll("a") || [])].find(a=>/race\.boatcast\.jp/.test(a.href||"") || /映像|LIVE/.test(a.textContent||""));
     const liveUrl = liveExisting?.href || "https://race.boatcast.jp/";
     const realUrl = matchMedia("(max-width:744px)").matches ? SP_REAL : PC_REAL;
 
@@ -99,12 +119,18 @@
       box.id = "mamoHomeLiveRealActions";
       box.className = "mamo-ai-actions";
       box.dataset.homeActions = "1";
-      nextRaces.insertAdjacentElement("afterend", box);
-    } else if (box.previousElementSibling !== nextRaces) {
-      nextRaces.insertAdjacentElement("afterend", box);
     }
-
+    if (box.parentElement !== dock) dock.appendChild(box);
     box.innerHTML = `<a data-mamo-action="live" href="${esc(liveUrl)}" target="_blank" rel="noopener noreferrer">▶ LIVE</a><a class="real" data-mamo-action="real" href="${esc(realUrl)}" target="_blank" rel="noopener noreferrer">REAL投票 ↗</a><small>LIVEとREALは別々に記録。REALは公式投票サイトを開いた事実のみで、購入完了とは扱いません。</small>`;
+
+    let official = document.getElementById("mamoHomeBoatRaceOfficial");
+    if (!official) {
+      official = document.createElement("div");
+      official.id = "mamoHomeBoatRaceOfficial";
+      official.className = "mamo-home-boatrace-official";
+      official.innerHTML = `<a href="${BOATRACE_OFFICIAL}" target="_blank" rel="noopener noreferrer">BOAT RACE公式 ↗</a><small>出走表・オッズ・結果などの最終確認はBOAT RACE公式サイトで行えます。</small>`;
+    }
+    if (official.parentElement !== dock) dock.appendChild(official);
   }
 
   function rangeStatsBetween(startMs, endMs) {
@@ -270,7 +296,7 @@
     if (document.getElementById("mamoAiSafeStyle")) return;
     const st = document.createElement("style");
     st.id = "mamoAiSafeStyle";
-    st.textContent = `.mamo-ai-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;padding:10px;background:#f4f8f8;border:1px solid #dce6e6}.mamo-ai-actions a{display:flex;min-height:46px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000;border:2px solid var(--teal);color:var(--navy);background:#fff}.mamo-ai-actions a.real{background:var(--navy);color:#fff;border-color:var(--navy)}.mamo-ai-actions small{grid-column:1/-1;color:var(--muted);font-size:9px;line-height:1.5}.mamo-ai-report{margin:14px 0 22px;padding:14px;background:#fff;border-top:5px solid var(--teal);box-shadow:3px 4px 0 rgba(7,27,43,.07)}.mamo-ai-report .title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}.mamo-ai-report .title span{font-size:9px;font-weight:1000;color:var(--teal-dark);letter-spacing:.12em}.mamo-ai-report .title h3{margin:3px 0;font-size:20px}.mamo-ai-report .title small{color:var(--muted);font-weight:900}.mamo-ai-report article{padding:11px 0;border-top:1px solid var(--soft-line)}.mamo-ai-report article header{display:flex;justify-content:space-between;gap:8px}.mamo-ai-report article header span{font-weight:1000}.mamo-ai-report article header b{font-size:11px;color:var(--teal-dark)}.mamo-ai-report .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.mamo-ai-report .metrics i{font-style:normal;background:#f4f8f8;padding:7px}.mamo-ai-report .metrics.primary i:first-child{background:#eef8f6;border-left:4px solid var(--teal)}.mamo-ai-report .metrics small{display:block;font-size:8px;color:var(--muted);font-weight:900}.mamo-ai-report .metrics strong{display:block;margin-top:2px;font-size:14px}.mamo-ai-report .metrics.primary strong{font-size:16px}.mamo-ai-report .metrics.primary em{display:block;margin-top:3px;font-style:normal;font-size:8px;font-weight:900;color:var(--teal-dark)}.mamo-ai-report .compare-note{margin:7px 0 9px;padding:9px 10px;background:#fffaf0;border-left:4px solid var(--gold,#d9a321);font-size:10px;line-height:1.6}.mamo-ai-report .compare-note b{display:block;margin-bottom:2px;color:var(--navy)}.mamo-ai-report .compare-note span{color:#455866}.mamo-ai-report .metrics.secondary{margin-top:6px}.mamo-ai-report .metrics.secondary i{background:#fafbfb}.mamo-ai-report article p{margin:8px 0 0;font-size:11px;line-height:1.7}.mamo-ai-report footer{margin-top:8px;color:var(--muted);font-size:9px;line-height:1.5}@media(max-width:500px){.mamo-ai-report .metrics{grid-template-columns:repeat(2,1fr)}}`;
+    st.textContent = `.mamo-home-official-dock{margin:12px 24px 20px}.mamo-home-official-dock>.officialmenu{margin-top:0!important}.mamo-ai-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;padding:10px;background:#f4f8f8;border:1px solid #dce6e6}.mamo-ai-actions a{display:flex;min-height:46px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000;border:2px solid var(--teal);color:var(--navy);background:#fff}.mamo-ai-actions a.real{background:var(--navy);color:#fff;border-color:var(--navy)}.mamo-ai-actions small{grid-column:1/-1;color:var(--muted);font-size:9px;line-height:1.5}.mamo-home-boatrace-official{display:grid;gap:7px;margin-top:10px}.mamo-home-boatrace-official a{display:flex;min-height:46px;align-items:center;justify-content:center;text-decoration:none;font-weight:1000;border:2px solid var(--teal);color:var(--navy);background:#eefafa}.mamo-home-boatrace-official small{color:var(--muted);font-size:9px;line-height:1.5}.mamo-ai-report{margin:14px 0 22px;padding:14px;background:#fff;border-top:5px solid var(--teal);box-shadow:3px 4px 0 rgba(7,27,43,.07)}.mamo-ai-report .title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}.mamo-ai-report .title span{font-size:9px;font-weight:1000;color:var(--teal-dark);letter-spacing:.12em}.mamo-ai-report .title h3{margin:3px 0;font-size:20px}.mamo-ai-report .title small{color:var(--muted);font-weight:900}.mamo-ai-report article{padding:11px 0;border-top:1px solid var(--soft-line)}.mamo-ai-report article header{display:flex;justify-content:space-between;gap:8px}.mamo-ai-report article header span{font-weight:1000}.mamo-ai-report article header b{font-size:11px;color:var(--teal-dark)}.mamo-ai-report .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.mamo-ai-report .metrics i{font-style:normal;background:#f4f8f8;padding:7px}.mamo-ai-report .metrics.primary i:first-child{background:#eef8f6;border-left:4px solid var(--teal)}.mamo-ai-report .metrics small{display:block;font-size:8px;color:var(--muted);font-weight:900}.mamo-ai-report .metrics strong{display:block;margin-top:2px;font-size:14px}.mamo-ai-report .metrics.primary strong{font-size:16px}.mamo-ai-report .metrics.primary em{display:block;margin-top:3px;font-style:normal;font-size:8px;font-weight:900;color:var(--teal-dark)}.mamo-ai-report .compare-note{margin:7px 0 9px;padding:9px 10px;background:#fffaf0;border-left:4px solid var(--gold,#d9a321);font-size:10px;line-height:1.6}.mamo-ai-report .compare-note b{display:block;margin-bottom:2px;color:var(--navy)}.mamo-ai-report .compare-note span{color:#455866}.mamo-ai-report .metrics.secondary{margin-top:6px}.mamo-ai-report .metrics.secondary i{background:#fafbfb}.mamo-ai-report article p{margin:8px 0 0;font-size:11px;line-height:1.7}.mamo-ai-report footer{margin-top:8px;color:var(--muted);font-size:9px;line-height:1.5}@media(max-width:500px){.mamo-home-official-dock{margin:10px 16px 18px}.mamo-ai-report .metrics{grid-template-columns:repeat(2,1fr)}}`;
     document.head.appendChild(st);
   }
 
@@ -291,6 +317,8 @@
     else { visibleFrom=Date.now(); log("return",{}); setTimeout(ensureDecisionButtons,60); }
   });
   window.addEventListener("pagehide", ()=>recordVisible("pagehide"));
+  window.addEventListener("pageshow", () => setTimeout(ensureDecisionButtons, 0));
+  window.addEventListener("mamo:air-bet-rendered", () => setTimeout(ensureDecisionButtons, 0));
 
   function boot() {
     styles();
