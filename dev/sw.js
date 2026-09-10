@@ -1,9 +1,9 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v471-air-bet-review-scroll-owner-dev";
+const CACHE = "mamoboat-v472-air-bet-selector-state-sync-dev";
 const SHELL = [
   "./","./index.html","./styles.css?v=20260910-2","./air-bet-review-compact.css?v=20260910-9","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260909-4","./app.js?v=20260910-2",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260908-2",
-  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260910-7","./race-layout-refresh.js?v=20260910-1","./race-airbet-compact.js?v=20260910-2","./race-airbet-first.js?v=20260910-1","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
+  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260910-8","./race-layout-refresh.js?v=20260910-1","./race-airbet-compact.js?v=20260910-2","./race-airbet-first.js?v=20260910-1","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
 ];
@@ -20,6 +20,7 @@ function withLiveVenueLoader(response){
   if(!type.includes("text/html")) return response;
   return response.text().then(html=>{
     html=html.replace(/race-airbet-compact\.js\?v=[^"']+/g,"race-airbet-compact.js?v=20260910-2");
+    html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260910-8");
     if(html.includes("air-bet-review-compact.css")) {
       html=html.replace(/air-bet-review-compact\.css\?v=[^"']+/g,"air-bet-review-compact.css?v=20260910-9");
     } else {
@@ -31,7 +32,7 @@ function withLiveVenueLoader(response){
     if(!html.includes("record-mobile-layout-fix.js")) html=html.replace("</body>",'<script src="record-mobile-layout-fix.js?v=20260908-2"></script></body>');
     if(!html.includes("race-carte-live-state-fix.js")) html=html.replace("</body>",'<script src="race-carte-live-state-fix.js?v=20260908-3"></script></body>');
     if(!html.includes("race-carte-manual-refresh.js")) html=html.replace("</body>",'<script src="race-carte-manual-refresh.js?v=20260909-3"></script></body>');
-    if(!html.includes("air-bet-mode-stability.js")) html=html.replace("</body>",'<script src="air-bet-mode-stability.js?v=20260910-7"></script></body>');
+    if(!html.includes("air-bet-mode-stability.js")) html=html.replace("</body>",'<script src="air-bet-mode-stability.js?v=20260910-8"></script></body>');
     if(!html.includes("race-layout-refresh.js")) html=html.replace("</body>",'<script src="race-layout-refresh.js?v=20260910-1"></script></body>');
     if(!html.includes("race-airbet-compact.js")) html=html.replace("</body>",'<script src="race-airbet-compact.js?v=20260910-2"></script></body>');
     if(!html.includes("race-airbet-first.js")) html=html.replace("</body>",'<script src="race-airbet-first.js?v=20260910-1"></script></body>');
