@@ -1,12 +1,12 @@
-/* MAMO BOAT — AIR BET compact selector stability v10
+/* MAMO BOAT — AIR BET compact selector stability v11
  * Keep the compact two-select UI in lockstep with app.js state.
  * Preserve app.js-owned DOM hooks even when hidden so renderBuilder can complete.
- * No injected stylesheet, no scroll manipulation, no outer race DOM reordering.
+ * Compact only control sizing; no scroll manipulation or outer DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V10__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V10__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V11__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V11__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -60,14 +60,14 @@
     select.style.display = "block";
     select.style.width = "100%";
     select.style.minWidth = "0";
-    select.style.height = "48px";
+    select.style.height = "40px";
     select.style.boxSizing = "border-box";
-    select.style.padding = "0 38px 0 14px";
+    select.style.padding = "0 32px 0 12px";
     select.style.border = "1.5px solid #c8d6de";
-    select.style.borderRadius = "12px";
+    select.style.borderRadius = "10px";
     select.style.background = "#fff";
     select.style.color = "#082b4a";
-    select.style.font = "900 17px/1.2 -apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif";
+    select.style.font = "900 15px/1.15 -apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif";
     select.style.opacity = "1";
     return select;
   }
@@ -108,22 +108,20 @@
       window.setBetType?.(value);
     });
 
-    // The mode label is longer (especially フォーメーション), so give it more room.
-    modeSelect.style.fontSize = currentMode === "form" ? "15px" : "17px";
-    modeSelect.style.paddingLeft = "12px";
-    modeSelect.style.paddingRight = "34px";
-    typeSelect.style.fontSize = "17px";
+    modeSelect.style.fontSize = currentMode === "form" ? "13px" : "15px";
+    modeSelect.style.paddingLeft = "11px";
+    modeSelect.style.paddingRight = "30px";
+    typeSelect.style.fontSize = "15px";
 
     row.replaceChildren(modeSelect, typeSelect);
     row.style.display = "grid";
     row.style.gridTemplateColumns = "minmax(0,1.22fr) minmax(0,0.88fr)";
-    row.style.gap = "10px";
+    row.style.gap = "7px";
     row.style.width = "100%";
-    row.style.margin = "0 0 8px";
+    row.style.margin = "0 0 5px";
     row.style.padding = "0";
     row.style.boxSizing = "border-box";
 
-    // These nodes are app.js state/render hooks. Keep them in the DOM and only hide them.
     hideLegacyHook(legacyTypeBar);
     hideLegacyHook(legacyModeTabs);
     hideLegacyHook(guide);
