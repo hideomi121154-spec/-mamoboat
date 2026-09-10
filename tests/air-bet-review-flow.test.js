@@ -31,11 +31,12 @@ function cloneInto(window, value) {
   const { window } = dom;
   const alerts = [];
   const confirms = [];
+  let confirmResponse = true;
   window.scrollTo = () => {};
   window.alert = (message) => alerts.push(String(message));
   window.confirm = (message) => {
     confirms.push(String(message));
-    return true;
+    return confirmResponse;
   };
   window.Date.now = () => Date.parse(`${dataset.date}T05:00:00.000Z`);
   window.fetch = async (input) => {
@@ -75,6 +76,7 @@ function cloneInto(window, value) {
   window.eval(read("dev/bet-review-flow.js"));
   window.eval(read("dev/air-bet-mode-stability.js"));
   window.eval(read("dev/race-airbet-first.js"));
+  window.eval(read("dev/mamo-shop.js"));
 
   const click = (selector) => {
     const node = window.document.querySelector(selector);
@@ -217,7 +219,18 @@ function cloneInto(window, value) {
     click(".mamo-bet-modal-back");
 
     openReview();
-    while (status().count) click(".betline-remove");
+    const beforeDeleteAll = JSON.stringify(draft());
+    confirmResponse = false;
+    clickId("reviewDeleteAll");
+    assert.equal(JSON.stringify(draft()), beforeDeleteAll, "canceling all-ticket deletion must preserve tickets and amounts");
+    confirmResponse = true;
+    clickId("reviewDeleteAll");
+    assert.equal(status().count, 0);
+    assert.equal(confirms.at(-1), "追加した買い目を全点削除しますか？");
+    assert.equal(window.document.querySelectorAll(".betline").length, 0);
+    assert.equal(window.document.querySelector(".air-bet-confirm-button").disabled, true);
+    assert.equal(window.document.getElementById("reviewDeleteAll").disabled, true);
+    assert.equal(window.document.getElementById("topCoins").textContent, "100,000 B");
     click(".mamo-bet-modal-back");
     assert.equal(status().count, 0);
 
@@ -258,6 +271,12 @@ function cloneInto(window, value) {
     assert.equal(saved.records[0].lines.length, 1);
     assert.equal(status().count, 0, "confirmed draft must be reset");
 
+    // Include the late-added SHOP: seven actions must remain reachable.
+    assert.equal(window.document.querySelectorAll(".bottom-nav > .nav").length, 7);
+    clickId("nav-shop");
+    assert.equal(window.document.body.dataset.screen, "shop");
+    clickId("nav-settings");
+    assert.equal(window.document.body.dataset.screen, "settings");
     // Bottom navigation remains clickable after the repeated AIR BET cycle.
     clickId("nav-venues");
     assert.equal(window.document.body.dataset.screen, "venues");

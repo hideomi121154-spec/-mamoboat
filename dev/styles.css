@@ -1213,11 +1213,15 @@ body { padding-right: 0; }
 }
 
 /* 購入確認は外枠を固定し、増減する買い目一覧だけをスクロールする。 */
-.modal-bg.air-bet-review-bg { touch-action: pan-y; }
+.modal-bg.air-bet-review-bg {
+  touch-action: pan-y;
+  padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+}
 .modal.air-bet-review-modal {
-  height: calc(100vh - 24px);
-  height: calc(100dvh - 24px);
-  max-height: none;
+  height: calc(100vh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  max-height: 100%;
+  padding: 10px;
   overflow: hidden;
   overscroll-behavior: none;
   scrollbar-gutter: auto;
@@ -1225,13 +1229,24 @@ body { padding-right: 0; }
 .air-bet-review-shell {
   display: flex;
   flex-direction: column;
+  gap: 6px;
   height: 100%;
   min-height: 0;
   overflow: hidden;
 }
 .air-bet-review-shell > * { flex: 0 0 auto; }
+.air-bet-review-shell > .mamo-bet-modal-back { min-height: 40px; margin: 0; padding: 6px 10px; }
+.air-bet-review-shell > h2 { margin: 0; font-size: 20px; line-height: 1.2; }
+.air-bet-review-shell > #reviewBetSummary { margin: 0; padding: 5px 8px; font-size: 12px; }
+.air-bet-review-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.air-bet-review-heading h3 { margin: 0; font-size: 14px; }
+.air-bet-review-delete-all { min-height: 36px; padding: 5px 9px; border: 1px solid #efc3bf; border-radius: 7px; background: #fff7f6; color: #9c3d36; font-size: 11px; font-weight: 900; }
+.air-bet-review-delete-all:disabled { opacity: .42; }
+.air-bet-review-shell > .review-stake-tools { margin: 0; padding: 7px; gap: 5px; }
+.air-bet-review-shell > .air-bet-confirm-button { min-height: 48px; margin: 0; padding: 8px; box-shadow: none; }
+
 .air-bet-review-shell > .air-bet-review-tickets {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -1251,11 +1266,7 @@ body { padding-right: 0; }
     max-height: calc(100vh - 16px);
     max-height: calc(100dvh - 16px);
   }
-  .modal.air-bet-review-modal {
-    height: calc(100vh - 16px);
-    height: calc(100dvh - 16px);
-    max-height: none;
-  }
+
 }
 
 /* 744px = iPad mini縦向き相当。ここからPC同様の左ナビにする。 */

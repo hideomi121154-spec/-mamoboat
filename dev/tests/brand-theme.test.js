@@ -42,7 +42,7 @@ test("MAMO BOAT wordmark has a sports face and red racing slash", () => {
 test("app icons and offline shells use the same brand palette", () => {
   const cases = [
     [root, "mamoboat-v436-root-pass-through-74"],
-    [devRoot, "mamoboat-v490-fixed-picker-dev"],
+    [devRoot, "mamoboat-v491-review-nav-layout-dev"],
   ];
 
   for (const [base, cache] of cases) {

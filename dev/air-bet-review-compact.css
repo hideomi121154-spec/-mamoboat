@@ -1,26 +1,14 @@
-/* MAMO BOAT — compact AIR BET review layout v9.
+/* MAMO BOAT — compact AIR BET review content v10.
  * The purchase frame itself is the only vertical scroll owner.
  * Avoid nested <details> / grid scroll containers on iPhone Safari/PWA.
  */
-.air-bet-review-shell #reviewBetSummary,
 .air-bet-review-shell #reviewStakePrompt,
 .air-bet-review-shell > .editorial-safety {
   display: none !important;
 }
 
-/* Give Safari one definite, touch-scrollable box. */
-.air-bet-review-shell > .air-bet-review-tickets {
-  flex: 0 0 auto;
-  width: 100%;
-  height: clamp(330px, 39dvh, 460px) !important;
-  max-height: clamp(330px, 39dvh, 460px) !important;
-  min-height: 0;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  touch-action: pan-y !important;
-}
+/* The outer size and the flexible ticket viewport are owned by styles.css.
+ * Never assign this list a pixel height: it must yield space to confirmation. */
 
 /* Do not create a second scroll owner inside the frame. */
 .air-bet-review-tickets > .betreceipt {
@@ -59,18 +47,4 @@
 .air-bet-review-tickets .betline-edit,
 .air-bet-review-tickets .betline-stake-control {
   touch-action: auto !important;
-}
-
-@media (max-height: 740px) {
-  .air-bet-review-shell > .air-bet-review-tickets {
-    height: 300px !important;
-    max-height: 300px !important;
-  }
-}
-
-@media (max-height: 640px) {
-  .air-bet-review-shell > .air-bet-review-tickets {
-    height: 250px !important;
-    max-height: 250px !important;
-  }
 }

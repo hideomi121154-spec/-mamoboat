@@ -2162,6 +2162,8 @@
     });
     const tools = $("reviewStakeTools");
     if (tools) tools.hidden = !cart.length;
+    const deleteAll = $("reviewDeleteAll");
+    if (deleteAll) deleteAll.disabled = !cart.length;
     const reviewCustom = $("reviewAllStakeInput");
     if (reviewCustom && document.activeElement !== reviewCustom) {
       reviewCustom.value = commonStake ? String(commonStake) : "";
@@ -2216,6 +2218,15 @@
     syncReviewBetUI();
   };
 
+  window.deleteAllReviewLines = () => {
+    if (!cart.length || !confirm("追加した買い目を全点削除しますか？")) return;
+    cart = [];
+    clearAddedNotice();
+    renderCart();
+    showEmptyReviewReceipt();
+    syncReviewBetUI();
+  };
+
   function dailyChallengeRecord(date = DATA.date) {
     return S.records.find(
       (record) => record.raceDate === date && record.rewardChallenge === true
@@ -2244,7 +2255,7 @@
       <div id="reviewBetSummary" class="notice"><b>${cart.length}点 / ${fmt(total)}B</b></div>
       <div id="reviewBetBalanceError" class="notice warn" hidden></div>
       <div id="reviewStakePrompt" class="review-stake-prompt" role="status"><b>ベット数を入力してください</b><span>各買い目に100B単位で設定します。まとめて入力もできます。</span></div>
-      <h3>購入内容</h3><div class="air-bet-review-tickets" aria-label="購入する買い目のスクロール一覧">${betReceipt(cart, raceItem.entries, mode, "購入する買い目", { editable: true })}</div>
+      <div class="air-bet-review-heading"><h3>購入内容</h3><button id="reviewDeleteAll" class="air-bet-review-delete-all" type="button" onclick="deleteAllReviewLines()">買い目を全点削除</button></div><div class="air-bet-review-tickets" aria-label="購入する買い目のスクロール一覧">${betReceipt(cart, raceItem.entries, mode, "購入する買い目", { editable: true })}</div>
       <div id="reviewStakeTools" class="review-stake-tools"><span>全ての買い目にまとめて追加</span>
         <button type="button" data-review-stake-increment="100" onclick="addReviewStakeToAll(100)" aria-label="全ての買い目に100B追加">+100B</button>
         <button type="button" data-review-stake-increment="1000" onclick="addReviewStakeToAll(1000)" aria-label="全ての買い目に1,000B追加">+1,000B</button>
