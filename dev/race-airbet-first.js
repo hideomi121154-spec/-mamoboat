@@ -1,44 +1,56 @@
-/* MAMO BOAT — race screen AIR BET first v6
+/* MAMO BOAT — race headline placement v7
  * Structural fix for iPhone Safari/PWA:
- * - Do NOT use flex/order to visually reorder the live race screen.
- * - AIR BET heading is owned by race-airbet-compact.js and no longer occupies a row.
- * - Move only the existing AIR BET panel once when a fresh race DOM is rendered.
- * - Builder-only rerenders never move the outer DOM.
+ * - Start from the stable AIR BET-first layout.
+ * - Keep the 24-venue/back + deadline quickbar in its original position.
+ * - Move only the existing race headline (venue / race / status) above AIR BET.
+ * - Never move the whole raceboard and never clone/copy its contents.
+ * - Builder-only rerenders do not move the outer DOM again.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_AIRBET_FIRST_V6__) return;
+  if (window.__MAMO_RACE_HEADLINE_V7__) return;
+  window.__MAMO_RACE_HEADLINE_V7__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V6__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V5__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V4__ = true;
   window.__MAMO_RACE_AIRBET_FIRST_V3__ = true;
 
   let lastBetdesk = null;
+  let lastHeadline = null;
 
   function installStyle() {
     document.getElementById("mamoRaceAirBetFirstV4")?.remove();
     document.getElementById("mamoRaceAirBetFirstV5")?.remove();
-    if (document.getElementById("mamoRaceAirBetFirstV6")) return;
+    if (document.getElementById("mamoRaceHeadlineV7")) return;
+    document.getElementById("mamoRaceAirBetFirstV6")?.remove();
     const style = document.createElement("style");
-    style.id = "mamoRaceAirBetFirstV6";
+    style.id = "mamoRaceHeadlineV7";
     style.textContent = `
       #raceView{display:block!important}
       .mamo-race-quickbar{display:flex;align-items:stretch;gap:10px;margin:8px 0 10px}
       .mamo-race-quickbar .mamo-race-back{flex:1;min-height:48px;border:1.5px solid #c9d7de;border-radius:14px;background:#fff;color:#0a3554;font:900 15px/1.2 system-ui,-apple-system,sans-serif;text-align:left;padding:0 14px}
       .mamo-race-quickbar .mamo-race-deadline{display:flex;min-width:118px;align-items:center;justify-content:center;border:1.5px solid #7bd5bf;border-radius:14px;background:#f2fffb;color:#087a63;font:900 13px/1.25 system-ui,-apple-system,sans-serif;text-align:center;padding:8px 10px}
       .mamo-race-old-back-card{display:none!important}
+      #raceView>.raceheadline{margin:0 0 10px;padding:18px 20px;background:#fffdf8;border:1px solid #e7e2d8;border-radius:0;box-sizing:border-box;overflow-anchor:none}
       #raceView>.panel.betdesk{overflow-anchor:none}
       @media(max-width:420px){
         .mamo-race-quickbar{gap:8px}
         .mamo-race-quickbar .mamo-race-back{font-size:14px;padding:0 12px}
         .mamo-race-quickbar .mamo-race-deadline{min-width:106px;font-size:12px}
+        #raceView>.raceheadline{padding:16px 14px}
       }
     `;
     document.head.appendChild(style);
   }
 
+  function findHeadline(root, raceboard) {
+    return root.querySelector(":scope > .raceheadline") || raceboard?.querySelector(":scope > .raceheadline") || null;
+  }
+
   function closeTimeText(root) {
-    const tiny = root?.querySelector(":scope > .panel.raceboard .raceheadline .tiny");
+    const raceboard = root?.querySelector(":scope > .panel.raceboard");
+    const headline = findHeadline(root, raceboard);
+    const tiny = headline?.querySelector(".tiny");
     const text = String(tiny?.textContent || "");
     const match = text.match(/([0-2]?\d:[0-5]\d)/);
     return match ? `締切予定\n${match[1]}` : "締切時間\n確認中";
@@ -50,9 +62,7 @@
     const back = candidates.find(node => String(node.textContent || "").includes("全国24場へ戻る"));
     if (!back) return;
     const card = back.closest(".panel") || back.parentElement;
-    if (card && !card.classList.contains("mamo-race-quickbar")) {
-      card.classList.add("mamo-race-old-back-card");
-    }
+    if (card && !card.classList.contains("mamo-race-quickbar")) card.classList.add("mamo-race-old-back-card");
   }
 
   function ensureQuickbar(root) {
@@ -86,18 +96,24 @@
     const betdesk = root.querySelector(":scope > .panel.betdesk");
     if (!raceboard || !betdesk) return false;
 
+    const headline = findHeadline(root, raceboard);
+    if (!headline) return false;
     const bar = ensureQuickbar(root);
 
-    const freshRaceDom = betdesk !== lastBetdesk;
+    const freshRaceDom = betdesk !== lastBetdesk || headline !== lastHeadline;
     const wrongOrder = !(
-      bar.nextElementSibling === betdesk
+      bar.nextElementSibling === headline
+      && headline.nextElementSibling === betdesk
       && betdesk.nextElementSibling === raceboard
     );
 
     if (freshRaceDom || wrongOrder) {
-      root.insertBefore(bar, raceboard);
+      // Move only the existing headline node. The raceboard itself stays below AIR BET.
+      root.insertBefore(bar, betdesk);
+      root.insertBefore(headline, betdesk);
       root.insertBefore(betdesk, raceboard);
       lastBetdesk = betdesk;
+      lastHeadline = headline;
     }
 
     const deadline = bar.querySelector(".mamo-race-deadline");
@@ -106,11 +122,8 @@
     return true;
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", arrangeFreshRaceDom, { once:true });
-  } else {
-    arrangeFreshRaceDom();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", arrangeFreshRaceDom, { once:true });
+  else arrangeFreshRaceDom();
 
   window.addEventListener("mamo:air-bet-rendered", arrangeFreshRaceDom);
   window.addEventListener("pageshow", arrangeFreshRaceDom);
