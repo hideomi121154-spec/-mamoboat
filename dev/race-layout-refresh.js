@@ -1,11 +1,11 @@
-/* MAMO BOAT Race Layout Refresh v5 — race UI only; home hero is owned by cast-ui.js. */
+/* MAMO BOAT Race Layout Refresh v6 — race UI only; home hero is owned by cast-ui.js. */
 (() => {
   "use strict";
-  if (window.__MAMO_RACE_LAYOUT_REFRESH_V5__) return;
-  window.__MAMO_RACE_LAYOUT_REFRESH_V5__ = true;
+  if (window.__MAMO_RACE_LAYOUT_REFRESH_V6__) return;
+  window.__MAMO_RACE_LAYOUT_REFRESH_V6__ = true;
 
   const s = document.createElement("style");
-  s.id = "mamoRaceLayoutRefreshV5";
+  s.id = "mamoRaceLayoutRefreshV6";
   s.textContent = `
     #raceView{--r-navy:#082238;--r-teal:#0c8f88;--r-gold:#d3a23a;--r-paper:#fffdf8;--r-line:#dde3e4;overflow-x:hidden!important;}
 
@@ -69,8 +69,27 @@
       #raceView .boat{grid-template-columns:48px minmax(0,1fr) 76px;gap:8px;padding:8px 8px 8px 7px;min-height:68px;}
       #raceView .num{width:46px;height:46px;font-size:21px;}
       #raceView .boat>div:nth-child(2)>b{font-size:15px;}
-      #raceView .raceclock{min-width:98px;flex-basis:98px;}
+      #raceView .raceclock{min-width:90px;flex-basis:90px;padding:5px;}
+      #raceView>.raceheadline .racename{font-size:15px;line-height:1.1;}
+      #raceView>.raceheadline .racename strong{font-size:20px;margin:0 2px;}
+      #raceView>.raceheadline .tiny{font-size:8px;line-height:1.25;}
       #raceView .officialmenu{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+
+      /* Compact AIR BET layout: size only, no DOM or behavior changes. */
+      #raceView>.panel.betdesk{padding:7px 8px 8px!important;}
+      #builder.mamo-selection-matrix{gap:3px!important;}
+      #builder.mamo-selection-matrix>.rank h3,#raceView .mamo-racer-head{min-height:27px!important;margin-bottom:3px!important;padding:3px 2px!important;font-size:9px!important;}
+      #builder.mamo-selection-matrix>.rank .betgrid,#raceView .mamo-racer-rows{gap:3px!important;}
+      #builder.mamo-selection-matrix>.rank .pick{min-height:38px!important;padding:2px!important;font-size:15px!important;border-radius:8px!important;}
+      #raceView .air-bet-tray{margin-top:7px!important;padding:7px!important;border-top-width:4px!important;border-radius:12px!important;}
+      #raceView .cart-title{margin:0 0 5px!important;}
+      #raceView .cart-title h2{font-size:15px!important;}
+      #raceView .cart-title small{margin-top:1px!important;font-size:8px!important;line-height:1.2!important;}
+      #raceView .cart-title>span{min-width:42px!important;padding:4px 7px!important;font-size:10px!important;}
+      #raceView .air-bet-tray-empty{padding:8px 7px!important;font-size:10px!important;}
+      #raceView .air-bet-tray-summary{margin-top:5px!important;font-size:9px!important;line-height:1.25!important;}
+      #raceView .air-bet-review-button{min-height:42px!important;margin-top:6px!important;border-radius:10px!important;font-size:13px!important;box-shadow:0 3px 0 #a5131c!important;}
+      #raceView .add-current-draft{min-height:42px!important;margin-top:5px!important;font-size:13px!important;}
     }
   `;
   document.head.appendChild(s);
