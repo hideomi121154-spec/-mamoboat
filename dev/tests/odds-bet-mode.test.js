@@ -4,7 +4,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const root = path.join(__dirname, "..");
-const source = fs.readFileSync(path.join(root, "odds-bet-mode.js"), "utf8");
+const source = fs.readFileSync(path.join(root, "odds-bet-mode-v1.js"), "utf8");
 const styles = fs.readFileSync(path.join(root, "odds-bet-mode.css"), "utf8");
 const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 
@@ -15,7 +15,7 @@ const document = {
 };
 const window = { addEventListener() {} };
 const sandbox = vm.createContext({ window, document, console, AbortController, CustomEvent: class CustomEvent {} });
-vm.runInContext(source, sandbox, { filename: "odds-bet-mode.js" });
+vm.runInContext(source, sandbox, { filename: "odds-bet-mode-v1.js" });
 
 const testApi = sandbox.window.MAMO_ODDS_BET_MODE_TEST;
 assert.ok(testApi, "odds bet test API is exported");
@@ -61,8 +61,8 @@ assert.doesNotMatch(styles, /position:\s*fixed/);
 // PWA must deliver both dedicated assets and preserve the previous cache marker for regression tests.
 assert.match(sw, /mamoboat-v503-odds-bet-mode-dev/);
 assert.match(sw, /mamoboat-v502-race-carte-composite-odds-dev/);
-assert.match(sw, /odds-bet-mode\.js\?v=20260911-1/);
+assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-1/);
 assert.match(sw, /odds-bet-mode\.css\?v=20260911-1/);
-assert.match(sw, /url\.pathname\.endsWith\("\/odds-bet-mode\.js"\)/);
+assert.match(sw, /url\.pathname\.endsWith\("\/odds-bet-mode-v1\.js"\)/);
 
 console.log("Odds betting mode safety and combination tests passed");
