@@ -1,5 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-const CACHE = "mamoboat-v495-airbet-review-iphone-width-dev";
+const CACHE = "mamoboat-v494-airbet-allocation-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260910-4","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-11","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260911-1",
