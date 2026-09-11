@@ -15,6 +15,7 @@
   let currentKey = "";
   let oddsValues = null;
   let fetchController = null;
+  let racerSnapshot = [];
 
   const oddsNumber = (value) => {
     const match = String(value ?? "").trim().match(/^([0-9]+(?:\.[0-9]+)?)/);
@@ -70,7 +71,7 @@
     }
   }
 
-  function racerRows() {
+  function readRacerRows() {
     const compactRows = Array.from(document.querySelectorAll("#raceView .mamo-racer-row")).map((item) => ({
       number: Number(item.dataset.boatNumber || item.querySelector(".mamo-racer-number")?.textContent?.trim()),
       name: String(item.querySelector(".mamo-racer-name")?.textContent || "").trim(),
@@ -87,6 +88,19 @@
         racerClass: String(item.dataset.racerClass || "").trim(),
       };
     }).filter((item) => Number.isInteger(item.number) && item.number >= 1 && item.number <= 6);
+  }
+
+  function snapshotRacers() {
+    const rows = readRacerRows();
+    racerSnapshot = Array.from({ length: 6 }, (_, index) => {
+      const number = index + 1;
+      const row = rows.find((item) => item.number === number);
+      return Object.freeze({
+        number,
+        name: String(row?.name || "").trim(),
+        racerClass: String(row?.racerClass || "").trim(),
+      });
+    });
   }
 
   function element(tag, className, text) {
@@ -200,7 +214,9 @@
     if (!builder) return;
     builder.classList.add("mamo-odds-bet-mode");
 
-    const racers = racerRows();
+    const normalized = racerSnapshot.length === 6
+      ? racerSnapshot
+      : Array.from({ length: 6 }, (_, index) => ({ number: index + 1, name: "", racerClass: "" }));
     const shell = element("section", "mamo-odds-shell");
     shell.dataset.mamoOddsBetMode = "1";
 
@@ -209,7 +225,6 @@
     shell.append(heading);
 
     const racerGrid = element("div", "mamo-odds-racers");
-    const normalized = Array.from({ length: 6 }, (_, index) => racers.find((item) => item.number === index + 1) || ({ number: index + 1, name: "", racerClass: "" }));
     normalized.forEach((racer) => racerGrid.append(selectedBoatCard(racer)));
     shell.append(racerGrid);
 
@@ -286,6 +301,7 @@
     if (busy) return;
     active = false;
     window.setBetType?.("trifecta");
+    snapshotRacers();
     active = true;
     axisBoat = 1;
     axisPosition = 0;
@@ -300,6 +316,7 @@
 
   function deactivate() {
     active = false;
+    racerSnapshot = [];
     fetchController?.abort?.();
     fetchController = null;
     const builder = document.getElementById("builder");
