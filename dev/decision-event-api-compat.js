@@ -60,6 +60,20 @@
 (() => {"use strict";if(document.querySelector('script[data-mamo-record-dismiss-fix]'))return;const script=document.createElement("script");script.src="mamo-record-dismiss-fix.js?v=20260829-3";script.async=true;script.dataset.mamoRecordDismissFix="1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-air-real-selection-fix]'))return;const script=document.createElement("script");script.src="air-real-selection-fix.js?v=20260830-1";script.async=true;script.dataset.mamoAirRealSelectionFix="1";document.head.appendChild(script);})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-bet-review-flow]'))return;const script=document.createElement("script");script.src="bet-review-flow.js?v=20260908-2";script.async=true;script.dataset.mamoBetReviewFlow="1";document.head.appendChild(script);})();
+(() => {
+  "use strict";
+  const loadDeleteControls = () => {
+    if (document.querySelector('script[data-mamo-review-delete-controls]')) return;
+    const script = document.createElement("script");
+    script.src = "air-bet-review-delete-controls.js?v=20260911-1";
+    script.async = true;
+    script.dataset.mamoReviewDeleteControls = "1";
+    document.head.appendChild(script);
+  };
+  if (window.MAMO_BET_REVIEW_ALLOCATION?.refresh) return loadDeleteControls();
+  const flow = document.querySelector('script[data-mamo-bet-review-flow]');
+  if (flow) flow.addEventListener("load", loadDeleteControls, { once: true });
+})();
 (() => {"use strict";if(document.querySelector('script[data-mamo-home-record-balance]'))return;const script=document.createElement("script");script.src="home-record-balance.js?v=20260828-1";script.async=true;script.dataset.mamoHomeRecordBalance="1";document.head.appendChild(script);})();
 
 /* MAMO VALUE marketplace: factual AIR BET amount comparison + live or fallback market links. */
