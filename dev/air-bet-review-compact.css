@@ -1,4 +1,4 @@
-/* MAMO BOAT — compact AIR BET review content v11.
+/* MAMO BOAT — compact AIR BET review content v12.
  * The purchase frame itself is the only vertical scroll owner.
  * Avoid nested <details> / grid scroll containers on iPhone Safari/PWA.
  */
@@ -53,17 +53,161 @@
 .air-bet-review-shell .mamo-allocation-panel,
 .air-bet-review-shell .mamo-allocation-head,
 .air-bet-review-shell .mamo-allocation-budget,
-.air-bet-review-shell .mamo-allocation-budget label {
+.air-bet-review-shell .mamo-allocation-budget-display-wrap,
+.air-bet-review-shell .mamo-allocation-keypad {
   min-width: 0;
   max-width: 100%;
 }
 
-/* iOS Safari zooms focused controls whose computed font size is below 16px.
- * The new allocation input inherited 12px from its label, so make its own
- * font size explicit at the canonical review stylesheet level. */
-.air-bet-review-shell .mamo-allocation-budget label input[data-mamo-allocation-budget="1"] {
+/* Allocation UI lives here, not in runtime-injected <style> blocks. */
+.air-bet-review-shell .mamo-allocation-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(8, 43, 74, .14);
+  border-radius: 12px;
+  background: #f7fbff;
+  box-sizing: border-box;
+}
+
+.air-bet-review-shell .mamo-allocation-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.air-bet-review-shell .mamo-allocation-head span {
+  color: #47657d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.air-bet-review-shell .mamo-allocation-head strong {
+  color: #0876c9;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.air-bet-review-shell .mamo-allocation-budget {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px 8px;
+  align-items: center;
+}
+
+.air-bet-review-shell .mamo-allocation-budget-label {
+  color: #27465f;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.air-bet-review-shell .mamo-allocation-budget-display-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.air-bet-review-shell .mamo-allocation-budget-display {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid #bfd0df;
+  border-radius: 9px;
+  padding: 7px 10px;
+  background: #fff;
+  color: #0a2030;
   font-size: 16px;
-  line-height: 1.2;
+  font-weight: 900;
+  text-align: left;
+}
+
+.air-bet-review-shell .mamo-allocation-budget-display.is-empty {
+  color: #718594;
+  font-weight: 700;
+}
+
+.air-bet-review-shell .mamo-allocation-budget-display-wrap > b {
+  color: #47657d;
+  font-size: 12px;
+}
+
+.air-bet-review-shell .mamo-allocation-apply {
+  grid-column: 1 / -1;
+  min-height: 42px;
+  border: 0;
+  border-radius: 9px;
+  padding: 8px 12px;
+  background: #0876c9;
+  color: #fff;
+  font-weight: 900;
+}
+
+.air-bet-review-shell .mamo-allocation-apply:disabled {
+  opacity: .45;
+}
+
+/* In-app keypad: no input focus, no iOS native keyboard, no visualViewport jump. */
+.air-bet-review-shell .mamo-allocation-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid #c8d7e2;
+  border-radius: 10px;
+  background: #eef5fa;
+}
+
+.air-bet-review-shell .mamo-allocation-keypad[hidden] {
+  display: none !important;
+}
+
+.air-bet-review-shell .mamo-allocation-keypad > button,
+.air-bet-review-shell .mamo-allocation-quick > button {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid #bfd0df;
+  border-radius: 8px;
+  background: #fff;
+  color: #173d5b;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.air-bet-review-shell .mamo-allocation-quick {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.air-bet-review-shell .mamo-allocation-quick > button {
+  font-size: 11px;
+}
+
+.air-bet-review-shell .mamo-allocation-keypad-close {
+  grid-column: 1 / -1;
+  min-height: 34px !important;
+  background: #e5eef5 !important;
+  font-size: 11px !important;
+}
+
+.air-bet-review-shell .mamo-allocation-note {
+  color: #5c7183;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.air-bet-review-shell .mamo-allocation-status {
+  color: #087346;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.air-bet-review-shell .mamo-allocation-status:empty {
+  display: none;
 }
 
 /* The existing bet editor is a two-column grid (stake + delete). Allocation
@@ -72,6 +216,7 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
   width: 100%;
   min-width: 0;
   margin-top: 0;
@@ -80,6 +225,13 @@
 .air-bet-review-tickets .mamo-allocation-adjust[data-mamo-allocation-adjust="1"] > button {
   width: 100%;
   min-width: 0;
+  min-height: 34px;
+  border: 1px solid #bfd0df;
+  border-radius: 9px;
+  padding: 6px 10px;
+  background: #fff;
+  color: #173d5b;
+  font-weight: 800;
 }
 
 /* A swipe that starts on a ticket card must remain available to the parent scroll box. */
