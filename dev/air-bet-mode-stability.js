@@ -1,12 +1,13 @@
-/* MAMO BOAT — AIR BET compact selector stability v12
- * Keep the compact two-select UI in lockstep with app.js state.
+/* MAMO BOAT — AIR BET compact selector stability v13
+ * Keep the compact visible selector UI in lockstep with app.js state.
  * Preserve app.js-owned DOM hooks even when hidden so renderBuilder can complete.
- * Compact only control sizing; no scroll manipulation or outer DOM reordering.
+ * Odds betting uses its own visible button instead of being hidden inside the mode select.
+ * No scroll manipulation, timer loop, stylesheet injection, or outer DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V12__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V12__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V13__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V13__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -28,7 +29,6 @@
   function allowedModesFor(type) {
     if (type === "win" || type === "place") return ["normal"];
     if (type === "wide") return ["normal", "box"];
-    if (type === "trifecta") return ["normal", "box", "form", "odds"];
     return ["normal", "box", "form"];
   }
 
@@ -74,6 +74,33 @@
     return select;
   }
 
+  function makeOddsButton(isActive) {
+    const button = document.createElement("button");
+    button.id = "mamoOddsBetButton";
+    button.type = "button";
+    button.textContent = isActive ? "オッズ中" : "オッズ";
+    button.setAttribute("aria-label", "3連単のオッズ投票を開く");
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    button.addEventListener("click", () => {
+      const oddsTab = document.getElementById("bt-odds");
+      if (oddsTab) oddsTab.click();
+    });
+
+    button.style.display = "block";
+    button.style.width = "100%";
+    button.style.minWidth = "0";
+    button.style.height = "40px";
+    button.style.boxSizing = "border-box";
+    button.style.padding = "0 8px";
+    button.style.border = isActive ? "1.5px solid #d8a62f" : "1.5px solid #c8d6de";
+    button.style.borderRadius = "10px";
+    button.style.background = isActive ? "#d8a62f" : "#fff";
+    button.style.color = "#082b4a";
+    button.style.font = "900 13px/1.1 -apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif";
+    button.style.whiteSpace = "nowrap";
+    return button;
+  }
+
   function hideLegacyHook(node) {
     if (!node) return;
     node.hidden = true;
@@ -94,6 +121,7 @@
     const currentType = readType(legacyTypeBar);
     const allowedModes = allowedModesFor(currentType);
     const currentMode = readMode(legacyModeTabs, currentType);
+    const oddsActive = Boolean(legacyModeTabs.querySelector("#bt-odds.active"));
 
     let row = betdesk.querySelector(":scope > .mamo-bet-selector-row");
     if (!row) {
@@ -104,25 +132,26 @@
 
     const modeSelect = makeSelect("mamoModeSelect", "買い方を選択", allowedModes, MODE_LABELS, currentMode, (value) => {
       if (!allowedModes.includes(value)) return;
-      const legacyButton = document.getElementById(value === "odds" ? "bt-odds" : `bt-${value}`);
+      const legacyButton = document.getElementById(`bt-${value}`);
       if (legacyButton) legacyButton.click();
-      else if (value !== "odds") window.setMode?.(value);
+      else window.setMode?.(value);
     });
     const typeSelect = makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => {
       const legacyButton = document.getElementById(`type-${value}`);
       if (legacyButton) legacyButton.click();
       else window.setBetType?.(value);
     });
+    const oddsButton = makeOddsButton(oddsActive);
 
     modeSelect.style.fontSize = currentMode === "form" ? "13px" : "15px";
     modeSelect.style.paddingLeft = "11px";
     modeSelect.style.paddingRight = "30px";
     typeSelect.style.fontSize = "15px";
 
-    row.replaceChildren(modeSelect, typeSelect);
+    row.replaceChildren(modeSelect, typeSelect, oddsButton);
     row.style.display = "grid";
-    row.style.gridTemplateColumns = "minmax(0,1.22fr) minmax(0,0.88fr)";
-    row.style.gap = "7px";
+    row.style.gridTemplateColumns = "minmax(0,1.08fr) minmax(0,.82fr) minmax(74px,.52fr)";
+    row.style.gap = "6px";
     row.style.width = "100%";
     row.style.margin = "0 0 5px";
     row.style.padding = "0";
