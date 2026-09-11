@@ -1,17 +1,20 @@
-/* MAMO BOAT — AIR BET layout v8
- * Presentation-only enhancement for the canonical draft tray in app.js.
- * It never wraps selection, review, wallet, record, or navigation functions.
- * Budget allocation is opt-in, uses the public draft/review APIs, and fails open.
- * Budget entry uses an in-app keypad so iPhone never opens the native keyboard.
+/* MAMO BOAT — AIR BET review flow v9
+ * One canonical review controller for iPhone Safari/PWA.
+ * It never wraps selection, review, wallet, record, navigation, or placeBet.
+ * The existing cart and placeBet() remain the single source of truth.
+ * Review presentation is split into allocation/list -> final confirmation.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V8__) return;
-  window.__MAMO_BET_REVIEW_FLOW_V8__ = true;
+  if (window.__MAMO_BET_REVIEW_FLOW_V9__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V9__ = true;
 
   const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
   const STAKE_UNIT = 100;
   let allocationBudgetDraft = "";
+  let reviewStep = "allocation";
+  let detailOpen = false;
+
   const escapeHtml = (value) => String(value == null ? "" : value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -129,6 +132,22 @@
     return Number.isFinite(value) && value > 0 ? value : 0;
   }
 
+  function combinationText(line) {
+    const raw = line?.combination ?? line?.combo ?? "";
+    if (Array.isArray(raw)) return raw.filter(Boolean).join(" → ");
+    return String(raw).trim().replaceAll("-", " → ") || "—";
+  }
+
+  function betTypeLabel(line) {
+    try {
+      const core = window.MamoCore;
+      const type = core?.normalizeBetType ? core.normalizeBetType(line?.betType) : line?.betType;
+      return core?.BET_TYPES?.[type]?.label || "買い目";
+    } catch (_) {
+      return "買い目";
+    }
+  }
+
   function combinedOdds(lines) {
     if (!Array.isArray(lines) || !lines.length) return null;
     const odds = lines.map(lineOdds);
@@ -138,29 +157,21 @@
   }
 
   function equalPayoutAllocation(lines, budget, unit = STAKE_UNIT) {
-    if (!Array.isArray(lines) || !lines.length) {
-      return { ok: false, code: "empty" };
-    }
+    if (!Array.isArray(lines) || !lines.length) return { ok: false, code: "empty" };
     const safeUnit = Number(unit);
     const safeBudget = Number(budget);
     if (!Number.isFinite(safeUnit) || safeUnit <= 0 || !Number.isFinite(safeBudget) || safeBudget <= 0) {
       return { ok: false, code: "invalid_budget" };
     }
-    if (safeBudget % safeUnit !== 0) {
-      return { ok: false, code: "invalid_unit", unit: safeUnit };
-    }
+    if (safeBudget % safeUnit !== 0) return { ok: false, code: "invalid_unit", unit: safeUnit };
     const odds = lines.map(lineOdds);
     const missingOdds = odds.reduce((items, value, index) => {
       if (!value) items.push(index);
       return items;
     }, []);
-    if (missingOdds.length) {
-      return { ok: false, code: "missing_odds", missingOdds };
-    }
+    if (missingOdds.length) return { ok: false, code: "missing_odds", missingOdds };
     const minimumBudget = lines.length * safeUnit;
-    if (safeBudget < minimumBudget) {
-      return { ok: false, code: "budget_too_small", minimumBudget };
-    }
+    if (safeBudget < minimumBudget) return { ok: false, code: "budget_too_small", minimumBudget };
 
     const totalUnits = safeBudget / safeUnit;
     const amounts = Array(lines.length).fill(safeUnit);
@@ -331,6 +342,148 @@
     return panel;
   }
 
+  function createResultTable(shell) {
+    const section = document.createElement("section");
+    section.className = "mamo-allocation-results";
+    section.dataset.mamoAllocationResults = "1";
+    section.setAttribute("aria-label", "資金配分結果");
+
+    const title = document.createElement("div");
+    title.className = "mamo-allocation-results-title";
+    const heading = document.createElement("h3");
+    heading.textContent = "買い目・配分結果";
+    const detail = document.createElement("button");
+    detail.type = "button";
+    detail.className = "mamo-review-detail-toggle";
+    detail.dataset.mamoReviewDetailToggle = "1";
+    detail.setAttribute("aria-expanded", "false");
+    detail.textContent = "金額を細かく調整";
+    title.append(heading, detail);
+
+    const tableWrap = document.createElement("div");
+    tableWrap.className = "mamo-allocation-table-wrap";
+    const table = document.createElement("table");
+    table.className = "mamo-allocation-table";
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    ["No", "買い目", "オッズ", "BET / 想定払戻"].forEach((text) => {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.textContent = text;
+      headRow.append(th);
+    });
+    thead.append(headRow);
+    const tbody = document.createElement("tbody");
+    tbody.dataset.mamoAllocationRows = "1";
+    table.append(thead, tbody);
+    tableWrap.append(table);
+
+    const continueButton = document.createElement("button");
+    continueButton.type = "button";
+    continueButton.className = "mamo-review-continue";
+    continueButton.dataset.mamoReviewContinue = "1";
+    continueButton.textContent = "この配分で進む";
+
+    section.append(title, tableWrap, continueButton);
+    const anchor = shell.querySelector(".air-bet-review-heading");
+    if (anchor?.parentNode === shell) shell.insertBefore(section, anchor);
+    else shell.append(section);
+    return section;
+  }
+
+  function createFinalPanel(shell) {
+    const section = document.createElement("section");
+    section.className = "mamo-review-final";
+    section.dataset.mamoReviewFinal = "1";
+    section.setAttribute("aria-label", "AIR BET最終確認");
+
+    const kicker = document.createElement("span");
+    kicker.className = "mamo-review-final-kicker";
+    kicker.textContent = "FINAL CHECK";
+    const heading = document.createElement("h3");
+    heading.textContent = "この内容でAIR BETしますか？";
+    const summary = document.createElement("dl");
+    summary.className = "mamo-review-final-summary";
+    summary.dataset.mamoReviewFinalSummary = "1";
+    const back = document.createElement("button");
+    back.type = "button";
+    back.className = "mamo-review-final-back";
+    back.dataset.mamoReviewBack = "1";
+    back.textContent = "← 配分・買い目一覧へ戻る";
+    section.append(kicker, heading, summary, back);
+
+    const anchor = shell.querySelector(".air-bet-review-heading");
+    if (anchor?.parentNode === shell) shell.insertBefore(section, anchor);
+    else shell.append(section);
+    return section;
+  }
+
+  function appendFinalSummaryItem(list, label, value) {
+    const term = document.createElement("dt");
+    term.textContent = label;
+    const description = document.createElement("dd");
+    description.textContent = value;
+    list.append(term, description);
+  }
+
+  function renderResultTable(shell, lines) {
+    const section = shell.querySelector('[data-mamo-allocation-results="1"]') || createResultTable(shell);
+    const body = section.querySelector('[data-mamo-allocation-rows="1"]');
+    if (!body) return;
+    const rows = lines.map((line, index) => {
+      const tr = document.createElement("tr");
+      const number = document.createElement("td");
+      number.textContent = String(index + 1);
+      const combo = document.createElement("td");
+      const type = document.createElement("small");
+      type.textContent = betTypeLabel(line);
+      const combination = document.createElement("strong");
+      combination.textContent = combinationText(line);
+      combo.append(type, combination);
+      const odds = document.createElement("td");
+      const oddsValue = lineOdds(line);
+      odds.textContent = oddsValue ? `${oddsValue.toFixed(1)}倍` : "—";
+      const money = document.createElement("td");
+      const amount = lineAmount(line);
+      const payout = amount && oddsValue ? amount * oddsValue : 0;
+      const stake = document.createElement("strong");
+      stake.textContent = amount ? formatB(amount) : "未入力";
+      const payoutText = document.createElement("small");
+      payoutText.textContent = payout ? `→ ${formatB(payout)}` : "想定払戻 —";
+      money.append(stake, payoutText);
+      tr.append(number, combo, odds, money);
+      return tr;
+    });
+    body.replaceChildren(...rows);
+    const continueButton = section.querySelector('[data-mamo-review-continue="1"]');
+    if (continueButton) continueButton.disabled = !lines.length || lines.some((line) => !lineAmount(line));
+    const detail = section.querySelector('[data-mamo-review-detail-toggle="1"]');
+    if (detail) {
+      detail.setAttribute("aria-expanded", String(detailOpen));
+      detail.textContent = detailOpen ? "細かい調整を閉じる" : "金額を細かく調整";
+    }
+  }
+
+  function renderFinalPanel(shell, lines) {
+    const section = shell.querySelector('[data-mamo-review-final="1"]') || createFinalPanel(shell);
+    const summary = section.querySelector('[data-mamo-review-final-summary="1"]');
+    if (!summary) return;
+    const total = lines.reduce((sum, line) => sum + lineAmount(line), 0);
+    const combined = combinedOdds(lines);
+    const payouts = lines.map((line) => lineAmount(line) * lineOdds(line)).filter((value) => value > 0);
+    summary.replaceChildren();
+    appendFinalSummaryItem(summary, "買い目", `${lines.length}点`);
+    appendFinalSummaryItem(summary, "合計BET", formatB(total));
+    appendFinalSummaryItem(summary, "合成オッズ", combined ? `${combined.toFixed(2)}倍` : "—");
+    appendFinalSummaryItem(
+      summary,
+      "想定払戻",
+      payouts.length === lines.length && payouts.length
+        ? `${formatB(Math.min(...payouts))}〜${formatB(Math.max(...payouts))}`
+        : "—"
+    );
+  }
+
   function ensureLineAdjusters(shell) {
     shell.querySelectorAll?.(".betline[data-cart-index]").forEach((row) => {
       const edit = row.querySelector(".betline-edit");
@@ -353,12 +506,23 @@
     });
   }
 
+  function applyReviewState(shell) {
+    shell.dataset.mamoReviewStep = reviewStep;
+    shell.classList.toggle("mamo-review-detail-open", reviewStep === "allocation" && detailOpen);
+    const final = shell.querySelector('[data-mamo-review-final="1"]');
+    if (final) final.setAttribute("aria-hidden", String(reviewStep !== "final"));
+    const results = shell.querySelector('[data-mamo-allocation-results="1"]');
+    if (results) results.setAttribute("aria-hidden", String(reviewStep !== "allocation"));
+  }
+
   function refreshAllocationPanel(shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]')) {
     if (!shell) return;
     const lines = draftLines();
     const panel = shell.querySelector('[data-mamo-allocation-panel="1"]') || createAllocationPanel(shell);
     ensureLineAdjusters(shell);
     renderBudgetDisplay(panel);
+    renderResultTable(shell, lines);
+    renderFinalPanel(shell, lines);
     const combined = combinedOdds(lines);
     const oddsEl = panel.querySelector('[data-mamo-combined-odds="1"]');
     if (oddsEl) oddsEl.textContent = combined ? `${combined.toFixed(2)}倍` : "—";
@@ -374,13 +538,12 @@
       if (!lines.length) note.textContent = "買い目を追加すると利用できます。";
       else if (!combined) note.textContent = "全ての買い目で参考オッズを取得できると、自動配分を利用できます。";
       else if (payouts.length === lines.length) {
-        const min = Math.min(...payouts);
-        const max = Math.max(...payouts);
-        note.textContent = `現在の想定払戻 ${formatB(min)}〜${formatB(max)}。100B単位で厚め・抑えの調整もできます。`;
+        note.textContent = `現在の想定払戻 ${formatB(Math.min(...payouts))}〜${formatB(Math.max(...payouts))}。必要なら「金額を細かく調整」から変更できます。`;
       } else {
         note.textContent = "予算を入力すると、どの買い目が当たっても払戻がなるべく近くなるよう100B単位で配分します。";
       }
     }
+    applyReviewState(shell);
   }
 
   function applyAutoAllocation(shell) {
@@ -450,6 +613,8 @@
     const target = event.target;
     if (!target?.closest) return;
     if (target.closest("#reviewBetButton")) {
+      reviewStep = "allocation";
+      detailOpen = false;
       enhanceReviewAllocation();
       return;
     }
@@ -483,6 +648,25 @@
     const adjust = target.closest("[data-mamo-stake-delta]");
     if (adjust) {
       adjustLineStake(adjust);
+      return;
+    }
+    if (target.closest('[data-mamo-review-detail-toggle="1"]')) {
+      detailOpen = !detailOpen;
+      refreshAllocationPanel(shell);
+      return;
+    }
+    if (target.closest('[data-mamo-review-continue="1"]')) {
+      const lines = draftLines();
+      if (!lines.length || lines.some((line) => !lineAmount(line))) return;
+      reviewStep = "final";
+      detailOpen = false;
+      toggleBudgetKeypad(shell, false);
+      refreshAllocationPanel(shell);
+      return;
+    }
+    if (target.closest('[data-mamo-review-back="1"]')) {
+      reviewStep = "allocation";
+      refreshAllocationPanel(shell);
       return;
     }
     refreshAllocationPanel(shell);
