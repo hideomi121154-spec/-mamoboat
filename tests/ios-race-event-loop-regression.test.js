@@ -214,7 +214,7 @@ assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-1/);
+assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-2/);
 assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
 assert.match(serviceWorker, /app\.js\?v=20260910-4/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);

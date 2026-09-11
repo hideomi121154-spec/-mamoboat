@@ -66,8 +66,15 @@ assert.equal(engine.unit, 100);
   assert.equal(invalidUnit.code, "invalid_unit");
 }
 
+assert.equal(source.includes('input.type = "number"'), false, "allocation budget must not use a native number input");
+assert.equal(source.includes('input.inputMode = "numeric"'), false, "allocation budget must not open the iOS numeric keyboard");
+assert.equal(source.includes("injectAllocationStyles"), false, "allocation styles must live in the canonical review stylesheet");
+assert.match(source, /dataset\.mamoBudgetKey/);
+assert.match(source, /dataset\.mamoBudgetAdd/);
+assert.match(source, /mamo-allocation-keypad/);
+
 for (const unsafe of ["setInterval(", "setTimeout(", "requestAnimationFrame(", "visualViewport", "MutationObserver", "position:fixed", "position: fixed"]) {
   assert.equal(source.includes(unsafe), false, `review allocation must not introduce ${unsafe}`);
 }
 
-console.log("AIR BET allocation tests passed");
+console.log("AIR BET allocation and custom keypad tests passed");

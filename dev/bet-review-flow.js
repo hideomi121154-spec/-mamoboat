@@ -1,15 +1,17 @@
-/* MAMO BOAT — AIR BET layout v7
+/* MAMO BOAT — AIR BET layout v8
  * Presentation-only enhancement for the canonical draft tray in app.js.
  * It never wraps selection, review, wallet, record, or navigation functions.
  * Budget allocation is opt-in, uses the public draft/review APIs, and fails open.
+ * Budget entry uses an in-app keypad so iPhone never opens the native keyboard.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V7__) return;
-  window.__MAMO_BET_REVIEW_FLOW_V7__ = true;
+  if (window.__MAMO_BET_REVIEW_FLOW_V8__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V8__ = true;
 
   const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
   const STAKE_UNIT = 100;
+  let allocationBudgetDraft = "";
   const escapeHtml = (value) => String(value == null ? "" : value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -203,28 +205,43 @@
     return `${Math.round(Number(value) || 0).toLocaleString("ja-JP")}B`;
   }
 
-  function injectAllocationStyles() {
-    if (document.querySelector('style[data-mamo-air-allocation="1"]')) return;
-    const style = document.createElement("style");
-    style.dataset.mamoAirAllocation = "1";
-    style.textContent = `
-      .air-bet-review-shell .mamo-allocation-panel{display:grid;gap:10px;padding:12px;border:1px solid rgba(8,43,74,.14);border-radius:14px;background:#f7fbff;box-sizing:border-box}
-      .air-bet-review-shell .mamo-allocation-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-      .air-bet-review-shell .mamo-allocation-head span{font-size:12px;font-weight:800;color:#47657d}
-      .air-bet-review-shell .mamo-allocation-head strong{font-size:24px;line-height:1;color:#0876c9}
-      .air-bet-review-shell .mamo-allocation-budget{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
-      .air-bet-review-shell .mamo-allocation-budget label{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px;font-weight:800;color:#27465f}
-      .air-bet-review-shell .mamo-allocation-budget input{width:100%;min-width:0;min-height:42px;padding:8px 10px;border:1px solid #bfd0df;border-radius:10px;background:#fff;font:inherit;box-sizing:border-box}
-      .air-bet-review-shell .mamo-allocation-apply{min-height:42px;padding:8px 12px;border:0;border-radius:10px;background:#0876c9;color:#fff;font-weight:900}
-      .air-bet-review-shell .mamo-allocation-apply:disabled{opacity:.45}
-      .air-bet-review-shell .mamo-allocation-note{font-size:11px;line-height:1.45;color:#5c7183}
-      .air-bet-review-shell .mamo-allocation-status{font-size:12px;font-weight:800;color:#087346}
-      .air-bet-review-shell .mamo-allocation-status:empty{display:none}
-      .air-bet-review-shell .mamo-allocation-adjust{display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-      .air-bet-review-shell .mamo-allocation-adjust button{min-height:34px;padding:6px 10px;border:1px solid #bfd0df;border-radius:9px;background:#fff;color:#173d5b;font-weight:800}
-      @media (max-width:420px){.air-bet-review-shell .mamo-allocation-budget{grid-template-columns:1fr}.air-bet-review-shell .mamo-allocation-apply{width:100%}}
-    `;
-    document.head?.append(style);
+  function budgetValue() {
+    const value = Number(allocationBudgetDraft || 0);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+
+  function setBudgetDraft(value) {
+    const digits = String(value == null ? "" : value).replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+    allocationBudgetDraft = digits.slice(0, 8);
+    return budgetValue();
+  }
+
+  function renderBudgetDisplay(panel) {
+    const display = panel?.querySelector?.('[data-mamo-allocation-budget="1"]');
+    if (!display) return;
+    const value = budgetValue();
+    display.textContent = value ? value.toLocaleString("ja-JP") : "予算を入力";
+    display.classList.toggle("is-empty", !value);
+    display.setAttribute("aria-label", value ? `資金配分の予算 ${value}B` : "資金配分の予算を入力");
+  }
+
+  function updateBudgetFromKey(panel, key) {
+    if (!panel) return;
+    if (key === "clear") allocationBudgetDraft = "";
+    else if (key === "backspace") allocationBudgetDraft = allocationBudgetDraft.slice(0, -1);
+    else if (/^\d$/.test(key)) setBudgetDraft(`${allocationBudgetDraft}${key}`);
+    renderBudgetDisplay(panel);
+    const status = panel.querySelector('[data-mamo-allocation-status="1"]');
+    if (status) status.textContent = "";
+  }
+
+  function addBudget(panel, amount) {
+    const add = Number(amount);
+    if (!Number.isFinite(add) || add <= 0) return;
+    setBudgetDraft(String(budgetValue() + add));
+    renderBudgetDisplay(panel);
+    const status = panel.querySelector('[data-mamo-allocation-status="1"]');
+    if (status) status.textContent = "";
   }
 
   function createAllocationPanel(shell) {
@@ -244,26 +261,58 @@
 
     const budgetRow = document.createElement("div");
     budgetRow.className = "mamo-allocation-budget";
-    const budgetLabel = document.createElement("label");
-    const budgetText = document.createElement("span");
-    budgetText.textContent = "今回使う予算";
-    const input = document.createElement("input");
-    input.type = "number";
-    input.inputMode = "numeric";
-    input.min = String(STAKE_UNIT);
-    input.step = String(STAKE_UNIT);
-    input.placeholder = "予算を入力";
-    input.dataset.mamoAllocationBudget = "1";
-    input.setAttribute("aria-label", "資金配分に使う予算");
+    const budgetLabel = document.createElement("span");
+    budgetLabel.className = "mamo-allocation-budget-label";
+    budgetLabel.textContent = "今回使う予算";
+    const displayWrap = document.createElement("div");
+    displayWrap.className = "mamo-allocation-budget-display-wrap";
+    const display = document.createElement("button");
+    display.type = "button";
+    display.className = "mamo-allocation-budget-display is-empty";
+    display.dataset.mamoAllocationBudget = "1";
+    display.dataset.mamoBudgetToggle = "1";
+    display.setAttribute("aria-expanded", "false");
+    display.setAttribute("aria-controls", "mamoAllocationKeypad");
     const unit = document.createElement("b");
     unit.textContent = "B";
-    budgetLabel.append(budgetText, input, unit);
+    displayWrap.append(display, unit);
     const apply = document.createElement("button");
     apply.type = "button";
     apply.className = "mamo-allocation-apply";
     apply.dataset.mamoAutoAllocate = "1";
     apply.textContent = "払戻を均等に自動配分";
-    budgetRow.append(budgetLabel, apply);
+    budgetRow.append(budgetLabel, displayWrap, apply);
+
+    const keypad = document.createElement("div");
+    keypad.className = "mamo-allocation-keypad";
+    keypad.id = "mamoAllocationKeypad";
+    keypad.dataset.mamoAllocationKeypad = "1";
+    keypad.hidden = true;
+    keypad.setAttribute("aria-label", "予算入力テンキー");
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "backspace"].forEach((key) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.mamoBudgetKey = key;
+      button.textContent = key === "clear" ? "C" : key === "backspace" ? "⌫" : key;
+      button.setAttribute("aria-label", key === "clear" ? "予算を全消去" : key === "backspace" ? "予算を1桁削除" : `${key}を入力`);
+      keypad.append(button);
+    });
+
+    const quick = document.createElement("div");
+    quick.className = "mamo-allocation-quick";
+    [1000, 5000, 10000].forEach((amount) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.mamoBudgetAdd = String(amount);
+      button.textContent = `+${amount.toLocaleString("ja-JP")}B`;
+      quick.append(button);
+    });
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "mamo-allocation-keypad-close";
+    close.dataset.mamoBudgetClose = "1";
+    close.textContent = "入力を閉じる";
+    keypad.append(quick, close);
 
     const note = document.createElement("div");
     note.className = "mamo-allocation-note";
@@ -274,7 +323,8 @@
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
 
-    panel.append(head, budgetRow, note, status);
+    panel.append(head, budgetRow, keypad, note, status);
+    renderBudgetDisplay(panel);
     const anchor = shell.querySelector(".air-bet-review-heading");
     if (anchor?.parentNode === shell) shell.insertBefore(panel, anchor);
     else shell.prepend(panel);
@@ -308,11 +358,10 @@
     const lines = draftLines();
     const panel = shell.querySelector('[data-mamo-allocation-panel="1"]') || createAllocationPanel(shell);
     ensureLineAdjusters(shell);
+    renderBudgetDisplay(panel);
     const combined = combinedOdds(lines);
     const oddsEl = panel.querySelector('[data-mamo-combined-odds="1"]');
     if (oddsEl) oddsEl.textContent = combined ? `${combined.toFixed(2)}倍` : "—";
-    const input = panel.querySelector('[data-mamo-allocation-budget="1"]');
-    if (input) input.min = String(Math.max(STAKE_UNIT, lines.length * STAKE_UNIT));
     const apply = panel.querySelector('[data-mamo-auto-allocate="1"]');
     if (apply) apply.disabled = !lines.length || !combined || typeof window.updateReviewLineStake !== "function";
     const note = panel.querySelector('[data-mamo-allocation-note="1"]');
@@ -336,8 +385,7 @@
 
   function applyAutoAllocation(shell) {
     const lines = draftLines();
-    const input = shell?.querySelector?.('[data-mamo-allocation-budget="1"]');
-    const budget = Number(input?.value);
+    const budget = budgetValue();
     const result = equalPayoutAllocation(lines, budget, STAKE_UNIT);
     if (!result.ok) {
       if (result.code === "missing_odds") alert("参考オッズを取得できていない買い目があるため、自動配分できません。");
@@ -350,6 +398,10 @@
     result.amounts.forEach((amount, index) => window.updateReviewLineStake(index, amount));
     const status = shell.querySelector('[data-mamo-allocation-status="1"]');
     if (status) status.textContent = `${formatB(result.budget)}を${result.amounts.length}点に自動配分しました。`;
+    const keypad = shell.querySelector('[data-mamo-allocation-keypad="1"]');
+    if (keypad) keypad.hidden = true;
+    const display = shell.querySelector('[data-mamo-budget-toggle="1"]');
+    if (display) display.setAttribute("aria-expanded", "false");
     refreshAllocationPanel(shell);
     try {
       window.dispatchEvent(new CustomEvent("mamo:air-bet-allocation-applied", {
@@ -379,10 +431,18 @@
     refreshAllocationPanel(shell);
   }
 
+  function toggleBudgetKeypad(shell, forceOpen) {
+    const keypad = shell?.querySelector?.('[data-mamo-allocation-keypad="1"]');
+    const display = shell?.querySelector?.('[data-mamo-budget-toggle="1"]');
+    if (!keypad || !display) return;
+    const open = typeof forceOpen === "boolean" ? forceOpen : keypad.hidden;
+    keypad.hidden = !open;
+    display.setAttribute("aria-expanded", String(open));
+  }
+
   function enhanceReviewAllocation() {
     const shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]');
     if (!shell) return;
-    injectAllocationStyles();
     refreshAllocationPanel(shell);
   }
 
@@ -395,6 +455,26 @@
     }
     const shell = target.closest('.air-bet-review-shell[data-air-bet-review="1"]');
     if (!shell) return;
+    const panel = target.closest('[data-mamo-allocation-panel="1"]');
+    const toggle = target.closest('[data-mamo-budget-toggle="1"]');
+    if (toggle) {
+      toggleBudgetKeypad(shell);
+      return;
+    }
+    const key = target.closest('[data-mamo-budget-key]');
+    if (key && panel) {
+      updateBudgetFromKey(panel, key.dataset.mamoBudgetKey);
+      return;
+    }
+    const add = target.closest('[data-mamo-budget-add]');
+    if (add && panel) {
+      addBudget(panel, add.dataset.mamoBudgetAdd);
+      return;
+    }
+    if (target.closest('[data-mamo-budget-close="1"]')) {
+      toggleBudgetKeypad(shell, false);
+      return;
+    }
     const auto = target.closest('[data-mamo-auto-allocate="1"]');
     if (auto) {
       applyAutoAllocation(shell);
@@ -413,9 +493,7 @@
     if (!target?.closest) return;
     const shell = target.closest?.('.air-bet-review-shell[data-air-bet-review="1"]');
     if (!shell) return;
-    if (target.matches?.(".betline-stake-input") || target.matches?.('[data-mamo-allocation-budget="1"]')) {
-      refreshAllocationPanel(shell);
-    }
+    if (target.matches?.(".betline-stake-input")) refreshAllocationPanel(shell);
   }
 
   function boot() {
