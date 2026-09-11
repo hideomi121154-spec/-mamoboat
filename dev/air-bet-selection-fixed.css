@@ -34,7 +34,6 @@
     box-sizing: border-box; padding: 6px 10px 8px; margin: 0;
     background: #f8fbfd; overflow: hidden !important; overscroll-behavior: none;
   }
-  /* Keep venue and race selectors; 24場 remains available in the bottom nav. */
   body[data-screen="race"]:has(#builder) #raceView > .mamo-race-quickbar,
   body[data-screen="race"]:has(#builder) #raceView > .event-banner,
   body[data-screen="race"]:has(#builder) #raceView > .racechips,
@@ -56,8 +55,6 @@
   body[data-screen="race"]:has(#builder) #raceView > .raceheadline .raceclock {
     font-size: 10px; padding: 2px 4px; min-width: 95px; flex-basis: 95px;
   }
-  /* ai-safe moves the official links to Home. Until it loads, keep them
-     accessible in a compact row instead of clipping or deleting the links. */
   body[data-screen="race"]:has(#builder) #raceView > .raceboard {
     flex: 0 0 auto; margin: 0; padding: 0; border: 0; box-shadow: none;
   }
@@ -84,9 +81,6 @@
   body[data-screen="race"] #raceView #builder[data-mamo-picker-columns="1"] { grid-template-columns: 1fr; }
   body[data-screen="race"] #raceView #builder[data-mamo-picker-columns="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  /* Racer roster layout has one owner: this file. race-layout-refresh.js must
-     not restyle mamo-racer-* nodes. Reserve name space here instead of shrinking
-     Japanese racer names until they become hard to read. */
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix {
     grid-template-columns: minmax(164px, 1.75fr) repeat(3, minmax(52px, .72fr));
   }
@@ -101,10 +95,10 @@
     display: flex; flex-direction: column; grid-row: 1; margin: 0; overflow: hidden;
   }
   body[data-screen="race"] #raceView .mamo-racer-head {
-    flex: 0 0 25px; min-height: 25px; margin: 0 0 3px; padding: 3px 4px;
+    flex: 0 0 25px; min-height: 25px; margin: 0 0 3px; padding: 3px 4px 3px 10px;
     box-sizing: border-box; border-radius: 8px; background: #eef3f6;
     color: #082b4a; font-size: 10px; font-weight: 900; line-height: 19px;
-    text-align: center; white-space: nowrap; overflow: hidden;
+    text-align: left; white-space: nowrap; overflow: hidden;
   }
   body[data-screen="race"] #raceView .mamo-racer-rows {
     width: 100%; max-width: 100%; flex: 1; min-height: 0; display: grid;
@@ -182,8 +176,6 @@
   }
 }
 
-/* On a very short landscape viewport, only the picker may scroll. Keep the
-   add/review actions visible and avoid making the six boat targets too small. */
 @media (max-width: 743px) and (max-height: 540px) {
   body[data-screen="race"] #raceView #builder {
     overflow-y: auto; grid-template-rows: minmax(240px, 1fr) 44px;
