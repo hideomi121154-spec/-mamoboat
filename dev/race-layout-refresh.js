@@ -75,11 +75,12 @@
       #raceView>.raceheadline .tiny{font-size:8px;line-height:1.25;}
       #raceView .officialmenu{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 
-      /* Compact AIR BET layout: size only, no DOM or behavior changes. */
+      /* Compact AIR BET layout: size only, no DOM or behavior changes.
+         Racer roster sizing belongs exclusively to air-bet-selection-fixed.css. */
       #raceView>.panel.betdesk{padding:7px 8px 8px!important;}
       #builder.mamo-selection-matrix{gap:3px!important;}
-      #builder.mamo-selection-matrix>.rank h3,#raceView .mamo-racer-head{min-height:27px!important;margin-bottom:3px!important;padding:3px 2px!important;font-size:9px!important;}
-      #builder.mamo-selection-matrix>.rank .betgrid,#raceView .mamo-racer-rows{gap:3px!important;}
+      #builder.mamo-selection-matrix>.rank h3{min-height:27px!important;margin-bottom:3px!important;padding:3px 2px!important;font-size:9px!important;}
+      #builder.mamo-selection-matrix>.rank .betgrid{gap:3px!important;}
       #builder.mamo-selection-matrix>.rank .pick{min-height:38px!important;padding:2px!important;font-size:15px!important;border-radius:8px!important;}
       #raceView .air-bet-tray{margin-top:7px!important;padding:7px!important;border-top-width:4px!important;border-radius:12px!important;}
       #raceView .cart-title{margin:0 0 5px!important;}

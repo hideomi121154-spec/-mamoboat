@@ -2,14 +2,16 @@
 // Previous AIR BET cache compatibility marker: mamoboat-v494-airbet-allocation-dev
 // Previous AIR BET normal layout cache: mamoboat-v496-airbet-normal-layout-dev
 // Previous AIR BET loader cache: mamoboat-v497-airbet-loader-refresh-dev
+// Previous racer-name visibility cache: mamoboat-v498-racer-name-visibility-dev
 // Previous AIR BET review helper: air-bet-review-delete-controls.js?v=20260911-2
-// Previous racer roster CSS: air-bet-selection-fixed.css?v=20260910-4
-// Racer-name visibility release: refresh the mobile picker stylesheet in a new PWA cache.
-const CACHE = "mamoboat-v498-racer-name-visibility-dev";
+// Legacy racer roster CSS marker: air-bet-selection-fixed.css?v=20260910-4
+// Previous racer roster CSS: air-bet-selection-fixed.css?v=20260911-5
+// Racer roster single-owner release: CSS owns mamo-racer-* geometry; race layout refresh no longer restyles it.
+const CACHE = "mamoboat-v499-racer-roster-single-owner-dev";
 const SHELL = [
-  "./","./index.html","./air-bet-selection-fixed.css?v=20260911-5","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-13","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
+  "./","./index.html","./air-bet-selection-fixed.css?v=20260911-6","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-13","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260911-1","./bet-review-flow.js?v=20260911-3","./air-bet-review-delete-controls.js?v=20260911-3",
-  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260910-11","./race-layout-refresh.js?v=20260910-6","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
+  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260910-11","./race-layout-refresh.js?v=20260911-7","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
 ];
@@ -31,15 +33,15 @@ function withLiveVenueLoader(response){
     html=html.replace(/race-airbet-compact\.js\?v=[^"']+/g,"race-airbet-compact.js?v=20260910-6");
     html=html.replace(/race-airbet-first\.js\?v=[^"']+/g,"race-airbet-first.js?v=20260910-8");
     html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260910-11");
-    html=html.replace(/race-layout-refresh\.js\?v=[^"']+/g,"race-layout-refresh.js?v=20260910-6");
+    html=html.replace(/race-layout-refresh\.js\?v=[^"']+/g,"race-layout-refresh.js?v=20260911-7");
     html=html.replace(/decision-event-collector\.js(?:\?v=[^"']+)?/g,"decision-event-collector.js?v=20260910-2");
     html=html.replace(/decision-event-api-compat\.js(?:\?v=[^"']+)?/g,"decision-event-api-compat.js?v=20260911-1");
     html=html.replace(/bet-review-flow\.js(?:\?v=[^"']+)?/g,"bet-review-flow.js?v=20260911-3");
     html=html.replace(/air-bet-review-delete-controls\.js(?:\?v=[^"']+)?/g,"air-bet-review-delete-controls.js?v=20260911-3");
     if(html.includes("air-bet-selection-fixed.css")) {
-      html=html.replace(/air-bet-selection-fixed\.css\?v=[^"']+/g,"air-bet-selection-fixed.css?v=20260911-5");
+      html=html.replace(/air-bet-selection-fixed\.css\?v=[^"']+/g,"air-bet-selection-fixed.css?v=20260911-6");
     } else {
-      html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-selection-fixed.css?v=20260911-5"></head>');
+      html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-selection-fixed.css?v=20260911-6"></head>');
     }
     if(html.includes("air-bet-review-compact.css")) {
       html=html.replace(/air-bet-review-compact\.css\?v=[^"']+/g,"air-bet-review-compact.css?v=20260911-13");
@@ -54,7 +56,7 @@ function withLiveVenueLoader(response){
     if(!html.includes("race-carte-manual-refresh.js")) html=html.replace("</body>",'<script src="race-carte-manual-refresh.js?v=20260909-3"></script></body>');
     if(!html.includes("air-bet-mode-stability.js")) html=html.replace("</body>",'<script src="air-bet-mode-stability.js?v=20260910-11"></script></body>');
     if(!html.includes("decision-event-collector.js")) html=html.replace("</body>",'<script src="decision-event-collector.js?v=20260910-2"></script></body>');
-    if(!html.includes("race-layout-refresh.js")) html=html.replace("</body>",'<script src="race-layout-refresh.js?v=20260910-6"></script></body>');
+    if(!html.includes("race-layout-refresh.js")) html=html.replace("</body>",'<script src="race-layout-refresh.js?v=20260911-7"></script></body>');
     if(!html.includes("race-airbet-compact.js")) html=html.replace("</body>",'<script src="race-airbet-compact.js?v=20260910-6"></script></body>');
     if(!html.includes("race-airbet-first.js")) html=html.replace("</body>",'<script src="race-airbet-first.js?v=20260910-8"></script></body>');
     const headers=new Headers(response.headers);headers.delete("content-length");
