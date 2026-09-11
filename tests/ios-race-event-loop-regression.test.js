@@ -28,11 +28,13 @@ const builder = {
   querySelector() { return null; },
 };
 const listeners = new Map();
+const documentListeners = new Map();
 const originalReviewBet = () => "canonical-review";
 const document = {
   readyState: "complete",
   getElementById(id) { return id === "builder" ? builder : null; },
   querySelectorAll() { return []; },
+  addEventListener(name, callback) { documentListeners.set(name, callback); },
 };
 const window = {
   reviewBet: originalReviewBet,
@@ -44,6 +46,7 @@ const renderListener = listeners.get("mamo:air-bet-rendered");
 assert.equal(typeof renderListener, "function");
 for (let index = 0; index < 25; index += 1) renderListener();
 assert.equal(window.reviewBet, originalReviewBet, "layout events must not wrap the canonical review action");
+assert.equal(typeof documentListeners.get("click"), "function", "review allocation uses delegated clicks without wrapping reviewBet");
 
 assert.doesNotMatch(layout, /window\.reviewBet\s*=/);
 assert.doesNotMatch(legacyMultiAdd, /window\.reviewBet\s*=/);
@@ -164,7 +167,7 @@ assert.match(app, /data-review-stake-increment="1000"[\s\S]*?>\+1,000B</);
 assert.match(app, /data-review-stake-increment="10000"[\s\S]*?>\+10,000B</);
 assert.match(app, /window\.removeReviewLine = \(index\) =>/);
 assert.match(app, /window\.clearReviewCart = \(\) =>/);
-const removeReviewLineBody = app.match(/window\.removeReviewLine = \(index\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+const removeReviewLineBody = app.match(/window\.removeReviewLine = \(index, value\) => \{([\s\S]*?)\n  \};/)?.[1] || app.match(/window\.removeReviewLine = \(index\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
 const clearReviewCartBody = app.match(/window\.clearReviewCart = \(\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
 assert(removeReviewLineBody && clearReviewCartBody);
 assert.doesNotMatch(removeReviewLineBody, /closeModal/);
@@ -210,7 +213,8 @@ assert.match(index, /styles\.css\?v=20260910-3/);
 assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260910-4/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v493-airbet-racer-official-dev/);
+assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
+assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-1/);
 assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
 assert.match(serviceWorker, /app\.js\?v=20260910-4/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);

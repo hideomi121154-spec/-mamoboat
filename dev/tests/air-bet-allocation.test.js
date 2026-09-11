@@ -1,0 +1,73 @@
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+
+const source = fs.readFileSync(path.join(__dirname, "..", "bet-review-flow.js"), "utf8");
+
+function loadEngine() {
+  const document = {
+    readyState: "loading",
+    addEventListener() {},
+    querySelectorAll() { return []; },
+  };
+  const window = {
+    addEventListener() {},
+  };
+  const context = vm.createContext({ window, document, console, CustomEvent: class CustomEvent {} });
+  vm.runInContext(source, context, { filename: "bet-review-flow.js" });
+  return context.window.MAMO_BET_REVIEW_ALLOCATION;
+}
+
+const engine = loadEngine();
+
+assert.ok(engine, "allocation engine is exported");
+assert.equal(engine.unit, 100);
+
+{
+  const lines = [
+    { referenceOdds: "5.0" },
+    { referenceOdds: "10.0" },
+    { referenceOdds: "20.0" },
+  ];
+  const combined = engine.combinedOdds(lines);
+  assert.ok(Math.abs(combined - (1 / 0.35)) < 1e-9, "combined odds use reciprocal sum");
+
+  const result = engine.allocate(lines, 10000);
+  assert.equal(result.ok, true);
+  assert.equal(result.amounts.reduce((sum, value) => sum + value, 0), 10000, "allocation preserves budget exactly");
+  assert.ok(result.amounts.every((value) => value >= 100 && value % 100 === 0), "every line remains a valid 100B stake");
+  assert.ok(result.payoutMax - result.payoutMin <= 1000, "discrete allocation keeps payouts close");
+}
+
+{
+  const missing = engine.allocate([
+    { referenceOdds: "5.0" },
+    { referenceOdds: null },
+  ], 1000);
+  assert.equal(missing.ok, false);
+  assert.equal(missing.code, "missing_odds");
+}
+
+{
+  const tooSmall = engine.allocate([
+    { referenceOdds: "5.0" },
+    { referenceOdds: "10.0" },
+    { referenceOdds: "20.0" },
+  ], 200);
+  assert.equal(tooSmall.ok, false);
+  assert.equal(tooSmall.code, "budget_too_small");
+  assert.equal(tooSmall.minimumBudget, 300);
+}
+
+{
+  const invalidUnit = engine.allocate([{ referenceOdds: "5.0" }], 1050);
+  assert.equal(invalidUnit.ok, false);
+  assert.equal(invalidUnit.code, "invalid_unit");
+}
+
+for (const unsafe of ["setInterval(", "setTimeout(", "requestAnimationFrame(", "visualViewport", "MutationObserver", "position:fixed", "position: fixed"]) {
+  assert.equal(source.includes(unsafe), false, `review allocation must not introduce ${unsafe}`);
+}
+
+console.log("AIR BET allocation tests passed");
