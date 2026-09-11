@@ -51,9 +51,11 @@ jobs:
           node --check dev/air-bet-multi-add.js
           node --check dev/app.js
           node --check dev/bet-review-flow.js
+          node --check dev/air-bet-review-delete-controls.js
           node --check dev/race-airbet-compact.js
           node --check dev/tests/air-bet-racer-roster.test.js
           node --check dev/tests/air-bet-allocation.test.js
+          node --check dev/tests/air-bet-review-delete-controls.test.js
           node --check tests/air-bet-review-flow.test.js
           node --check dev/venue-live-priority.js
           node --check dev/behavior-science.js
@@ -76,6 +78,7 @@ jobs:
           node tests/record-card-ui.test.js
           node dev/tests/air-bet-racer-roster.test.js
           node dev/tests/air-bet-allocation.test.js
+          node dev/tests/air-bet-review-delete-controls.test.js
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/brand-theme.test.js
           node --test dev/tests/shop-coupon.test.js
