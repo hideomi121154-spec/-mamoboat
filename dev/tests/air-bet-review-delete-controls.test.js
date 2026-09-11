@@ -14,6 +14,9 @@ assert.match(source, /data-mamo-review-mode-choice/);
 assert.match(source, /通常BET/);
 assert.match(source, /自動資金配分/);
 assert.match(source, /dataset\.mamoReviewMode = MODE_NORMAL/);
+assert.match(source, /setImportantDisplay\(nodes\.stakeTools, "grid"\)/);
+assert.match(source, /setProperty\("flex", "0 0 auto", "important"\)/);
+assert.match(source, /setProperty\("min-height", "0", "important"\)/);
 assert.match(source, /window\.removeReviewLine\(index\)/);
 assert.match(source, /window\.deleteAllReviewLines\(\)/);
 assert.match(source, /MAMO_BET_REVIEW_ALLOCATION\?\.refresh/);
@@ -29,9 +32,9 @@ assert.doesNotMatch(source, /visualViewport/);
 assert.doesNotMatch(source, /scrollTo|scrollBy/);
 assert.doesNotMatch(source, /setInterval|setTimeout/);
 
-assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260911-1/);
+assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260911-2/);
 assert.match(compat, /data-mamo-review-delete-controls/);
-assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260911-1/);
-assert.match(sw, /mamoboat-v495-airbet-mode-choice-dev/);
+assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260911-2/);
+assert.match(sw, /mamoboat-v496-airbet-normal-layout-dev/);
 
 console.log("AIR BET safe review controls regression checks passed.");
