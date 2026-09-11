@@ -1,11 +1,11 @@
-/* MAMO BOAT — AIR BET safe review controls v2
+/* MAMO BOAT — AIR BET safe review controls v3
  * Presentation-only shortcuts and a safe two-mode chooser for the canonical AIR BET review state.
  * Uses the existing review APIs; never replaces cart, placeBet, reviewBet, wallet, or navigation.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_REVIEW_CONTROLS_V2__) return;
-  window.__MAMO_AIR_BET_REVIEW_CONTROLS_V2__ = true;
+  if (window.__MAMO_AIR_BET_REVIEW_CONTROLS_V3__) return;
+  window.__MAMO_AIR_BET_REVIEW_CONTROLS_V3__ = true;
 
   const SHELL_SELECTOR = '.air-bet-review-shell[data-air-bet-review="1"]';
   const MODE_NORMAL = "normal";
@@ -55,9 +55,47 @@
     };
   }
 
+  function clearNormalLayoutOverrides(shell) {
+    const { tickets, stakeTools } = modeNodes(shell);
+    if (tickets?.style) {
+      tickets.style.removeProperty("flex");
+      tickets.style.removeProperty("height");
+      tickets.style.removeProperty("min-height");
+      tickets.style.removeProperty("max-height");
+      tickets.style.removeProperty("overflow");
+    }
+    const receipt = tickets?.querySelector?.(".betreceipt");
+    if (receipt?.style) {
+      receipt.style.removeProperty("height");
+      receipt.style.removeProperty("min-height");
+    }
+    if (stakeTools?.style) stakeTools.style.removeProperty("grid-template-columns");
+  }
+
+  function applyNormalLayoutOverrides(shell) {
+    const { tickets, stakeTools } = modeNodes(shell);
+    if (tickets?.style) {
+      tickets.style.setProperty("flex", "0 0 auto", "important");
+      tickets.style.setProperty("height", "auto", "important");
+      tickets.style.setProperty("min-height", "0", "important");
+      tickets.style.setProperty("max-height", "none", "important");
+      tickets.style.setProperty("overflow", "visible", "important");
+    }
+    const receipt = tickets?.querySelector?.(".betreceipt");
+    if (receipt?.style) {
+      receipt.style.setProperty("height", "auto", "important");
+      receipt.style.setProperty("min-height", "0", "important");
+    }
+    if (stakeTools?.style) {
+      stakeTools.style.setProperty("display", "grid", "important");
+      stakeTools.style.setProperty("grid-template-columns", "repeat(3,minmax(0,1fr))", "important");
+    }
+  }
+
   function clearModeDisplayOverrides(shell) {
     const nodes = modeNodes(shell);
     Object.values(nodes).forEach((node) => setImportantDisplay(node, null));
+    clearNormalLayoutOverrides(shell);
   }
 
   function paintModeButton(button, active) {
@@ -139,8 +177,9 @@
     setImportantDisplay(nodes.allocationResults, "none");
     setImportantDisplay(nodes.heading, "flex");
     setImportantDisplay(nodes.tickets, "block");
-    setImportantDisplay(nodes.stakeTools, "flex");
+    setImportantDisplay(nodes.stakeTools, "grid");
     setImportantDisplay(nodes.confirmButton, "block");
+    applyNormalLayoutOverrides(shell);
   }
 
   function setMode(shell, mode) {
