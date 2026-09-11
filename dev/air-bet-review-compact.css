@@ -1,4 +1,4 @@
-/* MAMO BOAT — compact AIR BET review content v10.
+/* MAMO BOAT — compact AIR BET review content v11.
  * The purchase frame itself is the only vertical scroll owner.
  * Avoid nested <details> / grid scroll containers on iPhone Safari/PWA.
  */
@@ -40,6 +40,46 @@
   overflow: visible !important;
   touch-action: auto !important;
   padding-bottom: 16px;
+}
+
+/* Keep every review child shrinkable inside the iPhone viewport. */
+.air-bet-review-shell,
+.air-bet-review-shell > *,
+.air-bet-review-tickets,
+.air-bet-review-tickets .betreceipt,
+.air-bet-review-tickets .betlines,
+.air-bet-review-tickets .betline,
+.air-bet-review-tickets .betline-edit,
+.air-bet-review-shell .mamo-allocation-panel,
+.air-bet-review-shell .mamo-allocation-head,
+.air-bet-review-shell .mamo-allocation-budget,
+.air-bet-review-shell .mamo-allocation-budget label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* iOS Safari zooms focused controls whose computed font size is below 16px.
+ * The new allocation input inherited 12px from its label, so make its own
+ * font size explicit at the canonical review stylesheet level. */
+.air-bet-review-shell .mamo-allocation-budget label input[data-mamo-allocation-budget="1"] {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+/* The existing bet editor is a two-column grid (stake + delete). Allocation
+ * adjusters are a separate second row, never a third implicit column. */
+.air-bet-review-tickets .betline-edit > .mamo-allocation-adjust[data-mamo-allocation-adjust="1"] {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.air-bet-review-tickets .mamo-allocation-adjust[data-mamo-allocation-adjust="1"] > button {
+  width: 100%;
+  min-width: 0;
 }
 
 /* A swipe that starts on a ticket card must remain available to the parent scroll box. */
