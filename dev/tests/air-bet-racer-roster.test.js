@@ -4,6 +4,7 @@ const path = require("node:path");
 
 const root = path.join(__dirname, "..");
 const compact = fs.readFileSync(path.join(root, "race-airbet-compact.js"), "utf8");
+const oddsMode = fs.readFileSync(path.join(root, "odds-bet-mode-v1.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "air-bet-selection-fixed.css"), "utf8");
 const layoutRefresh = fs.readFileSync(path.join(root, "race-layout-refresh.js"), "utf8");
 const app = fs.readFileSync(path.join(root, "app.js"), "utf8");
@@ -66,6 +67,18 @@ assert.match(css, /grid-template-columns: 18px 24px minmax\(52px, 1fr\) 24px/);
 assert.match(css, /font-size: clamp\(9\.5px, 2\.6vw, 10\.5px\)/);
 assert.doesNotMatch(css, /font-size: clamp\(7px, 2\.25vw, 9px\)/);
 
+// Normal/BOX/form keep the fixed three-column picker. Odds mode is explicitly
+// excluded from that owner rule so its own flex layout can use the full width.
+assert.match(css, /#builder:not\(\.mamo-odds-bet-mode\)[\s\S]{0,220}display: grid/);
+assert.doesNotMatch(css, /#builder \{[\s\S]{0,220}display: grid/);
+assert.match(oddsMode, /let racerSnapshot = \[\]/);
+assert.match(oddsMode, /function snapshotRacers\(/);
+assert.match(oddsMode, /snapshotRacers\(\);[\s\S]{0,120}active = true/);
+assert.match(oddsMode, /const normalized = racerSnapshot\.length === 6/);
+assert.doesNotMatch(oddsMode, /const racers = racerRows\(\)/);
+assert.doesNotMatch(oddsMode, /setInterval\s*\(|setTimeout\s*\(|requestAnimationFrame\s*\(|visualViewport/);
+assert.doesNotMatch(oddsMode, /scrollIntoView|scrollTo\s*\(|scrollBy\s*\(/);
+
 // Existing selection hooks are still present in app.js for normal/BOX/form.
 assert.match(app, /pickNormal\(/);
 assert.match(app, /pickBox\(/);
@@ -75,11 +88,14 @@ assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
 assert.match(app, /function racerUrl\(/);
 
-// PWA shell must advance the stylesheet/cache release so iPhone PWA clients
-// receive the heading nudge instead of keeping the previous centered CSS.
+// PWA shell advances only the assets changed by this repair, while preserving
+// earlier compatibility markers for iPhone clients upgrading across releases.
 assert.match(sw, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-8/);
-assert.match(sw, /mamoboat-v501-racer-heading-nudge-dev/);
+assert.match(sw, /mamoboat-v504-odds-bet-mobile-selector-dev/);
+assert.match(sw, /mamoboat-v505-odds-layout-snapshot-dev/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-9/);
+assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
+assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
 assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
 assert.match(sw, /race-layout-refresh\.js\?v=20260911-7/);
 

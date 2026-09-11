@@ -14,11 +14,12 @@
 // Previous AIR BET review flow: bet-review-flow.js?v=20260911-3
 // Previous race carte cache: mamoboat-v502-race-carte-composite-odds-dev
 // Previous odds bet cache: mamoboat-v503-odds-bet-mode-dev
-const CACHE = "mamoboat-v504-odds-bet-mobile-selector-dev";
+// Previous odds selector cache: mamoboat-v504-odds-bet-mobile-selector-dev
+const CACHE = "mamoboat-v505-odds-layout-snapshot-dev";
 const SHELL = [
-  "./","./index.html","./air-bet-selection-fixed.css?v=20260911-8","./odds-bet-mode.css?v=20260911-1","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-13","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
-  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260911-1","./bet-review-flow.js?v=20260911-4","./air-bet-review-delete-controls.js?v=20260911-3","./odds-bet-mode-v1.js?v=20260911-2",
-  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260911-12","./race-layout-refresh.js?v=20260911-7","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./race-carte-official-payouts.js?v=20260911-1","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
+  "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260911-1","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-13","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
+  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260911-1","./bet-review-flow.js?v=20260911-4","./air-bet-review-delete-controls.js?v=20260911-3","./odds-bet-mode-v1.js?v=20260911-3",
+  "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260911-13","./race-layout-refresh.js?v=20260911-7","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./race-carte-official-payouts.js?v=20260911-1","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
 ];
@@ -39,18 +40,18 @@ function withLiveVenueLoader(response){
     html=html.replace(/pilot-config\.js\?v=[^"']+/g,"pilot-config.js?v=20260910-6");
     html=html.replace(/race-airbet-compact\.js\?v=[^"']+/g,"race-airbet-compact.js?v=20260910-6");
     html=html.replace(/race-airbet-first\.js\?v=[^"']+/g,"race-airbet-first.js?v=20260910-8");
-    html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260911-12");
+    html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260911-13");
     html=html.replace(/race-layout-refresh\.js\?v=[^"']+/g,"race-layout-refresh.js?v=20260911-7");
     html=html.replace(/race-carte-official-payouts\.js(?:\?v=[^"']+)?/g,"race-carte-official-payouts.js?v=20260911-1");
     html=html.replace(/decision-event-collector\.js(?:\?v=[^"']+)?/g,"decision-event-collector.js?v=20260910-2");
     html=html.replace(/decision-event-api-compat\.js(?:\?v=[^"']+)?/g,"decision-event-api-compat.js?v=20260911-1");
     html=html.replace(/bet-review-flow\.js(?:\?v=[^"']+)?/g,"bet-review-flow.js?v=20260911-4");
     html=html.replace(/air-bet-review-delete-controls\.js(?:\?v=[^"']+)?/g,"air-bet-review-delete-controls.js?v=20260911-3");
-    html=html.replace(/odds-bet-mode-v1\.js(?:\?v=[^"']+)?/g,"odds-bet-mode-v1.js?v=20260911-2");
+    html=html.replace(/odds-bet-mode-v1\.js(?:\?v=[^"']+)?/g,"odds-bet-mode-v1.js?v=20260911-3");
     if(html.includes("air-bet-selection-fixed.css")) {
-      html=html.replace(/air-bet-selection-fixed\.css\?v=[^"']+/g,"air-bet-selection-fixed.css?v=20260911-8");
+      html=html.replace(/air-bet-selection-fixed\.css\?v=[^"']+/g,"air-bet-selection-fixed.css?v=20260911-9");
     } else {
-      html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-selection-fixed.css?v=20260911-8"></head>');
+      html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-selection-fixed.css?v=20260911-9"></head>');
     }
     if(html.includes("odds-bet-mode.css")) {
       html=html.replace(/odds-bet-mode\.css\?v=[^"']+/g,"odds-bet-mode.css?v=20260911-1");
@@ -68,13 +69,13 @@ function withLiveVenueLoader(response){
     if(!html.includes("record-mobile-layout-fix.js")) html=html.replace("</body>",'<script src="record-mobile-layout-fix.js?v=20260908-2"></script></body>');
     if(!html.includes("race-carte-live-state-fix.js")) html=html.replace("</body>",'<script src="race-carte-live-state-fix.js?v=20260908-3"></script></body>');
     if(!html.includes("race-carte-manual-refresh.js")) html=html.replace("</body>",'<script src="race-carte-manual-refresh.js?v=20260909-3"></script></body>');
-    if(!html.includes("air-bet-mode-stability.js")) html=html.replace("</body>",'<script src="air-bet-mode-stability.js?v=20260911-12"></script></body>');
+    if(!html.includes("air-bet-mode-stability.js")) html=html.replace("</body>",'<script src="air-bet-mode-stability.js?v=20260911-13"></script></body>');
     if(!html.includes("decision-event-collector.js")) html=html.replace("</body>",'<script src="decision-event-collector.js?v=20260910-2"></script></body>');
     if(!html.includes("race-layout-refresh.js")) html=html.replace("</body>",'<script src="race-layout-refresh.js?v=20260911-7"></script></body>');
     if(!html.includes("race-airbet-compact.js")) html=html.replace("</body>",'<script src="race-airbet-compact.js?v=20260910-6"></script></body>');
     if(!html.includes("race-airbet-first.js")) html=html.replace("</body>",'<script src="race-airbet-first.js?v=20260910-8"></script></body>');
     if(!html.includes("race-carte-official-payouts.js")) html=html.replace("</body>",'<script src="race-carte-official-payouts.js?v=20260911-1"></script></body>');
-    if(!html.includes("odds-bet-mode-v1.js")) html=html.replace("</body>",'<script src="odds-bet-mode-v1.js?v=20260911-2"></script></body>');
+    if(!html.includes("odds-bet-mode-v1.js")) html=html.replace("</body>",'<script src="odds-bet-mode-v1.js?v=20260911-3"></script></body>');
     const headers=new Headers(response.headers);headers.delete("content-length");
     return new Response(html,{status:response.status,statusText:response.statusText,headers});
   });
