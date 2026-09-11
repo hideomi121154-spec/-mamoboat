@@ -72,7 +72,7 @@
   }
   body[data-screen="race"] #raceView .mamo-bet-selector-row { flex: 0 0 40px; }
   body[data-screen="race"] #raceView .mamo-bet-selector-row select { font-size: 16px !important; }
-  body[data-screen="race"] #raceView #builder {
+  body[data-screen="race"] #raceView #builder:not(.mamo-odds-bet-mode) {
     flex: 1 1 0; min-height: 0; margin: 0; display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: minmax(0, 1fr) 44px; gap: 5px !important;
@@ -185,7 +185,7 @@
 /* On a very short landscape viewport, only the picker may scroll. Keep the
    add/review actions visible and avoid making the six boat targets too small. */
 @media (max-width: 743px) and (max-height: 540px) {
-  body[data-screen="race"] #raceView #builder {
+  body[data-screen="race"] #raceView #builder:not(.mamo-odds-bet-mode) {
     overflow-y: auto; grid-template-rows: minmax(240px, 1fr) 44px;
     overscroll-behavior: contain; touch-action: pan-y;
   }
