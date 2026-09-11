@@ -5,6 +5,7 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const compact = fs.readFileSync(path.join(root, "race-airbet-compact.js"), "utf8");
 const oddsMode = fs.readFileSync(path.join(root, "odds-bet-mode-v1.js"), "utf8");
+const oddsCss = fs.readFileSync(path.join(root, "odds-bet-mode.css"), "utf8");
 const css = fs.readFileSync(path.join(root, "air-bet-selection-fixed.css"), "utf8");
 const layoutRefresh = fs.readFileSync(path.join(root, "race-layout-refresh.js"), "utf8");
 const app = fs.readFileSync(path.join(root, "app.js"), "utf8");
@@ -79,6 +80,14 @@ assert.doesNotMatch(oddsMode, /const racers = racerRows\(\)/);
 assert.doesNotMatch(oddsMode, /setInterval\s*\(|setTimeout\s*\(|requestAnimationFrame\s*\(|visualViewport/);
 assert.doesNotMatch(oddsMode, /scrollIntoView|scrollTo\s*\(|scrollBy\s*\(/);
 
+// Odds mode owns the remaining betdesk height directly. The scrollable list
+// gets the spare space instead of leaving a large blank area below the summary.
+assert.match(oddsCss, /#raceView #builder\.mamo-odds-bet-mode[\s\S]{0,220}flex: 1 1 0/);
+assert.match(oddsCss, /#raceView #builder\.mamo-odds-bet-mode[\s\S]{0,220}width: 100%/);
+assert.match(oddsCss, /#raceView \.mamo-odds-shell[\s\S]{0,180}flex: 1 1 0/);
+assert.match(oddsCss, /#raceView \.mamo-odds-list[\s\S]{0,180}flex: 1 1 0/);
+assert.doesNotMatch(oddsCss, /position:\s*fixed/);
+
 // Existing selection hooks are still present in app.js for normal/BOX/form.
 assert.match(app, /pickNormal\(/);
 assert.match(app, /pickBox\(/);
@@ -93,7 +102,9 @@ assert.match(app, /function racerUrl\(/);
 assert.match(sw, /mamoboat-v494-airbet-allocation-dev/);
 assert.match(sw, /mamoboat-v504-odds-bet-mobile-selector-dev/);
 assert.match(sw, /mamoboat-v505-odds-layout-snapshot-dev/);
+assert.match(sw, /mamoboat-v506-odds-fill-height-dev/);
 assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-9/);
+assert.match(sw, /odds-bet-mode\.css\?v=20260912-1/);
 assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
 assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
 assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
