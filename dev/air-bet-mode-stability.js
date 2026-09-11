@@ -1,12 +1,12 @@
-/* MAMO BOAT — AIR BET compact selector stability v11
+/* MAMO BOAT — AIR BET compact selector stability v12
  * Keep the compact two-select UI in lockstep with app.js state.
  * Preserve app.js-owned DOM hooks even when hidden so renderBuilder can complete.
  * Compact only control sizing; no scroll manipulation or outer DOM reordering.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_MODE_STABILITY_V11__) return;
-  window.__MAMO_AIR_BET_MODE_STABILITY_V11__ = true;
+  if (window.__MAMO_AIR_BET_MODE_STABILITY_V12__) return;
+  window.__MAMO_AIR_BET_MODE_STABILITY_V12__ = true;
 
   const TYPE_VALUES = ["trifecta", "trio", "exacta", "quinella", "wide", "win", "place"];
   const TYPE_LABELS = {
@@ -21,12 +21,14 @@
   const MODE_LABELS = {
     normal: "通常",
     box: "BOX",
-    form: "フォーメーション"
+    form: "フォーメーション",
+    odds: "オッズ投票"
   };
 
   function allowedModesFor(type) {
     if (type === "win" || type === "place") return ["normal"];
     if (type === "wide") return ["normal", "box"];
+    if (type === "trifecta") return ["normal", "box", "form", "odds"];
     return ["normal", "box", "form"];
   }
 
@@ -38,6 +40,7 @@
 
   function readMode(modeTabs, type) {
     const allowed = allowedModesFor(type);
+    if (type === "trifecta" && window.MAMO_ODDS_BET_MODE?.isActive?.()) return "odds";
     const active = modeTabs?.querySelector("button.active");
     const label = String(active?.textContent || "").trim();
     const value = Object.keys(MODE_LABELS).find((key) => MODE_LABELS[key] === label);
@@ -102,9 +105,15 @@
 
     const modeSelect = makeSelect("mamoModeSelect", "買い方を選択", allowedModes, MODE_LABELS, currentMode, (value) => {
       if (!allowedModes.includes(value)) return;
+      if (value === "odds") {
+        window.MAMO_ODDS_BET_MODE?.activate?.();
+        return;
+      }
+      window.MAMO_ODDS_BET_MODE?.deactivate?.();
       window.setMode?.(value);
     });
     const typeSelect = makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => {
+      window.MAMO_ODDS_BET_MODE?.deactivate?.();
       window.setBetType?.(value);
     });
 
