@@ -2,14 +2,18 @@
  * Owns only the odds-bet subtree. Existing AIR BET picker styles are untouched.
  */
 #raceView #builder.mamo-odds-bet-mode {
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  min-height: 0;
   overflow: hidden;
 }
 #raceView .mamo-odds-shell {
+  flex: 1 1 0;
+  width: 100%;
   min-height: 0;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 6px;
