@@ -71,6 +71,13 @@
   }
 
   function racerRows() {
+    const compactRows = Array.from(document.querySelectorAll("#raceView .mamo-racer-row")).map((item) => ({
+      number: Number(item.dataset.boatNumber || item.querySelector(".mamo-racer-number")?.textContent?.trim()),
+      name: String(item.querySelector(".mamo-racer-name")?.textContent || "").trim(),
+      racerClass: String(item.querySelector(".mamo-racer-class")?.textContent || "").trim(),
+    })).filter((item) => Number.isInteger(item.number) && item.number >= 1 && item.number <= 6 && item.name && item.name !== "—");
+    if (compactRows.length === 6) return compactRows;
+
     return Array.from(document.querySelectorAll("#raceView .boats .boat")).map((item) => {
       const number = Number(item.querySelector(".num")?.textContent?.trim());
       const name = String(item.querySelector(":scope > div:nth-child(2) > b")?.textContent || "").trim();
@@ -286,6 +293,7 @@
     oddsValues = null;
     ensureTab();
     renderMode();
+    window.MAMO_AIR_BET_MODE_STABILITY?.refresh?.();
     loadOdds();
     window.MAMO_TRACK_EVENT?.("odds_bet_mode_opened", { source: "air_bet" });
   }
