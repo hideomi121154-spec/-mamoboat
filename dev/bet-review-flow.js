@@ -174,20 +174,52 @@
     if (safeBudget < minimumBudget) return { ok: false, code: "budget_too_small", minimumBudget };
 
     const totalUnits = safeBudget / safeUnit;
-    const amounts = Array(lines.length).fill(safeUnit);
-    for (let assigned = lines.length; assigned < totalUnits; assigned += 1) {
-      let target = 0;
-      let lowestPayout = amounts[0] * odds[0];
-      for (let index = 1; index < amounts.length; index += 1) {
-        const payout = amounts[index] * odds[index];
-        if (payout < lowestPayout) {
-          lowestPayout = payout;
-          target = index;
-        }
+    const unitCounts = Array(lines.length).fill(1);
+    const remainingUnits = totalUnits - lines.length;
+    if (remainingUnits > 0) {
+      const weights = odds.map((value) => 1 / value);
+      const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+      const rawExtras = weights.map((weight) => remainingUnits * weight / weightTotal);
+      const extraUnits = rawExtras.map((value) => Math.floor(value));
+      let left = remainingUnits - extraUnits.reduce((sum, value) => sum + value, 0);
+      const remainderOrder = rawExtras
+        .map((value, index) => ({ index, remainder: value - extraUnits[index] }))
+        .sort((a, b) => b.remainder - a.remainder || a.index - b.index);
+      for (let index = 0; index < extraUnits.length; index += 1) unitCounts[index] += extraUnits[index];
+      for (let index = 0; index < remainderOrder.length && left > 0; index += 1, left -= 1) {
+        unitCounts[remainderOrder[index].index] += 1;
       }
-      amounts[target] += safeUnit;
     }
 
+    const payoutRange = (counts) => {
+      const values = counts.map((count, index) => count * safeUnit * odds[index]);
+      return Math.max(...values) - Math.min(...values);
+    };
+    for (;;) {
+      const currentRange = payoutRange(unitCounts);
+      let bestRange = currentRange;
+      let bestMove = null;
+      for (let donor = 0; donor < unitCounts.length; donor += 1) {
+        if (unitCounts[donor] <= 1) continue;
+        for (let receiver = 0; receiver < unitCounts.length; receiver += 1) {
+          if (receiver === donor) continue;
+          unitCounts[donor] -= 1;
+          unitCounts[receiver] += 1;
+          const candidateRange = payoutRange(unitCounts);
+          unitCounts[donor] += 1;
+          unitCounts[receiver] -= 1;
+          if (candidateRange < bestRange - 1e-9) {
+            bestRange = candidateRange;
+            bestMove = [donor, receiver];
+          }
+        }
+      }
+      if (!bestMove) break;
+      unitCounts[bestMove[0]] -= 1;
+      unitCounts[bestMove[1]] += 1;
+    }
+
+    const amounts = unitCounts.map((count) => count * safeUnit);
     const payouts = amounts.map((amount, index) => amount * odds[index]);
     const combined = combinedOdds(lines);
     return {
@@ -396,7 +428,6 @@
     section.className = "mamo-review-final";
     section.dataset.mamoReviewFinal = "1";
     section.setAttribute("aria-label", "AIR BET最終確認");
-
     const kicker = document.createElement("span");
     kicker.className = "mamo-review-final-kicker";
     kicker.textContent = "FINAL CHECK";
