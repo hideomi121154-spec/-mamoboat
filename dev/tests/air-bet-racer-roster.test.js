@@ -39,15 +39,18 @@ assert.doesNotMatch(compact, /scrollTo\s*\(/);
 assert.doesNotMatch(compact, /scrollBy\s*\(/);
 assert.doesNotMatch(compact, /visualViewport/);
 
-// Desktop keeps the existing builder. The roster is enabled only inside the
-// mobile layout and long names are clipped instead of changing row height.
+// Desktop keeps the existing builder. The mobile roster reserves enough width
+// for racer names and must not intentionally ellipsize them.
 assert.match(css, /#raceView \.mamo-racer-roster \{ display: none; \}/);
 assert.match(css, /#builder\.mamo-selection-matrix/);
 assert.match(css, /#builder > \.mamo-racer-roster[\s\S]*display: flex/);
-assert.match(css, /\.mamo-racer-name[\s\S]*text-overflow: ellipsis/);
+assert.match(css, /\.mamo-racer-name[\s\S]*text-overflow: clip/);
+assert.doesNotMatch(css, /\.mamo-racer-name[\s\S]{0,180}text-overflow: ellipsis/);
 assert.match(css, /\.mamo-racer-class/);
 assert.match(css, /\.mamo-racer-official/);
-assert.match(css, /grid-template-columns: minmax\(124px, 1\.45fr\) repeat\(3, minmax\(0, 1fr\)\)/);
+assert.match(css, /grid-template-columns: minmax\(148px, 1\.55fr\) repeat\(3, minmax\(0, 1fr\)\)/);
+assert.match(css, /grid-template-columns: 18px 26px minmax\(46px, 1fr\) 27px/);
+assert.match(css, /font-size: clamp\(7px, 2\.25vw, 9px\)/);
 
 // Existing selection hooks are still present in app.js for normal/BOX/form.
 assert.match(app, /pickNormal\(/);
@@ -60,7 +63,8 @@ assert.match(app, /function racerUrl\(/);
 
 // PWA shell keeps the racer-official assets while advancing the cache release.
 assert.match(sw, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260910-4/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-5/);
+assert.match(sw, /mamoboat-v498-racer-name-visibility-dev/);
 assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
 
 console.log("AIR BET racer roster regression contract: OK");
