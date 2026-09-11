@@ -74,7 +74,7 @@ assert.match(source, /mamo-allocation-keypad/);
 
 // Two-step review is presentation-only: existing cart and placeBet remain canonical.
 assert.match(source, /reviewStep = "allocation"/);
-assert.match(source, /data-mamo-review-step/);
+assert.match(source, /dataset\.mamoReviewStep/);
 assert.match(source, /dataset\.mamoReviewContinue/);
 assert.match(source, /dataset\.mamoReviewBack/);
 assert.match(source, /mamo-allocation-table/);
