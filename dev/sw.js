@@ -1,4 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
+// Previous AIR BET cache compatibility marker: mamoboat-v494-airbet-allocation-dev
 // AIR BET normal/auto mode chooser rollout: install the refreshed review helper in a new PWA cache.
 const CACHE = "mamoboat-v495-airbet-mode-choice-dev";
 const SHELL = [
