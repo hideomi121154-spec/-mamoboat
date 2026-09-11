@@ -54,6 +54,7 @@ assert.doesNotMatch(layoutRefresh, /\.mamo-racer-official/);
 assert.match(css, /#raceView \.mamo-racer-roster \{ display: none; \}/);
 assert.match(css, /#builder\.mamo-selection-matrix/);
 assert.match(css, /#builder > \.mamo-racer-roster[\s\S]*display: flex/);
+assert.match(css, /\.mamo-racer-head[\s\S]{0,300}text-align: center/);
 assert.match(css, /\.mamo-racer-name[\s\S]*text-overflow: clip/);
 assert.doesNotMatch(css, /\.mamo-racer-name[\s\S]{0,180}text-overflow: ellipsis/);
 assert.match(css, /\.mamo-racer-class/);
@@ -72,11 +73,11 @@ assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
 assert.match(app, /function racerUrl\(/);
 
-// PWA shell must advance the racer stylesheet/cache release so iPhone PWA
-// clients cannot keep the previous narrow roster CSS.
+// PWA shell must advance the stylesheet/cache release so iPhone PWA clients
+// cannot keep the pre-center version of the racer heading CSS.
 assert.match(sw, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-6/);
-assert.match(sw, /mamoboat-v499-racer-roster-single-owner-dev/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-7/);
+assert.match(sw, /mamoboat-v500-racer-heading-delivery-dev/);
 assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
 assert.match(sw, /race-layout-refresh\.js\?v=20260911-7/);
 
