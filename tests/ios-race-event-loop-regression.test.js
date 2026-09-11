@@ -49,6 +49,11 @@ assert.equal(window.reviewBet, originalReviewBet, "layout events must not wrap t
 assert.equal(typeof documentListeners.get("click"), "function", "review allocation uses delegated clicks without wrapping reviewBet");
 
 assert.doesNotMatch(layout, /window\.reviewBet\s*=/);
+assert.doesNotMatch(layout, /window\.placeBet\s*=/);
+assert.match(layout, /reviewStep = "allocation"/);
+assert.match(layout, /dataset\.mamoReviewContinue/);
+assert.match(layout, /dataset\.mamoReviewBack/);
+assert.match(layout, /replaceChildren\(\.\.\.rows\)/);
 assert.doesNotMatch(legacyMultiAdd, /window\.reviewBet\s*=/);
 assert.doesNotMatch(legacyMultiAdd, /window\.placeBet\s*=/);
 assert.match(legacyMultiAdd, /retired AIR BET compatibility shim v11/);
@@ -68,9 +73,6 @@ assert.match(renderCartBody, /syncTrayUI\(\)/);
 assert.doesNotMatch(renderCartBody, /createElement|insertBefore|append|replaceChildren/);
 const refreshBuilderBody = app.match(/function refreshBuilder\(\) \{([\s\S]*?)\n  \}\n\n  function normalizeStake/)?.[1] || "";
 assert(refreshBuilderBody);
-// Run the actual post-add reset and picker painter together. Previously the
-// state cleared but .sel/.dim remained, so the compatibility helper toggled
-// an already-cleared boat back on.
 const resetBody = app.match(/function resetSelections\(\) \{([\s\S]*?)\n  \}/)[1];
 const postAddReset = app.match(/if \(result.added.length && selectionRevision === requestSelectionRevision\) \{[\s\S]*?\n      \}/)[0];
 for (const kind of ["normal", "box", "form"]) {
@@ -108,8 +110,7 @@ assert.match(app, /class="air-bet-selection-footer"/);
 assert.match(app, /id="cartCount"/);
 assert.match(app, /data-add-current="normal"[\s\S]*?＋ 買い目に追加/);
 
-// Opening 24 venues, including the race-screen back button, always restores
-// the actionable live-only view without wrapping go() or adding redraw timers.
+// Opening 24 venues restores the live view without wrapping go() or adding timers.
 const goBody = app.match(/window\.go = \(id\) => \{([\s\S]*?)\n  \};\n  function renderOnboard/)?.[1] || "";
 assert(goBody, "go implementation must be extractable");
 assert.match(goBody, /if \(id === "venues"\) S\.filter = "active";[\s\S]*renderCurrent\(id\);[\s\S]*dispatchEvent\(new CustomEvent\("mamo:venues-opened"\)\)/);
@@ -130,8 +131,7 @@ assert(setBetTypeBody && setModeBody);
 assert.doesNotMatch(setBetTypeBody, /cart\s*=/);
 assert.doesNotMatch(setModeBody, /cart\s*=/);
 
-// Selection/add/review are drafts only. Wallet debit, history write and save
-// remain exclusively in the final confirmation action.
+// Selection/add/review are drafts only. Wallet debit and record writes remain in placeBet.
 const addCombosBody = app.match(/async function addCombos\(combos\) \{([\s\S]*?)\n  \}\n\n  window\.addNormal/)?.[1] || "";
 const reviewBetBody = app.match(/window\.reviewBet = \(\) => \{([\s\S]*?)\n  \};\n\n  window\.placeBet/)?.[1] || "";
 const placeBetBody = app.match(/window\.placeBet = \(\) => \{([\s\S]*?)\n  \};\n\n  function findDatasetRace/)?.[1] || "";
@@ -214,7 +214,8 @@ assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-2/);
+assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-3/);
+assert.match(serviceWorker, /air-bet-review-compact\.css\?v=20260911-13/);
 assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
 assert.match(serviceWorker, /app\.js\?v=20260910-4/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
