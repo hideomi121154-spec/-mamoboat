@@ -40,7 +40,6 @@
 
   function readMode(modeTabs, type) {
     const allowed = allowedModesFor(type);
-    if (type === "trifecta" && window.MAMO_ODDS_BET_MODE?.isActive?.()) return "odds";
     const active = modeTabs?.querySelector("button.active");
     const label = String(active?.textContent || "").trim();
     const value = Object.keys(MODE_LABELS).find((key) => MODE_LABELS[key] === label);
@@ -105,16 +104,14 @@
 
     const modeSelect = makeSelect("mamoModeSelect", "買い方を選択", allowedModes, MODE_LABELS, currentMode, (value) => {
       if (!allowedModes.includes(value)) return;
-      if (value === "odds") {
-        window.MAMO_ODDS_BET_MODE?.activate?.();
-        return;
-      }
-      window.MAMO_ODDS_BET_MODE?.deactivate?.();
-      window.setMode?.(value);
+      const legacyButton = document.getElementById(value === "odds" ? "bt-odds" : `bt-${value}`);
+      if (legacyButton) legacyButton.click();
+      else if (value !== "odds") window.setMode?.(value);
     });
     const typeSelect = makeSelect("mamoBetTypeSelect", "券種を選択", TYPE_VALUES, TYPE_LABELS, currentType, (value) => {
-      window.MAMO_ODDS_BET_MODE?.deactivate?.();
-      window.setBetType?.(value);
+      const legacyButton = document.getElementById(`type-${value}`);
+      if (legacyButton) legacyButton.click();
+      else window.setBetType?.(value);
     });
 
     modeSelect.style.fontSize = currentMode === "form" ? "13px" : "15px";
