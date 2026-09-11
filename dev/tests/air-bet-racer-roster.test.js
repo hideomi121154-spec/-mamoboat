@@ -5,6 +5,7 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const compact = fs.readFileSync(path.join(root, "race-airbet-compact.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "air-bet-selection-fixed.css"), "utf8");
+const layoutRefresh = fs.readFileSync(path.join(root, "race-layout-refresh.js"), "utf8");
 const app = fs.readFileSync(path.join(root, "app.js"), "utf8");
 const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 
@@ -39,8 +40,17 @@ assert.doesNotMatch(compact, /scrollTo\s*\(/);
 assert.doesNotMatch(compact, /scrollBy\s*\(/);
 assert.doesNotMatch(compact, /visualViewport/);
 
-// Desktop keeps the existing builder. The mobile roster reserves enough width
-// for racer names and must not intentionally ellipsize them.
+// Racer geometry has exactly one owner. race-layout-refresh.js may style the
+// surrounding picker/rank controls, but must not restyle mamo-racer-* nodes.
+assert.doesNotMatch(layoutRefresh, /\.mamo-racer-head/);
+assert.doesNotMatch(layoutRefresh, /\.mamo-racer-rows/);
+assert.doesNotMatch(layoutRefresh, /\.mamo-racer-row/);
+assert.doesNotMatch(layoutRefresh, /\.mamo-racer-name/);
+assert.doesNotMatch(layoutRefresh, /\.mamo-racer-class/);
+assert.doesNotMatch(layoutRefresh, /\.mamo-racer-official/);
+
+// Desktop keeps the existing builder. Mobile gives names real width instead
+// of shrinking them to 7px, while still avoiding intentional ellipsis.
 assert.match(css, /#raceView \.mamo-racer-roster \{ display: none; \}/);
 assert.match(css, /#builder\.mamo-selection-matrix/);
 assert.match(css, /#builder > \.mamo-racer-roster[\s\S]*display: flex/);
@@ -48,9 +58,10 @@ assert.match(css, /\.mamo-racer-name[\s\S]*text-overflow: clip/);
 assert.doesNotMatch(css, /\.mamo-racer-name[\s\S]{0,180}text-overflow: ellipsis/);
 assert.match(css, /\.mamo-racer-class/);
 assert.match(css, /\.mamo-racer-official/);
-assert.match(css, /grid-template-columns: minmax\(148px, 1\.55fr\) repeat\(3, minmax\(0, 1fr\)\)/);
-assert.match(css, /grid-template-columns: 18px 26px minmax\(46px, 1fr\) 27px/);
-assert.match(css, /font-size: clamp\(7px, 2\.25vw, 9px\)/);
+assert.match(css, /grid-template-columns: minmax\(164px, 1\.75fr\) repeat\(3, minmax\(52px, \.72fr\)\)/);
+assert.match(css, /grid-template-columns: 18px 24px minmax\(52px, 1fr\) 24px/);
+assert.match(css, /font-size: clamp\(9\.5px, 2\.6vw, 10\.5px\)/);
+assert.doesNotMatch(css, /font-size: clamp\(7px, 2\.25vw, 9px\)/);
 
 // Existing selection hooks are still present in app.js for normal/BOX/form.
 assert.match(app, /pickNormal\(/);
@@ -61,10 +72,12 @@ assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
 assert.match(app, /function racerUrl\(/);
 
-// PWA shell keeps the racer-official assets while advancing the cache release.
+// PWA shell must advance the racer stylesheet/cache release so iPhone PWA
+// clients cannot keep the previous narrow roster CSS.
 assert.match(sw, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-5/);
-assert.match(sw, /mamoboat-v498-racer-name-visibility-dev/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-6/);
+assert.match(sw, /mamoboat-v499-racer-roster-single-owner-dev/);
 assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
+assert.match(sw, /race-layout-refresh\.js\?v=20260911-7/);
 
 console.log("AIR BET racer roster regression contract: OK");
