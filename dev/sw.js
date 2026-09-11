@@ -1,4 +1,5 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
+// AIR BET venue-return reset rollout: reinstall this worker and refresh the canonical review-flow cache entry.
 const CACHE = "mamoboat-v494-airbet-allocation-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260910-4","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-13","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",

@@ -609,6 +609,12 @@
     refreshAllocationPanel(shell);
   }
 
+  function resetReviewSession() {
+    allocationBudgetDraft = "";
+    reviewStep = "allocation";
+    detailOpen = false;
+  }
+
   function onDocumentClick(event) {
     const target = event.target;
     if (!target?.closest) return;
@@ -683,6 +689,7 @@
   function boot() {
     enhanceBuilder();
     window.addEventListener(AIR_BET_RENDERED_EVENT, enhanceBuilder);
+    window.addEventListener("mamo:venues-opened", resetReviewSession);
     window.addEventListener("pageshow", enhanceBuilder);
     document.addEventListener("click", onDocumentClick);
     document.addEventListener("input", onDocumentInput);

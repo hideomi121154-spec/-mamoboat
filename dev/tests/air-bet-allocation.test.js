@@ -83,6 +83,10 @@ assert.match(source, /window\.updateReviewLineStake/);
 assert.doesNotMatch(source, /window\.placeBet\s*=/, "step controller must never wrap or replace placeBet");
 assert.doesNotMatch(source, /window\.reviewBet\s*=/, "step controller must never wrap or replace reviewBet");
 
+// Returning to the 24-venue screen starts a fresh allocation session.
+assert.match(source, /function resetReviewSession\(\) \{[\s\S]*?allocationBudgetDraft = "";[\s\S]*?reviewStep = "allocation";[\s\S]*?detailOpen = false;/);
+assert.match(source, /window\.addEventListener\("mamo:venues-opened", resetReviewSession\)/);
+
 // Final state hides allocation/list and reveals the existing canonical confirmation button.
 assert.match(styles, /data-mamo-review-step="allocation"/);
 assert.match(styles, /data-mamo-review-step="final"/);
@@ -95,4 +99,4 @@ for (const unsafe of ["setInterval(", "setTimeout(", "requestAnimationFrame(", "
   assert.equal(source.includes(unsafe), false, `review allocation must not introduce ${unsafe}`);
 }
 
-console.log("AIR BET allocation, two-step review, and custom keypad tests passed");
+console.log("AIR BET allocation, venue-reset, two-step review, and custom keypad tests passed");
