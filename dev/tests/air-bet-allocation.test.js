@@ -39,6 +39,22 @@ assert.equal(engine.unit, 100);
 }
 
 {
+  // Regression for the real 5,000B / 3-point case that previously produced
+  // 3,600B / 500B / 900B and a 25,250B payout spread. The canonical engine
+  // must optimize the 100B rounding itself rather than relying on a UI patch.
+  const lines = [
+    { referenceOdds: "31.5" },
+    { referenceOdds: "277.3" },
+    { referenceOdds: "136.1" },
+  ];
+  const result = engine.allocate(lines, 5000);
+  assert.equal(result.ok, true);
+  assert.deepEqual(Array.from(result.amounts), [3800, 400, 800]);
+  assert.equal(result.amounts.reduce((sum, value) => sum + value, 0), 5000);
+  assert.equal(result.payoutMax - result.payoutMin, 10820);
+}
+
+{
   const missing = engine.allocate([
     { referenceOdds: "5.0" },
     { referenceOdds: null },
