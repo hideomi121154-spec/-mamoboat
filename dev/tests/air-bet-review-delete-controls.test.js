@@ -32,9 +32,14 @@ assert.doesNotMatch(source, /visualViewport/);
 assert.doesNotMatch(source, /scrollTo|scrollBy/);
 assert.doesNotMatch(source, /setInterval|setTimeout/);
 
-assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260911-2/);
+assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260911-3/);
 assert.match(compat, /data-mamo-review-delete-controls/);
-assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260911-2/);
-assert.match(sw, /mamoboat-v496-airbet-normal-layout-dev/);
+assert.match(sw, /decision-event-api-compat\.js\?v=20260911-1/);
+assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260911-3/);
+assert.match(sw, /mamoboat-v497-airbet-loader-refresh-dev/);
+assert.match(sw, /url\.pathname\.endsWith\("\/decision-event-api-compat\.js"\)/);
+assert.match(sw, /url\.pathname\.endsWith\("\/air-bet-review-delete-controls\.js"\)/);
+assert.match(sw, /decision-event-api-compat\\\.js\(\?:\\\?v=\[\^"'\]\+\)\?/);
+assert.match(sw, /air-bet-review-delete-controls\\\.js\(\?:\\\?v=\[\^"'\]\+\)\?/);
 
 console.log("AIR BET safe review controls regression checks passed.");
