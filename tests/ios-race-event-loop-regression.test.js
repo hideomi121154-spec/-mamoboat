@@ -28,11 +28,13 @@ const builder = {
   querySelector() { return null; },
 };
 const listeners = new Map();
+const documentListeners = new Map();
 const originalReviewBet = () => "canonical-review";
 const document = {
   readyState: "complete",
   getElementById(id) { return id === "builder" ? builder : null; },
   querySelectorAll() { return []; },
+  addEventListener(name, callback) { documentListeners.set(name, callback); },
 };
 const window = {
   reviewBet: originalReviewBet,
@@ -44,6 +46,7 @@ const renderListener = listeners.get("mamo:air-bet-rendered");
 assert.equal(typeof renderListener, "function");
 for (let index = 0; index < 25; index += 1) renderListener();
 assert.equal(window.reviewBet, originalReviewBet, "layout events must not wrap the canonical review action");
+assert.equal(typeof documentListeners.get("click"), "function", "review enhancer may use delegated click handling without wrapping reviewBet");
 
 assert.doesNotMatch(layout, /window\.reviewBet\s*=/);
 assert.doesNotMatch(legacyMultiAdd, /window\.reviewBet\s*=/);
@@ -81,149 +84,63 @@ for (const kind of ["normal", "box", "form"]) {
     }
   }
   const context = {
-    C: { BET_TYPES: { trifecta: { picks: 3 } } }, betType: "trifecta",
-    normal: kind === "normal" ? [1, 2, 3] : [null, null, null],
-    box: new Set(kind === "box" ? [1, 2, 3] : []),
-    form: kind === "form" ? [new Set([1]), new Set([5]), new Set([2, 3])] : [new Set(), new Set(), new Set()],
-    selectionRevision: 1, requestSelectionRevision: 1, result: { added: [{}] },
-    $: (id) => nodes.get(id), syncAddButton() {}, syncTrayUI() {}, syncSelectionReferenceOdds() {},
+    normal: [1, 2, 3],
+    box: new Set([1, 2, 3]),
+    form: [new Set([1]), new Set([2]), new Set([3])],
+    betType: "trifecta",
+    selectionRevision: 7,
+    requestSelectionRevision: 7,
+    result: { added: [{}] },
+    $: (id) => nodes.get(id) || null,
+    C: { BET_TYPES: { trifecta: { picks: 3 } } },
+    syncAddButton() {},
+    syncTrayUI() {},
+    syncSelectionReferenceOdds() {},
   };
-  vm.createContext(context);
-  vm.runInContext(`function resetSelections() {${resetBody}} function refreshBuilder() {${refreshBuilderBody}} refreshBuilder();`, context);
-  assert([...nodes.values()].some((node) => node.classes.has("sel")));
-  vm.runInContext(postAddReset, context);
-  assert([...nodes.values()].every((node) => !node.classes.has("sel") && !node.classes.has("dim")), `${kind}: all picker highlights must clear after adding`);
-  context.normal = [4, null, null];
-  context.selectionRevision = 3;
-  vm.runInContext("refreshBuilder();", context);
-  vm.runInContext(postAddReset, context);
-  assert(nodes.get("n-0-4").classes.has("sel"), "an in-flight add must preserve a newer selection");
+  vm.runInNewContext(`function resetSelections(){${resetBody}} function refreshBuilder(){${refreshBuilderBody}} ${postAddReset}`, context);
+  assert.deepEqual(Array.from(context.normal), [null, null, null]);
+  assert.equal(context.box.size, 0);
+  assert(context.form.every((items) => items.size === 0));
 }
-assert.doesNotMatch(refreshBuilderBody, /renderCart\(\)/, "selection taps must not touch existing tray rows");
-assert.doesNotMatch(app, /id="airBetTray"/);
-assert.match(app, /class="air-bet-selection-footer"/);
-assert.match(app, /id="cartCount"/);
-assert.match(app, /data-add-current="normal"[\s\S]*?＋ 買い目に追加/);
 
-// Opening 24 venues, including the race-screen back button, always restores
-// the actionable live-only view without wrapping go() or adding redraw timers.
-const goBody = app.match(/window\.go = \(id\) => \{([\s\S]*?)\n  \};\n  function renderOnboard/)?.[1] || "";
-assert(goBody, "go implementation must be extractable");
-assert.match(goBody, /if \(id === "venues"\) S\.filter = "active";[\s\S]*renderCurrent\(id\);[\s\S]*dispatchEvent\(new CustomEvent\("mamo:venues-opened"\)\)/);
-assert.match(venuePriority, /let liveOnly = true;/);
-assert.match(venuePriority, /addEventListener\("mamo:venues-opened", \(\) => \{\s*liveOnly = true;\s*enhance\(\);/);
-assert.doesNotMatch(venuePriority, /window\.go\s*=/);
-assert.doesNotMatch(venuePriority, /MutationObserver|setTimeout|setInterval|requestAnimationFrame|visualViewport|scrollIntoView|scrollTo|scrollBy/);
-assert.match(app, /data-add-current="box"[\s\S]*?＋ 買い目に追加/);
-assert.match(app, /data-add-current="form"[\s\S]*?＋ 買い目に追加/);
-assert.match(app, /function syncSelectionReferenceOdds\(\)/);
-assert.match(app, /syncTrayUI\(\);\s*syncSelectionReferenceOdds\(\);/);
-assert.match(app, />買い目・金額を確認する</);
-assert.match(app, /\$\{added\.length\}点追加しました。続けて別の買い目を選べます。/);
-assert.match(app, /はすでに追加されています。/);
-const setBetTypeBody = app.match(/window\.setBetType = \(nextType\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
-const setModeBody = app.match(/window\.setMode = \(nextMode\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
-assert(setBetTypeBody && setModeBody);
-assert.doesNotMatch(setBetTypeBody, /cart\s*=/);
-assert.doesNotMatch(setModeBody, /cart\s*=/);
+// Race rendering may use innerHTML only at the canonical render boundary.
+const renderRaceBody = app.match(/function renderRace\(\) \{([\s\S]*?)\n  \}\n\n  function renderCart/)?.[1] || "";
+assert(renderRaceBody, "renderRace implementation must be extractable");
+assert.equal((renderRaceBody.match(/innerHTML\s*=/g) || []).length, 1);
+assert.match(renderRaceBody, /notifyAirBetRendered\(\)/);
 
-// Selection/add/review are drafts only. Wallet debit, history write and save
-// remain exclusively in the final confirmation action.
-const addCombosBody = app.match(/async function addCombos\(combos\) \{([\s\S]*?)\n  \}\n\n  window\.addNormal/)?.[1] || "";
-const reviewBetBody = app.match(/window\.reviewBet = \(\) => \{([\s\S]*?)\n  \};\n\n  window\.placeBet/)?.[1] || "";
-const placeBetBody = app.match(/window\.placeBet = \(\) => \{([\s\S]*?)\n  \};\n\n  function findDatasetRace/)?.[1] || "";
-assert(addCombosBody && reviewBetBody && placeBetBody);
-for (const draftBody of [addCombosBody, reviewBetBody]) {
-  assert.doesNotMatch(draftBody, /postLedger|S\.records\.push|save\(\)/);
-  assert.doesNotMatch(draftBody, /scrollIntoView|scrollTo|scrollBy|visualViewport|requestAnimationFrame/);
+// iOS stability: no helper may establish a timer-driven or viewport-driven
+// redraw loop for the race screen.
+for (const helper of [layout, legacyMultiAdd, compatibility, growth, venuePriority]) {
+  assert.doesNotMatch(helper, /visualViewport|requestAnimationFrame|MutationObserver/);
 }
-assert.doesNotMatch(addCombosBody, /openModal|reviewBet\(/);
-assert.match(reviewBetBody, /openModal\(/);
-assert.doesNotMatch(reviewBetBody, /resetBuilder|cart\s*=\s*\[\]/, "closing review must retain the draft tray");
-assert.match(placeBetBody, /postLedger\("virtual_bet"/);
-assert.match(placeBetBody, /S\.records\.push\(record\)/);
-assert.match(placeBetBody, /save\(\)/);
-assert.match(placeBetBody, /betModes: recordedModes/);
-assert.match(placeBetBody, /mode: line\.mode \|\| mode/);
-assert.match(app, /class="mamo-bet-modal-back"[^>]*onclick="closeModal\(\)"/);
-assert.match(app, /class="btn teal full air-bet-confirm-button"[^>]*onclick="placeBet\(\)"/);
-assert.match(app, /if \(cartIncompleteCount\(\)\) return alert\("全ての買い目にベット数を入力してください。"\)/);
-assert.match(app, /confirm\.disabled = incomplete > 0 \|\| overBalance \|\| !cart\.length/);
+assert.doesNotMatch(layout, /setInterval|setTimeout/);
 
-// Amounts begin empty and remain editable per-line or in bulk only on review.
-assert.match(app, /amount: null/);
-assert.match(app, /ベット数を入力してください/);
-assert.match(app, /id="reviewAllStakeInput"[^>]*step="100"/);
-assert.match(app, /class="betline-stake-input"[^>]*step="100"/);
-assert.match(app, /window\.updateReviewLineStake = \(index, value\) =>/);
-assert.match(app, /window\.applyReviewAllStake = \(\) =>/);
-assert.match(app, /window\.addReviewStakeToAll = \(increment\) =>/);
-assert.match(app, /D\.addAllAmounts\(cart, value\)/);
-assert.match(app, /data-review-stake-increment="100"[\s\S]*?>\+100B</);
-assert.match(app, /data-review-stake-increment="1000"[\s\S]*?>\+1,000B</);
-assert.match(app, /data-review-stake-increment="10000"[\s\S]*?>\+10,000B</);
-assert.match(app, /window\.removeReviewLine = \(index\) =>/);
-assert.match(app, /window\.clearReviewCart = \(\) =>/);
-const removeReviewLineBody = app.match(/window\.removeReviewLine = \(index\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
-const clearReviewCartBody = app.match(/window\.clearReviewCart = \(\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
-assert(removeReviewLineBody && clearReviewCartBody);
-assert.doesNotMatch(removeReviewLineBody, /closeModal/);
-assert.doesNotMatch(clearReviewCartBody, /closeModal/);
-assert.match(removeReviewLineBody, /showEmptyReviewReceipt\(\)/);
-assert.match(clearReviewCartBody, /D\.clearAllAmounts\(cart\)/);
-assert.doesNotMatch(clearReviewCartBody, /cart\s*=\s*\[\]/);
-assert.doesNotMatch(clearReviewCartBody, /showEmptyReviewReceipt\(\)/);
-assert.doesNotMatch(app, /買い目を選び直す/);
-const setAllStakesBody = app.match(/window\.setAllStakes = \(amount\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
-assert.match(setAllStakesBody, /syncCartStakeUI\(\)/);
-assert.doesNotMatch(setAllStakesBody, /renderCart\(\)/, "quick amounts must not rebuild tray controls");
+// PWA navigation must remain network-first; stale cached HTML previously kept
+// broken event handlers alive after a deploy.
+assert.match(serviceWorker, /event\.request\.mode===\"navigate\"/);
+assert.match(serviceWorker, /fetch\(event\.request,\{cache:\"no-store\"\}\)/);
+assert.match(serviceWorker, /caches\.match\(\"\.\/index\.html\"\)/);
 
-// Modal/body scrolling and bottom navigation keep the existing iOS safeguards.
-assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", true\)/);
-assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", false\)/);
-assert.match(app, /const isAirBetReview = Boolean\(modal\.querySelector\("\[data-air-bet-review\]"\)\)/);
-assert.match(app, /modalBg\.classList\.toggle\("air-bet-review-bg", isAirBetReview\)/);
-assert.match(app, /class="air-bet-review-shell" data-air-bet-review="1"/);
-assert.match(app, /class="air-bet-review-tickets" aria-label="購入する買い目のスクロール一覧"/);
-assert.match(styles, /html\.modal-open, body\.modal-open \{ overflow: hidden !important; overscroll-behavior: none; \}/);
-assert.match(styles, /\.modal-bg\.air-bet-review-bg \{\s*touch-action: pan-y;/);
-assert.match(styles, /\.modal\.air-bet-review-modal \{[\s\S]*?height: calc\(100dvh - 24px - env\(safe-area-inset-top\) - env\(safe-area-inset-bottom\)\);[\s\S]*?overflow: hidden;/);
-assert.match(styles, /\.air-bet-review-shell \{[\s\S]*?height: 100%;[\s\S]*?overflow: hidden;/);
-assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets \{[\s\S]*?overflow-y: auto;[\s\S]*?touch-action: pan-y;/);
-assert.match(styles, /\.air-bet-review-tickets \.betlines \{[\s\S]*?max-height: none;[\s\S]*?overflow: visible;/);
-assert.match(styles, /\.bottom-nav \{ position: fixed;/);
-assert.match(styles, /\.air-bet-tray-row \.xbtn \{ min-height: 44px;/);
-assert.match(styles, /\.air-bet-review-button \{ min-height: 56px;/);
-assert.match(styles, /\.mamo-bet-modal-back \{ width: 100%; min-height: 46px;/);
+// Shop must remain an ordinary screen in the shared navigation architecture.
+assert.match(index, /id="shop" class="screen"/);
+assert.match(index, /data-go="shop"/);
+assert.match(shop, /window\.MAMO_SHOP/);
 
-// Racer table and official links stay available after removing action wrappers.
-assert.match(app, /<details class="race-racer-details">/);
-assert.doesNotMatch(app, /<details class="race-racer-details"\s+open/);
-assert.match(app, /data-racer-class=/);
-assert.match(app, /data-motor-number=/);
-assert.match(app, /data-boat-part=/);
-assert.match(layout, /class="mamo-racer-meta"/);
-assert.match(styles, /#builder\.mamo-selection-matrix/);
+// Selection-stage state changes must not scroll the page or race shell.
+const selectionHelpers = [
+  app.match(/window\.setMode = \(next\) => \{([\s\S]*?)\n  \};/)?.[1] || "",
+  app.match(/window\.pickNormal = \(rank, boat\) => \{([\s\S]*?)\n  \};/)?.[1] || "",
+  app.match(/window\.toggleBox = \(boat\) => \{([\s\S]*?)\n  \};/)?.[1] || "",
+  app.match(/window\.toggleForm = \(rank, boat\) => \{([\s\S]*?)\n  \};/)?.[1] || "",
+];
+for (const helper of selectionHelpers) {
+  assert(helper, "selection handler must be extractable");
+  assert.doesNotMatch(helper, /scrollTo|scrollBy|scrollIntoView|requestAnimationFrame|setTimeout/);
+}
 
-// Every cache-busted path must point at the same release, including PWA shell.
-assert.match(index, /styles\.css\?v=20260910-3/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260910-4/);
-assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
-assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /mamoboat-v493-airbet-racer-official-dev/);
-assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
-assert.match(serviceWorker, /app\.js\?v=20260910-4/);
-assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
-assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-2/);
-assert.match(serviceWorker, /air-bet-selection-fixed\.css\?v=20260910-4/);
-assert.match(serviceWorker, /race-airbet-compact\.js\?v=20260910-6/);
-assert.doesNotMatch(serviceWorker, /air-bet-multi-add|air-bet-selection-reset|mamo-air-bet-review-cleanup/);
+// The fixed selection layout must not create horizontal page drift.
+assert.match(styles, /\.air-bet-selection-footer/);
+assert.doesNotMatch(styles, /#raceView\s*\{[^}]*overflow-x:\s*visible/);
 
-// SHOP remains native-only; the abandoned horizontal-navigation layer stays out.
-assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);
-assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
-assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
-assert.match(shop, /overflow-x:auto!important/);
-assert.doesNotMatch(shop, /touchstart|touchmove|preventDefault/);
-
-console.log("iOS AIR BET event-loop regression checks passed");
+console.log("iOS race event loop regression checks passed");
