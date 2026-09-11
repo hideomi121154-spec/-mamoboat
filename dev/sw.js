@@ -1,9 +1,9 @@
 // Legacy CI compatibility marker: mamoboat-v401-central-pilot-1
-// AIR BET venue-return reset rollout: reinstall this worker and refresh the canonical review-flow cache entry.
+// AIR BET safe delete controls rollout: refresh the compatibility loader and review helper in the PWA shell.
 const CACHE = "mamoboat-v494-airbet-allocation-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260910-4","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260911-13","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
-  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260911-3",
+  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260908-2","./bet-review-flow.js?v=20260911-3","./air-bet-review-delete-controls.js?v=20260911-1",
   "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260910-11","./race-layout-refresh.js?v=20260910-6","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
