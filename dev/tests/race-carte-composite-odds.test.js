@@ -68,6 +68,10 @@ assert.doesNotMatch(bridge, /\bcoins\s*=/);
 assert.match(bridge, /投票時合成オッズ/);
 assert.match(bridge, /COMPOSITE_TYPES=new Set\(\["trifecta","trio","exacta","quinella","win"\]\)/);
 
+// The current unified record card opens Race Carte through data-rx-carte.
+// Composite odds must schedule on that same trigger, not only the legacy button.
+assert.match(bridge, /\.mamo-carte-btn,\[data-race-carte-index\],\[data-rx-carte\]/);
+
 // PWA clients must receive the updated bridge instead of a stale cached copy.
 assert.match(sw, /mamoboat-v502-race-carte-composite-odds-dev/);
 assert.match(sw, /race-carte-official-payouts\.js\?v=20260911-1/);
