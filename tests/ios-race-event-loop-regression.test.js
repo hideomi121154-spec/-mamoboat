@@ -3,153 +3,195 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const root = path.resolve(__dirname, "..");
-const app = fs.readFileSync(path.join(root, "dev", "app.js"), "utf8");
-const styles = fs.readFileSync(path.join(root, "dev", "styles.css"), "utf8");
-const layout = fs.readFileSync(path.join(root, "dev", "bet-review-flow.js"), "utf8");
-const index = fs.readFileSync(path.join(root, "dev", "index.html"), "utf8");
-const compatibility = fs.readFileSync(path.join(root, "dev", "decision-event-api-compat.js"), "utf8");
-const growth = fs.readFileSync(path.join(root, "dev", "growth-entry.js"), "utf8");
-const serviceWorker = fs.readFileSync(path.join(root, "dev", "sw.js"), "utf8");
-const shop = fs.readFileSync(path.join(root, "dev", "mamo-shop.css"), "utf8");
+const root = path.join(__dirname, "..");
+const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
+const layout = read("dev/bet-review-flow.js");
+const legacyMultiAdd = read("dev/air-bet-multi-add.js");
+const app = read("dev/app.js");
+const styles = read("dev/styles.css");
+const index = read("dev/index.html");
+const compatibility = read("dev/decision-event-api-compat.js");
+const growth = read("dev/growth-entry.js");
+const venuePriority = read("dev/venue-live-priority.js");
+const serviceWorker = read("dev/sw.js");
+const shop = read("dev/mamo-shop.js");
 
-function eventTarget() {
-  const listeners = new Map();
-  return {
-    listeners,
-    addEventListener(type, handler) {
-      if (!listeners.has(type)) listeners.set(type, []);
-      listeners.get(type).push(handler);
-    },
-    removeEventListener(type, handler) {
-      const values = listeners.get(type) || [];
-      listeners.set(type, values.filter((value) => value !== handler));
-    },
-    dispatchEvent(event) {
-      (listeners.get(event.type) || []).slice().forEach((handler) => handler.call(this, event));
-      return true;
-    },
-  };
-}
-
-function classList(initial = []) {
-  const values = new Set(initial);
-  return {
-    add(...names) { names.forEach((name) => values.add(name)); },
-    remove(...names) { names.forEach((name) => values.delete(name)); },
-    toggle(name, force) {
-      if (force === true) { values.add(name); return true; }
-      if (force === false) { values.delete(name); return false; }
-      if (values.has(name)) { values.delete(name); return false; }
-      values.add(name); return true;
-    },
-    contains(name) { return values.has(name); },
-    toString() { return [...values].join(" "); },
-  };
-}
-
-function node(id, classes = []) {
-  const base = eventTarget();
-  return Object.assign(base, {
-    id,
-    classList: classList(classes),
-    style: {},
-    dataset: {},
-    hidden: false,
-    disabled: false,
-    textContent: "",
-    innerHTML: "",
-    parentElement: null,
-    children: [],
-    value: "",
-    checked: false,
-    setAttribute(name, value) { this[name] = String(value); },
-    getAttribute(name) { return this[name] ?? null; },
-    append(...items) { this.children.push(...items); items.forEach((item) => { if (item) item.parentElement = this; }); },
-    appendChild(item) { this.append(item); return item; },
-    prepend(...items) { this.children.unshift(...items); items.forEach((item) => { if (item) item.parentElement = this; }); },
-    remove() {},
-    closest(selector) {
-      if (selector === ".screen" && this.classList.contains("screen")) return this;
-      if (selector.startsWith("#") && selector.slice(1) === this.id) return this;
-      return null;
-    },
-    querySelector() { return null; },
-    querySelectorAll() { return []; },
-  });
-}
-
-const elements = new Map();
-for (const id of ["home", "venues", "race", "records", "analysis", "settings", "shop", "raceView", "builder", "modeTabs", "reviewBetButton", "bottomNav"]) {
-  elements.set(id, node(id, ["screen"]));
-}
-elements.get("home").classList.add("active");
-
-const documentTarget = eventTarget();
-const document = Object.assign(documentTarget, {
+// Presentation enhancements may react to the base renderer, but must never
+// replace AIR BET actions. Repeated render events previously caused Safari
+// click starvation when multiple late-loaded scripts wrapped reviewBet.
+const classList = { add() {}, remove() {}, toggle() {}, contains() { return false; } };
+const builder = {
+  children: [],
+  classList,
+  dataset: {},
+  closest() { return { querySelector() { return null; }, insertBefore() {} }; },
+  querySelector() { return null; },
+};
+const listeners = new Map();
+const documentListeners = new Map();
+const originalReviewBet = () => "canonical-review";
+const document = {
   readyState: "complete",
-  body: node("body"),
-  documentElement: node("html"),
-  head: node("head"),
-  getElementById(id) { return elements.get(id) || null; },
-  querySelector(selector) {
-    if (selector === ".screen.active") return [...elements.values()].find((item) => item.classList.contains("active")) || null;
-    return null;
-  },
-  querySelectorAll(selector) {
-    if (selector === ".screen") return [...elements.values()].filter((item) => item.classList.contains("screen"));
-    return [];
-  },
-  createElement(tag) { return node(tag); },
-});
+  getElementById(id) { return id === "builder" ? builder : null; },
+  querySelectorAll() { return []; },
+  addEventListener(name, callback) { documentListeners.set(name, callback); },
+};
+const window = {
+  reviewBet: originalReviewBet,
+  addEventListener(name, callback) { listeners.set(name, callback); },
+};
 
-document.body.classList = classList();
-document.documentElement.classList = classList();
+vm.runInNewContext(layout, { window, document, console });
+const renderListener = listeners.get("mamo:air-bet-rendered");
+assert.equal(typeof renderListener, "function");
+for (let index = 0; index < 25; index += 1) renderListener();
+assert.equal(window.reviewBet, originalReviewBet, "layout events must not wrap the canonical review action");
+assert.equal(typeof documentListeners.get("click"), "function", "review allocation uses delegated clicks without wrapping reviewBet");
 
-const windowTarget = eventTarget();
-const windowObject = Object.assign(windowTarget, {
-  document,
-  location: { href: "https://mamoboat.com/dev/", pathname: "/dev/", search: "", hash: "" },
-  history: { pushState() {}, replaceState() {} },
-  scrollTo() {},
-  scrollBy() {},
-  localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
-  sessionStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
-  navigator: { userAgent: "iPhone", maxTouchPoints: 5 },
-  matchMedia() { return { matches: false, addEventListener() {}, removeEventListener() {} }; },
-});
+assert.doesNotMatch(layout, /window\.reviewBet\s*=/);
+assert.doesNotMatch(legacyMultiAdd, /window\.reviewBet\s*=/);
+assert.doesNotMatch(legacyMultiAdd, /window\.placeBet\s*=/);
+assert.match(legacyMultiAdd, /retired AIR BET compatibility shim v11/);
+assert.match(legacyMultiAdd, /Object\.freeze\(\{ retired: true \}\)/);
+assert.doesNotMatch(legacyMultiAdd, /addEventListener|preventDefault|stopPropagation|stopImmediatePropagation/);
+for (const helper of [layout, legacyMultiAdd]) {
+  assert.doesNotMatch(helper, /MutationObserver|setTimeout|setInterval|requestAnimationFrame|visualViewport|scrollIntoView|scrollTo|scrollBy/);
+}
+assert.match(app, /const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered"/);
+assert.match(app, /refreshBuilder\(\);\s*renderCart\(\);\s*notifyAirBetRendered\(\);/);
 
-const context = vm.createContext({
-  window: windowObject,
-  document,
-  navigator: windowObject.navigator,
-  location: windowObject.location,
-  history: windowObject.history,
-  localStorage: windowObject.localStorage,
-  sessionStorage: windowObject.sessionStorage,
-  console,
-  CustomEvent: class CustomEvent { constructor(type, init = {}) { this.type = type; this.detail = init.detail; } },
-  Event: class Event { constructor(type) { this.type = type; } },
-  URL,
-  URLSearchParams,
-  setTimeout() { return 1; },
-  clearTimeout() {},
-  setInterval() { return 1; },
-  clearInterval() {},
-  requestAnimationFrame(handler) { if (typeof handler === "function") handler(); return 1; },
-  cancelAnimationFrame() {},
-});
-context.globalThis = context;
+// Updating the selection footer must never create a growing ticket list.
+const renderCartBody = app.match(/function renderCart\(\) \{([\s\S]*?)\n  \}\n\n  window\.MAMO_AIR_BET_DRAFT/)?.[1] || "";
+assert(renderCartBody, "renderCart implementation must be extractable");
+assert.doesNotMatch(renderCartBody, /innerHTML/);
+assert.match(renderCartBody, /syncTrayUI\(\)/);
+assert.doesNotMatch(renderCartBody, /createElement|insertBefore|append|replaceChildren/);
+const refreshBuilderBody = app.match(/function refreshBuilder\(\) \{([\s\S]*?)\n  \}\n\n  function normalizeStake/)?.[1] || "";
+assert(refreshBuilderBody);
+// Run the actual post-add reset and picker painter together. Previously the
+// state cleared but .sel/.dim remained, so the compatibility helper toggled
+// an already-cleared boat back on.
+const resetBody = app.match(/function resetSelections\(\) \{([\s\S]*?)\n  \}/)[1];
+const postAddReset = app.match(/if \(result.added.length && selectionRevision === requestSelectionRevision\) \{[\s\S]*?\n      \}/)[0];
+for (const kind of ["normal", "box", "form"]) {
+  const nodes = new Map();
+  for (let rank = 0; rank < 3; rank++) {
+    for (let boat = 1; boat <= 6; boat++) {
+      for (const id of [`n-${rank}-${boat}`, `f-${rank}-${boat}`, `b-${boat}`]) {
+        const classes = new Set();
+        nodes.set(id, { classList: { toggle(k, on) { on ? classes.add(k) : classes.delete(k); } }, classes });
+      }
+    }
+  }
+  const context = {
+    C: { BET_TYPES: { trifecta: { picks: 3 } } }, betType: "trifecta",
+    normal: kind === "normal" ? [1, 2, 3] : [null, null, null],
+    box: new Set(kind === "box" ? [1, 2, 3] : []),
+    form: kind === "form" ? [new Set([1]), new Set([5]), new Set([2, 3])] : [new Set(), new Set(), new Set()],
+    selectionRevision: 1, requestSelectionRevision: 1, result: { added: [{}] },
+    $: (id) => nodes.get(id), syncAddButton() {}, syncTrayUI() {}, syncSelectionReferenceOdds() {},
+  };
+  vm.createContext(context);
+  vm.runInContext(`function resetSelections() {${resetBody}} function refreshBuilder() {${refreshBuilderBody}} refreshBuilder();`, context);
+  assert([...nodes.values()].some((node) => node.classes.has("sel")));
+  vm.runInContext(postAddReset, context);
+  assert([...nodes.values()].every((node) => !node.classes.has("sel") && !node.classes.has("dim")), `${kind}: all picker highlights must clear after adding`);
+  context.normal = [4, null, null];
+  context.selectionRevision = 3;
+  vm.runInContext("refreshBuilder();", context);
+  vm.runInContext(postAddReset, context);
+  assert(nodes.get("n-0-4").classes.has("sel"), "an in-flight add must preserve a newer selection");
+}
+assert.doesNotMatch(refreshBuilderBody, /renderCart\(\)/, "selection taps must not touch existing tray rows");
+assert.doesNotMatch(app, /id="airBetTray"/);
+assert.match(app, /class="air-bet-selection-footer"/);
+assert.match(app, /id="cartCount"/);
+assert.match(app, /data-add-current="normal"[\s\S]*?＋ 買い目に追加/);
 
-// Stable navigation contract: navigation itself must not depend on viewport observers/timers.
-assert.doesNotMatch(app, /visualViewport\.addEventListener\([^\n]*go\(/);
-assert.doesNotMatch(app, /MutationObserver[\s\S]{0,300}go\(/);
-assert.doesNotMatch(app, /setInterval\([^\n]*go\(/);
-assert.doesNotMatch(app, /setTimeout\([^\n]*go\(/);
-assert.doesNotMatch(app, /requestAnimationFrame\([^\n]*go\(/);
+// Opening 24 venues, including the race-screen back button, always restores
+// the actionable live-only view without wrapping go() or adding redraw timers.
+const goBody = app.match(/window\.go = \(id\) => \{([\s\S]*?)\n  \};\n  function renderOnboard/)?.[1] || "";
+assert(goBody, "go implementation must be extractable");
+assert.match(goBody, /if \(id === "venues"\) S\.filter = "active";[\s\S]*renderCurrent\(id\);[\s\S]*dispatchEvent\(new CustomEvent\("mamo:venues-opened"\)\)/);
+assert.match(venuePriority, /let liveOnly = true;/);
+assert.match(venuePriority, /addEventListener\("mamo:venues-opened", \(\) => \{\s*liveOnly = true;\s*enhance\(\);/);
+assert.doesNotMatch(venuePriority, /window\.go\s*=/);
+assert.doesNotMatch(venuePriority, /MutationObserver|setTimeout|setInterval|requestAnimationFrame|visualViewport|scrollIntoView|scrollTo|scrollBy/);
+assert.match(app, /data-add-current="box"[\s\S]*?＋ 買い目に追加/);
+assert.match(app, /data-add-current="form"[\s\S]*?＋ 買い目に追加/);
+assert.match(app, /function syncSelectionReferenceOdds\(\)/);
+assert.match(app, /syncTrayUI\(\);\s*syncSelectionReferenceOdds\(\);/);
+assert.match(app, />買い目・金額を確認する</);
+assert.match(app, /\$\{added\.length\}点追加しました。続けて別の買い目を選べます。/);
+assert.match(app, /はすでに追加されています。/);
+const setBetTypeBody = app.match(/window\.setBetType = \(nextType\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+const setModeBody = app.match(/window\.setMode = \(nextMode\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+assert(setBetTypeBody && setModeBody);
+assert.doesNotMatch(setBetTypeBody, /cart\s*=/);
+assert.doesNotMatch(setModeBody, /cart\s*=/);
 
-// Purchase review stays one vertical scroll owner and preserves large touch targets.
-assert.match(styles, /\.modal\.air-bet-review-modal \{[\s\S]*?overflow: hidden;/);
+// Selection/add/review are drafts only. Wallet debit, history write and save
+// remain exclusively in the final confirmation action.
+const addCombosBody = app.match(/async function addCombos\(combos\) \{([\s\S]*?)\n  \}\n\n  window\.addNormal/)?.[1] || "";
+const reviewBetBody = app.match(/window\.reviewBet = \(\) => \{([\s\S]*?)\n  \};\n\n  window\.placeBet/)?.[1] || "";
+const placeBetBody = app.match(/window\.placeBet = \(\) => \{([\s\S]*?)\n  \};\n\n  function findDatasetRace/)?.[1] || "";
+assert(addCombosBody && reviewBetBody && placeBetBody);
+for (const draftBody of [addCombosBody, reviewBetBody]) {
+  assert.doesNotMatch(draftBody, /postLedger|S\.records\.push|save\(\)/);
+  assert.doesNotMatch(draftBody, /scrollIntoView|scrollTo|scrollBy|visualViewport|requestAnimationFrame/);
+}
+assert.doesNotMatch(addCombosBody, /openModal|reviewBet\(/);
+assert.match(reviewBetBody, /openModal\(/);
+assert.doesNotMatch(reviewBetBody, /resetBuilder|cart\s*=\s*\[\]/, "closing review must retain the draft tray");
+assert.match(placeBetBody, /postLedger\("virtual_bet"/);
+assert.match(placeBetBody, /S\.records\.push\(record\)/);
+assert.match(placeBetBody, /save\(\)/);
+assert.match(placeBetBody, /betModes: recordedModes/);
+assert.match(placeBetBody, /mode: line\.mode \|\| mode/);
+assert.match(app, /class="mamo-bet-modal-back"[^>]*onclick="closeModal\(\)"/);
+assert.match(app, /class="btn teal full air-bet-confirm-button"[^>]*onclick="placeBet\(\)"/);
+assert.match(app, /if \(cartIncompleteCount\(\)\) return alert\("全ての買い目にベット数を入力してください。"\)/);
+assert.match(app, /confirm\.disabled = incomplete > 0 \|\| overBalance \|\| !cart\.length/);
+
+// Amounts begin empty and remain editable per-line or in bulk only on review.
+assert.match(app, /amount: null/);
+assert.match(app, /ベット数を入力してください/);
+assert.match(app, /id="reviewAllStakeInput"[^>]*step="100"/);
+assert.match(app, /class="betline-stake-input"[^>]*step="100"/);
+assert.match(app, /window\.updateReviewLineStake = \(index, value\) =>/);
+assert.match(app, /window\.applyReviewAllStake = \(\) =>/);
+assert.match(app, /window\.addReviewStakeToAll = \(increment\) =>/);
+assert.match(app, /D\.addAllAmounts\(cart, value\)/);
+assert.match(app, /data-review-stake-increment="100"[\s\S]*?>\+100B</);
+assert.match(app, /data-review-stake-increment="1000"[\s\S]*?>\+1,000B</);
+assert.match(app, /data-review-stake-increment="10000"[\s\S]*?>\+10,000B</);
+assert.match(app, /window\.removeReviewLine = \(index\) =>/);
+assert.match(app, /window\.clearReviewCart = \(\) =>/);
+const removeReviewLineBody = app.match(/window\.removeReviewLine = \(index, value\) => \{([\s\S]*?)\n  \};/)?.[1] || app.match(/window\.removeReviewLine = \(index\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+const clearReviewCartBody = app.match(/window\.clearReviewCart = \(\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+assert(removeReviewLineBody && clearReviewCartBody);
+assert.doesNotMatch(removeReviewLineBody, /closeModal/);
+assert.doesNotMatch(clearReviewCartBody, /closeModal/);
+assert.match(removeReviewLineBody, /showEmptyReviewReceipt\(\)/);
+assert.match(clearReviewCartBody, /D\.clearAllAmounts\(cart\)/);
+assert.doesNotMatch(clearReviewCartBody, /cart\s*=\s*\[\]/);
+assert.doesNotMatch(clearReviewCartBody, /showEmptyReviewReceipt\(\)/);
+assert.doesNotMatch(app, /買い目を選び直す/);
+const setAllStakesBody = app.match(/window\.setAllStakes = \(amount\) => \{([\s\S]*?)\n  \};/)?.[1] || "";
+assert.match(setAllStakesBody, /syncCartStakeUI\(\)/);
+assert.doesNotMatch(setAllStakesBody, /renderCart\(\)/, "quick amounts must not rebuild tray controls");
+
+// Modal/body scrolling and bottom navigation keep the existing iOS safeguards.
+assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", true\)/);
+assert.match(app, /document\.documentElement\?\.classList\?\.toggle\("modal-open", false\)/);
+assert.match(app, /const isAirBetReview = Boolean\(modal\.querySelector\("\[data-air-bet-review\]"\)\)/);
+assert.match(app, /modalBg\.classList\.toggle\("air-bet-review-bg", isAirBetReview\)/);
+assert.match(app, /class="air-bet-review-shell" data-air-bet-review="1"/);
+assert.match(app, /class="air-bet-review-tickets" aria-label="購入する買い目のスクロール一覧"/);
+assert.match(styles, /html\.modal-open, body\.modal-open \{ overflow: hidden !important; overscroll-behavior: none; \}/);
+assert.match(styles, /\.modal-bg\.air-bet-review-bg \{\s*touch-action: pan-y;/);
+assert.match(styles, /\.modal\.air-bet-review-modal \{[\s\S]*?height: calc\(100dvh - 24px - env\(safe-area-inset-top\) - env\(safe-area-inset-bottom\)\);[\s\S]*?overflow: hidden;/);
+assert.match(styles, /\.air-bet-review-shell \{[\s\S]*?height: 100%;[\s\S]*?overflow: hidden;/);
 assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets \{[\s\S]*?overflow-y: auto;[\s\S]*?touch-action: pan-y;/);
 assert.match(styles, /\.air-bet-review-tickets \.betlines \{[\s\S]*?max-height: none;[\s\S]*?overflow: visible;/);
 assert.match(styles, /\.bottom-nav \{ position: fixed;/);
@@ -172,7 +214,7 @@ assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
-assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-2/);
+assert.match(serviceWorker, /bet-review-flow\.js\?v=20260911-1/);
 assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
 assert.match(serviceWorker, /app\.js\?v=20260910-4/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
