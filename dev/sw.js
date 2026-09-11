@@ -4,6 +4,7 @@
 // Previous AIR BET loader cache: mamoboat-v497-airbet-loader-refresh-dev
 // Previous racer-name visibility cache: mamoboat-v498-racer-name-visibility-dev
 // Previous AIR BET review helper: air-bet-review-delete-controls.js?v=20260911-2
+// Legacy racer roster CSS marker: air-bet-selection-fixed.css?v=20260910-4
 // Previous racer roster CSS: air-bet-selection-fixed.css?v=20260911-5
 // Racer roster single-owner release: CSS owns mamo-racer-* geometry; race layout refresh no longer restyles it.
 const CACHE = "mamoboat-v499-racer-roster-single-owner-dev";
