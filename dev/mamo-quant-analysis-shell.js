@@ -6,8 +6,8 @@
  */
 (() => {
   "use strict";
-  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V4__) return;
-  window.__MAMO_QUANT_ANALYSIS_SHELL_V4__ = true;
+  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V5__) return;
+  window.__MAMO_QUANT_ANALYSIS_SHELL_V5__ = true;
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
@@ -15,22 +15,20 @@
   const BASIC_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-basic="1"]';
   const PERFORMANCE_SCRIPT_SRC = "mamo-quant-analysis-odds-performance.js?v=20260912-1";
   const PERFORMANCE_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-odds-performance="1"]';
+  const CAPITAL_SCRIPT_SRC = "mamo-quant-analysis-capital.js?v=20260913-1";
+  const CAPITAL_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-capital="1"]';
 
   function buildIntro(section) {
     const intro = document.createElement("div");
     intro.className = "page-intro";
-
     const copy = document.createElement("div");
     const kicker = document.createElement("span");
     kicker.className = "kicker";
     kicker.textContent = "MAMO ANALYSIS";
-
     const title = document.createElement("h1");
     title.textContent = "分析";
-
     const lead = document.createElement("p");
     lead.textContent = "資金・成績・リスクを、記録から振り返る独立分析エリアです。";
-
     copy.append(kicker, title, lead);
     intro.appendChild(copy);
     section.appendChild(intro);
@@ -39,7 +37,6 @@
   function buildBasicSection(section) {
     const heading = document.createElement("div");
     heading.className = "section-head small";
-
     const headingCopy = document.createElement("div");
     const number = document.createElement("span");
     number.className = "section-number";
@@ -47,7 +44,6 @@
     const title = document.createElement("h2");
     title.textContent = "基本分析";
     headingCopy.append(number, title);
-
     const meta = document.createElement("span");
     meta.className = "section-meta";
     meta.textContent = "読み取り専用";
@@ -66,47 +62,84 @@
 
     const performanceMount = document.createElement("div");
     performanceMount.id = "mamoQuantAnalysisOddsPerformance";
-    section.append(heading, mount, performanceMount);
+    const capitalMount = document.createElement("div");
+    capitalMount.id = "mamoQuantAnalysisCapital";
+    section.append(heading, mount, performanceMount, capitalMount);
   }
 
-  function showBasicLoadFailure() {
-    const mount = document.getElementById("mamoQuantAnalysisBasic");
+  function showFailure(mountId, titleText, copyText) {
+    const mount = document.getElementById(mountId);
     if (!mount) return;
     const panel = document.createElement("div");
     panel.className = "panel";
     const title = document.createElement("h2");
-    title.textContent = "基本分析を読み込めませんでした";
+    title.textContent = titleText;
     const copy = document.createElement("p");
-    copy.textContent = "画面を開き直しても同じ場合は、分析モジュールの配信状態を確認してください。記録データは変更されていません。";
+    copy.textContent = copyText;
     panel.append(title, copy);
     mount.replaceChildren(panel);
   }
 
-  function showPerformanceLoadFailure() {
-    const mount = document.getElementById("mamoQuantAnalysisOddsPerformance");
-    if (!mount) return;
-    const panel = document.createElement("div");
-    panel.className = "panel";
-    const title = document.createElement("h2");
-    title.textContent = "オッズ帯別成績を読み込めませんでした";
-    const copy = document.createElement("p");
-    copy.textContent = "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。";
-    panel.append(title, copy);
-    mount.replaceChildren(panel);
-  }
+  const showBasicLoadFailure = () => showFailure(
+    "mamoQuantAnalysisBasic",
+    "基本分析を読み込めませんでした",
+    "画面を開き直しても同じ場合は、分析モジュールの配信状態を確認してください。記録データは変更されていません。"
+  );
+  const showPerformanceLoadFailure = () => showFailure(
+    "mamoQuantAnalysisOddsPerformance",
+    "オッズ帯別成績を読み込めませんでした",
+    "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。"
+  );
+  const showCapitalLoadFailure = () => showFailure(
+    "mamoQuantAnalysisCapital",
+    "資金耐久分析を読み込めませんでした",
+    "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。"
+  );
 
   function renderPerformance() {
     const render = window.MAMO_QUANT_ODDS_PERFORMANCE?.render;
-    if (typeof render !== "function") return false;
-    return render() === true;
+    return typeof render === "function" && render() === true;
+  }
+
+  function renderCapital() {
+    const render = window.MAMO_QUANT_CAPITAL?.render;
+    return typeof render === "function" && render() === true;
+  }
+
+  function ensureCapitalModule() {
+    if (renderCapital()) return;
+    const existing = document.querySelector(CAPITAL_SCRIPT_SELECTOR);
+    if (existing) {
+      existing.addEventListener("load", () => {
+        if (!renderCapital()) showCapitalLoadFailure();
+      }, { once: true });
+      existing.addEventListener("error", showCapitalLoadFailure, { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = CAPITAL_SCRIPT_SRC;
+    script.async = true;
+    script.dataset.mamoQuantAnalysisCapital = "1";
+    script.addEventListener("load", () => {
+      if (!renderCapital()) showCapitalLoadFailure();
+    }, { once: true });
+    script.addEventListener("error", showCapitalLoadFailure, { once: true });
+    document.head.appendChild(script);
   }
 
   function ensurePerformanceModule() {
-    if (renderPerformance()) return;
+    if (renderPerformance()) {
+      ensureCapitalModule();
+      return;
+    }
     const existing = document.querySelector(PERFORMANCE_SCRIPT_SELECTOR);
     if (existing) {
       existing.addEventListener("load", () => {
-        if (!renderPerformance()) showPerformanceLoadFailure();
+        if (!renderPerformance()) {
+          showPerformanceLoadFailure();
+          return;
+        }
+        ensureCapitalModule();
       }, { once: true });
       existing.addEventListener("error", showPerformanceLoadFailure, { once: true });
       return;
@@ -116,7 +149,11 @@
     script.async = true;
     script.dataset.mamoQuantAnalysisOddsPerformance = "1";
     script.addEventListener("load", () => {
-      if (!renderPerformance()) showPerformanceLoadFailure();
+      if (!renderPerformance()) {
+        showPerformanceLoadFailure();
+        return;
+      }
+      ensureCapitalModule();
     }, { once: true });
     script.addEventListener("error", showPerformanceLoadFailure, { once: true });
     document.head.appendChild(script);
@@ -124,8 +161,7 @@
 
   function renderBasic() {
     const render = window.MAMO_QUANT_ANALYSIS_BASIC?.render;
-    if (typeof render !== "function") return false;
-    return render() === true;
+    return typeof render === "function" && render() === true;
   }
 
   function onBasicReady() {
@@ -141,14 +177,12 @@
       ensurePerformanceModule();
       return;
     }
-
     const existing = document.querySelector(BASIC_SCRIPT_SELECTOR);
     if (existing) {
       existing.addEventListener("load", onBasicReady, { once: true });
       existing.addEventListener("error", showBasicLoadFailure, { once: true });
       return;
     }
-
     const script = document.createElement("script");
     script.src = BASIC_SCRIPT_SRC;
     script.async = true;
@@ -163,7 +197,6 @@
     const main = document.querySelector(".app-shell main");
     const settings = document.getElementById("settings");
     if (!main || !settings) return false;
-
     const section = document.createElement("section");
     section.id = SCREEN_ID;
     section.className = "screen";
@@ -179,13 +212,11 @@
     const nav = document.querySelector(".bottom-nav");
     const settingsNav = document.getElementById("nav-settings");
     if (!nav || !settingsNav) return false;
-
     const button = document.createElement("button");
     button.id = NAV_ID;
     button.className = "nav";
     button.type = "button";
     button.setAttribute("aria-label", "分析を開く");
-
     const icon = document.createElement("b");
     icon.textContent = "▥";
     const label = document.createElement("span");
@@ -195,7 +226,6 @@
       window.go?.(SCREEN_ID);
       ensureBasicModule();
     });
-
     const shopNav = document.getElementById("nav-shop");
     nav.insertBefore(button, shopNav || settingsNav);
     return true;
