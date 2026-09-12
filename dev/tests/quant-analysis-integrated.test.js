@@ -50,9 +50,10 @@ assert.equal(sparse.maxDrawdown, 0);
 assert.match(source, /STEP 10/);
 assert.match(source, /統合分析/);
 assert.match(source, /指標同士を無理に1つの点数へ合成せず/);
+assert.match(source, /『安全・危険』の判定、原因の断定、推奨BET額、次レース予測は行いません/);
 assert.match(source, /MAMO_QUANT_RISK_PROFILE/);
 assert.match(source, /MAMO_QUANT_DATA_FOUNDATION/);
 assert.doesNotMatch(source, /localStorage\.setItem|sessionStorage\.setItem|fetch\s*\(|XMLHttpRequest|setTimeout\s*\(|setInterval\s*\(|requestAnimationFrame\s*\(|MutationObserver|visualViewport|scrollTo\s*\(|scrollBy\s*\(/);
-assert.doesNotMatch(source, /おすすめ|推奨BET|勝率予測|到達時期|安全度|危険度|リスクスコア/);
+assert.doesNotMatch(source, /リスクスコア|総合点|ランク[A-E]|次レースは|到達予定日/);
 
 console.log("quant analysis STEP 10 integrated checks passed");
