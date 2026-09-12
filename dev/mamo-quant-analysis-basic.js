@@ -243,6 +243,19 @@
     return card;
   }
 
+  function makeCardWithSubline(label, value, subline, extraClass = "") {
+    const card = makeCard(label, value, extraClass);
+    const detail = document.createElement("small");
+    detail.textContent = subline;
+    detail.style.display = "block";
+    detail.style.marginTop = "4px";
+    detail.style.fontSize = "12px";
+    detail.style.fontWeight = "800";
+    detail.style.color = "#64798b";
+    card.appendChild(detail);
+    return card;
+  }
+
   function makePeriodControl(period) {
     const details = document.createElement("details");
     details.dataset.analysisPeriodControl = "1";
@@ -385,7 +398,12 @@
     riskGrid.append(
       makeCard("最大連敗", metrics.decidedCount ? `${metrics.maxLosingStreak}回` : "—", metrics.maxLosingStreak > 0 ? "coral" : ""),
       makeCard("現在連敗", currentStreak == null ? "—" : `${currentStreak}回`),
-      makeCard("最大DD", metrics.settledCount ? `${formatB(metrics.maxDrawdown)} / ${formatPercent(metrics.maxDrawdownBetRate)}` : "—", metrics.maxDrawdown > 0 ? "coral" : ""),
+      makeCardWithSubline(
+        "最大DD",
+        metrics.settledCount ? formatB(metrics.maxDrawdown) : "—",
+        metrics.settledCount ? `BET総額比 ${formatPercent(metrics.maxDrawdownBetRate)}` : "",
+        metrics.maxDrawdown > 0 ? "coral" : ""
+      ),
       makeCard("最大1回損失", metrics.settledCount ? formatB(metrics.maxSingleLoss) : "—")
     );
 
