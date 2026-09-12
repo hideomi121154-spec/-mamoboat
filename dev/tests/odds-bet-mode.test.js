@@ -15,7 +15,7 @@ const document = {
   querySelectorAll() { return []; },
 };
 const window = { addEventListener() {} };
-const sandbox = vm.createContext({ window, document, console, AbortController, CustomEvent: class CustomEvent {} });
+const sandbox = vm.createContext({ window, document, console, AbortController, CustomEvent: class CustomEvent {}, queueMicrotask });
 vm.runInContext(source, sandbox, { filename: "odds-bet-mode-v1.js" });
 
 const testApi = sandbox.window.MAMO_ODDS_BET_MODE_TEST;
@@ -34,6 +34,8 @@ for (const position of [0, 1, 2]) {
 const combined = testApi.combinedOddsFromValues(["4.0", "5.0"]);
 assert.ok(Math.abs(combined - (1 / (1 / 4 + 1 / 5))) < 1e-12, "combined odds use reciprocal sum");
 assert.equal(testApi.combinedOddsFromValues(["4.0", null]), null, "partial odds never produce a misleading combined price");
+assert.equal(testApi.lineComboKey({ combination: "1 → 2 → 3" }), "1-2-3", "canonical line keys normalize review formatting");
+assert.equal(testApi.lineComboKey({ combo: "6-4-2" }), "6-4-2", "canonical line keys preserve stored dash formatting");
 
 // Safety contract: the module is additive and must not own purchase/wallet/record state.
 assert.doesNotMatch(source, /window\.placeBet\s*=/);
@@ -49,6 +51,12 @@ assert.doesNotMatch(source, /\.innerHTML\s*=/, "odds mode builds its own DOM wit
 assert.match(source, /window\.setBetType\?\.\("trifecta"\)/, "odds mode reuses canonical 3連単 state");
 assert.match(source, /window\.pickNormal\?\./, "odds mode hands combinations to canonical normal selection");
 assert.match(source, /window\.addNormal\?\./, "odds mode hands additions to canonical draft append path");
+assert.match(source, /window\.removeReviewLine/, "odds mode removes through the canonical review removal path");
+assert.match(source, /window\.removeLine/, "odds mode retains the canonical tray removal path as a fallback");
+assert.match(source, /dataset\.oddsRemove/, "an added odds line becomes a removable action instead of a dead disabled state");
+assert.match(source, /data-mamo-remove-line-shortcut/, "review one-line deletion triggers an odds-state refresh");
+assert.match(source, /data-mamo-clear-all-lines/, "review all-line deletion triggers an odds-state refresh");
+assert.match(source, /queueMicrotask/, "review deletion sync occurs after the canonical synchronous mutation without timers");
 assert.match(source, /#raceView \.mamo-racer-row/, "odds mode reads the compact roster that remains on iPhone");
 assert.match(source, /#raceView \.boats \.boat/, "desktop/original roster remains a safe fallback");
 assert.match(source, /艇番＋選手名で切り替え/);
@@ -69,14 +77,15 @@ assert.doesNotMatch(styles, /\.rank\s*\{/);
 assert.doesNotMatch(styles, /\.pick\s*\{/);
 assert.doesNotMatch(styles, /position:\s*fixed/);
 
-// PWA must deliver the repaired selector + odds module and preserve prior cache markers.
+// PWA must deliver the current selector + odds module and preserve prior cache markers.
+assert.match(sw, /mamoboat-v507-odds-all-visible-dev/);
 assert.match(sw, /mamoboat-v504-odds-bet-mobile-selector-dev/);
 assert.match(sw, /mamoboat-v503-odds-bet-mode-dev/);
 assert.match(sw, /mamoboat-v502-race-carte-composite-odds-dev/);
-assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-2/);
-assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-12/);
-assert.match(sw, /odds-bet-mode\.css\?v=20260911-1/);
+assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
+assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
+assert.match(sw, /odds-bet-mode\.css\?v=20260912-2/);
 assert.match(sw, /url\.pathname\.endsWith\("\/odds-bet-mode-v1\.js"\)/);
 assert.match(sw, /url\.pathname\.endsWith\("\/air-bet-mode-stability\.js"\)/);
 
-console.log("Odds betting mode safety and mobile selector tests passed");
+console.log("Odds betting mode safety, removal sync, and mobile selector tests passed");
