@@ -1,6 +1,7 @@
-/* MAMO BOAT — STEP 6.2 capital resilience / custom goal foundation.
+/* MAMO BOAT — STEP 6.3 capital resilience / custom goal / hypothetical BET simulator.
  * Reads the current B balance and settled AIR BET records.
- * The only writable state is a dedicated analysis-goal localStorage key.
+ * The only writable state is the dedicated analysis-goal localStorage key.
+ * Simulator values are transient UI state only and are never saved.
  * AIR BET, wallet, records, pressroom, SHOP, Supabase, and navigation are never mutated.
  */
 (function initMamoQuantCapital(root) {
@@ -11,6 +12,8 @@
   const DEFAULT_GOAL_B = 1000000;
   const MIN_GOAL_B = 10000;
   const MAX_GOAL_B = 100000000;
+  const MIN_SIM_BET = 100;
+  const SIM_STEP = 100;
   const STRESS_COUNTS = Object.freeze([5, 10, 15, 20]);
   const SETTLED = new Set(["hit", "miss", "refunded"]);
 
@@ -53,15 +56,40 @@
     return lines.reduce((sum, line) => sum + Math.max(0, safeNumber(line?.stake)), 0);
   }
 
-  function stressScenarios(balance, averageStake) {
+  function stressScenarios(balance, stake) {
     return Object.freeze(STRESS_COUNTS.map((losses) => {
-      const lossAmount = Math.max(0, averageStake) * losses;
+      const lossAmount = Math.max(0, stake) * losses;
       return Object.freeze({
         losses,
         lossAmount,
         remaining: Math.max(0, balance - lossAmount),
       });
     }));
+  }
+
+  function normalizeSimBet(value, balance) {
+    const max = Math.floor(Math.max(0, safeNumber(balance)) / SIM_STEP) * SIM_STEP;
+    if (max < MIN_SIM_BET) return 0;
+    const rounded = Math.round(Math.max(0, safeNumber(value)) / SIM_STEP) * SIM_STEP;
+    return Math.max(MIN_SIM_BET, Math.min(max, rounded || MIN_SIM_BET));
+  }
+
+  function simulateBet(balance, goal, stake) {
+    const normalizedBalance = Math.max(0, safeNumber(balance));
+    const normalizedGoal = normalizeGoal(goal, DEFAULT_GOAL_B);
+    const normalizedStake = normalizeSimBet(stake, normalizedBalance);
+    const balanceRate = normalizedBalance > 0 && normalizedStake > 0
+      ? (normalizedStake / normalizedBalance) * 100
+      : null;
+    const goalRate = normalizedGoal > 0 && normalizedStake > 0
+      ? (normalizedStake / normalizedGoal) * 100
+      : null;
+    return Object.freeze({
+      stake: normalizedStake,
+      balanceRate,
+      goalRate,
+      stress: stressScenarios(normalizedBalance, normalizedStake),
+    });
   }
 
   function calculate(state, goal = DEFAULT_GOAL_B) {
@@ -215,7 +243,7 @@
     summary.style.padding = "12px 14px";
     summary.style.fontWeight = "800";
     summary.style.color = "#0b3554";
-    summary.textContent = "連敗ストレスを見る";
+    summary.textContent = "現在の平均BETで連敗ストレスを見る";
 
     const body = document.createElement("div");
     body.style.padding = "0 14px 14px";
@@ -249,6 +277,128 @@
     return details;
   }
 
+  function buildBetSimulator(metrics) {
+    const details = document.createElement("details");
+    details.dataset.analysisCapitalSimulator = "1";
+    details.style.marginTop = "12px";
+    details.style.border = "1px solid #cbd6df";
+    details.style.borderRadius = "10px";
+    details.style.background = "#ffffff";
+
+    const summary = document.createElement("summary");
+    summary.style.cursor = "pointer";
+    summary.style.padding = "12px 14px";
+    summary.style.fontWeight = "800";
+    summary.style.color = "#0b3554";
+    summary.textContent = "仮の1回BETを変えて耐久を見る";
+
+    const body = document.createElement("div");
+    body.style.padding = "0 14px 14px";
+    body.style.display = "grid";
+    body.style.gap = "10px";
+
+    if (metrics.balance < MIN_SIM_BET) {
+      const unavailable = document.createElement("small");
+      unavailable.textContent = "現在残高が100B未満のため、BETシミュレーションは表示できません。";
+      unavailable.style.color = "#64798b";
+      unavailable.style.fontWeight = "700";
+      body.appendChild(unavailable);
+      details.append(summary, body);
+      return details;
+    }
+
+    const maxBet = Math.max(MIN_SIM_BET, Math.floor(metrics.balance / SIM_STEP) * SIM_STEP);
+    const initial = normalizeSimBet(metrics.averageSettledStake || MIN_SIM_BET, metrics.balance);
+
+    const label = document.createElement("strong");
+    label.textContent = "仮の1回BET";
+
+    const controls = document.createElement("div");
+    controls.style.display = "grid";
+    controls.style.gridTemplateColumns = "minmax(0,1fr) 110px";
+    controls.style.gap = "10px";
+    controls.style.alignItems = "center";
+
+    const range = document.createElement("input");
+    range.type = "range";
+    range.min = String(MIN_SIM_BET);
+    range.max = String(maxBet);
+    range.step = String(SIM_STEP);
+    range.value = String(initial);
+    range.setAttribute("aria-label", "仮の1回BETスライダー");
+    range.style.width = "100%";
+
+    const number = document.createElement("input");
+    number.type = "number";
+    number.inputMode = "numeric";
+    number.min = String(MIN_SIM_BET);
+    number.max = String(maxBet);
+    number.step = String(SIM_STEP);
+    number.value = String(initial);
+    number.setAttribute("aria-label", "仮の1回BET入力");
+    number.style.minWidth = "0";
+    number.style.padding = "9px 10px";
+    number.style.border = "1px solid #cbd6df";
+    number.style.borderRadius = "8px";
+    number.style.font = "inherit";
+
+    controls.append(range, number);
+
+    const result = document.createElement("div");
+    result.dataset.analysisCapitalSimulatorResult = "1";
+
+    function paint(value) {
+      const sim = simulateBet(metrics.balance, metrics.goal, value);
+      range.value = String(sim.stake);
+      number.value = String(sim.stake);
+
+      const fragment = document.createDocumentFragment();
+      const headline = document.createElement("div");
+      headline.style.display = "grid";
+      headline.style.gridTemplateColumns = "1fr 1fr";
+      headline.style.gap = "8px";
+      headline.append(
+        makeCard("現在残高比", formatPercent(sim.balanceRate)),
+        makeCard("設定目標B比", formatPercent(sim.goalRate))
+      );
+      fragment.appendChild(headline);
+
+      const list = document.createElement("div");
+      list.style.marginTop = "8px";
+      sim.stress.forEach((scenario) => {
+        const row = document.createElement("div");
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "auto minmax(0,1fr)";
+        row.style.gap = "12px";
+        row.style.padding = "9px 0";
+        row.style.borderTop = "1px solid #e3e9ee";
+        const left = document.createElement("strong");
+        left.textContent = `${scenario.losses}連敗`;
+        const right = document.createElement("span");
+        right.style.textAlign = "right";
+        right.textContent = `残高 ${formatB(scenario.remaining)}`;
+        row.append(left, right);
+        list.appendChild(row);
+      });
+      fragment.appendChild(list);
+      result.replaceChildren(fragment);
+    }
+
+    range.addEventListener("input", () => paint(range.value));
+    number.addEventListener("change", () => paint(number.value));
+    number.addEventListener("blur", () => paint(number.value));
+
+    const note = document.createElement("small");
+    note.textContent = `100B〜現在残高以内（最大 ${formatB(maxBet)}）で比較できます。値は保存せず、推奨BET額も表示しません。`;
+    note.style.color = "#64798b";
+    note.style.fontWeight = "700";
+
+    body.append(label, controls, result, note);
+    details.append(summary, body);
+    paint(initial);
+    return details;
+  }
+
   function render() {
     if (typeof document === "undefined") return false;
     const mount = document.getElementById("mamoQuantAnalysisCapital");
@@ -263,7 +413,7 @@
     const headingCopy = document.createElement("div");
     const number = document.createElement("span");
     number.className = "section-number";
-    number.textContent = "STEP 6.2";
+    number.textContent = "STEP 6.3";
     const title = document.createElement("h2");
     title.textContent = "資金耐久・目標B PROJECT";
     headingCopy.append(number, title);
@@ -294,9 +444,9 @@
     const note = document.createElement("div");
     note.className = "analysis-note";
     note.style.marginTop = "12px";
-    note.textContent = `確定済みAIR BET ${metrics.settledCount}件を使って平均BETを算出しています。目標進捗は現在残高÷設定目標Bの単純比率です。推奨BET額や到達時期は表示しません。目標Bだけを分析専用設定として端末内に保存します。`;
+    note.textContent = `確定済みAIR BET ${metrics.settledCount}件を使って平均BETを算出しています。目標進捗は現在残高÷設定目標Bの単純比率です。推奨BET額や到達時期は表示しません。仮BETシミュレーション値は保存しません。`;
 
-    fragment.append(heading, grid, progress, buildGoalEditor(metrics), buildStress(metrics), note);
+    fragment.append(heading, grid, progress, buildGoalEditor(metrics), buildStress(metrics), buildBetSimulator(metrics), note);
     mount.replaceChildren(fragment);
     return true;
   }
@@ -306,12 +456,16 @@
     DEFAULT_GOAL_B,
     MIN_GOAL_B,
     MAX_GOAL_B,
+    MIN_SIM_BET,
+    SIM_STEP,
     STRESS_COUNTS,
     normalizeGoal,
     readGoal,
     writeGoal,
     recordStake,
     stressScenarios,
+    normalizeSimBet,
+    simulateBet,
     calculate,
     readSnapshot,
     render,
