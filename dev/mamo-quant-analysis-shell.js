@@ -1,11 +1,11 @@
-/* MAMO BOAT — independent quantitative analysis shell, step 1.
- * Navigation + an empty analysis surface only.
+/* MAMO BOAT — independent quantitative analysis shell, step 2.
+ * Navigation + a read-only basic analysis surface.
  * No AIR BET, wallet, records, pressroom, SHOP, or calculation state is mutated here.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V1__) return;
-  window.__MAMO_QUANT_ANALYSIS_SHELL_V1__ = true;
+  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V2__) return;
+  window.__MAMO_QUANT_ANALYSIS_SHELL_V2__ = true;
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
@@ -30,32 +30,35 @@
     section.appendChild(intro);
   }
 
-  function buildPlaceholder(section) {
+  function buildBasicSection(section) {
     const heading = document.createElement("div");
     heading.className = "section-head small";
 
     const headingCopy = document.createElement("div");
     const number = document.createElement("span");
     number.className = "section-number";
-    number.textContent = "STEP 1";
+    number.textContent = "STEP 2";
     const title = document.createElement("h2");
-    title.textContent = "分析画面の動作確認";
+    title.textContent = "基本分析";
     headingCopy.append(number, title);
 
     const meta = document.createElement("span");
     meta.className = "section-meta";
-    meta.textContent = "計算機能はまだ未接続";
+    meta.textContent = "読み取り専用";
     heading.append(headingCopy, meta);
 
+    const mount = document.createElement("div");
+    mount.id = "mamoQuantAnalysisBasic";
     const panel = document.createElement("div");
     panel.className = "panel";
     const panelTitle = document.createElement("h2");
-    panelTitle.textContent = "分析機能を準備中です";
+    panelTitle.textContent = "基本データを読み込み中です";
     const copy = document.createElement("p");
-    copy.textContent = "まずは画面遷移と下部ナビだけを確認します。既存の記録・編集部・SHOPには変更を加えていません。";
+    copy.textContent = "記録データを変更せず、現在残高・AIR BET回数・的中率・平均BETを集計します。";
     panel.append(panelTitle, copy);
+    mount.appendChild(panel);
 
-    section.append(heading, panel);
+    section.append(heading, mount);
   }
 
   function ensureScreen() {
@@ -69,7 +72,7 @@
     section.className = "screen";
     section.setAttribute("aria-label", "分析");
     buildIntro(section);
-    buildPlaceholder(section);
+    buildBasicSection(section);
     main.insertBefore(section, settings);
     return true;
   }
@@ -91,7 +94,10 @@
     const label = document.createElement("span");
     label.textContent = "分析";
     button.append(icon, label);
-    button.addEventListener("click", () => window.go?.(SCREEN_ID));
+    button.addEventListener("click", () => {
+      window.go?.(SCREEN_ID);
+      window.MAMO_QUANT_ANALYSIS_BASIC?.render?.();
+    });
 
     const shopNav = document.getElementById("nav-shop");
     nav.insertBefore(button, shopNav || settingsNav);
@@ -101,6 +107,7 @@
   function boot() {
     if (!ensureScreen()) return;
     ensureNavigation();
+    window.MAMO_QUANT_ANALYSIS_BASIC?.render?.();
   }
 
   if (document.readyState === "loading") {
