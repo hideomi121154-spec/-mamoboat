@@ -67,14 +67,20 @@ assert.equal(snapshot.records.length, 1);
 assert.equal(writes, 0);
 
 assert.deepEqual(api.PERIODS.map((item) => item.key), ["all", "today", "yesterday", "last7", "thisWeek", "thisMonth"]);
-assert.match(source, /STEP 2\.5/);
+assert.match(source, /STEP 2\.6/);
+assert.match(source, /期間：\$\{period\.label\}/);
+assert.match(source, /dataset\.analysisPeriodControl/);
+assert.match(source, /document\.createElement\("details"\)/);
+assert.match(source, /document\.createElement\("summary"\)/);
+assert.match(source, /details\.open\s*=\s*false/);
+assert.doesNotMatch(source, /gridTemplateColumns\s*=\s*"repeat\(3/);
 assert.match(source, /B残高だけは期間に関係なく現在値/);
 assert.doesNotMatch(source, /\.setItem\s*\(|\.removeItem\s*\(|\.clear\s*\(/);
 assert.doesNotMatch(source, /setTimeout|setInterval|requestAnimationFrame|MutationObserver|visualViewport|scrollTo|scrollBy/);
 assert.doesNotMatch(source, /window\.(?:placeBet|updateReviewLineStake|removeReviewLine)\s*=|MAMO_AIR_BET_DRAFT|\.coins\s*=|\.records\s*=|\.pressroom\s*=/);
 assert.match(shell, /mamoQuantAnalysisBasic/);
 assert.match(shell, /MAMO_QUANT_ANALYSIS_BASIC\?\.render/);
-assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-3/);
+assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-4/);
 assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
 
-console.log("quant analysis step 2.5 read-only period checks passed");
+console.log("quant analysis step 2.6 compact period selector checks passed");

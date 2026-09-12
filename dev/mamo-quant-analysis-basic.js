@@ -1,7 +1,7 @@
-/* MAMO BOAT — independent quantitative analysis, step 2.5.
- * Read-only basic metrics + period filtering only. This module never writes
- * localStorage and never mutates AIR BET, wallet, records, pressroom, SHOP,
- * Supabase, or navigation state.
+/* MAMO BOAT — independent quantitative analysis, step 2.6.
+ * Read-only basic metrics + compact period filtering only. This module never
+ * writes localStorage and never mutates AIR BET, wallet, records, pressroom,
+ * SHOP, Supabase, or navigation state.
  */
 (function initMamoQuantAnalysisBasic(root) {
   "use strict";
@@ -36,9 +36,7 @@
     const hitCount = records.filter((record) => record?.status === "hit").length;
     const missCount = records.filter((record) => record?.status === "miss").length;
     const decidedCount = hitCount + missCount;
-    const stakes = records
-      .map(recordStake)
-      .filter((value) => value > 0);
+    const stakes = records.map(recordStake).filter((value) => value > 0);
     const averageStake = stakes.length
       ? stakes.reduce((sum, value) => sum + value, 0) / stakes.length
       : 0;
@@ -71,9 +69,7 @@
 
   function jstDateKey(value) {
     if (value == null || value === "") return null;
-    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      return value;
-    }
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
     const date = value instanceof Date ? value : new Date(value);
     if (!Number.isFinite(date.getTime())) return null;
     const parts = new Intl.DateTimeFormat("en-US", {
@@ -89,16 +85,14 @@
   function shiftDateKey(key, days) {
     const [year, month, day] = String(key).split("-").map(Number);
     if (![year, month, day].every(Number.isFinite)) return null;
-    const date = new Date(Date.UTC(year, month - 1, day + days));
-    return date.toISOString().slice(0, 10);
+    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
   }
 
   function mondayKey(key) {
     const [year, month, day] = String(key).split("-").map(Number);
     if (![year, month, day].every(Number.isFinite)) return null;
     const date = new Date(Date.UTC(year, month - 1, day));
-    const weekday = date.getUTCDay();
-    return shiftDateKey(key, -((weekday + 6) % 7));
+    return shiftDateKey(key, -((date.getUTCDay() + 6) % 7));
   }
 
   function recordDateKey(record) {
@@ -120,12 +114,8 @@
       const yesterday = shiftDateKey(today, -1);
       return Object.freeze({ from: yesterday, to: yesterday });
     }
-    if (periodKey === "last7") {
-      return Object.freeze({ from: shiftDateKey(today, -6), to: today });
-    }
-    if (periodKey === "thisWeek") {
-      return Object.freeze({ from: mondayKey(today), to: today });
-    }
+    if (periodKey === "last7") return Object.freeze({ from: shiftDateKey(today, -6), to: today });
+    if (periodKey === "thisWeek") return Object.freeze({ from: mondayKey(today), to: today });
     return Object.freeze({ from: `${today.slice(0, 7)}-01`, to: today });
   }
 
@@ -154,24 +144,68 @@
     return card;
   }
 
-  function makePeriodButton(period) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = period.label;
-    button.dataset.analysisPeriod = period.key;
-    button.setAttribute("aria-pressed", period.key === activePeriod ? "true" : "false");
-    button.style.minHeight = "38px";
-    button.style.borderRadius = "10px";
-    button.style.border = period.key === activePeriod ? "2px solid #e41f2b" : "1px solid #cbd6df";
-    button.style.background = period.key === activePeriod ? "#e41f2b" : "#ffffff";
-    button.style.color = period.key === activePeriod ? "#ffffff" : "#0b3554";
-    button.style.fontWeight = "800";
-    button.style.fontSize = "13px";
-    button.addEventListener("click", () => {
-      activePeriod = period.key;
-      render();
+  function makePeriodControl(period) {
+    const details = document.createElement("details");
+    details.dataset.analysisPeriodControl = "1";
+    details.style.marginBottom = "14px";
+
+    const summary = document.createElement("summary");
+    summary.dataset.analysisPeriodSummary = "1";
+    summary.style.listStyle = "none";
+    summary.style.cursor = "pointer";
+    summary.style.minHeight = "44px";
+    summary.style.display = "flex";
+    summary.style.alignItems = "center";
+    summary.style.justifyContent = "space-between";
+    summary.style.padding = "0 14px";
+    summary.style.border = "1px solid #cbd6df";
+    summary.style.borderRadius = "10px";
+    summary.style.background = "#ffffff";
+    summary.style.color = "#0b3554";
+    summary.style.fontWeight = "800";
+
+    const label = document.createElement("span");
+    label.textContent = `期間：${period.label}`;
+    const arrow = document.createElement("span");
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "▼";
+    summary.append(label, arrow);
+
+    const list = document.createElement("div");
+    list.setAttribute("role", "listbox");
+    list.setAttribute("aria-label", "分析期間");
+    list.style.display = "grid";
+    list.style.gap = "1px";
+    list.style.marginTop = "6px";
+    list.style.border = "1px solid #cbd6df";
+    list.style.borderRadius = "10px";
+    list.style.overflow = "hidden";
+    list.style.background = "#cbd6df";
+
+    PERIODS.forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.analysisPeriod = item.key;
+      button.setAttribute("role", "option");
+      button.setAttribute("aria-selected", item.key === activePeriod ? "true" : "false");
+      button.textContent = item.label;
+      button.style.minHeight = "44px";
+      button.style.border = "0";
+      button.style.background = item.key === activePeriod ? "#f7e8ea" : "#ffffff";
+      button.style.color = "#0b3554";
+      button.style.fontWeight = item.key === activePeriod ? "900" : "700";
+      button.style.textAlign = "left";
+      button.style.padding = "0 14px";
+      button.addEventListener("click", () => {
+        activePeriod = item.key;
+        details.open = false;
+        render();
+      });
+      list.appendChild(button);
     });
-    return button;
+
+    details.append(summary, list);
+    return details;
   }
 
   function render() {
@@ -184,13 +218,7 @@
     const metrics = calculate({ coins: snapshot.coins, records: filteredRecords });
     const period = PERIODS.find((item) => item.key === activePeriod) || PERIODS[0];
 
-    const controls = document.createElement("div");
-    controls.setAttribute("aria-label", "分析期間");
-    controls.style.display = "grid";
-    controls.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
-    controls.style.gap = "6px";
-    controls.style.marginBottom = "14px";
-    PERIODS.forEach((item) => controls.appendChild(makePeriodButton(item)));
+    const controls = makePeriodControl(period);
 
     const grid = document.createElement("div");
     grid.className = "stat-grid";
@@ -206,7 +234,7 @@
     note.className = "tactical-note";
     const label = document.createElement("span");
     label.className = "manga-label";
-    label.textContent = `STEP 2.5 / ${period.label}`;
+    label.textContent = `STEP 2.6 / ${period.label}`;
     const copy = document.createElement("p");
     copy.textContent = metrics.recordCount
       ? `${period.label}の記録${metrics.recordCount}件を表示中です。的中率は的中・不的中が確定した${metrics.decidedCount}件だけで計算し、返還は母数に含めません。B残高だけは期間に関係なく現在値です。`
@@ -239,8 +267,8 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (!root || typeof document === "undefined") return;
-  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V2__) return;
-  root.__MAMO_QUANT_ANALYSIS_BASIC_V2__ = true;
+  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V3__) return;
+  root.__MAMO_QUANT_ANALYSIS_BASIC_V3__ = true;
   root.MAMO_QUANT_ANALYSIS_BASIC = API;
 
   const boot = () => render();
