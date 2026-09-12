@@ -6,8 +6,8 @@
  */
 (() => {
   "use strict";
-  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V7__) return;
-  window.__MAMO_QUANT_ANALYSIS_SHELL_V7__ = true;
+  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V8__) return;
+  window.__MAMO_QUANT_ANALYSIS_SHELL_V8__ = true;
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
@@ -17,6 +17,8 @@
   const PERFORMANCE_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-odds-performance="1"]';
   const CAPITAL_SCRIPT_SRC = "mamo-quant-analysis-capital.js?v=20260913-3";
   const CAPITAL_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-capital="1"]';
+  const COMPARISON_SCRIPT_SRC = "mamo-quant-analysis-comparison.js?v=20260913-1";
+  const COMPARISON_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-comparison="1"]';
 
   function buildIntro(section) {
     const intro = document.createElement("div");
@@ -64,7 +66,9 @@
     performanceMount.id = "mamoQuantAnalysisOddsPerformance";
     const capitalMount = document.createElement("div");
     capitalMount.id = "mamoQuantAnalysisCapital";
-    section.append(heading, mount, performanceMount, capitalMount);
+    const comparisonMount = document.createElement("div");
+    comparisonMount.id = "mamoQuantAnalysisComparison";
+    section.append(heading, mount, performanceMount, capitalMount, comparisonMount);
   }
 
   function showFailure(mountId, titleText, copyText) {
@@ -95,10 +99,36 @@
     "資金耐久分析を読み込めませんでした",
     "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。"
   );
+  const showComparisonLoadFailure = () => showFailure(
+    "mamoQuantAnalysisComparison",
+    "比較分析を読み込めませんでした",
+    "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。"
+  );
 
-  function renderPerformance() {
-    const render = window.MAMO_QUANT_ODDS_PERFORMANCE?.render;
+  function renderComparison() {
+    const render = window.MAMO_QUANT_COMPARISON?.render;
     return typeof render === "function" && render() === true;
+  }
+
+  function ensureComparisonModule() {
+    if (renderComparison()) return;
+    const existing = document.querySelector(COMPARISON_SCRIPT_SELECTOR);
+    if (existing) {
+      existing.addEventListener("load", () => {
+        if (!renderComparison()) showComparisonLoadFailure();
+      }, { once: true });
+      existing.addEventListener("error", showComparisonLoadFailure, { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = COMPARISON_SCRIPT_SRC;
+    script.async = true;
+    script.dataset.mamoQuantAnalysisComparison = "1";
+    script.addEventListener("load", () => {
+      if (!renderComparison()) showComparisonLoadFailure();
+    }, { once: true });
+    script.addEventListener("error", showComparisonLoadFailure, { once: true });
+    document.head.appendChild(script);
   }
 
   function renderCapital() {
@@ -107,11 +137,18 @@
   }
 
   function ensureCapitalModule() {
-    if (renderCapital()) return;
+    if (renderCapital()) {
+      ensureComparisonModule();
+      return;
+    }
     const existing = document.querySelector(CAPITAL_SCRIPT_SELECTOR);
     if (existing) {
       existing.addEventListener("load", () => {
-        if (!renderCapital()) showCapitalLoadFailure();
+        if (!renderCapital()) {
+          showCapitalLoadFailure();
+          return;
+        }
+        ensureComparisonModule();
       }, { once: true });
       existing.addEventListener("error", showCapitalLoadFailure, { once: true });
       return;
@@ -121,10 +158,19 @@
     script.async = true;
     script.dataset.mamoQuantAnalysisCapital = "1";
     script.addEventListener("load", () => {
-      if (!renderCapital()) showCapitalLoadFailure();
+      if (!renderCapital()) {
+        showCapitalLoadFailure();
+        return;
+      }
+      ensureComparisonModule();
     }, { once: true });
     script.addEventListener("error", showCapitalLoadFailure, { once: true });
     document.head.appendChild(script);
+  }
+
+  function renderPerformance() {
+    const render = window.MAMO_QUANT_ODDS_PERFORMANCE?.render;
+    return typeof render === "function" && render() === true;
   }
 
   function ensurePerformanceModule() {
