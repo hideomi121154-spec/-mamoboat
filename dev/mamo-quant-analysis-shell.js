@@ -6,8 +6,8 @@
  */
 (() => {
   "use strict";
-  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V6__) return;
-  window.__MAMO_QUANT_ANALYSIS_SHELL_V6__ = true;
+  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V7__) return;
+  window.__MAMO_QUANT_ANALYSIS_SHELL_V7__ = true;
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
@@ -15,7 +15,7 @@
   const BASIC_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-basic="1"]';
   const PERFORMANCE_SCRIPT_SRC = "mamo-quant-analysis-odds-performance.js?v=20260912-1";
   const PERFORMANCE_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-odds-performance="1"]';
-  const CAPITAL_SCRIPT_SRC = "mamo-quant-analysis-capital.js?v=20260913-2";
+  const CAPITAL_SCRIPT_SRC = "mamo-quant-analysis-capital.js?v=20260913-3";
   const CAPITAL_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-capital="1"]';
 
   function buildIntro(section) {
