@@ -69,16 +69,17 @@ assert.equal(api.median([]), null);
 assert.equal(api.median([9]), 9);
 assert.equal(api.median([100, 5, 20]), 20);
 assert.equal(api.median([5, 10, 20, 100]), 15);
-assert.deepEqual(api.oddsBandDistribution([7.1, 10, 29.9, 30, 99.9, 100, 1666]).map((band) => ({
-  key: band.key,
-  count: band.count,
-  rate: band.rate,
-})), [
-  { key: "under10", count: 1, rate: 100 / 7 },
-  { key: "10to30", count: 2, rate: 200 / 7 },
-  { key: "30to100", count: 2, rate: 200 / 7 },
-  { key: "100plus", count: 2, rate: 200 / 7 },
+const boundaryBands = api.oddsBandDistribution([7.1, 10, 29.9, 30, 99.9, 100, 1666]);
+assert.deepEqual(boundaryBands.map((band) => [band.key, band.count]), [
+  ["under10", 1],
+  ["10to30", 2],
+  ["30to100", 2],
+  ["100plus", 2],
 ]);
+assert.equal(boundaryBands[0].rate, (1 / 7) * 100);
+assert.equal(boundaryBands[1].rate, (2 / 7) * 100);
+assert.equal(boundaryBands[2].rate, (2 / 7) * 100);
+assert.equal(boundaryBands[3].rate, (2 / 7) * 100);
 
 const oddsSummary = api.summarizeOdds([
   { lines: [{ odds: "2.0" }, { odds: "4.0" }, { odds: "" }] },
