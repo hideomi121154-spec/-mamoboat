@@ -115,6 +115,8 @@ assert.match(source, /現在連敗/);
 assert.match(source, /最大DD/);
 assert.match(source, /最大1回損失/);
 assert.match(source, /maxDrawdownBetRate/);
+assert.match(source, /makeCardWithSubline/);
+assert.match(source, /BET総額比/);
 assert.match(source, /確定BET額に対する最大DDの比率/);
 assert.match(source, /残高ベースのDD率ではありません/);
 assert.match(source, /全履歴の最新の的中・不的中結果から算出/);
