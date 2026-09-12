@@ -18,8 +18,7 @@
   flex-direction: column;
   gap: 6px;
 }
-#raceView .mamo-odds-heading,
-#raceView .mamo-odds-list-head {
+#raceView .mamo-odds-heading {
   flex: 0 0 auto;
   display: flex;
   align-items: baseline;
@@ -27,10 +26,8 @@
   gap: 8px;
   color: #082b4a;
 }
-#raceView .mamo-odds-heading strong,
-#raceView .mamo-odds-list-head strong { font-size: 12px; font-weight: 900; }
-#raceView .mamo-odds-heading small,
-#raceView .mamo-odds-list-head small { font-size: 9px; color: #6f818d; font-weight: 800; }
+#raceView .mamo-odds-heading strong { font-size: 12px; font-weight: 900; }
+#raceView .mamo-odds-heading small { font-size: 9px; color: #6f818d; font-weight: 800; }
 #raceView .mamo-odds-racers {
   flex: 0 0 auto;
   display: grid;
@@ -57,8 +54,7 @@
   background: #f3f9ff;
   box-shadow: 0 0 0 1px rgba(22,129,216,.08);
 }
-#raceView .mamo-odds-racer-number,
-#raceView .mamo-odds-selected-number {
+#raceView .mamo-odds-racer-number {
   width: 26px;
   height: 26px;
   display: inline-flex;
@@ -75,36 +71,51 @@
 #raceView .mamo-odds-racer-copy small { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #raceView .mamo-odds-racer-copy strong { font-size: 10px; line-height: 1.2; font-weight: 900; }
 #raceView .mamo-odds-racer-copy small { margin-top: 2px; font-size: 8px; line-height: 1.1; color: #6f818d; font-weight: 800; }
-#raceView .mamo-odds-selected {
-  flex: 0 0 36px;
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 8px;
-  border-radius: 9px;
-  background: #eef6fb;
-  color: #082b4a;
-}
-#raceView .mamo-odds-selected strong { min-width: 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#raceView .mamo-odds-selected small { color: #4f6d7e; font-size: 9px; font-weight: 900; }
-#raceView .mamo-odds-axis {
-  flex: 0 0 38px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
-}
-#raceView .mamo-odds-axis button {
+
+#raceView .mamo-odds-toolbar {
+  flex: 0 0 auto;
   min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px;
+}
+#raceView .mamo-odds-back,
+#raceView .mamo-odds-axis-select {
+  min-height: 32px;
+  box-sizing: border-box;
   border: 1px solid #c9d9e3;
   border-radius: 8px;
   background: #fff;
   color: #173f59;
-  font-size: 11px;
   font-weight: 900;
   touch-action: manipulation;
 }
-#raceView .mamo-odds-axis button.active { border-color: #1681d8; background: #1681d8; color: #fff; }
+#raceView .mamo-odds-back {
+  padding: 4px 8px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+#raceView .mamo-odds-toolbar-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #082b4a;
+  font-size: 12px;
+  font-weight: 900;
+}
+#raceView .mamo-odds-axis-select {
+  padding: 3px 22px 3px 8px;
+  font-size: 10px;
+}
+#raceView .mamo-odds-total {
+  color: #6f818d;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 #raceView .mamo-odds-list {
   flex: 1 1 0;
   min-height: 0;
@@ -142,7 +153,10 @@
 #raceView .mamo-odds-combo i { font-style: normal; color: #70828d; font-size: 11px; font-weight: 900; }
 #raceView .mamo-odds-value { text-align: right; color: #0b68b8; font-size: 13px; font-weight: 1000; white-space: nowrap; }
 #raceView .mamo-odds-row > button {
+  min-width: 0;
+  width: 100%;
   min-height: 32px;
+  box-sizing: border-box;
   padding: 4px 5px;
   border: 1px solid #1681d8;
   border-radius: 8px;
@@ -183,8 +197,16 @@
   }
   #raceView .mamo-odds-racer-number { width: 23px; height: 23px; font-size: 12px; }
   #raceView .mamo-odds-racer-copy strong { font-size: 9px; }
-  #raceView .mamo-odds-selected { flex-basis: 32px; }
-  #raceView .mamo-odds-axis { flex-basis: 34px; }
+  #raceView .mamo-odds-toolbar {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    gap: 4px;
+  }
+  #raceView .mamo-odds-back,
+  #raceView .mamo-odds-axis-select { min-height: 30px; }
+  #raceView .mamo-odds-back { padding-inline: 7px; font-size: 9px; }
+  #raceView .mamo-odds-toolbar-title { font-size: 10px; }
+  #raceView .mamo-odds-axis-select { padding-left: 6px; font-size: 9px; }
+  #raceView .mamo-odds-total { font-size: 8px; }
 
   #raceView .mamo-odds-list {
     display: grid;
@@ -198,8 +220,8 @@
   #raceView .mamo-odds-row {
     min-height: 0;
     height: 100%;
-    grid-template-columns: minmax(0, 1fr) 43px 42px;
-    gap: 2px;
+    grid-template-columns: minmax(0, 1fr) 40px 49px;
+    gap: 3px;
     padding: 1px 3px;
     border-bottom: 1px solid #e7edf0;
   }
@@ -208,18 +230,19 @@
   #raceView .mamo-odds-row:nth-child(20) { border-bottom: 0; }
   #raceView .mamo-odds-combo { gap: 1px; }
   #raceView .mamo-odds-combo span {
-    width: 18px;
-    height: 18px;
-    font-size: 10px;
+    width: 17px;
+    height: 17px;
+    font-size: 9px;
   }
   #raceView .mamo-odds-combo i { font-size: 8px; }
-  #raceView .mamo-odds-value { font-size: 10px; }
+  #raceView .mamo-odds-value { font-size: 9px; }
   #raceView .mamo-odds-row > button {
-    min-height: 22px;
-    padding: 1px 2px;
+    min-height: 23px;
+    padding: 1px 3px;
     border-radius: 6px;
     font-size: 8px;
     line-height: 1;
+    white-space: nowrap;
   }
   #raceView .mamo-odds-summary { flex-basis: 42px; }
 }
