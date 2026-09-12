@@ -166,11 +166,17 @@
     return card;
   }
 
-  function axisButton(index) {
-    const button = element("button", index === axisPosition ? "active" : "", `${index + 1}着軸`);
-    button.type = "button";
-    button.dataset.oddsAxisPosition = String(index);
-    return button;
+  function axisSelect() {
+    const select = element("select", "mamo-odds-axis-select");
+    select.dataset.oddsAxisSelect = "1";
+    select.setAttribute("aria-label", "軸の着順を選ぶ");
+    [0, 1, 2].forEach((index) => {
+      const option = element("option", "", `${index + 1}着`);
+      option.value = String(index);
+      option.selected = index === axisPosition;
+      select.append(option);
+    });
+    return select;
   }
 
   function combinationCell(combo) {
@@ -193,7 +199,7 @@
       row.append(combinationCell(combo));
       const odds = oddsNumber(oddsValues?.[key]);
       row.append(element("strong", "mamo-odds-value", odds ? `${odds.toFixed(1)}倍` : "—"));
-      const action = element("button", isAdded ? "is-added" : "", isAdded ? "削除" : "＋ 追加");
+      const action = element("button", isAdded ? "is-added" : "", isAdded ? "削除" : "＋追加");
       action.type = "button";
       if (isAdded) action.dataset.oddsRemove = key;
       else action.dataset.oddsAdd = key;
@@ -234,22 +240,15 @@
     normalized.forEach((racer) => racerGrid.append(selectedBoatCard(racer)));
     shell.append(racerGrid);
 
-    const selected = normalized.find((item) => item.number === axisBoat) || normalized[0];
-    const selectedBar = element("div", "mamo-odds-selected");
-    selectedBar.append(
-      element("span", `mamo-odds-selected-number b${selected.number}`, selected.number),
-      element("strong", "", selected.name || `${selected.number}号艇`),
-      element("small", "", selected.racerClass || "級別—")
-    );
-    shell.append(selectedBar);
-
-    const axis = element("div", "mamo-odds-axis");
-    [0, 1, 2].forEach((index) => axis.append(axisButton(index)));
-    shell.append(axis);
-
-    const listHead = element("div", "mamo-odds-list-head");
-    listHead.append(element("strong", "", `${axisBoat}号艇 ${axisPosition + 1}着軸の買い目`), element("small", "", "全20点"));
-    shell.append(listHead);
+    const toolbar = element("div", "mamo-odds-toolbar");
+    const back = element("button", "mamo-odds-back", "← 戻る");
+    back.type = "button";
+    back.dataset.oddsBack = "1";
+    const listTitle = element("strong", "mamo-odds-toolbar-title", `${axisBoat}号艇の買い目`);
+    const select = axisSelect();
+    const total = element("small", "mamo-odds-total", "全20点");
+    toolbar.append(back, listTitle, select, total);
+    shell.append(toolbar);
 
     const list = element("div", "mamo-odds-list");
     list.dataset.mamoOddsList = "1";
@@ -329,6 +328,13 @@
     builder?.classList?.remove("mamo-odds-bet-mode");
   }
 
+  function returnToNormalMode() {
+    if (busy) return;
+    deactivate();
+    if (typeof window.setMode === "function") window.setMode("normal");
+    window.MAMO_AIR_BET_MODE_STABILITY?.refresh?.();
+  }
+
   async function addCombo(key, button) {
     if (busy) return;
     const combo = String(key || "").split("-").map(Number);
@@ -366,15 +372,14 @@
   }
 
   function onClick(event) {
-    const target = event.target?.closest?.("[data-odds-axis-boat],[data-odds-axis-position],[data-odds-add],[data-odds-remove]");
+    const target = event.target?.closest?.("[data-odds-back],[data-odds-axis-boat],[data-odds-add],[data-odds-remove]");
     if (!target || !active) return;
-    if (target.dataset.oddsAxisBoat) {
-      axisBoat = Number(target.dataset.oddsAxisBoat);
-      renderMode();
+    if (target.dataset.oddsBack) {
+      returnToNormalMode();
       return;
     }
-    if (target.dataset.oddsAxisPosition) {
-      axisPosition = Number(target.dataset.oddsAxisPosition);
+    if (target.dataset.oddsAxisBoat) {
+      axisBoat = Number(target.dataset.oddsAxisBoat);
       renderMode();
       return;
     }
@@ -383,6 +388,15 @@
       return;
     }
     if (target.dataset.oddsAdd) addCombo(target.dataset.oddsAdd, target);
+  }
+
+  function onChange(event) {
+    const target = event.target?.closest?.("[data-odds-axis-select]");
+    if (!target || !active) return;
+    const next = Number(target.value);
+    if (![0, 1, 2].includes(next)) return;
+    axisPosition = next;
+    renderMode();
   }
 
   function syncAfterCanonicalReviewDelete(event) {
@@ -404,6 +418,7 @@
     ensureTab();
     document.addEventListener("click", onCaptureClick, true);
     document.addEventListener("click", onClick, false);
+    document.addEventListener("change", onChange, false);
     window.addEventListener("mamo:air-bet-rendered", () => {
       ensureTab();
       if (active) renderMode();
