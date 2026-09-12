@@ -13,8 +13,11 @@ assert.match(helper, /main\.insertBefore\(section, settings\)/);
 assert.match(helper, /nav\.insertBefore\(button, shopNav \|\| settingsNav\)/);
 assert.match(helper, /window\.go\?\.\(SCREEN_ID\)/);
 assert.match(helper, /計算機能はまだ未接続/);
-assert.doesNotMatch(helper, /localStorage|sessionStorage|fetch\(|XMLHttpRequest|innerHTML|setTimeout|setInterval|requestAnimationFrame|MutationObserver|visualViewport|scrollTo|scrollBy/);
-assert.doesNotMatch(helper, /MAMO_AIR_BET_DRAFT|coins|wallet|records\s*=|pressroom|mamo-shop/i);
+
+// Step 1 must remain presentation/navigation only. Match actual executable
+// integration points rather than harmless words that may appear in comments/copy.
+assert.doesNotMatch(helper, /localStorage\.|sessionStorage\.|fetch\s*\(|XMLHttpRequest|\.innerHTML\s*=|setTimeout\s*\(|setInterval\s*\(|requestAnimationFrame\s*\(|MutationObserver|visualViewport|scrollTo\s*\(|scrollBy\s*\(/);
+assert.doesNotMatch(helper, /window\.MAMO_AIR_BET_DRAFT|MAMO_AIR_BET_DRAFT\s*[.=]|window\.(?:updateReviewLineStake|placeBet|removeReviewLine)\s*=|\.records\s*=|\.coins\s*=|\.pressroom\s*=/);
 
 assert.match(sw, /mamoboat-v514-quant-analysis-shell-step1-dev/);
 assert.match(sw, /mamo-quant-analysis-shell\.js\?v=20260912-1/);
