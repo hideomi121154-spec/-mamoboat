@@ -12,6 +12,7 @@
 // Previous racer heading cache: mamoboat-v501-racer-heading-nudge-dev
 // Race carte composite odds delivery: race-carte-official-payouts.js?v=20260911-1
 // Previous AIR BET review flow: bet-review-flow.js?v=20260911-3
+// Previous compact review CSS: air-bet-review-compact.css?v=20260911-13
 // Previous race carte cache: mamoboat-v502-race-carte-composite-odds-dev
 // Previous odds bet cache: mamoboat-v503-odds-bet-mode-dev
 // Previous odds selector cache: mamoboat-v504-odds-bet-mobile-selector-dev
