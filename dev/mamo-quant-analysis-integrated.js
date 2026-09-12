@@ -5,6 +5,9 @@
 (function initMamoQuantIntegrated(root) {
   "use strict";
 
+  const CHARTS_SCRIPT_SRC = "mamo-quant-analysis-charts.js?v=20260913-1";
+  const CHARTS_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-charts="1"]';
+
   const safeNumber = (value) => {
     const number = Number(value);
     return Number.isFinite(number) ? number : 0;
@@ -87,6 +90,42 @@
     return box;
   }
 
+  function showChartsFailure() {
+    const mount = document.getElementById("mamoQuantAnalysisCharts");
+    if (!mount || mount.childNodes.length) return;
+    const note = document.createElement("div");
+    note.className = "analysis-note";
+    note.style.marginTop = "12px";
+    note.textContent = "グラフを表示できませんでした。数値分析はそのまま利用できます。";
+    mount.replaceChildren(note);
+  }
+
+  function renderCharts() {
+    const render = root?.MAMO_QUANT_ANALYSIS_CHARTS?.render;
+    return typeof render === "function" && render() === true;
+  }
+
+  function ensureChartsModule() {
+    if (renderCharts()) return;
+    const existing = document.querySelector(CHARTS_SCRIPT_SELECTOR);
+    if (existing) {
+      existing.addEventListener("load", () => {
+        if (!renderCharts()) showChartsFailure();
+      }, { once: true });
+      existing.addEventListener("error", showChartsFailure, { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = CHARTS_SCRIPT_SRC;
+    script.async = true;
+    script.dataset.mamoQuantAnalysisCharts = "1";
+    script.addEventListener("load", () => {
+      if (!renderCharts()) showChartsFailure();
+    }, { once: true });
+    script.addEventListener("error", showChartsFailure, { once: true });
+    document.head.appendChild(script);
+  }
+
   function render() {
     if (typeof document === "undefined") return false;
     const mount = document.getElementById("mamoQuantAnalysisIntegrated");
@@ -130,6 +169,12 @@
       makeCard("1記録の母数比", formatPercent(metrics.singleRecordShare), `${metrics.observedDays}日 / ${metrics.settledCount}件`)
     );
     fragment.appendChild(grid);
+
+    const chartsMount = document.createElement("div");
+    chartsMount.id = "mamoQuantAnalysisCharts";
+    chartsMount.dataset.analysisChartsIsolated = "1";
+    fragment.appendChild(chartsMount);
+
     fragment.appendChild(makeIntegratedObservation(metrics));
 
     const note = document.createElement("div");
@@ -139,6 +184,7 @@
     fragment.appendChild(note);
 
     mount.replaceChildren(fragment);
+    ensureChartsModule();
     return true;
   }
 
