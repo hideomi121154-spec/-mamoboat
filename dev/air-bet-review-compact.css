@@ -1,6 +1,6 @@
-/* MAMO BOAT — compact AIR BET review content v13.
- * One scroll owner, two presentation states: allocation/list -> final check.
- * No fixed overlays, nested scroll panes, or runtime style injection.
+/* MAMO BOAT — compact AIR BET review content v14.
+ * One scroll owner per presentation state: ticket list or allocation table.
+ * No fixed overlays, nested document scroll, or runtime style injection.
  */
 .air-bet-review-shell #reviewStakePrompt,
 .air-bet-review-shell > .editorial-safety {
@@ -211,7 +211,15 @@
   display: none;
 }
 
-/* Compact allocation result list: the list is the visual priority, not the cards. */
+/* Allocation mode keeps its title and continue button visible. Only the result
+ * table owns the remaining vertical space and scroll gesture. */
+.air-bet-review-shell[data-mamo-review-step="allocation"] > .mamo-allocation-results {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
 .air-bet-review-shell .mamo-allocation-results {
   display: grid;
   gap: 8px;
@@ -247,7 +255,12 @@
 
 .air-bet-review-shell .mamo-allocation-table-wrap {
   width: 100%;
-  overflow: visible;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .air-bet-review-shell .mamo-allocation-table {
@@ -267,6 +280,9 @@
 }
 
 .air-bet-review-shell .mamo-allocation-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: #edf2f6;
   color: #526879;
   font-size: 9px;
