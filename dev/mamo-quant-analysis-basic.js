@@ -69,7 +69,8 @@
     }
   }
 
-  function jstDateKey(value = new Date()) {
+  function jstDateKey(value) {
+    if (value == null || value === "") return null;
     if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
       return value;
     }
