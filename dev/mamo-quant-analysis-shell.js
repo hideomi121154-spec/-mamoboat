@@ -1,14 +1,18 @@
-/* MAMO BOAT — independent quantitative analysis shell, step 2.
+/* MAMO BOAT — independent quantitative analysis shell, step 2 delivery fix.
  * Navigation + a read-only basic analysis surface.
+ * The shell owns loading the basic analysis module so an older controlling
+ * Service Worker cannot deliver the new shell without its matching dependency.
  * No AIR BET, wallet, records, pressroom, SHOP, or calculation state is mutated here.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V2__) return;
-  window.__MAMO_QUANT_ANALYSIS_SHELL_V2__ = true;
+  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V3__) return;
+  window.__MAMO_QUANT_ANALYSIS_SHELL_V3__ = true;
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
+  const BASIC_SCRIPT_SRC = "mamo-quant-analysis-basic.js?v=20260912-2";
+  const BASIC_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-basic="1"]';
 
   function buildIntro(section) {
     const intro = document.createElement("div");
@@ -61,6 +65,48 @@
     section.append(heading, mount);
   }
 
+  function showBasicLoadFailure() {
+    const mount = document.getElementById("mamoQuantAnalysisBasic");
+    if (!mount) return;
+    const panel = document.createElement("div");
+    panel.className = "panel";
+    const title = document.createElement("h2");
+    title.textContent = "基本分析を読み込めませんでした";
+    const copy = document.createElement("p");
+    copy.textContent = "画面を開き直しても同じ場合は、分析モジュールの配信状態を確認してください。記録データは変更されていません。";
+    panel.append(title, copy);
+    mount.replaceChildren(panel);
+  }
+
+  function renderBasic() {
+    const render = window.MAMO_QUANT_ANALYSIS_BASIC?.render;
+    if (typeof render !== "function") return false;
+    return render() === true;
+  }
+
+  function ensureBasicModule() {
+    if (renderBasic()) return;
+
+    const existing = document.querySelector(BASIC_SCRIPT_SELECTOR);
+    if (existing) {
+      existing.addEventListener("load", () => {
+        if (!renderBasic()) showBasicLoadFailure();
+      }, { once: true });
+      existing.addEventListener("error", showBasicLoadFailure, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = BASIC_SCRIPT_SRC;
+    script.async = true;
+    script.dataset.mamoQuantAnalysisBasic = "1";
+    script.addEventListener("load", () => {
+      if (!renderBasic()) showBasicLoadFailure();
+    }, { once: true });
+    script.addEventListener("error", showBasicLoadFailure, { once: true });
+    document.head.appendChild(script);
+  }
+
   function ensureScreen() {
     if (document.getElementById(SCREEN_ID)) return true;
     const main = document.querySelector(".app-shell main");
@@ -96,7 +142,7 @@
     button.append(icon, label);
     button.addEventListener("click", () => {
       window.go?.(SCREEN_ID);
-      window.MAMO_QUANT_ANALYSIS_BASIC?.render?.();
+      ensureBasicModule();
     });
 
     const shopNav = document.getElementById("nav-shop");
@@ -107,7 +153,7 @@
   function boot() {
     if (!ensureScreen()) return;
     ensureNavigation();
-    window.MAMO_QUANT_ANALYSIS_BASIC?.render?.();
+    ensureBasicModule();
   }
 
   if (document.readyState === "loading") {
