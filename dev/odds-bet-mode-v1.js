@@ -114,6 +114,10 @@
     return combo.join("-");
   }
 
+  function lineComboKey(line) {
+    return String(line?.combination || line?.combo || "").replaceAll("→", "-").replace(/\s+/g, "");
+  }
+
   function addedTrifectaLines() {
     return draftLines().filter((line) => String(line?.betType || "") === "trifecta");
   }
@@ -180,19 +184,21 @@
   }
 
   function renderList(list) {
-    const added = new Set(addedTrifectaLines().map((line) => String(line?.combination || line?.combo || "").replaceAll("→", "-").replace(/\s+/g, "")));
+    const added = new Set(addedTrifectaLines().map(lineComboKey));
     const combos = axisCombos(axisBoat, axisPosition);
     const rows = combos.map((combo) => {
       const key = comboKey(combo);
+      const isAdded = added.has(key);
       const row = element("div", "mamo-odds-row");
       row.append(combinationCell(combo));
       const odds = oddsNumber(oddsValues?.[key]);
       row.append(element("strong", "mamo-odds-value", odds ? `${odds.toFixed(1)}倍` : "—"));
-      const add = element("button", added.has(key) ? "is-added" : "", added.has(key) ? "追加済み" : "＋ 追加");
-      add.type = "button";
-      add.dataset.oddsAdd = key;
-      add.disabled = busy || added.has(key) || !odds;
-      row.append(add);
+      const action = element("button", isAdded ? "is-added" : "", isAdded ? "削除" : "＋ 追加");
+      action.type = "button";
+      if (isAdded) action.dataset.oddsRemove = key;
+      else action.dataset.oddsAdd = key;
+      action.disabled = busy || (!isAdded && !odds);
+      row.append(action);
       return row;
     });
     list.replaceChildren(...rows);
@@ -340,8 +346,27 @@
     }
   }
 
+  function removeCombo(key) {
+    if (busy) return;
+    const index = draftLines().findIndex((line) => String(line?.betType || "") === "trifecta" && lineComboKey(line) === String(key || ""));
+    if (index < 0) {
+      if (active) renderMode();
+      return;
+    }
+    const remove = typeof window.removeReviewLine === "function" ? window.removeReviewLine : window.removeLine;
+    if (typeof remove !== "function") return;
+    busy = true;
+    try {
+      remove(index);
+      window.MAMO_TRACK_EVENT?.("odds_bet_line_removed", { combination: key });
+    } finally {
+      busy = false;
+      if (active) renderMode();
+    }
+  }
+
   function onClick(event) {
-    const target = event.target?.closest?.("[data-odds-axis-boat],[data-odds-axis-position],[data-odds-add]");
+    const target = event.target?.closest?.("[data-odds-axis-boat],[data-odds-axis-position],[data-odds-add],[data-odds-remove]");
     if (!target || !active) return;
     if (target.dataset.oddsAxisBoat) {
       axisBoat = Number(target.dataset.oddsAxisBoat);
@@ -353,10 +378,24 @@
       renderMode();
       return;
     }
+    if (target.dataset.oddsRemove) {
+      removeCombo(target.dataset.oddsRemove);
+      return;
+    }
     if (target.dataset.oddsAdd) addCombo(target.dataset.oddsAdd, target);
   }
 
+  function syncAfterCanonicalReviewDelete(event) {
+    if (!active) return;
+    const target = event.target?.closest?.('[data-mamo-remove-line-shortcut="1"],[data-mamo-clear-all-lines="1"],[onclick*="removeReviewLine"],[onclick*="deleteAllReviewLines"]');
+    if (!target) return;
+    queueMicrotask(() => {
+      if (active) renderMode();
+    });
+  }
+
   function onCaptureClick(event) {
+    syncAfterCanonicalReviewDelete(event);
     const coreTab = event.target?.closest?.("#modeTabs .bet-tab:not(#bt-odds), .bettypebtn, [data-race-chip], .racechip");
     if (coreTab && active) deactivate();
   }
@@ -372,7 +411,7 @@
     window.addEventListener("mamo:venues-opened", deactivate);
   }
 
-  window.MAMO_ODDS_BET_MODE_TEST = Object.freeze({ axisCombos, combinedOddsFromValues });
+  window.MAMO_ODDS_BET_MODE_TEST = Object.freeze({ axisCombos, combinedOddsFromValues, lineComboKey });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
   else boot();
 })();
