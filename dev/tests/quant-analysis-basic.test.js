@@ -30,13 +30,40 @@ assert.equal(metrics.settledStake, 900);
 assert.equal(metrics.totalReturn, 750);
 assert.equal(metrics.netProfit, -150);
 assert.equal(metrics.returnRate, (750 / 900) * 100);
+assert.equal(metrics.maxLosingStreak, 1);
+assert.equal(metrics.maxDrawdown, 300);
+assert.equal(metrics.maxSingleLoss, 300);
 
 assert.equal(api.recordStake({ lines: [{ stake: 100 }, { stake: 200 }] }), 300);
 assert.equal(api.recordReturn({ status: "hit", payoutC: 250, refundC: 50 }), 300);
 assert.equal(api.recordReturn({ status: "refunded", payoutC: 500, refundC: 500 }), 500);
 assert.equal(api.recordReturn({ status: "refunded", payoutC: 0, refundC: 400 }), 400);
+assert.equal(api.recordNet({ status: "miss", stake: 500, payoutC: 0, refundC: 100 }), -400);
 assert.equal(api.calculate({ coins: 100000, records: [] }).hitRate, null);
 assert.equal(api.calculate({ coins: 100000, records: [] }).returnRate, null);
+
+const riskRecords = [
+  { time: "2026-09-12T03:00:00+09:00", status: "miss", stake: 300, payoutC: 0 },
+  { time: "2026-09-12T01:00:00+09:00", status: "hit", stake: 100, payoutC: 300 },
+  { time: "2026-09-12T02:00:00+09:00", status: "miss", stake: 100, payoutC: 0 },
+  { time: "2026-09-12T04:00:00+09:00", status: "refunded", stake: 500, payoutC: 500 },
+  { time: "2026-09-12T05:00:00+09:00", status: "pending", stake: 900, payoutC: 0 },
+  { time: "2026-09-12T06:00:00+09:00", status: "miss", stake: 200, payoutC: 0 },
+];
+assert.deepEqual(api.orderedRecords(riskRecords).map((record) => record.time), [
+  "2026-09-12T01:00:00+09:00",
+  "2026-09-12T02:00:00+09:00",
+  "2026-09-12T03:00:00+09:00",
+  "2026-09-12T04:00:00+09:00",
+  "2026-09-12T05:00:00+09:00",
+  "2026-09-12T06:00:00+09:00",
+]);
+assert.equal(api.maxLosingStreak(riskRecords), 3);
+assert.equal(api.currentLosingStreak(riskRecords), 3);
+assert.equal(api.maxDrawdown(riskRecords), 600);
+assert.equal(api.maxSingleLoss(riskRecords), 300);
+assert.equal(api.currentLosingStreak([{ status: "pending" }, { status: "refunded" }]), null);
+assert.equal(api.currentLosingStreak([{ status: "miss" }, { status: "hit" }]), 0);
 
 const now = "2026-09-12T08:00:00+09:00";
 const records = [
@@ -78,7 +105,15 @@ assert.equal(writes, 0);
 assert.deepEqual(api.PERIODS.map((item) => item.key), ["all", "today", "yesterday", "last7", "thisWeek", "thisMonth"]);
 assert.match(source, /STEP 2\.6/);
 assert.match(source, /STEP 3/);
+assert.match(source, /STEP 4/);
 assert.match(source, /収支分析/);
+assert.match(source, /リスク分析/);
+assert.match(source, /最大連敗/);
+assert.match(source, /現在連敗/);
+assert.match(source, /最大DD/);
+assert.match(source, /最大1回損失/);
+assert.match(source, /全履歴の最新の的中・不的中結果から算出/);
+assert.match(source, /収支曲線の山から谷までの最大落ち込み/);
 assert.match(source, /結果待ちのAIR BETはBET額・損益・回収率にまだ含めません/);
 assert.match(source, /期間：\$\{period\.label\}/);
 assert.match(source, /dataset\.analysisPeriodControl/);
@@ -92,7 +127,7 @@ assert.doesNotMatch(source, /setTimeout|setInterval|requestAnimationFrame|Mutati
 assert.doesNotMatch(source, /window\.(?:placeBet|updateReviewLineStake|removeReviewLine)\s*=|MAMO_AIR_BET_DRAFT|\.coins\s*=|\.records\s*=|\.pressroom\s*=/);
 assert.match(shell, /mamoQuantAnalysisBasic/);
 assert.match(shell, /MAMO_QUANT_ANALYSIS_BASIC\?\.render/);
-assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-5/);
+assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-6/);
 assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
 
-console.log("quant analysis step 3 settled returns checks passed");
+console.log("quant analysis step 4 risk checks passed");
