@@ -1,7 +1,7 @@
-/* MAMO BOAT — independent quantitative analysis, step 2.6.
- * Read-only basic metrics + compact period filtering only. This module never
- * writes localStorage and never mutates AIR BET, wallet, records, pressroom,
- * SHOP, Supabase, or navigation state.
+/* MAMO BOAT — independent quantitative analysis, step 3.
+ * Read-only basic metrics + compact period filtering + settled returns analysis.
+ * This module never writes localStorage and never mutates AIR BET, wallet,
+ * records, pressroom, SHOP, Supabase, or navigation state.
  */
 (function initMamoQuantAnalysisBasic(root) {
   "use strict";
@@ -16,6 +16,7 @@
     { key: "thisMonth", label: "今月" },
   ]);
   const PERIOD_KEYS = new Set(PERIODS.map((item) => item.key));
+  const SETTLED_STATUSES = new Set(["hit", "miss", "refunded"]);
   let activePeriod = "all";
 
   const safeNumber = (value) => {
@@ -30,6 +31,13 @@
     return lines.reduce((sum, line) => sum + Math.max(0, safeNumber(line?.stake)), 0);
   }
 
+  function recordReturn(record) {
+    const payout = Math.max(0, safeNumber(record?.payoutC ?? record?.payout));
+    const refund = Math.max(0, safeNumber(record?.refundC));
+    if (record?.status === "refunded") return payout > 0 ? payout : refund;
+    return payout + refund;
+  }
+
   function calculate(state) {
     const records = Array.isArray(state?.records) ? state.records : [];
     const balance = Math.max(0, safeNumber(state?.coins));
@@ -41,6 +49,12 @@
       ? stakes.reduce((sum, value) => sum + value, 0) / stakes.length
       : 0;
 
+    const settledRecords = records.filter((record) => SETTLED_STATUSES.has(record?.status));
+    const settledStake = settledRecords.reduce((sum, record) => sum + recordStake(record), 0);
+    const totalReturn = settledRecords.reduce((sum, record) => sum + recordReturn(record), 0);
+    const netProfit = totalReturn - settledStake;
+    const returnRate = settledStake > 0 ? (totalReturn / settledStake) * 100 : null;
+
     return Object.freeze({
       balance,
       recordCount: records.length,
@@ -49,6 +63,11 @@
       missCount,
       hitRate: decidedCount ? (hitCount / decidedCount) * 100 : null,
       averageStake,
+      settledCount: settledRecords.length,
+      settledStake,
+      totalReturn,
+      netProfit,
+      returnRate,
     });
   }
 
@@ -131,6 +150,11 @@
   }
 
   const formatB = (value) => `${Math.round(safeNumber(value)).toLocaleString("ja-JP")} B`;
+  const formatSignedB = (value) => {
+    const number = Math.round(safeNumber(value));
+    const sign = number > 0 ? "+" : "";
+    return `${sign}${number.toLocaleString("ja-JP")} B`;
+  };
   const formatPercent = (value) => value == null ? "—" : `${value.toFixed(1)}%`;
 
   function makeCard(label, value, extraClass = "") {
@@ -208,6 +232,21 @@
     return details;
   }
 
+  function makeSectionHeading(step, title) {
+    const heading = document.createElement("div");
+    heading.className = "section-head small";
+    heading.style.marginTop = "18px";
+    const copy = document.createElement("div");
+    const number = document.createElement("span");
+    number.className = "section-number";
+    number.textContent = step;
+    const headingTitle = document.createElement("h2");
+    headingTitle.textContent = title;
+    copy.append(number, headingTitle);
+    heading.appendChild(copy);
+    return heading;
+  }
+
   function render() {
     if (typeof document === "undefined") return false;
     const mount = document.getElementById("mamoQuantAnalysisBasic");
@@ -220,28 +259,57 @@
 
     const controls = makePeriodControl(period);
 
-    const grid = document.createElement("div");
-    grid.className = "stat-grid";
-    grid.setAttribute("aria-label", `${period.label}の基本分析`);
-    grid.append(
+    const basicGrid = document.createElement("div");
+    basicGrid.className = "stat-grid";
+    basicGrid.setAttribute("aria-label", `${period.label}の基本分析`);
+    basicGrid.append(
       makeCard("現在のB残高", formatB(metrics.balance)),
       makeCard("AIR BET回数", `${metrics.recordCount.toLocaleString("ja-JP")}回`),
       makeCard("的中率", formatPercent(metrics.hitRate), "coral"),
       makeCard("平均BET", metrics.averageStake > 0 ? formatB(metrics.averageStake) : "—")
     );
 
-    const note = document.createElement("div");
-    note.className = "tactical-note";
-    const label = document.createElement("span");
-    label.className = "manga-label";
-    label.textContent = `STEP 2.6 / ${period.label}`;
-    const copy = document.createElement("p");
-    copy.textContent = metrics.recordCount
+    const basicNote = document.createElement("div");
+    basicNote.className = "tactical-note";
+    const basicLabel = document.createElement("span");
+    basicLabel.className = "manga-label";
+    basicLabel.textContent = `STEP 2.6 / ${period.label}`;
+    const basicCopy = document.createElement("p");
+    basicCopy.textContent = metrics.recordCount
       ? `${period.label}の記録${metrics.recordCount}件を表示中です。的中率は的中・不的中が確定した${metrics.decidedCount}件だけで計算し、返還は母数に含めません。B残高だけは期間に関係なく現在値です。`
       : `${period.label}に該当する記録はありません。B残高だけは期間に関係なく現在値です。`;
-    note.append(label, copy);
+    basicNote.append(basicLabel, basicCopy);
 
-    mount.replaceChildren(controls, grid, note);
+    const returnsHeading = makeSectionHeading("STEP 3", "収支分析");
+    const returnsGrid = document.createElement("div");
+    returnsGrid.className = "stat-grid";
+    returnsGrid.setAttribute("aria-label", `${period.label}の収支分析`);
+    returnsGrid.append(
+      makeCard("BET額", metrics.settledStake > 0 ? formatB(metrics.settledStake) : "—"),
+      makeCard("払戻・返還", metrics.settledStake > 0 ? formatB(metrics.totalReturn) : "—"),
+      makeCard("損益", metrics.settledStake > 0 ? formatSignedB(metrics.netProfit) : "—", metrics.netProfit < 0 ? "coral" : ""),
+      makeCard("回収率", formatPercent(metrics.returnRate))
+    );
+
+    const returnsNote = document.createElement("div");
+    returnsNote.className = "tactical-note";
+    const returnsLabel = document.createElement("span");
+    returnsLabel.className = "manga-label";
+    returnsLabel.textContent = `STEP 3 / ${period.label}`;
+    const returnsCopy = document.createElement("p");
+    returnsCopy.textContent = metrics.settledCount
+      ? `収支は結果が確定した${metrics.settledCount}件だけで計算しています。結果待ちのAIR BETはBET額・損益・回収率にまだ含めません。返還は払戻・返還額に含めます。`
+      : `${period.label}には結果確定済みのAIR BETがありません。結果待ちは収支計算に含めません。`;
+    returnsNote.append(returnsLabel, returnsCopy);
+
+    mount.replaceChildren(
+      controls,
+      basicGrid,
+      basicNote,
+      returnsHeading,
+      returnsGrid,
+      returnsNote
+    );
     return true;
   }
 
@@ -255,6 +323,7 @@
     STORAGE_KEY,
     PERIODS,
     recordStake,
+    recordReturn,
     calculate,
     readSnapshot,
     jstDateKey,
@@ -267,8 +336,8 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (!root || typeof document === "undefined") return;
-  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V3__) return;
-  root.__MAMO_QUANT_ANALYSIS_BASIC_V3__ = true;
+  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V4__) return;
+  root.__MAMO_QUANT_ANALYSIS_BASIC_V4__ = true;
   root.MAMO_QUANT_ANALYSIS_BASIC = API;
 
   const boot = () => render();
