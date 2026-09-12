@@ -1,4 +1,4 @@
-/* MAMO BOAT — independent quantitative analysis, step 4.
+/* MAMO BOAT — independent quantitative analysis, step 4.1.
  * Read-only basic metrics + compact period filtering + settled returns + risk analysis.
  * This module never writes localStorage and never mutates AIR BET, wallet,
  * records, pressroom, SHOP, Supabase, or navigation state.
@@ -123,6 +123,8 @@
     const totalReturn = settledRecords.reduce((sum, record) => sum + recordReturn(record), 0);
     const netProfit = totalReturn - settledStake;
     const returnRate = settledStake > 0 ? (totalReturn / settledStake) * 100 : null;
+    const maximumDrawdown = maxDrawdown(records);
+    const maxDrawdownBetRate = settledStake > 0 ? (maximumDrawdown / settledStake) * 100 : null;
 
     return Object.freeze({
       balance,
@@ -138,7 +140,8 @@
       netProfit,
       returnRate,
       maxLosingStreak: maxLosingStreak(records),
-      maxDrawdown: maxDrawdown(records),
+      maxDrawdown: maximumDrawdown,
+      maxDrawdownBetRate,
       maxSingleLoss: maxSingleLoss(records),
     });
   }
@@ -382,7 +385,7 @@
     riskGrid.append(
       makeCard("最大連敗", metrics.decidedCount ? `${metrics.maxLosingStreak}回` : "—", metrics.maxLosingStreak > 0 ? "coral" : ""),
       makeCard("現在連敗", currentStreak == null ? "—" : `${currentStreak}回`),
-      makeCard("最大DD", metrics.settledCount ? formatB(metrics.maxDrawdown) : "—", metrics.maxDrawdown > 0 ? "coral" : ""),
+      makeCard("最大DD", metrics.settledCount ? `${formatB(metrics.maxDrawdown)} / ${formatPercent(metrics.maxDrawdownBetRate)}` : "—", metrics.maxDrawdown > 0 ? "coral" : ""),
       makeCard("最大1回損失", metrics.settledCount ? formatB(metrics.maxSingleLoss) : "—")
     );
 
@@ -390,10 +393,10 @@
     riskNote.className = "tactical-note";
     const riskLabel = document.createElement("span");
     riskLabel.className = "manga-label";
-    riskLabel.textContent = `STEP 4 / ${period.label}`;
+    riskLabel.textContent = `STEP 4.1 / ${period.label}`;
     const riskCopy = document.createElement("p");
     riskCopy.textContent = metrics.decidedCount || metrics.settledCount
-      ? `最大連敗・最大DD・最大1回損失は${period.label}の記録から計算しています。現在連敗だけは期間に関係なく、全履歴の最新の的中・不的中結果から算出します。返還・結果待ちは連敗判定に含めません。最大DDは確定済みAIR BETの損益を時系列に積み上げた収支曲線の山から谷までの最大落ち込みです。`
+      ? `最大連敗・最大DD・最大1回損失は${period.label}の記録から計算しています。現在連敗だけは期間に関係なく、全履歴の最新の的中・不的中結果から算出します。返還・結果待ちは連敗判定に含めません。最大DDは確定済みAIR BETの損益を時系列に積み上げた収支曲線の山から谷までの最大落ち込みです。最大DDの％は、選択期間の確定BET額に対する最大DDの比率で、残高ベースのDD率ではありません。`
       : `${period.label}にはリスク分析に使える確定記録がありません。現在連敗は全履歴の最新確定結果から表示します。`;
     riskNote.append(riskLabel, riskCopy);
 
@@ -441,8 +444,8 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (!root || typeof document === "undefined") return;
-  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V5__) return;
-  root.__MAMO_QUANT_ANALYSIS_BASIC_V5__ = true;
+  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V6__) return;
+  root.__MAMO_QUANT_ANALYSIS_BASIC_V6__ = true;
   root.MAMO_QUANT_ANALYSIS_BASIC = API;
 
   const boot = () => render();
