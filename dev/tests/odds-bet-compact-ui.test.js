@@ -8,8 +8,8 @@ const script = read("dev/odds-bet-mode-v1.js");
 const css = read("dev/odds-bet-mode.css");
 const sw = read("dev/sw.js");
 
-assert.match(script, /data\.oddsBack\s*=\s*"1"/);
-assert.match(script, /data\.oddsAxisSelect\s*=\s*"1"/);
+assert.match(script, /back\.dataset\.oddsBack\s*=\s*"1"/);
+assert.match(script, /select\.dataset\.oddsAxisSelect\s*=\s*"1"/);
 assert.match(script, /window\.setMode\("normal"\)/);
 assert.match(script, /document\.addEventListener\("change", onChange, false\)/);
 assert.doesNotMatch(script, /className\s*=\s*"mamo-odds-selected"/);
