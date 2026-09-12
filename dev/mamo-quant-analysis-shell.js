@@ -6,8 +6,8 @@
  */
 (() => {
   "use strict";
-  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V9__) return;
-  window.__MAMO_QUANT_ANALYSIS_SHELL_V9__ = true;
+  if (window.__MAMO_QUANT_ANALYSIS_SHELL_V10__) return;
+  window.__MAMO_QUANT_ANALYSIS_SHELL_V10__ = true;
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
@@ -21,6 +21,8 @@
   const COMPARISON_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-comparison="1"]';
   const RISK_SCRIPT_SRC = "mamo-quant-analysis-risk-profile.js?v=20260913-1";
   const RISK_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-risk-profile="1"]';
+  const DATA_SCRIPT_SRC = "mamo-quant-analysis-data-foundation.js?v=20260913-1";
+  const DATA_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-data-foundation="1"]';
 
   function buildIntro(section) {
     const intro = document.createElement("div");
@@ -72,7 +74,9 @@
     comparisonMount.id = "mamoQuantAnalysisComparison";
     const riskMount = document.createElement("div");
     riskMount.id = "mamoQuantAnalysisRiskProfile";
-    section.append(heading, mount, performanceMount, capitalMount, comparisonMount, riskMount);
+    const dataMount = document.createElement("div");
+    dataMount.id = "mamoQuantAnalysisDataFoundation";
+    section.append(heading, mount, performanceMount, capitalMount, comparisonMount, riskMount, dataMount);
   }
 
   function showFailure(mountId, titleText, copyText) {
@@ -113,6 +117,37 @@
     "実績リスク分析を読み込めませんでした",
     "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。"
   );
+  const showDataLoadFailure = () => showFailure(
+    "mamoQuantAnalysisDataFoundation",
+    "分析データの土台を読み込めませんでした",
+    "既存の分析結果には影響ありません。画面を開き直しても同じ場合は配信状態を確認してください。"
+  );
+
+  function renderDataFoundation() {
+    const render = window.MAMO_QUANT_DATA_FOUNDATION?.render;
+    return typeof render === "function" && render() === true;
+  }
+
+  function ensureDataFoundationModule() {
+    if (renderDataFoundation()) return;
+    const existing = document.querySelector(DATA_SCRIPT_SELECTOR);
+    if (existing) {
+      existing.addEventListener("load", () => {
+        if (!renderDataFoundation()) showDataLoadFailure();
+      }, { once: true });
+      existing.addEventListener("error", showDataLoadFailure, { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = DATA_SCRIPT_SRC;
+    script.async = true;
+    script.dataset.mamoQuantAnalysisDataFoundation = "1";
+    script.addEventListener("load", () => {
+      if (!renderDataFoundation()) showDataLoadFailure();
+    }, { once: true });
+    script.addEventListener("error", showDataLoadFailure, { once: true });
+    document.head.appendChild(script);
+  }
 
   function renderRiskProfile() {
     const render = window.MAMO_QUANT_RISK_PROFILE?.render;
@@ -120,11 +155,18 @@
   }
 
   function ensureRiskProfileModule() {
-    if (renderRiskProfile()) return;
+    if (renderRiskProfile()) {
+      ensureDataFoundationModule();
+      return;
+    }
     const existing = document.querySelector(RISK_SCRIPT_SELECTOR);
     if (existing) {
       existing.addEventListener("load", () => {
-        if (!renderRiskProfile()) showRiskLoadFailure();
+        if (!renderRiskProfile()) {
+          showRiskLoadFailure();
+          return;
+        }
+        ensureDataFoundationModule();
       }, { once: true });
       existing.addEventListener("error", showRiskLoadFailure, { once: true });
       return;
@@ -134,7 +176,11 @@
     script.async = true;
     script.dataset.mamoQuantAnalysisRiskProfile = "1";
     script.addEventListener("load", () => {
-      if (!renderRiskProfile()) showRiskLoadFailure();
+      if (!renderRiskProfile()) {
+        showRiskLoadFailure();
+        return;
+      }
+      ensureDataFoundationModule();
     }, { once: true });
     script.addEventListener("error", showRiskLoadFailure, { once: true });
     document.head.appendChild(script);
