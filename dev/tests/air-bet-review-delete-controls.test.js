@@ -5,6 +5,7 @@ const path = require("node:path");
 const source = fs.readFileSync(path.join(__dirname, "..", "air-bet-review-delete-controls.js"), "utf8");
 const compat = fs.readFileSync(path.join(__dirname, "..", "decision-event-api-compat.js"), "utf8");
 const sw = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
+const styles = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 
 assert.match(source, /data-mamo-budget-clear-shortcut/);
 assert.match(source, /data-mamo-remove-line-shortcut/);
@@ -15,11 +16,19 @@ assert.match(source, /通常BET/);
 assert.match(source, /自動資金配分/);
 assert.match(source, /dataset\.mamoReviewMode = MODE_NORMAL/);
 assert.match(source, /setImportantDisplay\(nodes\.stakeTools, "grid"\)/);
-assert.match(source, /setProperty\("flex", "0 0 auto", "important"\)/);
-assert.match(source, /setProperty\("min-height", "0", "important"\)/);
 assert.match(source, /window\.removeReviewLine\(index\)/);
 assert.match(source, /window\.deleteAllReviewLines\(\)/);
 assert.match(source, /MAMO_BET_REVIEW_ALLOCATION\?\.refresh/);
+
+// Ticket viewport geometry belongs to canonical CSS. The helper must not
+// defeat the iPhone-only list scroll by forcing the ticket pane to auto height.
+assert.doesNotMatch(source, /tickets\.style\.setProperty\("flex"/);
+assert.doesNotMatch(source, /tickets\.style\.setProperty\("height"/);
+assert.doesNotMatch(source, /tickets\.style\.setProperty\("max-height"/);
+assert.doesNotMatch(source, /tickets\.style\.setProperty\("overflow"/);
+assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,260}flex:\s*1 1 0/);
+assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,320}overflow-y:\s*auto/);
+assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,360}overscroll-behavior:\s*contain/);
 
 assert.doesNotMatch(source, /window\.removeReviewLine\s*=/);
 assert.doesNotMatch(source, /window\.deleteAllReviewLines\s*=/);
