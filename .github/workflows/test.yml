@@ -55,12 +55,14 @@ jobs:
           node --check dev/race-airbet-compact.js
           node --check dev/odds-reference-odds-sync.js
           node --check dev/allocation-keypad-stability.js
+          node --check dev/mamo-quant-analysis-shell.js
           node --check dev/tests/air-bet-racer-roster.test.js
           node --check dev/tests/air-bet-allocation.test.js
           node --check dev/tests/air-bet-review-delete-controls.test.js
           node --check dev/tests/odds-bet-compact-ui.test.js
           node --check dev/tests/odds-reference-odds-sync.test.js
           node --check dev/tests/allocation-keypad-stability.test.js
+          node --check dev/tests/quant-analysis-shell.test.js
           node --check tests/air-bet-review-flow.test.js
           node --check dev/venue-live-priority.js
           node --check dev/behavior-science.js
@@ -87,6 +89,7 @@ jobs:
           node dev/tests/odds-bet-compact-ui.test.js
           node dev/tests/odds-reference-odds-sync.test.js
           node dev/tests/allocation-keypad-stability.test.js
+          node dev/tests/quant-analysis-shell.test.js
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/brand-theme.test.js
           node --test dev/tests/shop-coupon.test.js
