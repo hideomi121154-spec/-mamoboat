@@ -1,6 +1,7 @@
 /* MAMO BOAT — AIR BET safe review controls v3
  * Presentation-only shortcuts and a safe two-mode chooser for the canonical AIR BET review state.
  * Uses the existing review APIs; never replaces cart, placeBet, reviewBet, wallet, or navigation.
+ * Ticket height/scroll ownership stays in canonical CSS (styles.css).
  */
 (() => {
   "use strict";
@@ -56,36 +57,12 @@
   }
 
   function clearNormalLayoutOverrides(shell) {
-    const { tickets, stakeTools } = modeNodes(shell);
-    if (tickets?.style) {
-      tickets.style.removeProperty("flex");
-      tickets.style.removeProperty("height");
-      tickets.style.removeProperty("min-height");
-      tickets.style.removeProperty("max-height");
-      tickets.style.removeProperty("overflow");
-    }
-    const receipt = tickets?.querySelector?.(".betreceipt");
-    if (receipt?.style) {
-      receipt.style.removeProperty("height");
-      receipt.style.removeProperty("min-height");
-    }
+    const { stakeTools } = modeNodes(shell);
     if (stakeTools?.style) stakeTools.style.removeProperty("grid-template-columns");
   }
 
   function applyNormalLayoutOverrides(shell) {
-    const { tickets, stakeTools } = modeNodes(shell);
-    if (tickets?.style) {
-      tickets.style.setProperty("flex", "0 0 auto", "important");
-      tickets.style.setProperty("height", "auto", "important");
-      tickets.style.setProperty("min-height", "0", "important");
-      tickets.style.setProperty("max-height", "none", "important");
-      tickets.style.setProperty("overflow", "visible", "important");
-    }
-    const receipt = tickets?.querySelector?.(".betreceipt");
-    if (receipt?.style) {
-      receipt.style.setProperty("height", "auto", "important");
-      receipt.style.setProperty("min-height", "0", "important");
-    }
+    const { stakeTools } = modeNodes(shell);
     if (stakeTools?.style) {
       stakeTools.style.setProperty("display", "grid", "important");
       stakeTools.style.setProperty("grid-template-columns", "repeat(3,minmax(0,1fr))", "important");
