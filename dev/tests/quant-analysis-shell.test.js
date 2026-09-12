@@ -6,12 +6,12 @@ const root = path.join(__dirname, "..", "..");
 const helper = fs.readFileSync(path.join(root, "dev/mamo-quant-analysis-shell.js"), "utf8");
 const sw = fs.readFileSync(path.join(root, "dev/sw.js"), "utf8");
 
-assert.match(helper, /__MAMO_QUANT_ANALYSIS_SHELL_V6__/);
+assert.match(helper, /__MAMO_QUANT_ANALYSIS_SHELL_V7__/);
 assert.match(helper, /SCREEN_ID\s*=\s*"quantAnalysis"/);
 assert.match(helper, /NAV_ID\s*=\s*"nav-quantAnalysis"/);
 assert.match(helper, /BASIC_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-basic\.js\?v=20260912-7"/);
 assert.match(helper, /PERFORMANCE_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-odds-performance\.js\?v=20260912-1"/);
-assert.match(helper, /CAPITAL_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-capital\.js\?v=20260913-2"/);
+assert.match(helper, /CAPITAL_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-capital\.js\?v=20260913-3"/);
 assert.match(helper, /data-mamo-quant-analysis-basic/);
 assert.match(helper, /data-mamo-quant-analysis-odds-performance/);
 assert.match(helper, /data-mamo-quant-analysis-capital/);
@@ -36,4 +36,4 @@ assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
 assert.match(sw, /url\.pathname\.endsWith\("\/mamo-quant-analysis-shell\.js"\)/);
 assert.match(sw, /url\.pathname\.endsWith\("\/mamo-quant-analysis-basic\.js"\)/);
 
-console.log("quant analysis shell STEP 6.2 delivery checks passed");
+console.log("quant analysis shell STEP 6.3 delivery checks passed");
