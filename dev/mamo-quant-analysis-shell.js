@@ -11,7 +11,7 @@
 
   const SCREEN_ID = "quantAnalysis";
   const NAV_ID = "nav-quantAnalysis";
-  const BASIC_SCRIPT_SRC = "mamo-quant-analysis-basic.js?v=20260912-4";
+  const BASIC_SCRIPT_SRC = "mamo-quant-analysis-basic.js?v=20260912-5";
   const BASIC_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-basic="1"]';
 
   function buildIntro(section) {

@@ -12,10 +12,10 @@ const api = require(modulePath);
 const metrics = api.calculate({
   coins: 98700,
   records: [
-    { status: "hit", stake: 100 },
-    { status: "miss", stake: 300 },
-    { status: "refunded", stake: 500 },
-    { status: "pending", stake: 1000 },
+    { status: "hit", stake: 100, payoutC: 250 },
+    { status: "miss", stake: 300, payoutC: 0 },
+    { status: "refunded", stake: 500, payoutC: 500, refundC: 500 },
+    { status: "pending", stake: 1000, payoutC: 0 },
   ],
 });
 assert.equal(metrics.balance, 98700);
@@ -25,9 +25,18 @@ assert.equal(metrics.hitCount, 1);
 assert.equal(metrics.missCount, 1);
 assert.equal(metrics.hitRate, 50);
 assert.equal(metrics.averageStake, 475);
+assert.equal(metrics.settledCount, 3);
+assert.equal(metrics.settledStake, 900);
+assert.equal(metrics.totalReturn, 750);
+assert.equal(metrics.netProfit, -150);
+assert.equal(metrics.returnRate, (750 / 900) * 100);
 
 assert.equal(api.recordStake({ lines: [{ stake: 100 }, { stake: 200 }] }), 300);
+assert.equal(api.recordReturn({ status: "hit", payoutC: 250, refundC: 50 }), 300);
+assert.equal(api.recordReturn({ status: "refunded", payoutC: 500, refundC: 500 }), 500);
+assert.equal(api.recordReturn({ status: "refunded", payoutC: 0, refundC: 400 }), 400);
 assert.equal(api.calculate({ coins: 100000, records: [] }).hitRate, null);
+assert.equal(api.calculate({ coins: 100000, records: [] }).returnRate, null);
 
 const now = "2026-09-12T08:00:00+09:00";
 const records = [
@@ -68,6 +77,9 @@ assert.equal(writes, 0);
 
 assert.deepEqual(api.PERIODS.map((item) => item.key), ["all", "today", "yesterday", "last7", "thisWeek", "thisMonth"]);
 assert.match(source, /STEP 2\.6/);
+assert.match(source, /STEP 3/);
+assert.match(source, /収支分析/);
+assert.match(source, /結果待ちのAIR BETはBET額・損益・回収率にまだ含めません/);
 assert.match(source, /期間：\$\{period\.label\}/);
 assert.match(source, /dataset\.analysisPeriodControl/);
 assert.match(source, /document\.createElement\("details"\)/);
@@ -80,7 +92,7 @@ assert.doesNotMatch(source, /setTimeout|setInterval|requestAnimationFrame|Mutati
 assert.doesNotMatch(source, /window\.(?:placeBet|updateReviewLineStake|removeReviewLine)\s*=|MAMO_AIR_BET_DRAFT|\.coins\s*=|\.records\s*=|\.pressroom\s*=/);
 assert.match(shell, /mamoQuantAnalysisBasic/);
 assert.match(shell, /MAMO_QUANT_ANALYSIS_BASIC\?\.render/);
-assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-4/);
+assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-5/);
 assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
 
-console.log("quant analysis step 2.6 compact period selector checks passed");
+console.log("quant analysis step 3 settled returns checks passed");
