@@ -59,29 +59,70 @@
     return card;
   }
 
+  function buildIntegratedObservationLines(metrics) {
+    const count = Math.max(0, safeNumber(metrics?.settledCount));
+    const days = Math.max(0, safeNumber(metrics?.observedDays));
+    const texts = [];
+
+    if (count === 0) {
+      return Object.freeze([
+        "まだ確定記録がありません。記録が増えると、回収率・連敗・損益の偏りをまとめて振り返れます。",
+      ]);
+    }
+
+    if (count < 30) {
+      texts.push(`現在は確定${count}件・記録${days}日のため、まだ傾向確認の段階です。`);
+    } else if (count < 100) {
+      texts.push(`現在は確定${count}件・記録${days}日です。傾向が見え始めていますが、少数の結果で数字が動く余地があります。`);
+    } else {
+      texts.push(`現在は確定${count}件・記録${days}日です。短期の結果だけでなく、複数の記録をまとめて比較しやすい量になっています。`);
+    }
+
+    if (metrics.returnRate != null) {
+      texts.push(`現在の確定記録における回収率は ${formatPercent(metrics.returnRate)} です。これは今ある記録範囲の集計値です。`);
+    }
+
+    if (metrics.largestWinShare != null && metrics.largestWinShare >= 50) {
+      texts.push(`最大1勝が勝ち利益全体の ${formatPercent(metrics.largestWinShare)} を占めており、現在の成績は少数の大きな結果の影響を強く受けています。`);
+    } else if (metrics.largestWinShare != null) {
+      texts.push(`最大1勝が勝ち利益全体に占める割合は ${formatPercent(metrics.largestWinShare)} です。`);
+    }
+
+    const ddText = metrics.maxDrawdownBetRate == null
+      ? formatB(metrics.maxDrawdown)
+      : `${formatB(metrics.maxDrawdown)}（BET総額比 ${formatPercent(metrics.maxDrawdownBetRate)}）`;
+    texts.push(`実績上の最大連敗は ${metrics.maxLosingStreak}回、最大DDは ${ddText} でした。`);
+
+    if (metrics.averageStakeBalanceRate != null) {
+      texts.push(`平均確定BETは現在残高の ${formatPercent(metrics.averageStakeBalanceRate)} に相当します。`);
+    }
+
+    if (metrics.minimumCoverageRate != null && metrics.minimumCoverageRate < 100) {
+      texts.push(`分析に必要なBET額・日付の取得率は最低 ${formatPercent(metrics.minimumCoverageRate)} です。欠けている記録がある場合、その分は解釈に含まれません。`);
+    }
+
+    if (count < 50) {
+      texts.push("記録が増えると、今見えている偏りが一時的なものか、続いている傾向なのかを比較しやすくなります。");
+    }
+
+    return Object.freeze(texts);
+  }
+
   function makeIntegratedObservation(metrics) {
     const box = document.createElement("div");
     box.className = "analysis-note";
     box.style.marginTop = "12px";
 
     const title = document.createElement("strong");
-    title.textContent = "統合して読む";
+    title.textContent = "今回の記録から見えること";
     title.style.display = "block";
     title.style.marginBottom = "6px";
 
     const lines = document.createElement("div");
     lines.style.display = "grid";
-    lines.style.gap = "6px";
+    lines.style.gap = "8px";
 
-    const texts = [];
-    if (metrics.returnRate != null) texts.push(`確定記録の回収率は ${formatPercent(metrics.returnRate)} です。`);
-    if (metrics.averageStakeBalanceRate != null) texts.push(`平均確定BETは現在残高の ${formatPercent(metrics.averageStakeBalanceRate)} に相当します。`);
-    texts.push(`実績上の最大連敗は ${metrics.maxLosingStreak}回、最大DDは ${formatB(metrics.maxDrawdown)} です。`);
-    if (metrics.largestWinShare != null) texts.push(`最大1勝の利益が勝ち利益合計に占める割合は ${formatPercent(metrics.largestWinShare)} です。`);
-    if (metrics.largestLossShare != null) texts.push(`最大1回損失が損失合計に占める割合は ${formatPercent(metrics.largestLossShare)} です。`);
-    if (metrics.settledCount > 0) texts.push(`この統合表示の母数は確定${metrics.settledCount}件・記録${metrics.observedDays}日です。`);
-
-    texts.forEach((text) => {
+    buildIntegratedObservationLines(metrics).forEach((text) => {
       const row = document.createElement("div");
       row.textContent = text;
       lines.appendChild(row);
@@ -188,7 +229,7 @@
     return true;
   }
 
-  const api = Object.freeze({ buildIntegratedMetrics, render });
+  const api = Object.freeze({ buildIntegratedMetrics, buildIntegratedObservationLines, render });
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) root.MAMO_QUANT_INTEGRATED = api;
 })(typeof window !== "undefined" ? window : globalThis);
