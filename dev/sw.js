@@ -23,10 +23,11 @@
 // Previous allocation scroll cache: mamoboat-v509-allocation-results-scroll-dev
 // Previous odds UI CSS: odds-bet-mode.css?v=20260912-2
 // Previous odds UI script: odds-bet-mode-v1.js?v=20260911-3
-const CACHE = "mamoboat-v510-odds-compact-controls-dev";
+// Previous odds compact controls cache: mamoboat-v510-odds-compact-controls-dev
+const CACHE = "mamoboat-v511-odds-reference-sync-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260912-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
-  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260911-4","./air-bet-review-delete-controls.js?v=20260912-1","./odds-bet-mode-v1.js?v=20260912-1",
+  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260911-4","./air-bet-review-delete-controls.js?v=20260912-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1",
   "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260911-13","./race-layout-refresh.js?v=20260911-7","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./race-carte-official-payouts.js?v=20260911-1","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260830-2","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
@@ -56,6 +57,7 @@ function withLiveVenueLoader(response){
     html=html.replace(/bet-review-flow\.js(?:\?v=[^"']+)?/g,"bet-review-flow.js?v=20260911-4");
     html=html.replace(/air-bet-review-delete-controls\.js(?:\?v=[^"']+)?/g,"air-bet-review-delete-controls.js?v=20260912-1");
     html=html.replace(/odds-bet-mode-v1\.js(?:\?v=[^"']+)?/g,"odds-bet-mode-v1.js?v=20260912-1");
+    html=html.replace(/odds-reference-odds-sync\.js(?:\?v=[^"']+)?/g,"odds-reference-odds-sync.js?v=20260912-1");
     if(html.includes("air-bet-selection-fixed.css")) {
       html=html.replace(/air-bet-selection-fixed\.css\?v=[^"']+/g,"air-bet-selection-fixed.css?v=20260911-9");
     } else {
@@ -84,6 +86,7 @@ function withLiveVenueLoader(response){
     if(!html.includes("race-airbet-first.js")) html=html.replace("</body>",'<script src="race-airbet-first.js?v=20260910-8"></script></body>');
     if(!html.includes("race-carte-official-payouts.js")) html=html.replace("</body>",'<script src="race-carte-official-payouts.js?v=20260911-1"></script></body>');
     if(!html.includes("odds-bet-mode-v1.js")) html=html.replace("</body>",'<script src="odds-bet-mode-v1.js?v=20260912-1"></script></body>');
+    if(!html.includes("odds-reference-odds-sync.js")) html=html.replace("</body>",'<script src="odds-reference-odds-sync.js?v=20260912-1"></script></body>');
     const headers=new Headers(response.headers);headers.delete("content-length");
     return new Response(html,{status:response.status,statusText:response.statusText,headers});
   });
@@ -105,6 +108,7 @@ self.addEventListener("fetch",event=>{
     || url.pathname.endsWith("/air-bet-review-delete-controls.js")
     || url.pathname.endsWith("/race-carte-official-payouts.js")
     || url.pathname.endsWith("/odds-bet-mode-v1.js")
+    || url.pathname.endsWith("/odds-reference-odds-sync.js")
     || url.pathname.endsWith("/air-bet-mode-stability.js")
   ){
     event.respondWith((async()=>{
