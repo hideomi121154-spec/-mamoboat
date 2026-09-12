@@ -24,7 +24,7 @@ assert.ok(testApi, "odds bet test API is exported");
 for (const position of [0, 1, 2]) {
   const combos = testApi.axisCombos(2, position).map((combo) => Array.from(combo));
   assert.equal(combos.length, 20, `axis position ${position + 1} has 20 trifecta combinations`);
-  assert.equal(new Set(combos.map((combo) => combo.join("-")).size, 20, "axis combinations are unique");
+  assert.equal(new Set(combos.map((combo) => combo.join("-"))).size, 20, "axis combinations are unique");
   for (const combo of combos) {
     assert.equal(combo[position], 2, "selected racer remains in the requested finish position");
     assert.equal(new Set(combo).size, 3, "trifecta combination never repeats a boat");
@@ -53,7 +53,7 @@ assert.match(source, /window\.pickNormal\?\./, "odds mode hands combinations to 
 assert.match(source, /window\.addNormal\?\./, "odds mode hands additions to canonical draft append path");
 assert.match(source, /window\.removeReviewLine/, "odds mode removes through the canonical review removal path");
 assert.match(source, /window\.removeLine/, "odds mode retains the canonical tray removal path as a fallback");
-assert.match(source, /data\.oddsRemove/, "an added odds line becomes a removable action instead of a dead disabled state");
+assert.match(source, /dataset\.oddsRemove/, "an added odds line becomes a removable action instead of a dead disabled state");
 assert.match(source, /data-mamo-remove-line-shortcut/, "review one-line deletion triggers an odds-state refresh");
 assert.match(source, /data-mamo-clear-all-lines/, "review all-line deletion triggers an odds-state refresh");
 assert.match(source, /queueMicrotask/, "review deletion sync occurs after the canonical synchronous mutation without timers");
