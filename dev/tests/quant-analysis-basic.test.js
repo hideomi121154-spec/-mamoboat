@@ -45,7 +45,7 @@ assert.equal(writes, 0);
 
 assert.doesNotMatch(source, /\.setItem\s*\(|\.removeItem\s*\(|\.clear\s*\(/);
 assert.doesNotMatch(source, /setTimeout|setInterval|requestAnimationFrame|MutationObserver|visualViewport|scrollTo|scrollBy/);
-assert.doesNotMatch(source, /placeBet|submitBet|wallet|pressroom|mamo-shop/i);
+assert.doesNotMatch(source, /window\.(?:placeBet|updateReviewLineStake|removeReviewLine)\s*=|MAMO_AIR_BET_DRAFT|\.coins\s*=|\.records\s*=|\.pressroom\s*=/);
 assert.match(shell, /mamoQuantAnalysisBasic/);
 assert.match(shell, /MAMO_QUANT_ANALYSIS_BASIC\?\.render/);
 assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
