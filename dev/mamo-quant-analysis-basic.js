@@ -1,5 +1,5 @@
-/* MAMO BOAT — independent quantitative analysis, step 3.
- * Read-only basic metrics + compact period filtering + settled returns analysis.
+/* MAMO BOAT — independent quantitative analysis, step 4.
+ * Read-only basic metrics + compact period filtering + settled returns + risk analysis.
  * This module never writes localStorage and never mutates AIR BET, wallet,
  * records, pressroom, SHOP, Supabase, or navigation state.
  */
@@ -38,6 +38,75 @@
     return payout + refund;
   }
 
+  function recordNet(record) {
+    return recordReturn(record) - recordStake(record);
+  }
+
+  function recordTimestamp(record) {
+    const candidates = [record?.time, record?.createdAt, record?.placedAt, record?.raceDate, record?.date];
+    for (const value of candidates) {
+      if (value == null || value === "") continue;
+      const time = new Date(value).getTime();
+      if (Number.isFinite(time)) return time;
+    }
+    return null;
+  }
+
+  function orderedRecords(records) {
+    return (Array.isArray(records) ? records : [])
+      .map((record, index) => ({ record, index, time: recordTimestamp(record) }))
+      .sort((a, b) => {
+        if (a.time != null && b.time != null && a.time !== b.time) return a.time - b.time;
+        return a.index - b.index;
+      })
+      .map((item) => item.record);
+  }
+
+  function maxLosingStreak(records) {
+    let current = 0;
+    let maximum = 0;
+    orderedRecords(records).forEach((record) => {
+      if (record?.status === "miss") {
+        current += 1;
+        maximum = Math.max(maximum, current);
+      } else if (record?.status === "hit") {
+        current = 0;
+      }
+    });
+    return maximum;
+  }
+
+  function currentLosingStreak(records) {
+    const decided = orderedRecords(records).filter((record) => record?.status === "hit" || record?.status === "miss");
+    if (!decided.length) return null;
+    let streak = 0;
+    for (let index = decided.length - 1; index >= 0; index -= 1) {
+      if (decided[index].status !== "miss") break;
+      streak += 1;
+    }
+    return streak;
+  }
+
+  function maxDrawdown(records) {
+    let equity = 0;
+    let peak = 0;
+    let maximum = 0;
+    orderedRecords(records)
+      .filter((record) => SETTLED_STATUSES.has(record?.status))
+      .forEach((record) => {
+        equity += recordNet(record);
+        peak = Math.max(peak, equity);
+        maximum = Math.max(maximum, peak - equity);
+      });
+    return maximum;
+  }
+
+  function maxSingleLoss(records) {
+    return orderedRecords(records)
+      .filter((record) => SETTLED_STATUSES.has(record?.status))
+      .reduce((maximum, record) => Math.max(maximum, Math.max(0, -recordNet(record))), 0);
+  }
+
   function calculate(state) {
     const records = Array.isArray(state?.records) ? state.records : [];
     const balance = Math.max(0, safeNumber(state?.coins));
@@ -68,6 +137,9 @@
       totalReturn,
       netProfit,
       returnRate,
+      maxLosingStreak: maxLosingStreak(records),
+      maxDrawdown: maxDrawdown(records),
+      maxSingleLoss: maxSingleLoss(records),
     });
   }
 
@@ -255,6 +327,7 @@
     const snapshot = readSnapshot();
     const filteredRecords = filterRecords(snapshot.records, activePeriod);
     const metrics = calculate({ coins: snapshot.coins, records: filteredRecords });
+    const currentStreak = currentLosingStreak(snapshot.records);
     const period = PERIODS.find((item) => item.key === activePeriod) || PERIODS[0];
 
     const controls = makePeriodControl(period);
@@ -302,13 +375,38 @@
       : `${period.label}には結果確定済みのAIR BETがありません。結果待ちは収支計算に含めません。`;
     returnsNote.append(returnsLabel, returnsCopy);
 
+    const riskHeading = makeSectionHeading("STEP 4", "リスク分析");
+    const riskGrid = document.createElement("div");
+    riskGrid.className = "stat-grid";
+    riskGrid.setAttribute("aria-label", `${period.label}のリスク分析`);
+    riskGrid.append(
+      makeCard("最大連敗", metrics.decidedCount ? `${metrics.maxLosingStreak}回` : "—", metrics.maxLosingStreak > 0 ? "coral" : ""),
+      makeCard("現在連敗", currentStreak == null ? "—" : `${currentStreak}回`),
+      makeCard("最大DD", metrics.settledCount ? formatB(metrics.maxDrawdown) : "—", metrics.maxDrawdown > 0 ? "coral" : ""),
+      makeCard("最大1回損失", metrics.settledCount ? formatB(metrics.maxSingleLoss) : "—")
+    );
+
+    const riskNote = document.createElement("div");
+    riskNote.className = "tactical-note";
+    const riskLabel = document.createElement("span");
+    riskLabel.className = "manga-label";
+    riskLabel.textContent = `STEP 4 / ${period.label}`;
+    const riskCopy = document.createElement("p");
+    riskCopy.textContent = metrics.decidedCount || metrics.settledCount
+      ? `最大連敗・最大DD・最大1回損失は${period.label}の記録から計算しています。現在連敗だけは期間に関係なく、全履歴の最新の的中・不的中結果から算出します。返還・結果待ちは連敗判定に含めません。最大DDは確定済みAIR BETの損益を時系列に積み上げた収支曲線の山から谷までの最大落ち込みです。`
+      : `${period.label}にはリスク分析に使える確定記録がありません。現在連敗は全履歴の最新確定結果から表示します。`;
+    riskNote.append(riskLabel, riskCopy);
+
     mount.replaceChildren(
       controls,
       basicGrid,
       basicNote,
       returnsHeading,
       returnsGrid,
-      returnsNote
+      returnsNote,
+      riskHeading,
+      riskGrid,
+      riskNote
     );
     return true;
   }
@@ -324,6 +422,13 @@
     PERIODS,
     recordStake,
     recordReturn,
+    recordNet,
+    recordTimestamp,
+    orderedRecords,
+    maxLosingStreak,
+    currentLosingStreak,
+    maxDrawdown,
+    maxSingleLoss,
     calculate,
     readSnapshot,
     jstDateKey,
@@ -336,8 +441,8 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (!root || typeof document === "undefined") return;
-  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V4__) return;
-  root.__MAMO_QUANT_ANALYSIS_BASIC_V4__ = true;
+  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V5__) return;
+  root.__MAMO_QUANT_ANALYSIS_BASIC_V5__ = true;
   root.MAMO_QUANT_ANALYSIS_BASIC = API;
 
   const boot = () => render();
