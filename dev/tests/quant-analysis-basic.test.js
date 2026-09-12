@@ -34,6 +34,12 @@ assert.equal(metrics.maxLosingStreak, 1);
 assert.equal(metrics.maxDrawdown, 300);
 assert.equal(metrics.maxDrawdownBetRate, (300 / 900) * 100);
 assert.equal(metrics.maxSingleLoss, 300);
+assert.equal(metrics.oddsLineCount, 0);
+assert.equal(metrics.oddsCapturedCount, 0);
+assert.equal(metrics.oddsCaptureRate, null);
+assert.equal(metrics.averageOdds, null);
+assert.equal(metrics.minOdds, null);
+assert.equal(metrics.maxOdds, null);
 
 assert.equal(api.recordStake({ lines: [{ stake: 100 }, { stake: 200 }] }), 300);
 assert.equal(api.recordReturn({ status: "hit", payoutC: 250, refundC: 50 }), 300);
@@ -43,6 +49,44 @@ assert.equal(api.recordNet({ status: "miss", stake: 500, payoutC: 0, refundC: 10
 assert.equal(api.calculate({ coins: 100000, records: [] }).hitRate, null);
 assert.equal(api.calculate({ coins: 100000, records: [] }).returnRate, null);
 assert.equal(api.calculate({ coins: 100000, records: [] }).maxDrawdownBetRate, null);
+
+assert.equal(api.normalizeOddsValue("2.35倍"), 2.35);
+assert.equal(api.normalizeOddsValue(8.4), 8.4);
+assert.equal(api.normalizeOddsValue("未取得"), null);
+assert.equal(api.normalizeOddsValue(0), null);
+assert.deepEqual(api.recordOddsEntries({
+  lines: [
+    { odds: "2.4" },
+    { referenceOdds: "5.6倍" },
+    { odds: "" },
+  ],
+}), [2.4, 5.6, null]);
+assert.deepEqual(api.recordOddsEntries({ odds: "9.1" }), [9.1]);
+
+const oddsSummary = api.summarizeOdds([
+  { lines: [{ odds: "2.0" }, { odds: "4.0" }, { odds: "" }] },
+  { lines: [{ referenceOdds: "10.0倍" }] },
+]);
+assert.equal(oddsSummary.lineCount, 4);
+assert.equal(oddsSummary.capturedCount, 3);
+assert.equal(oddsSummary.captureRate, 75);
+assert.equal(oddsSummary.averageOdds, 16 / 3);
+assert.equal(oddsSummary.minOdds, 2);
+assert.equal(oddsSummary.maxOdds, 10);
+
+const oddsMetrics = api.calculate({
+  coins: 100000,
+  records: [
+    { status: "miss", stake: 200, lines: [{ stake: 100, odds: "3.2" }, { stake: 100, odds: "" }] },
+    { status: "hit", stake: 100, payoutC: 500, lines: [{ stake: 100, odds: "8.8" }] },
+  ],
+});
+assert.equal(oddsMetrics.oddsLineCount, 3);
+assert.equal(oddsMetrics.oddsCapturedCount, 2);
+assert.equal(oddsMetrics.oddsCaptureRate, (2 / 3) * 100);
+assert.equal(oddsMetrics.averageOdds, 6);
+assert.equal(oddsMetrics.minOdds, 3.2);
+assert.equal(oddsMetrics.maxOdds, 8.8);
 
 const riskRecords = [
   { time: "2026-09-12T03:00:00+09:00", status: "miss", stake: 300, payoutC: 0 },
@@ -108,8 +152,16 @@ assert.deepEqual(api.PERIODS.map((item) => item.key), ["all", "today", "yesterda
 assert.match(source, /STEP 2\.6/);
 assert.match(source, /STEP 3/);
 assert.match(source, /STEP 4\.1/);
+assert.match(source, /STEP 5/);
 assert.match(source, /収支分析/);
 assert.match(source, /リスク分析/);
+assert.match(source, /オッズ分析/);
+assert.match(source, /オッズ取得率/);
+assert.match(source, /平均参考オッズ/);
+assert.match(source, /最低参考オッズ/);
+assert.match(source, /最高参考オッズ/);
+assert.match(source, /買い目単位で集計/);
+assert.match(source, /次のレースの的中確率を予測するものではありません/);
 assert.match(source, /最大連敗/);
 assert.match(source, /現在連敗/);
 assert.match(source, /最大DD/);
@@ -137,4 +189,4 @@ assert.match(shell, /MAMO_QUANT_ANALYSIS_BASIC\?\.render/);
 assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-7/);
 assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
 
-console.log("quant analysis step 4.1 DD percentage checks passed");
+console.log("quant analysis step 5 odds checks passed");

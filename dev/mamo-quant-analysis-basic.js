@@ -1,5 +1,5 @@
-/* MAMO BOAT — independent quantitative analysis, step 4.1.
- * Read-only basic metrics + compact period filtering + settled returns + risk analysis.
+/* MAMO BOAT — independent quantitative analysis, step 5.
+ * Read-only basic metrics + compact period filtering + settled returns + risk + odds analysis.
  * This module never writes localStorage and never mutates AIR BET, wallet,
  * records, pressroom, SHOP, Supabase, or navigation state.
  */
@@ -107,6 +107,40 @@
       .reduce((maximum, record) => Math.max(maximum, Math.max(0, -recordNet(record))), 0);
   }
 
+  function normalizeOddsValue(value) {
+    if (value == null || value === "") return null;
+    const match = String(value).trim().match(/^([0-9]+(?:\.[0-9]+)?)/);
+    if (!match) return null;
+    const number = Number(match[1]);
+    return Number.isFinite(number) && number > 0 ? number : null;
+  }
+
+  function recordOddsEntries(record) {
+    const lines = Array.isArray(record?.lines) ? record.lines : [];
+    if (lines.length) {
+      return lines.map((line) => normalizeOddsValue(line?.odds ?? line?.referenceOdds));
+    }
+    if (record?.odds != null || record?.referenceOdds != null) {
+      return [normalizeOddsValue(record?.odds ?? record?.referenceOdds)];
+    }
+    return [];
+  }
+
+  function summarizeOdds(records) {
+    const entries = (Array.isArray(records) ? records : []).flatMap(recordOddsEntries);
+    const captured = entries.filter((value) => value != null);
+    const lineCount = entries.length;
+    const capturedCount = captured.length;
+    return Object.freeze({
+      lineCount,
+      capturedCount,
+      captureRate: lineCount ? (capturedCount / lineCount) * 100 : null,
+      averageOdds: capturedCount ? captured.reduce((sum, value) => sum + value, 0) / capturedCount : null,
+      minOdds: capturedCount ? Math.min(...captured) : null,
+      maxOdds: capturedCount ? Math.max(...captured) : null,
+    });
+  }
+
   function calculate(state) {
     const records = Array.isArray(state?.records) ? state.records : [];
     const balance = Math.max(0, safeNumber(state?.coins));
@@ -125,6 +159,7 @@
     const returnRate = settledStake > 0 ? (totalReturn / settledStake) * 100 : null;
     const maximumDrawdown = maxDrawdown(records);
     const maxDrawdownBetRate = settledStake > 0 ? (maximumDrawdown / settledStake) * 100 : null;
+    const odds = summarizeOdds(records);
 
     return Object.freeze({
       balance,
@@ -143,6 +178,12 @@
       maxDrawdown: maximumDrawdown,
       maxDrawdownBetRate,
       maxSingleLoss: maxSingleLoss(records),
+      oddsLineCount: odds.lineCount,
+      oddsCapturedCount: odds.capturedCount,
+      oddsCaptureRate: odds.captureRate,
+      averageOdds: odds.averageOdds,
+      minOdds: odds.minOdds,
+      maxOdds: odds.maxOdds,
     });
   }
 
@@ -231,6 +272,7 @@
     return `${sign}${number.toLocaleString("ja-JP")} B`;
   };
   const formatPercent = (value) => value == null ? "—" : `${value.toFixed(1)}%`;
+  const formatOdds = (value) => value == null ? "—" : `${value.toFixed(1)}倍`;
 
   function makeCard(label, value, extraClass = "") {
     const card = document.createElement("div");
@@ -418,6 +460,28 @@
       : `${period.label}にはリスク分析に使える確定記録がありません。現在連敗は全履歴の最新確定結果から表示します。`;
     riskNote.append(riskLabel, riskCopy);
 
+    const oddsHeading = makeSectionHeading("STEP 5", "オッズ分析");
+    const oddsGrid = document.createElement("div");
+    oddsGrid.className = "stat-grid";
+    oddsGrid.setAttribute("aria-label", `${period.label}のオッズ分析`);
+    oddsGrid.append(
+      makeCard("オッズ取得率", formatPercent(metrics.oddsCaptureRate)),
+      makeCard("平均参考オッズ", formatOdds(metrics.averageOdds)),
+      makeCard("最低参考オッズ", formatOdds(metrics.minOdds)),
+      makeCard("最高参考オッズ", formatOdds(metrics.maxOdds))
+    );
+
+    const oddsNote = document.createElement("div");
+    oddsNote.className = "tactical-note";
+    const oddsLabel = document.createElement("span");
+    oddsLabel.className = "manga-label";
+    oddsLabel.textContent = `STEP 5 / ${period.label}`;
+    const oddsCopy = document.createElement("p");
+    oddsCopy.textContent = metrics.oddsLineCount
+      ? `参考オッズは${period.label}のAIR BET記録を買い目単位で集計しています。${metrics.oddsCapturedCount}/${metrics.oddsLineCount}買い目で参考オッズを取得済みです。平均・最低・最高は取得できた参考オッズだけの単純集計で、次のレースの的中確率を予測するものではありません。`
+      : `${period.label}には参考オッズを集計できる買い目記録がありません。`;
+    oddsNote.append(oddsLabel, oddsCopy);
+
     mount.replaceChildren(
       controls,
       basicGrid,
@@ -427,7 +491,10 @@
       returnsNote,
       riskHeading,
       riskGrid,
-      riskNote
+      riskNote,
+      oddsHeading,
+      oddsGrid,
+      oddsNote
     );
     return true;
   }
@@ -450,6 +517,9 @@
     currentLosingStreak,
     maxDrawdown,
     maxSingleLoss,
+    normalizeOddsValue,
+    recordOddsEntries,
+    summarizeOdds,
     calculate,
     readSnapshot,
     jstDateKey,
@@ -462,8 +532,8 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (!root || typeof document === "undefined") return;
-  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V6__) return;
-  root.__MAMO_QUANT_ANALYSIS_BASIC_V6__ = true;
+  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V7__) return;
+  root.__MAMO_QUANT_ANALYSIS_BASIC_V7__ = true;
   root.MAMO_QUANT_ANALYSIS_BASIC = API;
 
   const boot = () => render();
