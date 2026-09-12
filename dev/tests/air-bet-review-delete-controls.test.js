@@ -29,6 +29,8 @@ assert.doesNotMatch(source, /tickets\.style\.setProperty\("overflow"/);
 assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,260}flex:\s*1 1 0/);
 assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,320}overflow-y:\s*auto/);
 assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,360}overscroll-behavior:\s*contain/);
+assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,420}-webkit-overflow-scrolling:\s*touch/);
+assert.match(styles, /\.air-bet-review-shell > \.air-bet-review-tickets[\s\S]{0,460}touch-action:\s*pan-y/);
 
 assert.doesNotMatch(source, /window\.removeReviewLine\s*=/);
 assert.doesNotMatch(source, /window\.deleteAllReviewLines\s*=/);
@@ -41,14 +43,18 @@ assert.doesNotMatch(source, /visualViewport/);
 assert.doesNotMatch(source, /scrollTo|scrollBy/);
 assert.doesNotMatch(source, /setInterval|setTimeout/);
 
-assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260911-3/);
+// The corrected helper must be delivered under a fresh URL/cache generation;
+// otherwise an installed iPhone PWA can continue executing the pre-fix helper.
+assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260912-1/);
 assert.match(compat, /data-mamo-review-delete-controls/);
-assert.match(sw, /decision-event-api-compat\.js\?v=20260911-1/);
-assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260911-3/);
+assert.match(sw, /mamoboat-v508-review-ticket-scroll-dev/);
+assert.match(sw, /mamoboat-v507-odds-all-visible-dev/);
+assert.match(sw, /decision-event-api-compat\.js\?v=20260912-1/);
+assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260912-1/);
 assert.match(sw, /mamoboat-v497-airbet-loader-refresh-dev/);
 assert.match(sw, /url\.pathname\.endsWith\("\/decision-event-api-compat\.js"\)/);
 assert.match(sw, /url\.pathname\.endsWith\("\/air-bet-review-delete-controls\.js"\)/);
 assert.match(sw, /decision-event-api-compat\\\.js\(\?:\\\?v=\[\^"'\]\+\)\?/);
 assert.match(sw, /air-bet-review-delete-controls\\\.js\(\?:\\\?v=\[\^"'\]\+\)\?/);
 
-console.log("AIR BET safe review controls regression checks passed.");
+console.log("AIR BET safe review controls and iPhone scroll delivery checks passed.");
