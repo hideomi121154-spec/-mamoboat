@@ -72,7 +72,7 @@ function withLiveVenueLoader(response){
       html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-review-compact.css?v=20260912-2"></head>');
     }
     if(!html.includes("venue-live-priority.js")) html=html.replace("</body>",'<script src="venue-live-priority.js?v=20260909-1"></script></body>');
-    if(!html.includes("general-grade-theme.js")) html=html.replace("</body>",'<script src="general-grade-theme.js?v=20260908-2"></script></body>');
+    if(!html.includes("general-grade-theme.js")) html=html.replace("</body>",'<script src="general-grade-theme.js?v=20260908-1"></script></body>');
     if(!html.includes("record-unified-layout-v2.js")) html=html.replace("</body>",'<script src="record-unified-layout-v2.js?v=20260909-5"></script></body>');
     if(!html.includes("record-mobile-layout-fix.js")) html=html.replace("</body>",'<script src="record-mobile-layout-fix.js?v=20260908-2"></script></body>');
     if(!html.includes("race-carte-live-state-fix.js")) html=html.replace("</body>",'<script src="race-carte-live-state-fix.js?v=20260908-3"></script></body>');
