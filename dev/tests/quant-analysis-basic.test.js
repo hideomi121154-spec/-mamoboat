@@ -38,8 +38,10 @@ assert.equal(metrics.oddsLineCount, 0);
 assert.equal(metrics.oddsCapturedCount, 0);
 assert.equal(metrics.oddsCaptureRate, null);
 assert.equal(metrics.averageOdds, null);
+assert.equal(metrics.medianOdds, null);
 assert.equal(metrics.minOdds, null);
 assert.equal(metrics.maxOdds, null);
+assert.deepEqual(metrics.oddsBands.map((band) => band.count), [0, 0, 0, 0]);
 
 assert.equal(api.recordStake({ lines: [{ stake: 100 }, { stake: 200 }] }), 300);
 assert.equal(api.recordReturn({ status: "hit", payoutC: 250, refundC: 50 }), 300);
@@ -63,6 +65,22 @@ assert.deepEqual(api.recordOddsEntries({
 }), [2.4, 5.6, null]);
 assert.deepEqual(api.recordOddsEntries({ odds: "9.1" }), [9.1]);
 
+assert.equal(api.median([]), null);
+assert.equal(api.median([9]), 9);
+assert.equal(api.median([100, 5, 20]), 20);
+assert.equal(api.median([5, 10, 20, 100]), 15);
+const boundaryBands = api.oddsBandDistribution([7.1, 10, 29.9, 30, 99.9, 100, 1666]);
+assert.deepEqual(boundaryBands.map((band) => [band.key, band.count]), [
+  ["under10", 1],
+  ["10to30", 2],
+  ["30to100", 2],
+  ["100plus", 2],
+]);
+assert.equal(boundaryBands[0].rate, (1 / 7) * 100);
+assert.equal(boundaryBands[1].rate, (2 / 7) * 100);
+assert.equal(boundaryBands[2].rate, (2 / 7) * 100);
+assert.equal(boundaryBands[3].rate, (2 / 7) * 100);
+
 const oddsSummary = api.summarizeOdds([
   { lines: [{ odds: "2.0" }, { odds: "4.0" }, { odds: "" }] },
   { lines: [{ referenceOdds: "10.0倍" }] },
@@ -71,8 +89,10 @@ assert.equal(oddsSummary.lineCount, 4);
 assert.equal(oddsSummary.capturedCount, 3);
 assert.equal(oddsSummary.captureRate, 75);
 assert.equal(oddsSummary.averageOdds, 16 / 3);
+assert.equal(oddsSummary.medianOdds, 4);
 assert.equal(oddsSummary.minOdds, 2);
 assert.equal(oddsSummary.maxOdds, 10);
+assert.deepEqual(oddsSummary.bands.map((band) => band.count), [2, 1, 0, 0]);
 
 const oddsMetrics = api.calculate({
   coins: 100000,
@@ -85,8 +105,23 @@ assert.equal(oddsMetrics.oddsLineCount, 3);
 assert.equal(oddsMetrics.oddsCapturedCount, 2);
 assert.equal(oddsMetrics.oddsCaptureRate, (2 / 3) * 100);
 assert.equal(oddsMetrics.averageOdds, 6);
+assert.equal(oddsMetrics.medianOdds, 6);
 assert.equal(oddsMetrics.minOdds, 3.2);
 assert.equal(oddsMetrics.maxOdds, 8.8);
+assert.deepEqual(oddsMetrics.oddsBands.map((band) => band.count), [2, 0, 0, 0]);
+
+const outlierOdds = api.summarizeOdds([
+  { lines: [
+    { odds: "7.1" },
+    { odds: "12" },
+    { odds: "18" },
+    { odds: "24" },
+    { odds: "1666" },
+  ] },
+]);
+assert.equal(outlierOdds.medianOdds, 18);
+assert.equal(outlierOdds.averageOdds, (7.1 + 12 + 18 + 24 + 1666) / 5);
+assert.deepEqual(outlierOdds.bands.map((band) => band.count), [1, 3, 0, 1]);
 
 const riskRecords = [
   { time: "2026-09-12T03:00:00+09:00", status: "miss", stake: 300, payoutC: 0 },
@@ -149,17 +184,25 @@ assert.equal(snapshot.records.length, 1);
 assert.equal(writes, 0);
 
 assert.deepEqual(api.PERIODS.map((item) => item.key), ["all", "today", "yesterday", "last7", "thisWeek", "thisMonth"]);
+assert.deepEqual(api.ODDS_BANDS.map((item) => item.key), ["under10", "10to30", "30to100", "100plus"]);
 assert.match(source, /STEP 2\.6/);
 assert.match(source, /STEP 3/);
 assert.match(source, /STEP 4\.1/);
-assert.match(source, /STEP 5/);
+assert.match(source, /STEP 5\.1/);
 assert.match(source, /収支分析/);
 assert.match(source, /リスク分析/);
 assert.match(source, /オッズ分析/);
 assert.match(source, /オッズ取得率/);
+assert.match(source, /中央値参考オッズ/);
 assert.match(source, /平均参考オッズ/);
-assert.match(source, /最低参考オッズ/);
-assert.match(source, /最高参考オッズ/);
+assert.match(source, /高オッズの影響を受けます/);
+assert.match(source, /参考オッズ範囲/);
+assert.match(source, /オッズ帯分布を見る/);
+assert.match(source, /10倍未満/);
+assert.match(source, /10〜30倍/);
+assert.match(source, /30〜100倍/);
+assert.match(source, /100倍以上/);
+assert.match(source, /極端な高オッズの影響を受けにくい指標/);
 assert.match(source, /買い目単位で集計/);
 assert.match(source, /次のレースの的中確率を予測するものではありません/);
 assert.match(source, /最大連敗/);
@@ -176,6 +219,7 @@ assert.match(source, /収支曲線の山から谷までの最大落ち込み/);
 assert.match(source, /結果待ちのAIR BETはBET額・損益・回収率にまだ含めません/);
 assert.match(source, /期間：\$\{period\.label\}/);
 assert.match(source, /dataset\.analysisPeriodControl/);
+assert.match(source, /dataset\.analysisOddsBands/);
 assert.match(source, /document\.createElement\("details"\)/);
 assert.match(source, /document\.createElement\("summary"\)/);
 assert.match(source, /details\.open\s*=\s*false/);
@@ -189,4 +233,4 @@ assert.match(shell, /MAMO_QUANT_ANALYSIS_BASIC\?\.render/);
 assert.match(shell, /mamo-quant-analysis-basic\.js\?v=20260912-7/);
 assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
 
-console.log("quant analysis step 5 odds checks passed");
+console.log("quant analysis step 5.1 median and odds-band checks passed");

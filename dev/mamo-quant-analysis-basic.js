@@ -1,4 +1,4 @@
-/* MAMO BOAT — independent quantitative analysis, step 5.
+/* MAMO BOAT — independent quantitative analysis, step 5.1.
  * Read-only basic metrics + compact period filtering + settled returns + risk + odds analysis.
  * This module never writes localStorage and never mutates AIR BET, wallet,
  * records, pressroom, SHOP, Supabase, or navigation state.
@@ -17,6 +17,12 @@
   ]);
   const PERIOD_KEYS = new Set(PERIODS.map((item) => item.key));
   const SETTLED_STATUSES = new Set(["hit", "miss", "refunded"]);
+  const ODDS_BANDS = Object.freeze([
+    { key: "under10", label: "10倍未満", min: 0, max: 10 },
+    { key: "10to30", label: "10〜30倍", min: 10, max: 30 },
+    { key: "30to100", label: "30〜100倍", min: 30, max: 100 },
+    { key: "100plus", label: "100倍以上", min: 100, max: Infinity },
+  ]);
   let activePeriod = "all";
 
   const safeNumber = (value) => {
@@ -126,6 +132,31 @@
     return [];
   }
 
+  function median(values) {
+    const sorted = (Array.isArray(values) ? values : [])
+      .filter((value) => Number.isFinite(value))
+      .slice()
+      .sort((a, b) => a - b);
+    if (!sorted.length) return null;
+    const middle = Math.floor(sorted.length / 2);
+    return sorted.length % 2
+      ? sorted[middle]
+      : (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+
+  function oddsBandDistribution(values) {
+    const list = (Array.isArray(values) ? values : []).filter((value) => Number.isFinite(value) && value > 0);
+    return Object.freeze(ODDS_BANDS.map((band) => {
+      const count = list.filter((value) => value >= band.min && value < band.max).length;
+      return Object.freeze({
+        key: band.key,
+        label: band.label,
+        count,
+        rate: list.length ? (count / list.length) * 100 : null,
+      });
+    }));
+  }
+
   function summarizeOdds(records) {
     const entries = (Array.isArray(records) ? records : []).flatMap(recordOddsEntries);
     const captured = entries.filter((value) => value != null);
@@ -136,8 +167,10 @@
       capturedCount,
       captureRate: lineCount ? (capturedCount / lineCount) * 100 : null,
       averageOdds: capturedCount ? captured.reduce((sum, value) => sum + value, 0) / capturedCount : null,
+      medianOdds: median(captured),
       minOdds: capturedCount ? Math.min(...captured) : null,
       maxOdds: capturedCount ? Math.max(...captured) : null,
+      bands: oddsBandDistribution(captured),
     });
   }
 
@@ -182,8 +215,10 @@
       oddsCapturedCount: odds.capturedCount,
       oddsCaptureRate: odds.captureRate,
       averageOdds: odds.averageOdds,
+      medianOdds: odds.medianOdds,
       minOdds: odds.minOdds,
       maxOdds: odds.maxOdds,
+      oddsBands: odds.bands,
     });
   }
 
@@ -273,6 +308,7 @@
   };
   const formatPercent = (value) => value == null ? "—" : `${value.toFixed(1)}%`;
   const formatOdds = (value) => value == null ? "—" : `${value.toFixed(1)}倍`;
+  const formatOddsRange = (min, max) => min == null || max == null ? "—" : `${min.toFixed(1)}〜${max.toFixed(1)}倍`;
 
   function makeCard(label, value, extraClass = "") {
     const card = document.createElement("div");
@@ -296,6 +332,50 @@
     detail.style.color = "#64798b";
     card.appendChild(detail);
     return card;
+  }
+
+  function makeOddsBandDetails(bands) {
+    const details = document.createElement("details");
+    details.dataset.analysisOddsBands = "1";
+    details.style.marginTop = "12px";
+    details.style.border = "1px solid #cbd6df";
+    details.style.borderRadius = "10px";
+    details.style.background = "#ffffff";
+
+    const summary = document.createElement("summary");
+    summary.style.cursor = "pointer";
+    summary.style.padding = "12px 14px";
+    summary.style.fontWeight = "800";
+    summary.style.color = "#0b3554";
+    summary.textContent = "オッズ帯分布を見る";
+    details.appendChild(summary);
+
+    const body = document.createElement("div");
+    body.style.display = "grid";
+    body.style.gap = "1px";
+    body.style.background = "#e2e8ed";
+    body.style.borderTop = "1px solid #e2e8ed";
+
+    (Array.isArray(bands) ? bands : []).forEach((band) => {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.justifyContent = "space-between";
+      row.style.gap = "12px";
+      row.style.padding = "10px 14px";
+      row.style.background = "#ffffff";
+
+      const label = document.createElement("span");
+      label.textContent = band.label;
+      label.style.fontWeight = "700";
+      const value = document.createElement("strong");
+      value.textContent = `${band.count}件 / ${formatPercent(band.rate)}`;
+      row.append(label, value);
+      body.appendChild(row);
+    });
+
+    details.appendChild(body);
+    return details;
   }
 
   function makePeriodControl(period) {
@@ -466,19 +546,21 @@
     oddsGrid.setAttribute("aria-label", `${period.label}のオッズ分析`);
     oddsGrid.append(
       makeCard("オッズ取得率", formatPercent(metrics.oddsCaptureRate)),
-      makeCard("平均参考オッズ", formatOdds(metrics.averageOdds)),
-      makeCard("最低参考オッズ", formatOdds(metrics.minOdds)),
-      makeCard("最高参考オッズ", formatOdds(metrics.maxOdds))
+      makeCard("中央値参考オッズ", formatOdds(metrics.medianOdds)),
+      makeCardWithSubline("平均参考オッズ", formatOdds(metrics.averageOdds), "高オッズの影響を受けます"),
+      makeCard("参考オッズ範囲", formatOddsRange(metrics.minOdds, metrics.maxOdds))
     );
+
+    const oddsBands = makeOddsBandDetails(metrics.oddsBands);
 
     const oddsNote = document.createElement("div");
     oddsNote.className = "tactical-note";
     const oddsLabel = document.createElement("span");
     oddsLabel.className = "manga-label";
-    oddsLabel.textContent = `STEP 5 / ${period.label}`;
+    oddsLabel.textContent = `STEP 5.1 / ${period.label}`;
     const oddsCopy = document.createElement("p");
     oddsCopy.textContent = metrics.oddsLineCount
-      ? `参考オッズは${period.label}のAIR BET記録を買い目単位で集計しています。${metrics.oddsCapturedCount}/${metrics.oddsLineCount}買い目で参考オッズを取得済みです。平均・最低・最高は取得できた参考オッズだけの単純集計で、次のレースの的中確率を予測するものではありません。`
+      ? `参考オッズは${period.label}のAIR BET記録を買い目単位で集計しています。${metrics.oddsCapturedCount}/${metrics.oddsLineCount}買い目で参考オッズを取得済みです。中央値は取得済みオッズを小さい順に並べた真ん中の値で、極端な高オッズの影響を受けにくい指標です。平均は高オッズに引っ張られることがあるため、中央値・オッズ帯分布と合わせて確認してください。次のレースの的中確率を予測するものではありません。`
       : `${period.label}には参考オッズを集計できる買い目記録がありません。`;
     oddsNote.append(oddsLabel, oddsCopy);
 
@@ -494,6 +576,7 @@
       riskNote,
       oddsHeading,
       oddsGrid,
+      oddsBands,
       oddsNote
     );
     return true;
@@ -508,6 +591,7 @@
   const API = Object.freeze({
     STORAGE_KEY,
     PERIODS,
+    ODDS_BANDS,
     recordStake,
     recordReturn,
     recordNet,
@@ -519,6 +603,8 @@
     maxSingleLoss,
     normalizeOddsValue,
     recordOddsEntries,
+    median,
+    oddsBandDistribution,
     summarizeOdds,
     calculate,
     readSnapshot,
@@ -532,8 +618,8 @@
 
   if (typeof module !== "undefined" && module.exports) module.exports = API;
   if (!root || typeof document === "undefined") return;
-  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V7__) return;
-  root.__MAMO_QUANT_ANALYSIS_BASIC_V7__ = true;
+  if (root.__MAMO_QUANT_ANALYSIS_BASIC_V8__) return;
+  root.__MAMO_QUANT_ANALYSIS_BASIC_V8__ = true;
   root.MAMO_QUANT_ANALYSIS_BASIC = API;
 
   const boot = () => render();
