@@ -23,7 +23,7 @@
   const RISK_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-risk-profile="1"]';
   const DATA_SCRIPT_SRC = "mamo-quant-analysis-data-foundation.js?v=20260913-1";
   const DATA_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-data-foundation="1"]';
-  const INTEGRATED_SCRIPT_SRC = "mamo-quant-analysis-integrated.js?v=20260913-1";
+  const INTEGRATED_SCRIPT_SRC = "mamo-quant-analysis-integrated.js?v=20260913-2";
   const INTEGRATED_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-integrated="1"]';
 
   function buildIntro(section) {
@@ -377,53 +377,61 @@
   }
 
   function ensureScreen() {
-    if (document.getElementById(SCREEN_ID)) return true;
-    const main = document.querySelector(".app-shell main");
-    const settings = document.getElementById("settings");
-    if (!main || !settings) return false;
-    const section = document.createElement("section");
-    section.id = SCREEN_ID;
-    section.className = "screen";
-    section.setAttribute("aria-label", "分析");
-    buildIntro(section);
-    buildBasicSection(section);
-    main.insertBefore(section, settings);
-    return true;
+    let section = document.getElementById(SCREEN_ID);
+    if (!section) {
+      section = document.createElement("section");
+      section.id = SCREEN_ID;
+      section.className = "screen";
+      section.setAttribute("aria-labelledby", "mamoQuantAnalysisTitle");
+      buildIntro(section);
+      section.querySelector("h1")?.setAttribute("id", "mamoQuantAnalysisTitle");
+      buildBasicSection(section);
+      const anchor = document.getElementById("screens") || document.querySelector("main") || document.body;
+      anchor.appendChild(section);
+    }
+    return section;
   }
 
-  function ensureNavigation() {
-    if (document.getElementById(NAV_ID)) return true;
-    const nav = document.querySelector(".bottom-nav");
-    const settingsNav = document.getElementById("nav-settings");
-    if (!nav || !settingsNav) return false;
-    const button = document.createElement("button");
-    button.id = NAV_ID;
-    button.className = "nav";
-    button.type = "button";
-    button.setAttribute("aria-label", "分析を開く");
-    const icon = document.createElement("b");
-    icon.textContent = "▥";
-    const label = document.createElement("span");
-    label.textContent = "分析";
-    button.append(icon, label);
-    button.addEventListener("click", () => {
-      window.go?.(SCREEN_ID);
-      ensureBasicModule();
+  function activateScreen() {
+    const target = ensureScreen();
+    document.querySelectorAll(".screen").forEach((screen) => {
+      screen.classList.toggle("active", screen === target);
     });
-    const shopNav = document.getElementById("nav-shop");
-    nav.insertBefore(button, shopNav || settingsNav);
-    return true;
-  }
-
-  function boot() {
-    if (!ensureScreen()) return;
-    ensureNavigation();
+    document.querySelectorAll(".bottom-nav button, .bottom-nav .nav-item").forEach((item) => {
+      item.classList.toggle("active", item.id === NAV_ID);
+    });
+    window.scrollTo({ top: 0, behavior: "auto" });
     ensureBasicModule();
   }
 
+  function ensureNavigation() {
+    if (document.getElementById(NAV_ID)) return;
+    const nav = document.querySelector(".bottom-nav");
+    if (!nav) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = NAV_ID;
+    button.className = "nav-item";
+    button.setAttribute("aria-label", "分析");
+    const icon = document.createElement("span");
+    icon.className = "nav-icon";
+    icon.textContent = "▥";
+    const label = document.createElement("span");
+    label.className = "nav-label";
+    label.textContent = "分析";
+    button.append(icon, label);
+    button.addEventListener("click", activateScreen);
+    nav.appendChild(button);
+  }
+
+  function init() {
+    ensureScreen();
+    ensureNavigation();
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once: true });
+    document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
-    boot();
+    init();
   }
 })();
