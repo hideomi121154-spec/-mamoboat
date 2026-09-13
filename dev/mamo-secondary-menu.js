@@ -72,7 +72,6 @@
     shopButton.addEventListener("click", () => {
       closeMenu(wrap);
       window.go?.("shop");
-      window.MAMO_SHOP_PILOT?.render?.();
       requestAnimationFrame(placeMenu);
     });
 
