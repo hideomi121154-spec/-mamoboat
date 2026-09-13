@@ -36,22 +36,24 @@ test("member benefits are placed after the product grid", () => {
 });
 
 test("SHOP is restored without the abandoned horizontal navigation", () => {
-  assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);
+  assert.match(compatibility, /mamo-shop\.js\?v=20260913-1/);
   assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
   assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
   assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
-  assert.match(serviceWorker, /mamo-shop\.js\?v=20260830-2/);
+  assert.match(serviceWorker, /mamo-shop\.js\?v=20260913-1/);
   assert.match(serviceWorker, /mamo-shop-record-benefits\.js\?v=20260830-1/);
+  assert.match(serviceWorker, /mamoboat-v517-primary-nav-safe-dev/);
 });
 
-test("mobile bottom nav stays one row and scrolls only inside the nav", () => {
-  assert.match(shop, /display:flex!important/);
-  assert.match(shop, /flex-wrap:nowrap!important/);
-  assert.match(shop, /overflow-x:auto!important/);
-  assert.match(shop, /overflow-y:hidden!important/);
-  assert.match(shop, /touch-action:pan-x/);
-  assert.match(shop, /flex:0 0 68px!important/);
+test("mobile primary nav stays fixed while SHOP and settings use a secondary menu", () => {
+  assert.doesNotMatch(shop, /\.bottom-nav\s*\{[\s\S]*?display:flex!important/);
+  assert.doesNotMatch(shop, /touch-action:pan-x/);
+  assert.match(shop, /document\.getElementById\("nav-settings"\)\?\.remove\(\)/);
+  assert.match(shop, /analysis\.className = "nav"/);
+  assert.match(shop, /mamoMoreNav/);
+  assert.match(shop, /window\.go\?\.\("shop"\)/);
+  assert.match(shop, /window\.go\?\.\("settings"\)/);
   assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
 });
 
