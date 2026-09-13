@@ -2,18 +2,19 @@ from pathlib import Path
 
 sw = Path('dev/sw.js')
 text = sw.read_text(encoding='utf-8')
-replacements = {
-    'const CACHE = "mamoboat-v517-primary-nav-safe-dev";': 'const CACHE = "mamoboat-v518-self-check-phase1-dev";',
-    './air-bet-review-compact.css?v=20260912-2': './air-bet-review-compact.css?v=20260914-1',
-    './app.js?v=20260910-4': './app.js?v=20260914-1',
-    './bet-review-flow.js?v=20260911-4': './bet-review-flow.js?v=20260914-1',
-    '"bet-review-flow.js?v=20260911-4"': '"bet-review-flow.js?v=20260914-1"',
-    '"air-bet-review-compact.css?v=20260912-2"': '"air-bet-review-compact.css?v=20260914-1"',
-    "'<link rel=\"stylesheet\" href=\"air-bet-review-compact.css?v=20260912-2\"></head>'": "'<link rel=\"stylesheet\" href=\"air-bet-review-compact.css?v=20260914-1\"></head>'",
-}
-for old, new in replacements.items():
-    assert old in text, f'missing SW marker: {old}'
-    text = text.replace(old, new)
+required = [
+    'const CACHE = "mamoboat-v517-primary-nav-safe-dev";',
+    'air-bet-review-compact.css?v=20260912-2',
+    'app.js?v=20260910-4',
+    'bet-review-flow.js?v=20260911-4',
+]
+for marker in required:
+    assert marker in text, f'missing SW marker: {marker}'
+
+text = text.replace('const CACHE = "mamoboat-v517-primary-nav-safe-dev";', 'const CACHE = "mamoboat-v518-self-check-phase1-dev";', 1)
+text = text.replace('air-bet-review-compact.css?v=20260912-2', 'air-bet-review-compact.css?v=20260914-1')
+text = text.replace('app.js?v=20260910-4', 'app.js?v=20260914-1')
+text = text.replace('bet-review-flow.js?v=20260911-4', 'bet-review-flow.js?v=20260914-1')
 
 pilot_line = '    html=html.replace(/pilot-config\\.js\\?v=[^\"\']+/g,"pilot-config.js?v=20260910-6");\n'
 assert pilot_line in text, 'pilot-config rewrite marker missing'
@@ -22,6 +23,10 @@ text = text.replace(
     pilot_line + '    html=html.replace(/app\\.js\\?v=[^\"\']+/g,"app.js?v=20260914-1");\n',
     1,
 )
+assert 'mamoboat-v518-self-check-phase1-dev' in text
+assert 'app.js?v=20260914-1' in text
+assert 'bet-review-flow.js?v=20260914-1' in text
+assert 'air-bet-review-compact.css?v=20260914-1' in text
 sw.write_text(text, encoding='utf-8')
 
 # Keep the existing iOS/PWA regression test aligned with the release asset keys.
