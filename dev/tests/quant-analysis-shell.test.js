@@ -15,7 +15,7 @@ assert.match(helper, /CAPITAL_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-capital\.js\
 assert.match(helper, /COMPARISON_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-comparison\.js\?v=20260913-1"/);
 assert.match(helper, /RISK_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-risk-profile\.js\?v=20260913-1"/);
 assert.match(helper, /DATA_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-data-foundation\.js\?v=20260913-1"/);
-assert.match(helper, /INTEGRATED_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-integrated\.js\?v=20260913-1"/);
+assert.match(helper, /INTEGRATED_SCRIPT_SRC\s*=\s*"mamo-quant-analysis-integrated\.js\?v=20260913-2"/);
 assert.match(helper, /data-mamo-quant-analysis-basic/);
 assert.match(helper, /data-mamo-quant-analysis-odds-performance/);
 assert.match(helper, /data-mamo-quant-analysis-capital/);
@@ -44,16 +44,19 @@ assert.match(helper, /ensureRiskProfileModule/);
 assert.match(helper, /ensureDataFoundationModule/);
 assert.match(helper, /ensureIntegratedModule/);
 assert.match(helper, /統合分析を読み込めませんでした/);
-assert.match(helper, /main\.insertBefore\(section, settings\)/);
-assert.match(helper, /nav\.insertBefore\(button, shopNav \|\| settingsNav\)/);
-assert.match(helper, /window\.go\?\.\(SCREEN_ID\)/);
+assert.match(helper, /anchor\.appendChild\(section\)/);
+assert.match(helper, /button\.id = NAV_ID/);
+assert.match(helper, /nav\.appendChild\(button\)/);
 assert.match(helper, /読み取り専用/);
 
-assert.doesNotMatch(helper, /localStorage\.|sessionStorage\.|fetch\s*\(|XMLHttpRequest|\.innerHTML\s*=|setTimeout\s*\(|setInterval\s*\(|requestAnimationFrame\s*\(|MutationObserver|visualViewport|scrollTo\s*\(|scrollBy\s*\(/);
+// Analysis remains read-only. Opening the independent screen may reset the page
+// scroll position, but it must not own timers, viewport listeners, network calls,
+// persistence, or AIR BET mutations.
+assert.doesNotMatch(helper, /localStorage\.|sessionStorage\.|fetch\s*\(|XMLHttpRequest|\.innerHTML\s*=|setTimeout\s*\(|setInterval\s*\(|requestAnimationFrame\s*\(|MutationObserver|visualViewport|scrollBy\s*\(/);
 assert.doesNotMatch(helper, /window\.MAMO_AIR_BET_DRAFT|MAMO_AIR_BET_DRAFT\s*[.=]|window\.(?:updateReviewLineStake|placeBet|removeReviewLine)\s*=|\.records\s*=|\.coins\s*=|\.pressroom\s*=/);
 
-assert.match(sw, /mamoboat-v515-quant-analysis-basic-step2-dev/);
-assert.match(sw, /url\.pathname\.endsWith\("\/mamo-quant-analysis-shell\.js"\)/);
-assert.match(sw, /url\.pathname\.endsWith\("\/mamo-quant-analysis-basic\.js"\)/);
+assert.match(sw, /mamoboat-v517-primary-nav-safe-dev/);
+assert.match(sw, /\/mamo-quant-analysis-\[\^\/\]\+\\\.js\$\/\.test\(url\.pathname\)/);
+assert.match(sw, /fetch\(event\.request,\{cache:"no-store"\}\)/);
 
 console.log("quant analysis shell STEP 10 delivery checks passed");
