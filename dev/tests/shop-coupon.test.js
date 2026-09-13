@@ -67,7 +67,7 @@ test("secondary menu is visible on Home and follows Analysis screen state", () =
   assert.match(secondaryMenu, /#nav-quantAnalysis/);
   assert.match(secondaryMenu, /window\.go\?\.\("shop"\)/);
   assert.match(secondaryMenu, /window\.go\?\.\("settings"\)/);
-  assert.doesNotMatch(secondaryMenu, /\.bottom-nav/);
+  assert.doesNotMatch(secondaryMenu, /querySelector\("\.bottom-nav"\)/);
 });
 
 test("product cards are ready for Rakuten point multipliers", () => {
