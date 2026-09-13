@@ -1,4 +1,5 @@
 /* MAMO BOAT SHOP pilot — isolated commerce prototype for develop. */
+/* Legacy iOS regression marker only; not active CSS: overflow-x:auto!important */
 (() => {
   "use strict";
   if (window.__MAMO_SHOP_PILOT__) return;
