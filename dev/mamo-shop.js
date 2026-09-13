@@ -87,35 +87,101 @@
       #shop .shop-total strong{font-size:24px;color:#db3d34;}
       #shop .shop-checkout{width:100%;border:0;border-radius:12px;background:#08233d;color:#fff;min-height:52px;font-weight:1000;font-size:15px;}
       #shop .shop-demo{margin-top:8px;text-align:center;color:#8a969e;font-size:9px;}
-      .bottom-nav{
-        gap:0!important;
-        display:flex!important;
-        grid-template-columns:none!important;
-        flex-wrap:nowrap!important;
-        overflow-x:auto!important;
-        overflow-y:hidden!important;
-        -webkit-overflow-scrolling:touch;
-        overscroll-behavior-x:contain;
-        scrollbar-width:none;
-        touch-action:pan-x;
-      }
-      .bottom-nav::-webkit-scrollbar{display:none;}
-      .bottom-nav .nav{
-        flex:0 0 68px!important;
-        min-width:68px!important;
-        min-height:58px!important;
-        padding-left:2px!important;
-        padding-right:2px!important;
-      }
-      .bottom-nav .nav span{font-size:8px!important;}
-      .bottom-nav .nav b{font-size:19px!important;}
-      @media(max-width:390px){#shop .shop-grid{gap:9px;padding-left:12px;padding-right:12px;}#shop .shop-visual{height:116px}.bottom-nav .nav{flex-basis:64px!important;min-width:64px!important}.bottom-nav .nav span{font-size:7px!important;}}
+      .mamo-more-wrap{position:relative;flex:0 0 auto;}
+      .mamo-more-button{width:36px;height:36px;border:1px solid rgba(255,255,255,.26);border-radius:9px;background:rgba(255,255,255,.1);color:#fff;font-weight:1000;font-size:17px;line-height:1;}
+      .mamo-more-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:90;width:184px;padding:6px;background:#fff;border:1px solid #dce5e8;border-radius:12px;box-shadow:0 10px 30px rgba(4,18,31,.22);}
+      .mamo-more-menu[hidden]{display:none;}
+      .mamo-more-menu button{width:100%;min-height:42px;border:0;border-radius:8px;background:#fff;color:#08233d;text-align:left;padding:9px 11px;font-weight:900;}
+      .mamo-more-menu button:active{background:#eef7f7;}
+      @media(max-width:390px){#shop .shop-grid{gap:9px;padding-left:12px;padding-right:12px;}#shop .shop-visual{height:116px}.mamo-more-button{width:32px;height:34px;}}
     `;
     document.head.appendChild(s);
   }
 
+  function normalizePrimaryNav() {
+    document.getElementById("nav-shop")?.remove();
+    document.getElementById("nav-settings")?.remove();
+    const analysis = document.getElementById("nav-quantAnalysis");
+    if (!analysis) return;
+    analysis.className = "nav";
+    const currentIcon = analysis.querySelector("b");
+    if (!currentIcon) {
+      const icon = document.createElement("b");
+      icon.textContent = "▥";
+      const label = document.createElement("span");
+      label.textContent = "分析";
+      analysis.replaceChildren(icon, label);
+    }
+  }
+
+  function installSecondaryMenu() {
+    if (document.getElementById("mamoMoreNav")) return;
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) return;
+
+    const wrap = document.createElement("div");
+    wrap.id = "mamoMoreNav";
+    wrap.className = "mamo-more-wrap";
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "mamo-more-button";
+    trigger.setAttribute("aria-label", "その他のメニュー");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.textContent = "•••";
+    const menu = document.createElement("div");
+    menu.className = "mamo-more-menu";
+    menu.hidden = true;
+
+    const shopButton = document.createElement("button");
+    shopButton.type = "button";
+    shopButton.textContent = "▣  SHOP";
+    shopButton.addEventListener("click", () => {
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+      window.go?.("shop");
+      render();
+    });
+
+    const settingsButton = document.createElement("button");
+    settingsButton.type = "button";
+    settingsButton.textContent = "⚙  設定・データ";
+    settingsButton.addEventListener("click", () => {
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+      window.go?.("settings");
+    });
+
+    menu.append(shopButton, settingsButton);
+    wrap.append(trigger, menu);
+    const wallet = topbar.querySelector(".wallet");
+    topbar.insertBefore(wrap, wallet || null);
+
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      menu.hidden = !menu.hidden;
+      trigger.setAttribute("aria-expanded", String(!menu.hidden));
+    });
+    document.addEventListener("click", (event) => {
+      if (wrap.contains(event.target)) return;
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function watchPrimaryNav() {
+    normalizePrimaryNav();
+    const nav = document.querySelector(".bottom-nav");
+    if (!nav || typeof MutationObserver !== "function") return;
+    const observer = new MutationObserver(normalizePrimaryNav);
+    observer.observe(nav, { childList:true, subtree:false });
+  }
+
   function ensureUI() {
-    if (document.getElementById("shop")) return;
+    if (document.getElementById("shop")) {
+      installSecondaryMenu();
+      watchPrimaryNav();
+      return;
+    }
     installStyle();
     const main = document.querySelector(".app-shell main");
     const settings = document.getElementById("settings");
@@ -147,17 +213,8 @@
       </div></div>`;
     main.insertBefore(section, settings);
 
-    const nav = document.querySelector(".bottom-nav");
-    const settingsNav = document.getElementById("nav-settings");
-    if (nav && settingsNav && !document.getElementById("nav-shop")) {
-      const btn = document.createElement("button");
-      btn.id = "nav-shop";
-      btn.className = "nav";
-      btn.innerHTML = "<b>▣</b><span>SHOP</span>";
-      btn.addEventListener("click", () => { window.go?.("shop"); render(); });
-      nav.insertBefore(btn, settingsNav);
-    }
-
+    installSecondaryMenu();
+    watchPrimaryNav();
     bind();
     render();
   }
