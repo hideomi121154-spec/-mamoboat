@@ -28,7 +28,8 @@
 // Previous allocation keypad cache: mamoboat-v512-allocation-keypad-height-dev
 // Previous allocation odds recovery cache: mamoboat-v513-allocation-odds-recovery-dev
 // Previous independent analysis shell cache: mamoboat-v514-quant-analysis-shell-step1-dev
-const CACHE = "mamoboat-v515-quant-analysis-basic-step2-dev";
+// Previous quantitative analysis cache: mamoboat-v515-quant-analysis-basic-step2-dev
+const CACHE = "mamoboat-v516-quant-analysis-pwa-refresh-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260912-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260910-4",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260911-4","./air-bet-review-delete-controls.js?v=20260912-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1",
@@ -120,8 +121,7 @@ self.addEventListener("fetch",event=>{
     || url.pathname.endsWith("/odds-bet-mode-v1.js")
     || url.pathname.endsWith("/odds-reference-odds-sync.js")
     || url.pathname.endsWith("/allocation-keypad-stability.js")
-    || url.pathname.endsWith("/mamo-quant-analysis-shell.js")
-    || url.pathname.endsWith("/mamo-quant-analysis-basic.js")
+    || /\/mamo-quant-analysis-[^/]+\.js$/.test(url.pathname)
     || url.pathname.endsWith("/air-bet-mode-stability.js")
   ){
     event.respondWith((async()=>{
