@@ -32,6 +32,17 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true }); else boot();
 })();
 
+/* Single owner for the secondary SHOP/settings menu and Home/Analysis visibility. */
+(() => {
+  "use strict";
+  if (window.__MAMO_SECONDARY_MENU__ || document.querySelector('script[data-mamo-secondary-menu="1"]')) return;
+  const script = document.createElement("script");
+  script.src = "mamo-secondary-menu.js?v=20260913-1";
+  script.async = true;
+  script.dataset.mamoSecondaryMenu = "1";
+  document.head.appendChild(script);
+})();
+
 /* Restore SHOP itself, but deliberately keep the abandoned horizontal navigation unloaded. */
 (() => {
   "use strict";
