@@ -271,13 +271,24 @@ function cloneInto(window, value) {
     assert.equal(saved.records[0].lines.length, 1);
     assert.equal(status().count, 0, "confirmed draft must be reset");
 
-    // Include the late-added SHOP: seven actions must remain reachable.
-    assert.equal(window.document.querySelectorAll(".bottom-nav > .nav").length, 7);
-    clickId("nav-shop");
+    // This fixture does not load the independent quantitative-analysis shell,
+    // so the fixed primary bar contains the five native high-frequency actions.
+    // SHOP and Settings must remain reachable through the secondary topbar menu.
+    assert.deepEqual(
+      [...window.document.querySelectorAll(".bottom-nav > .nav")].map((node) => node.id),
+      ["nav-home", "nav-venues", "nav-race", "nav-records", "nav-analysis"]
+    );
+    assert.equal(window.document.getElementById("nav-shop"), null);
+    assert.equal(window.document.getElementById("nav-settings"), null);
+
+    click("#mamoMoreNav .mamo-more-button");
+    click("#mamoMoreNav .mamo-more-menu button:nth-child(1)");
     assert.equal(window.document.body.dataset.screen, "shop");
-    clickId("nav-settings");
+    click("#mamoMoreNav .mamo-more-button");
+    click("#mamoMoreNav .mamo-more-menu button:nth-child(2)");
     assert.equal(window.document.body.dataset.screen, "settings");
-    // Bottom navigation remains clickable after the repeated AIR BET cycle.
+
+    // Primary navigation remains clickable after the repeated AIR BET cycle.
     clickId("nav-venues");
     assert.equal(window.document.body.dataset.screen, "venues");
     clickId("nav-home");
