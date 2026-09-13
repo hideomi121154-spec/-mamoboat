@@ -19,6 +19,7 @@ Before AIR BET is finalized, the user records four pieces of self-awareness data
 - Existing JSON export/reset semantics automatically cover SELF CHECK because it lives inside the canonical app state record.
 - Do not modify settlement, official-result processing, B-medal accounting, or AIR BET draft ownership.
 - If AIR BET fails or is cancelled, no completed AIR BET record exists and no SELF CHECK is persisted.
+- `dev/index.html` and `dev/sw.js` must agree on the SELF CHECK asset versions so iPhone/PWA delivery cannot fall back to stale review code.
 
 ## Canonical record fields
 - `selfCheckVersion: 1`
@@ -39,4 +40,6 @@ Before AIR BET is finalized, the user records four pieces of self-awareness data
 - `placeBet()` defensively validates all four answers again before writing the record.
 - Existing AIR BET, wallet, settlement, official result, and navigation behavior remain unchanged.
 - SELF CHECK is joined to AIR BET exactly by the same `record_id` without a parallel store.
+- PWA cache and HTML asset versions agree for `app.js`, `bet-review-flow.js`, and `air-bet-review-compact.css`.
+- Regression coverage verifies the wallet is not debited before SELF CHECK is complete, then confirms all four answers are stored on the finalized AIR BET record.
 - No prediction, bet recommendation, or confidence-based encouragement is shown.
