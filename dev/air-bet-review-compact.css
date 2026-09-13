@@ -455,6 +455,36 @@
   font-weight: 800;
 }
 
+
+/* SELF CHECK is part of the existing final state; no overlay or extra scroll owner. */
+.air-bet-review-shell .mamo-self-check {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid #cfe0ea;
+  border-radius: 11px;
+  background: #f7fbff;
+}
+.air-bet-review-shell .mamo-self-check .kicker {
+  color: #0876c9;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.air-bet-review-shell .mamo-self-check h3,
+.air-bet-review-shell .mamo-self-check h4,
+.air-bet-review-shell .mamo-self-check p { margin: 0; }
+.air-bet-review-shell .mamo-self-check h3 { font-size: 15px; }
+.air-bet-review-shell .mamo-self-check h4 { color: #173d5b; font-size: 12px; }
+.air-bet-review-shell .mamo-self-check .muted { color: #687f91; font-size: 10px; line-height: 1.4; }
+.air-bet-review-shell .mamo-self-choice { display: grid; gap: 5px; }
+.air-bet-review-shell .mamo-self-choice.confidence { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.air-bet-review-shell .mamo-self-choice.real { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.air-bet-review-shell .mamo-self-choice .filter { min-width: 0; min-height: 36px; padding: 5px 4px; }
+.air-bet-review-shell .mamo-self-check .field { margin: 0; }
+.air-bet-review-shell .mamo-self-check .field > span { display: block; margin-bottom: 4px; color: #173d5b; font-size: 12px; font-weight: 800; }
+.air-bet-review-shell .mamo-self-check .field select { min-height: 38px; }
+
 /* A swipe beginning on a ticket card remains available to the parent scroll owner. */
 .air-bet-review-tickets .betline,
 .air-bet-review-tickets .betline-edit,

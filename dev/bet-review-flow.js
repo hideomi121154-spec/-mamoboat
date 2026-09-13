@@ -15,10 +15,6 @@
   let allocationBudgetDraft = "";
   let reviewStep = "allocation";
   let detailOpen = false;
-  let pendingSelfCheck = null;
-  const APP_STATE_KEY = "mamoboat_v40_personal";
-  const SELF_CHECK_STORE_KEY = "mamoboat_self_check_v1";
-  const SELF_CHECK_EVENT = "pre_bet_self_check_recorded";
 
   const escapeHtml = (value) => String(value == null ? "" : value)
     .replaceAll("&", "&amp;")
@@ -27,292 +23,134 @@
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-  function readAppState() {
-  try {
-    return JSON.parse(localStorage.getItem(APP_STATE_KEY) || "{}");
-  } catch (_) {
-    return {};
-  }
-}
-
-function readSelfCheckStore() {
-  try {
-    const value = JSON.parse(localStorage.getItem(SELF_CHECK_STORE_KEY) || "{}");
-    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  } catch (_) {
-    return {};
-  }
-}
-
-function writeSelfCheckStore(store) {
-  try {
-    const entries = Object.entries(store || {}).sort((left, right) =>
-      String(right[1]?.recordedAt || "").localeCompare(String(left[1]?.recordedAt || ""))
-    ).slice(0, 1000);
-    localStorage.setItem(SELF_CHECK_STORE_KEY, JSON.stringify(Object.fromEntries(entries)));
-    return true;
-  } catch (error) {
-    console.warn("SELF CHECKの端末保存に失敗しました", error);
-    return false;
-  }
-}
-
-function selfCheckAnswers(shell) {
-  const panel = shell?.querySelector?.('[data-mamo-self-check="1"]');
-  if (!panel) return null;
-  return {
-    confidence: Number(panel.dataset.confidence || 0),
-    basis: String(panel.querySelector('[data-mamo-self-basis="1"]')?.value || ""),
-    stakeFeeling: String(panel.querySelector('[data-mamo-self-stake-feeling="1"]')?.value || ""),
-    realSameAmount: String(panel.dataset.realSameAmount || ""),
-  };
-}
-
-function selfCheckComplete(value) {
-  return Boolean(
-    value
-    && Number.isInteger(value.confidence)
-    && value.confidence >= 1
-    && value.confidence <= 5
-    && value.basis
-    && value.stakeFeeling
-    && ["yes", "no"].includes(value.realSameAmount)
-  );
-}
-
-function syncSelfCheckConfirm(shell) {
-  if (!shell) return;
-  const answers = selfCheckAnswers(shell);
-  const complete = selfCheckComplete(answers);
-  const status = shell.querySelector('[data-mamo-self-status="1"]');
-  if (status) {
-    status.textContent = complete
-      ? "SELF CHECKを記録できます。"
-      : "4項目を選ぶとAIR BETを確定できます。";
-  }
-  const confirm = shell.querySelector('button[onclick="placeBet()"]');
-  if (!confirm || reviewStep !== "final") return;
-  const lines = draftLines();
-  const total = lines.reduce((sum, line) => sum + lineAmount(line), 0);
-  const state = readAppState();
-  const balance = Number(state.coins);
-  const baseBlocked = !lines.length
-    || lines.some((line) => !lineAmount(line))
-    || (Number.isFinite(balance) && total > balance);
-  confirm.disabled = baseBlocked || !complete;
-}
-
-function choiceButton(label, value, datasetName, panel) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "filter";
-  button.textContent = label;
-  button.dataset[datasetName] = value;
-  button.setAttribute("aria-pressed", "false");
-  button.addEventListener("click", () => {
-    const selector = `[data-${datasetName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}]`;
-    panel.querySelectorAll(selector).forEach((item) => {
-      const selected = item === button;
-      item.classList.toggle("active", selected);
-      item.setAttribute("aria-pressed", selected ? "true" : "false");
-    });
-    if (datasetName === "mamoSelfConfidence") panel.dataset.confidence = value;
-    if (datasetName === "mamoRealSame") panel.dataset.realSameAmount = value;
-    syncSelfCheckConfirm(panel.closest('.air-bet-review-shell[data-air-bet-review="1"]'));
-  });
-  return button;
-}
-
-function createSelfCheckPanel() {
-  const panel = document.createElement("section");
-  panel.className = "notice mamo-self-check";
-  panel.dataset.mamoSelfCheck = "1";
-  panel.dataset.confidence = "";
-  panel.dataset.realSameAmount = "";
-  panel.setAttribute("aria-label", "AIR BET前のSELF CHECK");
-
-  const kicker = document.createElement("span");
-  kicker.className = "kicker";
-  kicker.textContent = "SELF CHECK";
-  const title = document.createElement("h3");
-  title.textContent = "予想の前に、自分を知る。";
-  const lead = document.createElement("p");
-  lead.className = "muted";
-  lead.textContent = "正解はありません。今の自分に一番近いものを選んでください。";
-
-  const confidenceLabel = document.createElement("h3");
-  confidenceLabel.textContent = "1. このレースへの自信は？";
-  const confidence = document.createElement("div");
-  confidence.className = "filter-rail";
-  confidence.setAttribute("role", "group");
-  confidence.setAttribute("aria-label", "自信度1から5");
-  for (let value = 1; value <= 5; value += 1) {
-    confidence.append(choiceButton(`${value}`, String(value), "mamoSelfConfidence", panel));
+  function selfCheckAnswers(shell) {
+    const panel = shell?.querySelector?.('[data-mamo-self-check="1"]');
+    if (!panel) return null;
+    return {
+      confidence: Number(panel.dataset.confidence || 0),
+      basis: String(panel.querySelector('[data-mamo-self-basis="1"]')?.value || ""),
+      stakeFeeling: String(panel.querySelector('[data-mamo-self-stake-feeling="1"]')?.value || ""),
+      realSameAmount: String(panel.dataset.realSameAmount || ""),
+    };
   }
 
-  const basis = document.createElement("label");
-  basis.className = "field";
-  basis.innerHTML = '<span>2. 今回の主な根拠は？</span><select data-mamo-self-basis="1"><option value="">選んでください</option><option value="racer">選手</option><option value="motor">モーター</option><option value="exhibition">展示</option><option value="odds">オッズ</option><option value="start">スタート</option><option value="intuition">直感</option><option value="other">その他</option></select>';
-
-  const stake = document.createElement("label");
-  stake.className = "field";
-  stake.innerHTML = '<span>3. このBET額をどう感じますか？</span><select data-mamo-self-stake-feeling="1"><option value="">選んでください</option><option value="very_low">かなり少ない</option><option value="low">少ない</option><option value="appropriate">適切</option><option value="high">多い</option><option value="very_high">かなり多い</option></select>';
-
-  const realLabel = document.createElement("h3");
-  realLabel.textContent = "4. REALでも同じ金額を賭けますか？";
-  const real = document.createElement("div");
-  real.className = "filter-rail";
-  real.setAttribute("role", "group");
-  real.setAttribute("aria-label", "REALでも同じ金額を賭けるか");
-  real.append(
-    choiceButton("YES", "yes", "mamoRealSame", panel),
-    choiceButton("NO", "no", "mamoRealSame", panel)
-  );
-
-  const status = document.createElement("p");
-  status.className = "tiny";
-  status.dataset.mamoSelfStatus = "1";
-  status.setAttribute("role", "status");
-  status.setAttribute("aria-live", "polite");
-  status.textContent = "4項目を選ぶとAIR BETを確定できます。";
-
-  panel.append(kicker, title, lead, confidenceLabel, confidence, basis, stake, realLabel, real, status);
-  panel.querySelectorAll("select").forEach((select) => {
-    select.addEventListener("change", () => syncSelfCheckConfirm(
-      panel.closest('.air-bet-review-shell[data-air-bet-review="1"]')
-    ));
-  });
-  return panel;
-}
-
-function stableUuid() {
-  return window.crypto?.randomUUID
-    ? window.crypto.randomUUID()
-    : `self-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-async function sendSelfCheckEvent(check, state) {
-  const config = window.MAMOBOAT_PILOT || {};
-  const collector = config.collector || {};
-  if (state?.pilot?.consent !== true || collector.enabled !== true || !collector.endpoint) return false;
-  const clientKey = String(collector.publishableKey || collector.anonKey || "").trim();
-  if (!clientKey) return false;
-  const sourceEvent = [...(state?.pilot?.events || [])].reverse().find(
-    (item) => item?.payload?.record_id === check.recordId && item.event_name === "virtual_bet_placed"
-  );
-  const event = {
-    event_id: check.eventId,
-    study_id: String(config.studyId || "mamoboat-pilot-v1").slice(0, 80),
-    participant_id: String(state?.pilot?.participantId || sourceEvent?.participant_id || ""),
-    session_id: String(sourceEvent?.session_id || `self-check-${check.recordId}`),
-    occurred_at: check.capturedAt,
-    event_name: SELF_CHECK_EVENT,
-    app_version: String(sourceEvent?.app_version || "4.0.1"),
-    screen: "race",
-    race_date: check.raceDate || null,
-    venue_code: check.venueCode || null,
-    race_no: check.raceNo == null ? null : Number(check.raceNo),
-    payload: {
-      record_id: check.recordId,
-      confidence: check.confidence,
-      decision_basis: check.basis,
-      stake_feeling: check.stakeFeeling,
-      real_same_amount: check.realSameAmount,
-      stake_b: check.stakeB,
-      line_count: check.lineCount,
-      self_check_version: 1,
-    },
-  };
-  const headers = { "Content-Type": "application/json", apikey: clientKey };
-  if (/^eyJ/.test(clientKey)) headers.Authorization = `Bearer ${clientKey}`;
-  const body = collector.transport === "rpc" ? { p_events: [event] } : [event];
-  try {
-    const response = await fetch(String(collector.endpoint), {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
-    return response.ok;
-  } catch (error) {
-    console.warn("SELF CHECKの中央送信に失敗しました", error);
-    return false;
+  function selfCheckComplete(value) {
+    return Boolean(
+      value
+      && Number.isInteger(value.confidence)
+      && value.confidence >= 1
+      && value.confidence <= 5
+      && value.basis
+      && value.stakeFeeling
+      && ["yes", "no"].includes(value.realSameAmount)
+    );
   }
-}
 
-async function finalizeSelfCheck(snapshot) {
-  const state = readAppState();
-  const capturedMs = new Date(snapshot.capturedAt).getTime();
-  const ledger = [...(state.ledger || [])].reverse().find((item) => {
-    const at = new Date(item?.at || 0).getTime();
-    return item?.type === "virtual_bet"
-      && item?.recordId
-      && Number.isFinite(at)
-      && at >= capturedMs - 100
-      && Math.abs(Number(item.amount) || 0) === snapshot.stakeB;
-  });
-  if (!ledger?.recordId) return false;
-  const record = (state.records || []).find((item) => item?.id === ledger.recordId);
-  if (!record) return false;
-
-  const store = readSelfCheckStore();
-  if (store[ledger.recordId]) return true;
-  const check = {
-    recordId: ledger.recordId,
-    eventId: stableUuid(),
-    confidence: snapshot.confidence,
-    basis: snapshot.basis,
-    stakeFeeling: snapshot.stakeFeeling,
-    realSameAmount: snapshot.realSameAmount,
-    stakeB: snapshot.stakeB,
-    lineCount: snapshot.lineCount,
-    raceDate: record.raceDate || null,
-    venueCode: record.venueCode || null,
-    raceNo: record.raceNo ?? null,
-    capturedAt: snapshot.capturedAt,
-    recordedAt: new Date().toISOString(),
-    centralSyncAt: null,
-  };
-  store[check.recordId] = check;
-  writeSelfCheckStore(store);
-  const sent = await sendSelfCheckEvent(check, state);
-  if (sent) {
-    const latest = readSelfCheckStore();
-    if (latest[check.recordId]) {
-      latest[check.recordId].centralSyncAt = new Date().toISOString();
-      writeSelfCheckStore(latest);
+  function syncSelfCheckConfirm(shell) {
+    if (!shell) return;
+    const complete = selfCheckComplete(selfCheckAnswers(shell));
+    const status = shell.querySelector('[data-mamo-self-status="1"]');
+    if (status) {
+      status.textContent = complete
+        ? "SELF CHECKを記録できます。"
+        : "4項目を選ぶとAIR BETを確定できます。";
     }
+    const confirm = shell.querySelector('button[onclick="placeBet()"]');
+    if (!confirm || reviewStep !== "final") return;
+    const lines = draftLines();
+    const total = lines.reduce((sum, line) => sum + lineAmount(line), 0);
+    let balance = NaN;
+    try {
+      balance = Number(JSON.parse(localStorage.getItem("mamoboat_v40_personal") || "{}").coins);
+    } catch (_) {}
+    const baseBlocked = !lines.length
+      || lines.some((line) => !lineAmount(line))
+      || (Number.isFinite(balance) && total > balance);
+    confirm.disabled = baseBlocked || !complete;
   }
-  return true;
-}
 
-function captureSelfCheck(event) {
-  const target = event.target?.closest?.('.air-bet-review-shell[data-air-bet-review="1"] button[onclick="placeBet()"]');
-  if (!target || reviewStep !== "final") return;
-  const shell = target.closest('.air-bet-review-shell[data-air-bet-review="1"]');
-  const answers = selfCheckAnswers(shell);
-  if (!selfCheckComplete(answers)) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    alert("SELF CHECKの4項目を選んでください。");
-    syncSelfCheckConfirm(shell);
-    return;
+  function choiceButton(label, value, datasetName, panel) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "filter";
+    button.textContent = label;
+    button.dataset[datasetName] = value;
+    button.setAttribute("aria-pressed", "false");
+    button.addEventListener("click", () => {
+      const selector = `[data-${datasetName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}]`;
+      panel.querySelectorAll(selector).forEach((item) => {
+        const selected = item === button;
+        item.classList.toggle("active", selected);
+        item.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      if (datasetName === "mamoSelfConfidence") panel.dataset.confidence = value;
+      if (datasetName === "mamoRealSame") panel.dataset.realSameAmount = value;
+      syncSelfCheckConfirm(panel.closest('.air-bet-review-shell[data-air-bet-review="1"]'));
+    });
+    return button;
   }
-  const lines = draftLines();
-  pendingSelfCheck = {
-    ...answers,
-    stakeB: lines.reduce((sum, line) => sum + lineAmount(line), 0),
-    lineCount: lines.length,
-    capturedAt: new Date().toISOString(),
-  };
-}
 
-function completeCapturedSelfCheck(target) {
-  if (!pendingSelfCheck || !target?.closest?.('button[onclick="placeBet()"]')) return false;
-  const snapshot = pendingSelfCheck;
-  pendingSelfCheck = null;
-  setTimeout(() => finalizeSelfCheck(snapshot), 0);
-  return true;
-}
+  function createSelfCheckPanel() {
+    const panel = document.createElement("section");
+    panel.className = "mamo-self-check";
+    panel.dataset.mamoSelfCheck = "1";
+    panel.dataset.confidence = "";
+    panel.dataset.realSameAmount = "";
+    panel.setAttribute("aria-label", "AIR BET前のSELF CHECK");
+
+    const kicker = document.createElement("span");
+    kicker.className = "kicker";
+    kicker.textContent = "SELF CHECK";
+    const title = document.createElement("h3");
+    title.textContent = "予想の前に、自分を知る。";
+    const lead = document.createElement("p");
+    lead.className = "muted";
+    lead.textContent = "正解はありません。今の自分に一番近いものを選んでください。";
+
+    const confidenceLabel = document.createElement("h4");
+    confidenceLabel.textContent = "1. このレースへの自信は？";
+    const confidence = document.createElement("div");
+    confidence.className = "mamo-self-choice confidence";
+    confidence.setAttribute("role", "group");
+    confidence.setAttribute("aria-label", "自信度1から5");
+    for (let value = 1; value <= 5; value += 1) {
+      confidence.append(choiceButton(`${value}`, String(value), "mamoSelfConfidence", panel));
+    }
+
+    const basis = document.createElement("label");
+    basis.className = "field";
+    basis.innerHTML = '<span>2. 今回の主な根拠は？</span><select data-mamo-self-basis="1"><option value="">選んでください</option><option value="racer">選手</option><option value="motor">モーター</option><option value="exhibition">展示</option><option value="odds">オッズ</option><option value="start">スタート</option><option value="intuition">直感</option><option value="other">その他</option></select>';
+
+    const stake = document.createElement("label");
+    stake.className = "field";
+    stake.innerHTML = '<span>3. このBET額をどう感じますか？</span><select data-mamo-self-stake-feeling="1"><option value="">選んでください</option><option value="very_low">かなり少ない</option><option value="low">少ない</option><option value="appropriate">適切</option><option value="high">多い</option><option value="very_high">かなり多い</option></select>';
+
+    const realLabel = document.createElement("h4");
+    realLabel.textContent = "4. REALでも同じ金額を賭けますか？";
+    const real = document.createElement("div");
+    real.className = "mamo-self-choice real";
+    real.setAttribute("role", "group");
+    real.setAttribute("aria-label", "REALでも同じ金額を賭けるか");
+    real.append(
+      choiceButton("YES", "yes", "mamoRealSame", panel),
+      choiceButton("NO", "no", "mamoRealSame", panel)
+    );
+
+    const status = document.createElement("p");
+    status.className = "tiny";
+    status.dataset.mamoSelfStatus = "1";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    status.textContent = "4項目を選ぶとAIR BETを確定できます。";
+
+    panel.append(kicker, title, lead, confidenceLabel, confidence, basis, stake, realLabel, real, status);
+    panel.querySelectorAll("select").forEach((select) => {
+      select.addEventListener("change", () => syncSelfCheckConfirm(
+        panel.closest('.air-bet-review-shell[data-air-bet-review="1"]')
+      ));
+    });
+    return panel;
+  }
 
   function racerRows() {
     return Array.from(document.querySelectorAll("#raceView .boats .boat")).map((item) => {
@@ -938,13 +776,11 @@ function completeCapturedSelfCheck(target) {
     allocationBudgetDraft = "";
     reviewStep = "allocation";
     detailOpen = false;
-    pendingSelfCheck = null;
   }
 
   function onDocumentClick(event) {
     const target = event.target;
     if (!target?.closest) return;
-    if (completeCapturedSelfCheck(target)) return;
     if (target.closest("#reviewBetButton")) {
       reviewStep = "allocation";
       detailOpen = false;
@@ -1019,7 +855,6 @@ function completeCapturedSelfCheck(target) {
     window.addEventListener(AIR_BET_RENDERED_EVENT, enhanceBuilder);
     window.addEventListener("mamo:venues-opened", resetReviewSession);
     window.addEventListener("pageshow", enhanceBuilder);
-    document.addEventListener("click", captureSelfCheck, true);
     document.addEventListener("click", onDocumentClick);
     document.addEventListener("input", onDocumentInput);
     document.addEventListener("change", onDocumentInput);

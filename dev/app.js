@@ -2279,6 +2279,18 @@
     if (!cart.length) return alert("買い目を追加してください。");
     if (cartIncompleteCount()) return alert("全ての買い目にベット数を入力してください。");
     if (total > S.coins) return alert("Bメダル残高が不足しています。");
+    const selfCheckPanel = $("modal")?.querySelector?.('[data-mamo-self-check="1"]');
+    const selfConfidence = Number(selfCheckPanel?.dataset?.confidence || 0);
+    const selfBasis = String(selfCheckPanel?.querySelector?.('[data-mamo-self-basis="1"]')?.value || "");
+    const selfStakeFeeling = String(selfCheckPanel?.querySelector?.('[data-mamo-self-stake-feeling="1"]')?.value || "");
+    const selfRealSameAmount = String(selfCheckPanel?.dataset?.realSameAmount || "");
+    const selfCheckComplete = Number.isInteger(selfConfidence)
+      && selfConfidence >= 1
+      && selfConfidence <= 5
+      && selfBasis
+      && selfStakeFeeling
+      && ["yes", "no"].includes(selfRealSameAmount);
+    if (!selfCheckComplete) return alert("SELF CHECKの4項目を選んでください。");
     const event = eventInfo(venueItem);
     const rewardChallenge = false;
     const recordedModes = [...new Set(cart.map((line) => line.mode).filter(Boolean))];
@@ -2324,6 +2336,11 @@
       stake: total,
       intendedYen: total,
       observationVersion: 1,
+      selfCheckVersion: 1,
+      selfConfidence,
+      selfBasis,
+      selfStakeFeeling,
+      selfRealSameAmount,
       status: "pending",
       settled: false,
       payoutStatus: "pending",
@@ -2378,6 +2395,11 @@
       stake_b: record.stake,
       intended_yen: record.intendedYen,
       observation_version: record.observationVersion,
+      self_check_version: record.selfCheckVersion,
+      self_confidence: record.selfConfidence,
+      self_basis: record.selfBasis,
+      self_stake_feeling: record.selfStakeFeeling,
+      self_real_same_amount: record.selfRealSameAmount,
       reward_challenge: record.rewardChallenge,
       seconds_to_close: record.closeTime
         ? Math.max(0, Math.round((new Date(record.closeTime).getTime() - Date.now()) / 1000))
