@@ -9,6 +9,7 @@ const app = fs.readFileSync(path.join(root, "dev/app.js"), "utf8");
 const review = fs.readFileSync(path.join(root, "dev/bet-review-flow.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "dev/air-bet-review-compact.css"), "utf8");
 const html = fs.readFileSync(path.join(root, "dev/index.html"), "utf8");
+const sw = fs.readFileSync(path.join(root, "dev/sw.js"), "utf8");
 
 for (const field of [
   "selfCheckVersion",
@@ -39,8 +40,15 @@ assert.match(review, /REALでも同じ金額を賭けますか？/, "REAL compar
 assert.doesNotMatch(review, /window\.placeBet\s*=/, "review presentation must not replace placeBet");
 assert.doesNotMatch(review, /SELF_CHECK_STORE_KEY|pre_bet_self_check_recorded|finalizeSelfCheck/, "parallel SELF CHECK persistence must not exist");
 assert.match(css, /\.mamo-self-check/, "canonical review stylesheet must own SELF CHECK styling");
-assert.match(html, /app\.js\?v=20260914-1/, "app cache key must be bumped");
-assert.match(html, /bet-review-flow\.js\?v=20260914-1/, "review cache key must be bumped");
-assert.match(html, /air-bet-review-compact\.css\?v=20260914-1/, "review CSS cache key must be bumped");
 
-console.log("SELF CHECK Phase 1 ownership contract: OK");
+for (const asset of [
+  "app.js?v=20260914-1",
+  "bet-review-flow.js?v=20260914-1",
+  "air-bet-review-compact.css?v=20260914-1",
+]) {
+  assert.ok(html.includes(asset), `index must load ${asset}`);
+  assert.ok(sw.includes(asset), `service worker must deliver ${asset}`);
+}
+assert.match(sw, /mamoboat-v518-self-check-phase1-dev/, "PWA cache namespace must be bumped");
+
+console.log("SELF CHECK Phase 1 ownership and PWA delivery contract: OK");
