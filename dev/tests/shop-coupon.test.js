@@ -6,6 +6,7 @@ const test = require("node:test");
 const devRoot = path.resolve(__dirname, "..");
 const marketplace = fs.readFileSync(path.join(devRoot, "mamo-shop-marketplace.js"), "utf8");
 const shop = fs.readFileSync(path.join(devRoot, "mamo-shop.js"), "utf8");
+const secondaryMenu = fs.readFileSync(path.join(devRoot, "mamo-secondary-menu.js"), "utf8");
 const benefits = fs.readFileSync(path.join(devRoot, "mamo-shop-record-benefits.js"), "utf8");
 const homeBalance = fs.readFileSync(path.join(devRoot, "home-record-balance.js"), "utf8");
 const compatibility = fs.readFileSync(path.join(devRoot, "decision-event-api-compat.js"), "utf8");
@@ -37,6 +38,7 @@ test("member benefits are placed after the product grid", () => {
 
 test("SHOP is restored without the abandoned horizontal navigation", () => {
   assert.match(compatibility, /mamo-shop\.js\?v=20260913-1/);
+  assert.match(compatibility, /mamo-secondary-menu\.js\?v=20260913-1/);
   assert.match(compatibility, /mamo-shop-record-benefits\.js\?v=20260830-1/);
   assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
   assert.match(compatibility, /home-record-balance\.js\?v=20260828-1/);
@@ -55,6 +57,17 @@ test("mobile primary nav stays fixed while SHOP and settings use a secondary men
   assert.match(shop, /window\.go\?\.\("shop"\)/);
   assert.match(shop, /window\.go\?\.\("settings"\)/);
   assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
+});
+
+test("secondary menu is visible on Home and follows Analysis screen state", () => {
+  assert.match(secondaryMenu, /#home \.home-masthead/);
+  assert.match(secondaryMenu, /document\.querySelector\("\.topbar"\)/);
+  assert.match(secondaryMenu, /wrap\.dataset\.host = nextHost/);
+  assert.match(secondaryMenu, /document\.body\.dataset\.screen = ANALYSIS_SCREEN_ID/);
+  assert.match(secondaryMenu, /#nav-quantAnalysis/);
+  assert.match(secondaryMenu, /window\.go\?\.\("shop"\)/);
+  assert.match(secondaryMenu, /window\.go\?\.\("settings"\)/);
+  assert.doesNotMatch(secondaryMenu, /querySelector\("\.bottom-nav"\)/);
 });
 
 test("product cards are ready for Rakuten point multipliers", () => {
