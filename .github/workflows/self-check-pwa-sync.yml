@@ -1,0 +1,36 @@
+name: Sync SELF CHECK PWA cache
+
+on:
+  push:
+    branches:
+      - feature/self-check-phase1
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/self-check-phase1
+          fetch-depth: 0
+      - name: Sync PWA release keys
+        run: python tools/sync_self_check_pwa.py
+      - name: Validate PWA and regression test
+        shell: bash
+        run: |
+          node --check dev/sw.js
+          node tests/ios-race-event-loop-regression.test.js
+          node dev/tests/self-check-phase1.test.js
+      - name: Commit PWA sync
+        shell: bash
+        run: |
+          git config user.name 'mamoboat-self-check-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git rm .github/workflows/self-check-pwa-sync.yml tools/sync_self_check_pwa.py
+          git add dev/sw.js tests/ios-race-event-loop-regression.test.js
+          git commit -m 'fix: align SELF CHECK PWA cache release'
+          git push origin HEAD:feature/self-check-phase1
