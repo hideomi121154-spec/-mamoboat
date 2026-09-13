@@ -47,6 +47,12 @@ assert.ok(observation.some((line) => /最大連敗は 7回、最大DDは 18,000 
 assert.ok(observation.some((line) => /取得率は最低 95\.0%/.test(line)));
 assert.ok(observation.some((line) => /一時的なものか、続いている傾向なのか/.test(line)));
 
+const collapsed = api.splitIntegratedObservationLines(metrics);
+assert.equal(collapsed.preview.length, 3);
+assert.deepEqual(collapsed.preview, observation.slice(0, 3));
+assert.deepEqual(collapsed.details, observation.slice(3));
+assert.ok(collapsed.details.length > 0);
+
 const sparse = api.buildIntegratedMetrics({}, {});
 assert.equal(sparse.settledCount, 0);
 assert.equal(sparse.observedDays, 0);
@@ -55,6 +61,9 @@ assert.equal(sparse.returnRate, null);
 assert.equal(sparse.averageStakeBalanceRate, null);
 assert.equal(sparse.maxDrawdown, 0);
 assert.match(api.buildIntegratedObservationLines(sparse)[0], /まだ確定記録がありません/);
+const sparseCollapsed = api.splitIntegratedObservationLines(sparse);
+assert.equal(sparseCollapsed.preview.length, 1);
+assert.equal(sparseCollapsed.details.length, 0);
 
 const mature = api.buildIntegratedObservationLines({
   ...metrics,
@@ -70,6 +79,10 @@ assert.ok(!mature.some((line) => /まだ傾向確認/.test(line)));
 assert.match(source, /STEP 10/);
 assert.match(source, /統合分析/);
 assert.match(source, /今回の記録から見えること/);
+assert.match(source, /詳しく見る/);
+assert.match(source, /data\.mamoObservationPreview|dataset\.mamoObservationPreview/);
+assert.match(source, /dataset\.mamoObservationDetails/);
+assert.match(source, /document\.createElement\("details"\)/);
 assert.match(source, /指標同士を無理に1つの点数へ合成せず/);
 assert.match(source, /『安全・危険』の判定、原因の断定、推奨BET額、次レース予測は行いません/);
 assert.match(source, /MAMO_QUANT_RISK_PROFILE/);
