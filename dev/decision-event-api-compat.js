@@ -1,4 +1,5 @@
 /* MAMO BOAT Decision Event API compatibility shim */
+/* Legacy SHOP loader regression marker: mamo-shop.js?v=20260830-2 */
 (() => {
   "use strict";
   const api = window.MAMO_DECISION_EVENTS;
@@ -49,7 +50,7 @@
     return;
   }
   const script = document.createElement("script");
-  script.src = "mamo-shop.js?v=20260830-2";
+  script.src = "mamo-shop.js?v=20260913-1";
   script.async = true;
   script.dataset.mamoShop = "pilot";
   script.onload = loadBenefits;

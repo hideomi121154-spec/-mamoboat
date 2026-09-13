@@ -12,6 +12,8 @@ const html = read("dev/index.html");
 const touchRollback = read("dev/home-deadline-touch-fix.js");
 const compatibility = read("dev/decision-event-api-compat.js");
 const shop = read("dev/mamo-shop.js");
+const legacyHorizontalNav = read("dev/bottom-nav-horizontal.js");
+const sw = read("dev/sw.js");
 
 // The story reader must use one fixed compositor layer. A nested fixed CTA can
 // leave a stale iOS hit-test layer after its parent is removed.
@@ -46,11 +48,20 @@ assert.match(app, /item\.classList\.toggle\("active", item\.id === `nav-\$\{id\}
 assert.doesNotMatch(touchRollback, /addEventListener\s*\(/);
 assert.doesNotMatch(touchRollback, /preventDefault\s*\(/);
 
-// SHOP uses native CSS overflow only. The abandoned whole-app horizontal
-// navigation experiment must stay unloaded because it changed iOS hit testing.
+// Mobile primary navigation is fixed to the native six-slot grid again.
+// SHOP and Settings are secondary destinations and must not force horizontal
+// scrolling or revive the abandoned bottom-nav experiment.
 assert.doesNotMatch(compatibility, /bottom-nav-horizontal\.js/);
-assert.match(compatibility, /mamo-shop\.js\?v=20260830-2/);
-assert.match(shop, /overflow-x:auto!important/);
-assert.match(shop, /touch-action:pan-x/);
+assert.match(compatibility, /mamo-shop\.js\?v=20260913-1/);
+assert.doesNotMatch(shop, /\.bottom-nav\s*\{[\s\S]*?overflow-x:auto!important/);
+assert.doesNotMatch(shop, /touch-action:pan-x/);
+assert.match(shop, /document\.getElementById\("nav-settings"\)\?\.remove\(\)/);
+assert.match(shop, /analysis\.className = "nav"/);
+assert.match(shop, /window\.go\?\.\("shop"\)/);
+assert.match(shop, /window\.go\?\.\("settings"\)/);
+assert.doesNotMatch(legacyHorizontalNav, /overflow-x\s*:\s*auto/i);
+assert.doesNotMatch(legacyHorizontalNav, /scrollIntoView/);
+assert.match(sw, /mamoboat-v517-primary-nav-safe-dev/);
+assert.match(sw, /url\.pathname\.endsWith\("\/mamo-shop\.js"\)/);
 
 console.log("iOS navigation regression checks passed");
