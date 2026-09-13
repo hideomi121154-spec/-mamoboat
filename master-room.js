@@ -2,9 +2,10 @@
   "use strict";
 
   const ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/master-room-stats";
+  const FINANCE_ENDPOINT = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/master-room-finance";
   const KEY_SESSION = "mamoboat_master_key_session_v1";
   const $ = id => document.getElementById(id);
-  const state = { data: null, key: sessionStorage.getItem(KEY_SESSION) || "", days: 14, selectedParticipant: null };
+  const state = { data: null, finance: null, financeError: null, key: sessionStorage.getItem(KEY_SESSION) || "", days: 14, selectedParticipant: null };
 
   const fmt = n => Math.round(Number(n) || 0).toLocaleString("ja-JP");
   const yen = n => `${fmt(n)}円`;
@@ -55,20 +56,30 @@
     else if (state.data) $("liveText").textContent = "CONNECTED";
   }
 
+  async function fetchJson(url, key) {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { "x-master-key": key },
+      cache: "no-store",
+    });
+    if (res.status === 401) throw new Error("管理キーが違います。");
+    if (!res.ok) throw new Error(`MASTER ROOM API ${res.status}`);
+    return res.json();
+  }
+
   async function loadData(key = state.key) {
     if (!key) throw new Error("管理キーを入力してください。");
     setBusy(true);
     try {
-      const res = await fetch(`${ENDPOINT}?days=${state.days}`, {
-        method: "GET",
-        headers: { "x-master-key": key },
-        cache: "no-store",
-      });
-      if (res.status === 401) throw new Error("管理キーが違います。");
-      if (!res.ok) throw new Error(`MASTER ROOM API ${res.status}`);
-      const data = await res.json();
+      const statsPromise = fetchJson(`${ENDPOINT}?days=${state.days}`, key);
+      const financePromise = fetchJson(`${FINANCE_ENDPOINT}?days=${state.days}`, key)
+        .then(data => ({ data, error: null }))
+        .catch(error => ({ data: null, error }));
+      const [data, financeResult] = await Promise.all([statsPromise, financePromise]);
       state.key = key;
       state.data = data;
+      state.finance = financeResult.data;
+      state.financeError = financeResult.error;
       sessionStorage.setItem(KEY_SESSION, key);
       setLocked(false);
       render(data);
@@ -145,13 +156,31 @@
     $("participantsBody").querySelectorAll("tr[data-participant]").forEach(row => row.addEventListener("click", () => showParticipant(row.dataset.participant)));
   }
 
+  function financeFor(participantId) {
+    return (state.finance?.participants || []).find(x => x.participantId === participantId) || null;
+  }
+
+  function financeDetailHtml(participantId) {
+    const f = financeFor(participantId);
+    if (!f) {
+      if (state.financeError) return `<div style="margin-top:12px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#d7e2e8;font-size:9px">資金分析を取得できませんでした。</div>`; // finance unavailable
+      return `<div style="margin-top:12px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#d7e2e8;font-size:9px">この期間のAIR BET資金データはまだありません。</div>`;
+    }
+    const balance = f.currentBalanceB == null ? "—" : `${fmt(f.currentBalanceB)}B`;
+    const hitRate = Number(f.settledRecords) > 0 ? pct(f.hitRate) : "—";
+    const returnRate = Number(f.stakeB) > 0 ? pct(f.returnRate) : "—";
+    const net = Number(f.netB) || 0;
+    const netText = `${net > 0 ? "+" : ""}${fmt(net)}B`;
+    return `<div style="margin-top:14px"><small style="color:#e5bb58">AIR BET FINANCE</small><div class="pd-grid" style="margin-top:7px"><div><span>現在B残高</span><b>${esc(balance)}</b></div><div><span>総投資</span><b>${fmt(f.stakeB)}B</b></div><div><span>総払戻</span><b>${fmt(f.payoutB)}B</b></div><div><span>返還</span><b>${fmt(f.refundB)}B</b></div><div><span>収支</span><b>${esc(netText)}</b></div><div><span>判定済み</span><b>${fmt(f.settledRecords)}件</b></div><div><span>的中</span><b>${fmt(f.hitRecords)}件</b></div><div><span>的中率</span><b>${esc(hitRate)}</b></div><div><span>回収率</span><b>${esc(returnRate)}</b></div></div></div>`;
+  }
+
   function showParticipant(participantId) {
     const p = (state.data?.participants || []).find(x => x.participantId === participantId);
     if (!p) return;
     state.selectedParticipant = participantId;
     const related = (state.data?.recentEvents || []).filter(e => e.participantId === participantId).slice(0, 12);
     const detail = $("participantDetail");
-    detail.innerHTML = `<button class="close-detail" id="closeParticipant" type="button">閉じる</button><small>TESTER DETAIL</small><h3>${esc(p.displayId)}</h3><div class="pd-grid"><div><span>初回</span><b>${esc(dateTime(p.firstSeen))}</b></div><div><span>最終</span><b>${esc(dateTime(p.lastSeen))}</b></div><div><span>セッション</span><b>${fmt(p.sessions)}</b></div><div><span>AIR BET</span><b>${fmt(p.bets)}回</b></div><div><span>予定現金</span><b>${yen(p.intendedYen)}</b></div><div><span>平均衝動</span><b>${p.avgUrge == null ? "—" : esc(`${p.avgUrge}/10`)}</b></div><div><span>レビュー</span><b>${fmt(p.reviews)}</b></div><div><span>最新画面</span><b>${esc(p.latestScreen || "—")}</b></div><div><span>最新プラン</span><b>${esc(p.latestPlan || "—")}</b></div></div>${related.length ? `<div style="margin-top:11px;font-size:9px;color:#a9bac4">直近：${related.map(e => `${esc(dateTime(e.occurredAt))} ${esc(eventLabel(e.eventName))}`).join(" / ")}</div>` : ""}`;
+    detail.innerHTML = `<button class="close-detail" id="closeParticipant" type="button">閉じる</button><small>TESTER DETAIL</small><h3>${esc(p.displayId)}</h3><div class="pd-grid"><div><span>初回</span><b>${esc(dateTime(p.firstSeen))}</b></div><div><span>最終</span><b>${esc(dateTime(p.lastSeen))}</b></div><div><span>セッション</span><b>${fmt(p.sessions)}</b></div><div><span>AIR BET</span><b>${fmt(p.bets)}回</b></div><div><span>予定現金</span><b>${yen(p.intendedYen)}</b></div><div><span>平均衝動</span><b>${p.avgUrge == null ? "—" : esc(`${p.avgUrge}/10`)}</b></div><div><span>レビュー</span><b>${fmt(p.reviews)}</b></div><div><span>最新画面</span><b>${esc(p.latestScreen || "—")}</b></div><div><span>最新プラン</span><b>${esc(p.latestPlan || "—")}</b></div></div>${financeDetailHtml(participantId)}${related.length ? `<div style="margin-top:11px;font-size:9px;color:#a9bac4">直近：${related.map(e => `${esc(dateTime(e.occurredAt))} ${esc(eventLabel(e.eventName))}`).join(" / ")}</div>` : ""}`;
     detail.classList.remove("hidden");
     $("closeParticipant").onclick = () => { detail.classList.add("hidden"); state.selectedParticipant = null; };
   }
@@ -205,6 +234,8 @@
     sessionStorage.removeItem(KEY_SESSION);
     state.key = "";
     state.data = null;
+    state.finance = null;
+    state.financeError = null;
     state.selectedParticipant = null;
     $("participantDetail").classList.add("hidden");
     setLocked(true);
