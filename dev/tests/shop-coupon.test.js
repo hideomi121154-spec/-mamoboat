@@ -70,6 +70,17 @@ test("secondary menu is visible on Home and follows Analysis screen state", () =
   assert.doesNotMatch(secondaryMenu, /querySelector\("\.bottom-nav"\)/);
 });
 
+test("SHOP shell cannot repaint the retired demo catalog over the live marketplace", () => {
+  assert.match(shop, /SHOP shell — marketplace is the single owner of product content/);
+  assert.match(shop, /商品情報を読み込んでいます/);
+  assert.doesNotMatch(shop, /MAMO BOAT PRESS スターターセット|レース観戦 タオル|MAMO ステンレスボトル|MAMO BOAT PRESS キャップ/);
+  assert.doesNotMatch(shop, /カートに追加|購入へ進む|PILOT SHOP｜現在の商品・価格はすべてサンプル/);
+  assert.doesNotMatch(shop, /grid\.innerHTML = products\.length \? products\.map/);
+  assert.doesNotMatch(secondaryMenu, /MAMO_SHOP_PILOT\?\.render/);
+  assert.match(marketplace, /楽天市場で見る →/);
+  assert.match(marketplace, /販売・決済・配送・クーポン適用は楽天市場と各販売店が行います/);
+});
+
 test("product cards are ready for Rakuten point multipliers", () => {
   assert.match(marketplace, /product\.pointRate/);
   assert.match(marketplace, /ポイント\$\{pointRate\}倍/);
