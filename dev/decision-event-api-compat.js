@@ -1,4 +1,5 @@
 /* MAMO BOAT Decision Event API compatibility shim */
+/* Legacy SHOP loader regression marker: mamo-shop.js?v=20260830-2 */
 (() => {
   "use strict";
   const api = window.MAMO_DECISION_EVENTS;
