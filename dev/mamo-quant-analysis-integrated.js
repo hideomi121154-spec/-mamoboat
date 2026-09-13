@@ -108,6 +108,23 @@
     return Object.freeze(texts);
   }
 
+  function splitIntegratedObservationLines(metrics, previewLimit = 3) {
+    const lines = [...buildIntegratedObservationLines(metrics)];
+    const limit = Math.max(1, Math.floor(safeNumber(previewLimit)) || 3);
+    return Object.freeze({
+      preview: Object.freeze(lines.slice(0, limit)),
+      details: Object.freeze(lines.slice(limit)),
+    });
+  }
+
+  function appendObservationRows(container, texts) {
+    texts.forEach((text) => {
+      const row = document.createElement("div");
+      row.textContent = text;
+      container.appendChild(row);
+    });
+  }
+
   function makeIntegratedObservation(metrics) {
     const box = document.createElement("div");
     box.className = "analysis-note";
@@ -118,16 +135,35 @@
     title.style.display = "block";
     title.style.marginBottom = "6px";
 
-    const lines = document.createElement("div");
-    lines.style.display = "grid";
-    lines.style.gap = "8px";
+    const groups = splitIntegratedObservationLines(metrics, 3);
+    const preview = document.createElement("div");
+    preview.dataset.mamoObservationPreview = "1";
+    preview.style.display = "grid";
+    preview.style.gap = "8px";
+    appendObservationRows(preview, groups.preview);
+    box.append(title, preview);
 
-    buildIntegratedObservationLines(metrics).forEach((text) => {
-      const row = document.createElement("div");
-      row.textContent = text;
-      lines.appendChild(row);
-    });
-    box.append(title, lines);
+    if (groups.details.length) {
+      const details = document.createElement("details");
+      details.dataset.mamoObservationDetails = "1";
+      details.style.marginTop = "10px";
+
+      const summary = document.createElement("summary");
+      summary.textContent = "詳しく見る";
+      summary.style.cursor = "pointer";
+      summary.style.fontWeight = "900";
+      summary.style.color = "#8f1d2c";
+      summary.style.padding = "6px 0";
+
+      const detailRows = document.createElement("div");
+      detailRows.style.display = "grid";
+      detailRows.style.gap = "8px";
+      detailRows.style.paddingTop = "6px";
+      appendObservationRows(detailRows, groups.details);
+      details.append(summary, detailRows);
+      box.appendChild(details);
+    }
+
     return box;
   }
 
@@ -229,7 +265,7 @@
     return true;
   }
 
-  const api = Object.freeze({ buildIntegratedMetrics, buildIntegratedObservationLines, render });
+  const api = Object.freeze({ buildIntegratedMetrics, buildIntegratedObservationLines, splitIntegratedObservationLines, render });
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) root.MAMO_QUANT_INTEGRATED = api;
 })(typeof window !== "undefined" ? window : globalThis);
