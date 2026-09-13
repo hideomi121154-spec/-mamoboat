@@ -1,12 +1,13 @@
-/* MAMO BOAT — AIR BET review flow v9
+/* MAMO BOAT — AIR BET review flow v10
  * One canonical review controller for iPhone Safari/PWA.
  * It never wraps selection, review, wallet, record, navigation, or placeBet.
  * The existing cart and placeBet() remain the single source of truth.
- * Review presentation is split into allocation/list -> final confirmation.
+ * Review presentation is split into allocation/list -> SELF CHECK -> final confirmation.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V9__) return;
+  if (window.__MAMO_BET_REVIEW_FLOW_V10__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V10__ = true;
   window.__MAMO_BET_REVIEW_FLOW_V9__ = true;
 
   const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
@@ -21,6 +22,135 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+
+  function selfCheckAnswers(shell) {
+    const panel = shell?.querySelector?.('[data-mamo-self-check="1"]');
+    if (!panel) return null;
+    return {
+      confidence: Number(panel.dataset.confidence || 0),
+      basis: String(panel.querySelector('[data-mamo-self-basis="1"]')?.value || ""),
+      stakeFeeling: String(panel.querySelector('[data-mamo-self-stake-feeling="1"]')?.value || ""),
+      realSameAmount: String(panel.dataset.realSameAmount || ""),
+    };
+  }
+
+  function selfCheckComplete(value) {
+    return Boolean(
+      value
+      && Number.isInteger(value.confidence)
+      && value.confidence >= 1
+      && value.confidence <= 5
+      && value.basis
+      && value.stakeFeeling
+      && ["yes", "no"].includes(value.realSameAmount)
+    );
+  }
+
+  function syncSelfCheckConfirm(shell) {
+    if (!shell) return;
+    const complete = selfCheckComplete(selfCheckAnswers(shell));
+    const status = shell.querySelector('[data-mamo-self-status="1"]');
+    if (status) {
+      status.textContent = complete
+        ? "SELF CHECKを記録できます。"
+        : "4項目を選ぶとAIR BETを確定できます。";
+    }
+    const confirm = shell.querySelector('button[onclick="placeBet()"]');
+    if (!confirm || reviewStep !== "final") return;
+    const lines = draftLines();
+    const total = lines.reduce((sum, line) => sum + lineAmount(line), 0);
+    let balance = NaN;
+    try {
+      balance = Number(JSON.parse(localStorage.getItem("mamoboat_v40_personal") || "{}").coins);
+    } catch (_) {}
+    const baseBlocked = !lines.length
+      || lines.some((line) => !lineAmount(line))
+      || (Number.isFinite(balance) && total > balance);
+    confirm.disabled = baseBlocked || !complete;
+  }
+
+  function choiceButton(label, value, datasetName, panel) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "filter";
+    button.textContent = label;
+    button.dataset[datasetName] = value;
+    button.setAttribute("aria-pressed", "false");
+    button.addEventListener("click", () => {
+      const selector = `[data-${datasetName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}]`;
+      panel.querySelectorAll(selector).forEach((item) => {
+        const selected = item === button;
+        item.classList.toggle("active", selected);
+        item.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      if (datasetName === "mamoSelfConfidence") panel.dataset.confidence = value;
+      if (datasetName === "mamoRealSame") panel.dataset.realSameAmount = value;
+      syncSelfCheckConfirm(panel.closest('.air-bet-review-shell[data-air-bet-review="1"]'));
+    });
+    return button;
+  }
+
+  function createSelfCheckPanel() {
+    const panel = document.createElement("section");
+    panel.className = "mamo-self-check";
+    panel.dataset.mamoSelfCheck = "1";
+    panel.dataset.confidence = "";
+    panel.dataset.realSameAmount = "";
+    panel.setAttribute("aria-label", "AIR BET前のSELF CHECK");
+
+    const kicker = document.createElement("span");
+    kicker.className = "kicker";
+    kicker.textContent = "SELF CHECK";
+    const title = document.createElement("h3");
+    title.textContent = "予想の前に、自分を知る。";
+    const lead = document.createElement("p");
+    lead.className = "muted";
+    lead.textContent = "正解はありません。今の自分に一番近いものを選んでください。";
+
+    const confidenceLabel = document.createElement("h4");
+    confidenceLabel.textContent = "1. このレースへの自信は？";
+    const confidence = document.createElement("div");
+    confidence.className = "mamo-self-choice confidence";
+    confidence.setAttribute("role", "group");
+    confidence.setAttribute("aria-label", "自信度1から5");
+    for (let value = 1; value <= 5; value += 1) {
+      confidence.append(choiceButton(`${value}`, String(value), "mamoSelfConfidence", panel));
+    }
+
+    const basis = document.createElement("label");
+    basis.className = "field";
+    basis.innerHTML = '<span>2. 今回の主な根拠は？</span><select data-mamo-self-basis="1"><option value="">選んでください</option><option value="racer">選手</option><option value="motor">モーター</option><option value="exhibition">展示</option><option value="odds">オッズ</option><option value="start">スタート</option><option value="intuition">直感</option><option value="other">その他</option></select>';
+
+    const stake = document.createElement("label");
+    stake.className = "field";
+    stake.innerHTML = '<span>3. このBET額をどう感じますか？</span><select data-mamo-self-stake-feeling="1"><option value="">選んでください</option><option value="very_low">かなり少ない</option><option value="low">少ない</option><option value="appropriate">適切</option><option value="high">多い</option><option value="very_high">かなり多い</option></select>';
+
+    const realLabel = document.createElement("h4");
+    realLabel.textContent = "4. REALでも同じ金額を賭けますか？";
+    const real = document.createElement("div");
+    real.className = "mamo-self-choice real";
+    real.setAttribute("role", "group");
+    real.setAttribute("aria-label", "REALでも同じ金額を賭けるか");
+    real.append(
+      choiceButton("YES", "yes", "mamoRealSame", panel),
+      choiceButton("NO", "no", "mamoRealSame", panel)
+    );
+
+    const status = document.createElement("p");
+    status.className = "tiny";
+    status.dataset.mamoSelfStatus = "1";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    status.textContent = "4項目を選ぶとAIR BETを確定できます。";
+
+    panel.append(kicker, title, lead, confidenceLabel, confidence, basis, stake, realLabel, real, status);
+    panel.querySelectorAll("select").forEach((select) => {
+      select.addEventListener("change", () => syncSelfCheckConfirm(
+        panel.closest('.air-bet-review-shell[data-air-bet-review="1"]')
+      ));
+    });
+    return panel;
+  }
 
   function racerRows() {
     return Array.from(document.querySelectorAll("#raceView .boats .boat")).map((item) => {
@@ -441,7 +571,8 @@
     back.className = "mamo-review-final-back";
     back.dataset.mamoReviewBack = "1";
     back.textContent = "← 配分・買い目一覧へ戻る";
-    section.append(kicker, heading, summary, back);
+    const selfCheck = createSelfCheckPanel();
+  section.append(kicker, heading, summary, selfCheck, back);
 
     const anchor = shell.querySelector(".air-bet-review-heading");
     if (anchor?.parentNode === shell) shell.insertBefore(section, anchor);
@@ -544,6 +675,7 @@
     if (final) final.setAttribute("aria-hidden", String(reviewStep !== "final"));
     const results = shell.querySelector('[data-mamo-allocation-results="1"]');
     if (results) results.setAttribute("aria-hidden", String(reviewStep !== "allocation"));
+    syncSelfCheckConfirm(shell);
   }
 
   function refreshAllocationPanel(shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]')) {
@@ -715,6 +847,7 @@
     const shell = target.closest?.('.air-bet-review-shell[data-air-bet-review="1"]');
     if (!shell) return;
     if (target.matches?.(".betline-stake-input")) refreshAllocationPanel(shell);
+    if (target.matches?.('[data-mamo-self-basis="1"], [data-mamo-self-stake-feeling="1"]')) syncSelfCheckConfirm(shell);
   }
 
   function boot() {
@@ -724,6 +857,7 @@
     window.addEventListener("pageshow", enhanceBuilder);
     document.addEventListener("click", onDocumentClick);
     document.addEventListener("input", onDocumentInput);
+    document.addEventListener("change", onDocumentInput);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });

@@ -61,7 +61,7 @@ assert.match(shop, /window\.go\?\.\("shop"\)/);
 assert.match(shop, /window\.go\?\.\("settings"\)/);
 assert.doesNotMatch(legacyHorizontalNav, /overflow-x\s*:\s*auto/i);
 assert.doesNotMatch(legacyHorizontalNav, /scrollIntoView/);
-assert.match(sw, /mamoboat-v517-primary-nav-safe-dev/);
+assert.match(sw, /mamoboat-v518-self-check-phase1-dev/);
 assert.match(sw, /url\.pathname\.endsWith\("\/mamo-shop\.js"\)/);
 
 console.log("iOS navigation regression checks passed");
