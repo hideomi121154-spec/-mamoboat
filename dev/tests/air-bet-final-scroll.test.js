@@ -7,7 +7,7 @@ const css = fs.readFileSync(path.join(root, "air-bet-review-compact.css"), "utf8
 const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 
 // FINAL CHECK must have exactly one internal vertical scroll owner so long
-// SELF CHECK content remains reachable on iPhone without moving the page behind it.
+// review content remains reachable on iPhone without moving the page behind it.
 assert.match(css, /data-mamo-review-step="final"[\s\S]{0,220}\.mamo-review-final[\s\S]{0,260}flex:\s*1 1 0/);
 assert.match(css, /data-mamo-review-step="final"[\s\S]{0,300}\.mamo-review-final[\s\S]{0,340}min-height:\s*0/);
 assert.match(css, /data-mamo-review-step="final"[\s\S]{0,360}\.mamo-review-final[\s\S]{0,420}overflow-y:\s*auto/);
@@ -21,3 +21,10 @@ assert.match(styles, /\.air-bet-review-shell\s*\{[\s\S]{0,360}overflow:\s*hidden
 assert.doesNotMatch(css, /position:\s*fixed/);
 
 console.log("AIR BET final-check scroll ownership regression checks passed.");
+
+
+const postRule = css.match(/\[data-mamo-review-step="post-bet"\][^{]+\{([^}]+)\}/)?.[1] || "";
+for (const rule of [/flex:\s*1 1 0/, /min-height:\s*0/, /overflow-y:\s*auto/, /overscroll-behavior:\s*contain/, /touch-action:\s*pan-y/, /safe-area-inset-bottom/]) {
+  assert.match(postRule, rule, "post-bet panel is the single safe-area scroll owner");
+}
+assert.match(styles, /html\.modal-open, body\.modal-open\s*\{[^}]*overflow:\s*hidden/);

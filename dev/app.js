@@ -516,12 +516,14 @@
     else if (hasAcceptedOnboarding()) S.accepted = true;
     try {
       localStorage.setItem(KEY, JSON.stringify(S));
+      return true;
     } catch (error) {
       console.warn("記録データの保存に失敗しました", error);
+      return false;
     }
   };
 
-  function postLedger(type, amount, uniqueKey, details = {}) {
+  function postLedger(type, amount, uniqueKey, details = {}, options = {}) {
     const value = Math.round(Number(amount) || 0);
     if (!value || !uniqueKey) return false;
     if (S.ledger.some((item) => item.uniqueKey === uniqueKey)) return false;
@@ -537,11 +539,16 @@
       ...details,
     });
     S.ledger = S.ledger.slice(-5000);
+    if (!options.deferEvent) trackLedgerEvent(S.ledger[S.ledger.length - 1], details);
+    return true;
+  }
+
+  function trackLedgerEvent(item, details = {}) {
     trackEvent("wallet_ledger_posted", {
-      ledger_type: type,
-      amount_b: value,
-      balance_b: S.coins,
-      unique_key: uniqueKey,
+      ledger_type: item.type,
+      amount_b: item.amount,
+      balance_b: item.balanceAfter,
+      unique_key: item.uniqueKey,
       record_id: details.recordId || null,
       label: details.label || "",
     }, {
@@ -2269,6 +2276,8 @@
   };
 
   window.placeBet = () => {
+    // A consumed draft can never be submitted again, including stale clicks.
+    if (!cart.length) return;
     const venueItem = venue(S.venue);
     const raceItem = race(venueItem?.code, S.raceNo);
     if (!raceItem || !closeState(raceItem)) {
@@ -2276,31 +2285,12 @@
       return alert("締切時刻を過ぎたため、B投票を取り消しました。");
     }
     const total = cartTotal();
-    if (!cart.length) return alert("買い目を追加してください。");
     if (cartIncompleteCount()) return alert("全ての買い目にベット数を入力してください。");
     if (total > S.coins) return alert("Bメダル残高が不足しています。");
-    const selfCheckPanel = $("modal")?.querySelector?.('[data-mamo-self-check="1"]');
-    const selfConfidence = Number(selfCheckPanel?.dataset?.confidence || 0);
-    const selfBasis = String(selfCheckPanel?.querySelector?.('[data-mamo-self-basis="1"]')?.value || "");
-    const selfStakeFeeling = String(selfCheckPanel?.querySelector?.('[data-mamo-self-stake-feeling="1"]')?.value || "");
-    const selfRealSameAmount = String(selfCheckPanel?.dataset?.realSameAmount || "");
-    const selfCheckComplete = Number.isInteger(selfConfidence)
-      && selfConfidence >= 1
-      && selfConfidence <= 5
-      && selfBasis
-      && selfStakeFeeling
-      && ["yes", "no"].includes(selfRealSameAmount);
-    if (!selfCheckComplete) return alert("SELF CHECKの4項目を選んでください。");
     const event = eventInfo(venueItem);
     const rewardChallenge = false;
     const recordedModes = [...new Set(cart.map((line) => line.mode).filter(Boolean))];
     const recordId = window.crypto?.randomUUID ? window.crypto.randomUUID() : `r-${Date.now()}`;
-    if (!postLedger("virtual_bet", -total, `bet:${recordId}`, {
-      label: `${venueItem.name} ${raceItem.number}R 仮想投票`,
-      recordId,
-      venueCode: venueItem.code,
-      raceNo: raceItem.number,
-    })) return alert("Bメダル残高が不足しています。");
     const record = {
       id: recordId,
       walletVersionAtBet: WALLET_VERSION,
@@ -2337,10 +2327,11 @@
       intendedYen: total,
       observationVersion: 1,
       selfCheckVersion: 1,
-      selfConfidence,
-      selfBasis,
-      selfStakeFeeling,
-      selfRealSameAmount,
+      selfConfidence: null,
+      selfBasis: "",
+      selfStakeFeeling: "",
+      selfRealSameAmount: "",
+      selfCheckCompletedAt: null,
       status: "pending",
       settled: false,
       payoutStatus: "pending",
@@ -2354,7 +2345,39 @@
       rewardOutcome: null,
       rewardEvaluatedAt: null,
     };
+    const previousCoins = S.coins;
+    const previousLedger = S.ledger.slice();
+    const ledgerDetails = {
+      label: `${venueItem.name} ${raceItem.number}R 仮想投票`,
+      recordId,
+      venueCode: venueItem.code,
+      raceNo: raceItem.number,
+    };
+    if (!postLedger("virtual_bet", -total, `bet:${recordId}`, ledgerDetails, { deferEvent: true })) {
+      return alert("Bメダル残高が不足しています。");
+    }
     S.records.push(record);
+    // Persist wallet and record together before analytics, network, or UI work.
+    if (!save()) {
+      S.records.pop();
+      S.coins = previousCoins;
+      S.ledger = previousLedger;
+      return alert("AIR BETを保存できませんでした。端末の空き容量などを確認してください。BETは成立していません。");
+    }
+    resetBuilder();
+    let postBetShown = false;
+    try {
+      postBetShown = window.MAMO_BET_REVIEW_ALLOCATION?.showPostBetSelfCheck?.(record.id) === true;
+    } catch (error) {
+      console.warn("SELF CHECKの表示に失敗しました", error);
+    }
+    if (!postBetShown) {
+      // Old/missing review code must never expose the consumed confirm button.
+      window.closeModal();
+      $("modal").replaceChildren();
+      alert("AIR BETは記録済みです。SELF CHECKを表示できませんでした。再投票は不要です。");
+    }
+    trackLedgerEvent(S.ledger[S.ledger.length - 1], ledgerDetails);
     if (record.closeTime) {
   const closeAt = new Date(record.closeTime).getTime();
 
@@ -2402,7 +2425,7 @@
       self_real_same_amount: record.selfRealSameAmount,
       reward_challenge: record.rewardChallenge,
       seconds_to_close: record.closeTime
-        ? Math.max(0, Math.round((new Date(record.closeTime).getTime() - Date.now()) / 1000))
+        ? Math.max(0, Math.round((new Date(record.closeTime).getTime() - new Date(record.time).getTime()) / 1000))
         : null,
       odds_lines_available: record.lines.filter((line) => oddsNumber(line.odds) > 0).length,
     }, {
@@ -2410,11 +2433,51 @@
       venueCode: record.venueCode,
       raceNo: record.raceNo,
     });
-    save();
-    window.closeModal();
-    resetBuilder();
     renderAll();
     window.go("records");
+    return { ok: true, recordId: record.id };
+  };
+
+  // Answer-only update: no deadline, wallet, draft, or settlement logic here.
+  window.completeAirBetSelfCheck = (recordId, answers) => {
+    const record = S.records.find((item) => item.id === recordId);
+    if (!record || record.selfCheckVersion !== 1) return { ok: false, reason: "record_not_found" };
+    if (record.selfCheckCompletedAt) return { ok: true, recordId, alreadyCompleted: true };
+    if (!answers || !Number.isInteger(answers.confidence)
+      || answers.confidence < 1 || answers.confidence > 5
+      || !["racer", "motor", "exhibition", "odds", "start", "intuition", "other"].includes(answers.basis)
+      || !["very_low", "low", "appropriate", "high", "very_high"].includes(answers.stakeFeeling)
+      || !["yes", "no"].includes(answers.realSameAmount)) {
+      return { ok: false, reason: "invalid_answers" };
+    }
+    const previous = {
+      selfConfidence: record.selfConfidence,
+      selfBasis: record.selfBasis,
+      selfStakeFeeling: record.selfStakeFeeling,
+      selfRealSameAmount: record.selfRealSameAmount,
+      selfCheckCompletedAt: record.selfCheckCompletedAt,
+    };
+    Object.assign(record, {
+      selfConfidence: answers.confidence,
+      selfBasis: answers.basis,
+      selfStakeFeeling: answers.stakeFeeling,
+      selfRealSameAmount: answers.realSameAmount,
+      selfCheckCompletedAt: new Date().toISOString(),
+    });
+    if (!save()) {
+      Object.assign(record, previous);
+      return { ok: false, reason: "save_failed" };
+    }
+    trackEvent("air_bet_self_check_completed", {
+      record_id: record.id,
+      self_check_version: record.selfCheckVersion,
+      self_confidence: record.selfConfidence,
+      self_basis: record.selfBasis,
+      self_stake_feeling: record.selfStakeFeeling,
+      self_real_same_amount: record.selfRealSameAmount,
+      self_check_completed_at: record.selfCheckCompletedAt,
+    }, { raceDate: record.raceDate, venueCode: record.venueCode, raceNo: record.raceNo });
+    return { ok: true, recordId: record.id };
   };
 
   function findDatasetRace(dataset, venueCode, raceNo) {
@@ -3484,3 +3547,4 @@ B的中: ${stats.virtualHits}件
 });
 
 })();
+

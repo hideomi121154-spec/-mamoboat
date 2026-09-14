@@ -93,6 +93,9 @@ jobs:
           node tests/master-room.test.js
           node tests/mamokamo-asset.test.js
           node tests/ios-navigation-regression.test.js
+          node dev/tests/self-check-phase1.test.js
+          node dev/tests/air-bet-final-scroll.test.js
+          node dev/tests/post-bet-cache.test.js
           node tests/air-bet-draft-flow.test.js
           node tests/ios-race-event-loop-regression.test.js
           node tests/race-carte-data-flow.test.js
@@ -126,3 +129,4 @@ jobs:
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v
+

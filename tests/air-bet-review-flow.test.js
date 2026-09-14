@@ -38,7 +38,12 @@ function cloneInto(window, value) {
     confirms.push(String(message));
     return confirmResponse;
   };
-  window.Date.now = () => Date.parse(`${dataset.date}T05:00:00.000Z`);
+  let clock = Date.parse(`${dataset.date}T05:00:00.000Z`);
+  const NativeDate = window.Date;
+  window.Date = class extends NativeDate {
+    constructor(...args) { super(...(args.length ? args : [clock])); }
+    static now() { return clock; }
+  };
   window.fetch = async (input) => {
     const url = String(input);
     if (url.includes("boatrace-odds")) {
@@ -74,6 +79,8 @@ function cloneInto(window, value) {
   window.eval(read("dev/race-airbet-compact.js"));
   window.eval(read("dev/app.js"));
   window.eval(read("dev/bet-review-flow.js"));
+  window.eval(read("dev/air-bet-review-delete-controls.js"));
+  window.eval(read("dev/allocation-keypad-stability.js"));
   window.eval(read("dev/air-bet-mode-stability.js"));
   window.eval(read("dev/race-airbet-first.js"));
   window.eval(read("dev/mamo-shop.js"));
@@ -267,8 +274,35 @@ function cloneInto(window, value) {
     click('[data-mamo-review-continue="1"]');
     const finalConfirm = window.document.querySelector('.air-bet-confirm-button');
     assert(finalConfirm, "final AIR BET button must remain in the canonical review shell");
-    assert.equal(finalConfirm.disabled, true, "SELF CHECK must be complete before final AIR BET confirmation");
+    assert.equal(finalConfirm.disabled, false, "BET conditions alone enable FINAL CHECK");
+    assert.equal(window.document.querySelector('[data-mamo-self-check="1"]'), null);
+    const state = () => JSON.parse(window.localStorage.getItem("mamoboat_v40_personal"));
+    click(".air-bet-confirm-button");
+    const saved = state();
+    assert.equal(saved.coins, 99900, "wallet is debited before SELF CHECK");
+    assert.equal(saved.records.length, 1, "BET is persisted immediately");
+    const before = saved.records[0];
+    assert.equal(before.selfConfidence, null);
+    assert.equal(before.selfCheckCompletedAt, null);
+    assert.equal(status().count, 0, "draft is consumed before post-bet UI");
+    assert.equal(window.document.querySelector('.air-bet-confirm-button'), null);
+    assert.equal(window.document.querySelector('.mamo-bet-modal-back'), null);
+    assert.equal(window.document.querySelector('[data-mamo-review-back]'), null);
+    assert(window.document.querySelector('.mamo-review-post-bet'));
+    assert(window.document.body.classList.contains("modal-open"));
+    assert(window.document.getElementById("modalBg").classList.contains("show"));
+    const saveButton = window.document.querySelector('[data-mamo-self-save="1"]');
+    assert.equal(saveButton.disabled, true);
+    finalConfirm.click(); // Even a detached stale button cannot consume the old draft.
+    window.placeBet();
+    assert.equal(state().records.length, 1);
+    assert.equal(state().coins, 99900);
+    assert.equal(window.completeAirBetSelfCheck("missing", {}).ok, false);
+    assert.equal(window.completeAirBetSelfCheck(before.id, { confidence: 9 }).ok, false);
+    assert.deepEqual(state().records[0], before);
 
+    // The deadline passes while the user answers. No second deadline check is allowed.
+    clock = Date.parse(before.closeTime) + 60000;
     click('[data-mamo-self-confidence="4"]');
     const basis = window.document.querySelector('[data-mamo-self-basis="1"]');
     basis.value = "motor";
@@ -276,20 +310,75 @@ function cloneInto(window, value) {
     const stakeFeeling = window.document.querySelector('[data-mamo-self-stake-feeling="1"]');
     stakeFeeling.value = "appropriate";
     stakeFeeling.dispatchEvent(new window.Event("change", { bubbles: true }));
+    assert.equal(saveButton.disabled, true, "three answers are insufficient");
     click('[data-mamo-real-same="no"]');
-    assert.equal(finalConfirm.disabled, false, "all four SELF CHECK answers must enable final confirmation");
+    assert.equal(saveButton.disabled, false);
 
+    const originalSetItem = window.Storage.prototype.setItem;
+    window.Storage.prototype.setItem = function(key, value) {
+      if (key === "mamoboat_v40_personal") throw new Error("simulated storage full");
+      return originalSetItem.call(this, key, value);
+    };
+    saveButton.click();
+    assert.deepEqual(state().records[0], before, "failed answer save preserves pending BET");
+    assert.equal(saveButton.disabled, false, "answer save can be retried without another BET");
+    window.Storage.prototype.setItem = originalSetItem;
+    saveButton.click();
+    const after = state().records[0];
+    assert.equal(after.id, before.id);
+    assert.equal(after.selfConfidence, 4);
+    assert.equal(after.selfBasis, "motor");
+    assert.equal(after.selfStakeFeeling, "appropriate");
+    assert.equal(after.selfRealSameAmount, "no");
+    assert.equal(after.selfCheckCompletedAt, new window.Date().toISOString());
+    const answerFields = new Set(["selfConfidence", "selfBasis", "selfStakeFeeling", "selfRealSameAmount", "selfCheckCompletedAt"]);
+    for (const key of Object.keys(before)) {
+      if (!answerFields.has(key)) assert.deepEqual(after[key], before[key], `${key} must remain at BET-time value`);
+    }
+    assert.equal(state().coins, 99900);
+    assert.equal(state().records.length, 1);
+    const placedBefore = saved.pilot.events.find(event => event.event_name === "virtual_bet_placed");
+    const placedAfter = state().pilot.events.find(event => event.event_name === "virtual_bet_placed");
+    assert.deepEqual(placedAfter, placedBefore, "seconds_to_close and original event are immutable");
+    assert.equal(state().pilot.events.filter(event => event.event_name === "air_bet_self_check_completed").length, 1);
+    clock += 60000;
+    window.completeAirBetSelfCheck(before.id, { confidence: 1, basis: "racer", stakeFeeling: "low", realSameAmount: "yes" });
+    saveButton.click();
+    assert.deepEqual(state().records[0], after, "repeated completion is idempotent");
+    assert.equal(state().pilot.events.filter(event => event.event_name === "air_bet_self_check_completed").length, 1);
+    assert(!window.document.body.classList.contains("modal-open"));
+
+    // A storage failure during BET creation must roll back the wallet and record.
+    clock = Date.parse(`${dataset.date}T05:00:00.000Z`);
+    clickId("nav-race");
+    chooseNormal(1, 2, 3);
+    await addCurrent(1);
+    openReview();
+    click('[data-review-stake-increment="100"]');
+    click('[data-mamo-review-continue="1"]');
+    window.Storage.prototype.setItem = function(key, value) {
+      if (key === "mamoboat_v40_personal") throw new Error("simulated BET save failure");
+      return originalSetItem.call(this, key, value);
+    };
     click(".air-bet-confirm-button");
-    const saved = JSON.parse(window.localStorage.getItem("mamoboat_v40_personal"));
-    assert.equal(saved.coins, 99900, "wallet debit must happen only on final confirmation");
-    assert.equal(saved.records.length, 1, "history must be written only on final confirmation");
-    assert.equal(saved.records[0].lines.length, 1);
-    assert.equal(saved.records[0].selfCheckVersion, 1);
-    assert.equal(saved.records[0].selfConfidence, 4);
-    assert.equal(saved.records[0].selfBasis, "motor");
-    assert.equal(saved.records[0].selfStakeFeeling, "appropriate");
-    assert.equal(saved.records[0].selfRealSameAmount, "no");
-    assert.equal(status().count, 0, "confirmed draft must be reset");
+    window.Storage.prototype.setItem = originalSetItem;
+    assert.equal(state().coins, 99900);
+    assert.equal(state().records.length, 1);
+    assert.equal(status().count, 1, "uncommitted draft remains available");
+    assert(alerts.pop().includes("BETは成立していません"));
+
+    // Mixed-cache/missing/throwing UI failure is a committed BET, never a retry.
+    const reviewApi = window.MAMO_BET_REVIEW_ALLOCATION;
+    window.MAMO_BET_REVIEW_ALLOCATION = { ...reviewApi, showPostBetSelfCheck() { throw new Error("old UI"); } };
+    click(".air-bet-confirm-button");
+    assert.equal(state().records.length, 2);
+    assert.equal(state().coins, 99800);
+    assert.equal(status().count, 0);
+    assert.equal(window.document.querySelector('.air-bet-confirm-button'), null);
+    window.placeBet();
+    assert.equal(state().records.length, 2);
+    assert(alerts.pop().includes("再投票は不要"));
+    window.MAMO_BET_REVIEW_ALLOCATION = reviewApi;
 
     // This fixture does not load the independent quantitative-analysis shell,
     // so the fixed primary bar contains the five native high-frequency actions.
@@ -319,9 +408,11 @@ function cloneInto(window, value) {
 
     console.log("AIR BET picker/review DOM flow checks passed");
   } finally {
+    await wait(50); // Drain auxiliary refresh microtasks before disposing the DOM.
     window.close();
   }
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
