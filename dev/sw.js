@@ -30,7 +30,8 @@
 // Previous independent analysis shell cache: mamoboat-v514-quant-analysis-shell-step1-dev
 // Previous quantitative analysis cache: mamoboat-v515-quant-analysis-basic-step2-dev
 // Previous analysis refresh cache: mamoboat-v516-quant-analysis-pwa-refresh-dev
-const CACHE = "mamoboat-v518-self-check-phase1-dev";
+// Previous SELF CHECK shell cache: mamoboat-v518-self-check-phase1-dev
+const CACHE = "mamoboat-v519-self-check-delivery-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260914-1","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260914-1",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260914-1","./air-bet-review-delete-controls.js?v=20260912-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1",
@@ -120,6 +121,8 @@ self.addEventListener("fetch",event=>{
     || url.pathname.endsWith("/ai-safe.js")
     || url.pathname.endsWith("/baseline-intervention.js")
     || url.pathname.endsWith("/decision-event-api-compat.js")
+    || url.pathname.endsWith("/bet-review-flow.js")
+    || url.pathname.endsWith("/air-bet-review-compact.css")
     || url.pathname.endsWith("/air-bet-review-delete-controls.js")
     || url.pathname.endsWith("/race-carte-official-payouts.js")
     || url.pathname.endsWith("/odds-bet-mode-v1.js")
