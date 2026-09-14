@@ -1,20 +1,22 @@
-/* MAMO BOAT — AIR BET review flow v10
+/* MAMO BOAT — AIR BET review flow v11
  * One canonical review controller for iPhone Safari/PWA.
- * It never wraps selection, review, wallet, record, navigation, or placeBet.
- * The existing cart and placeBet() remain the single source of truth.
- * Review presentation is split into allocation/list -> SELF CHECK -> final confirmation.
+ * It never wraps selection, wallet, record persistence, navigation, or placeBet.
+ * Review presentation is split into allocation/list -> final confirmation -> post-bet SELF CHECK.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V10__) return;
+  if (window.__MAMO_BET_REVIEW_FLOW_V11__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V11__ = true;
   window.__MAMO_BET_REVIEW_FLOW_V10__ = true;
   window.__MAMO_BET_REVIEW_FLOW_V9__ = true;
 
   const AIR_BET_RENDERED_EVENT = "mamo:air-bet-rendered";
+  const AIR_BET_PLACED_EVENT = "mamo:air-bet-placed";
   const STAKE_UNIT = 100;
   let allocationBudgetDraft = "";
   let reviewStep = "allocation";
   let detailOpen = false;
+  let placedRecordId = "";
 
   const escapeHtml = (value) => String(value == null ? "" : value)
     .replaceAll("&", "&amp;")
@@ -46,17 +48,8 @@
     );
   }
 
-  function syncSelfCheckConfirm(shell) {
+  function syncReviewActions(shell) {
     if (!shell) return;
-    const complete = selfCheckComplete(selfCheckAnswers(shell));
-    const status = shell.querySelector('[data-mamo-self-status="1"]');
-    if (status) {
-      status.textContent = complete
-        ? "SELF CHECKを記録できます。"
-        : "4項目を選ぶとAIR BETを確定できます。";
-    }
-    const confirm = shell.querySelector('button[onclick="placeBet()"]');
-    if (!confirm || reviewStep !== "final") return;
     const lines = draftLines();
     const total = lines.reduce((sum, line) => sum + lineAmount(line), 0);
     let balance = NaN;
@@ -66,7 +59,20 @@
     const baseBlocked = !lines.length
       || lines.some((line) => !lineAmount(line))
       || (Number.isFinite(balance) && total > balance);
-    confirm.disabled = baseBlocked || !complete;
+
+    const confirm = shell.querySelector('button[onclick="placeBet()"]');
+    if (confirm && reviewStep === "final") confirm.disabled = baseBlocked;
+
+    const answers = selfCheckAnswers(shell);
+    const complete = selfCheckComplete(answers);
+    const status = shell.querySelector('[data-mamo-self-status="1"]');
+    if (status) {
+      status.textContent = complete
+        ? "SELF CHECKを記録できます。"
+        : "4項目を選ぶと記録できます。";
+    }
+    const saveButton = shell.querySelector('[data-mamo-self-check-save="1"]');
+    if (saveButton) saveButton.disabled = !complete || !placedRecordId;
   }
 
   function choiceButton(label, value, datasetName, panel) {
@@ -85,7 +91,7 @@
       });
       if (datasetName === "mamoSelfConfidence") panel.dataset.confidence = value;
       if (datasetName === "mamoRealSame") panel.dataset.realSameAmount = value;
-      syncSelfCheckConfirm(panel.closest('.air-bet-review-shell[data-air-bet-review="1"]'));
+      syncReviewActions(panel.closest('.air-bet-review-shell[data-air-bet-review="1"]'));
     });
     return button;
   }
@@ -96,16 +102,16 @@
     panel.dataset.mamoSelfCheck = "1";
     panel.dataset.confidence = "";
     panel.dataset.realSameAmount = "";
-    panel.setAttribute("aria-label", "AIR BET前のSELF CHECK");
+    panel.setAttribute("aria-label", "AIR BET成立後のSELF CHECK");
 
     const kicker = document.createElement("span");
     kicker.className = "kicker";
     kicker.textContent = "SELF CHECK";
     const title = document.createElement("h3");
-    title.textContent = "予想の前に、自分を知る。";
+    title.textContent = "AIR BET後の自分を記録する。";
     const lead = document.createElement("p");
     lead.className = "muted";
-    lead.textContent = "正解はありません。今の自分に一番近いものを選んでください。";
+    lead.textContent = "AIR BETはすでに成立しています。締切を気にせず、今の自分に一番近いものを選んでください。";
 
     const confidenceLabel = document.createElement("h4");
     confidenceLabel.textContent = "1. このレースへの自信は？";
@@ -141,11 +147,11 @@
     status.dataset.mamoSelfStatus = "1";
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
-    status.textContent = "4項目を選ぶとAIR BETを確定できます。";
+    status.textContent = "4項目を選ぶと記録できます。";
 
     panel.append(kicker, title, lead, confidenceLabel, confidence, basis, stake, realLabel, real, status);
     panel.querySelectorAll("select").forEach((select) => {
-      select.addEventListener("change", () => syncSelfCheckConfirm(
+      select.addEventListener("change", () => syncReviewActions(
         panel.closest('.air-bet-review-shell[data-air-bet-review="1"]')
       ));
     });
@@ -571,12 +577,37 @@
     back.className = "mamo-review-final-back";
     back.dataset.mamoReviewBack = "1";
     back.textContent = "← 配分・買い目一覧へ戻る";
-    const selfCheck = createSelfCheckPanel();
-  section.append(kicker, heading, summary, selfCheck, back);
+    section.append(kicker, heading, summary, back);
 
     const anchor = shell.querySelector(".air-bet-review-heading");
     if (anchor?.parentNode === shell) shell.insertBefore(section, anchor);
     else shell.append(section);
+    return section;
+  }
+
+  function createPostBetPanel(shell) {
+    const section = document.createElement("section");
+    section.className = "mamo-review-final mamo-post-bet-self-check";
+    section.dataset.mamoPostBetSelfCheck = "1";
+    section.setAttribute("aria-label", "AIR BET成立後のSELF CHECK");
+
+    const kicker = document.createElement("span");
+    kicker.className = "mamo-review-final-kicker";
+    kicker.textContent = "AIR BET COMPLETE";
+    const heading = document.createElement("h3");
+    heading.textContent = "AIR BETを記録しました";
+    const lead = document.createElement("p");
+    lead.className = "muted";
+    lead.textContent = "投票はすでに成立しています。ここからの回答で締切に遅れることはありません。";
+    const selfCheck = createSelfCheckPanel();
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "btn teal full";
+    save.dataset.mamoSelfCheckSave = "1";
+    save.textContent = "SELF CHECKを記録して完了";
+    save.disabled = true;
+    section.append(kicker, heading, lead, selfCheck, save);
+    shell.append(section);
     return section;
   }
 
@@ -672,10 +703,23 @@
     shell.dataset.mamoReviewStep = reviewStep;
     shell.classList.toggle("mamo-review-detail-open", reviewStep === "allocation" && detailOpen);
     const final = shell.querySelector('[data-mamo-review-final="1"]');
-    if (final) final.setAttribute("aria-hidden", String(reviewStep !== "final"));
+    if (final) {
+      final.hidden = reviewStep !== "final";
+      final.setAttribute("aria-hidden", String(reviewStep !== "final"));
+    }
     const results = shell.querySelector('[data-mamo-allocation-results="1"]');
     if (results) results.setAttribute("aria-hidden", String(reviewStep !== "allocation"));
-    syncSelfCheckConfirm(shell);
+    let post = shell.querySelector('[data-mamo-post-bet-self-check="1"]');
+    if (reviewStep === "post") post ||= createPostBetPanel(shell);
+    if (post) {
+      post.hidden = reviewStep !== "post";
+      post.setAttribute("aria-hidden", String(reviewStep !== "post"));
+    }
+    const confirm = shell.querySelector('button[onclick="placeBet()"]');
+    if (confirm) confirm.hidden = reviewStep !== "final";
+    const modalBack = shell.querySelector(".mamo-bet-modal-back");
+    if (modalBack) modalBack.hidden = reviewStep === "post";
+    syncReviewActions(shell);
   }
 
   function refreshAllocationPanel(shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]')) {
@@ -772,18 +816,29 @@
     refreshAllocationPanel(shell);
   }
 
+  function showPostBetSelfCheck(recordId) {
+    const shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]');
+    if (!shell || !recordId) return false;
+    placedRecordId = String(recordId);
+    reviewStep = "post";
+    detailOpen = false;
+    toggleBudgetKeypad(shell, false);
+    refreshAllocationPanel(shell);
+    return true;
+  }
+
   function resetReviewSession() {
     allocationBudgetDraft = "";
     reviewStep = "allocation";
     detailOpen = false;
+    placedRecordId = "";
   }
 
   function onDocumentClick(event) {
     const target = event.target;
     if (!target?.closest) return;
     if (target.closest("#reviewBetButton")) {
-      reviewStep = "allocation";
-      detailOpen = false;
+      resetReviewSession();
       enhanceReviewAllocation();
       return;
     }
@@ -838,6 +893,16 @@
       refreshAllocationPanel(shell);
       return;
     }
+    const saveSelfCheck = target.closest('[data-mamo-self-check-save="1"]');
+    if (saveSelfCheck) {
+      const answers = selfCheckAnswers(shell);
+      if (!selfCheckComplete(answers) || !placedRecordId) return;
+      if (typeof window.completeAirBetSelfCheck !== "function") return;
+      saveSelfCheck.disabled = true;
+      const ok = window.completeAirBetSelfCheck(placedRecordId, answers);
+      if (!ok && document.body.contains(saveSelfCheck)) saveSelfCheck.disabled = false;
+      return;
+    }
     refreshAllocationPanel(shell);
   }
 
@@ -847,12 +912,15 @@
     const shell = target.closest?.('.air-bet-review-shell[data-air-bet-review="1"]');
     if (!shell) return;
     if (target.matches?.(".betline-stake-input")) refreshAllocationPanel(shell);
-    if (target.matches?.('[data-mamo-self-basis="1"], [data-mamo-self-stake-feeling="1"]')) syncSelfCheckConfirm(shell);
+    if (target.matches?.('[data-mamo-self-basis="1"], [data-mamo-self-stake-feeling="1"]')) syncReviewActions(shell);
   }
 
   function boot() {
     enhanceBuilder();
     window.addEventListener(AIR_BET_RENDERED_EVENT, enhanceBuilder);
+    window.addEventListener(AIR_BET_PLACED_EVENT, (event) => {
+      showPostBetSelfCheck(event?.detail?.recordId);
+    });
     window.addEventListener("mamo:venues-opened", resetReviewSession);
     window.addEventListener("pageshow", enhanceBuilder);
     document.addEventListener("click", onDocumentClick);
@@ -868,6 +936,7 @@
     combinedOdds,
     allocate: equalPayoutAllocation,
     refresh: enhanceReviewAllocation,
+    showPostBetSelfCheck,
     unit: STAKE_UNIT,
   });
 })();
