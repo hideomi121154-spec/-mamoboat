@@ -21,9 +21,28 @@ assert.equal(
   "auxiliary review controls must not mutate final-confirmation display state"
 );
 
+// Normal BET still needs the canonical continue action that advances into
+// SELF CHECK. Hide allocation-only details, not the entire results section
+// that owns data-mamo-review-continue.
+assert.equal(
+  controls.includes('setImportantDisplay(nodes.allocationResults, "none")'),
+  false,
+  "normal BET must not hide the canonical continue action with the whole allocation results section"
+);
+assert(
+  controls.includes('setImportantDisplay(nodes.allocationResults, "block")'),
+  "normal BET must keep the canonical continue-action container visible"
+);
+assert(
+  controls.includes('setImportantDisplay(nodes.allocationTitle, "none")')
+    && controls.includes('setImportantDisplay(nodes.allocationTableWrap, "none")'),
+  "normal BET should hide only allocation-specific title/table UI"
+);
+
 // The canonical flow must remain the owner of SELF CHECK and final confirmation.
 assert(flow.includes("createSelfCheckPanel"), "canonical review flow must create SELF CHECK");
 assert(flow.includes('reviewStep = "final"'), "canonical review flow must own transition to final step");
 assert(flow.includes('button[onclick="placeBet()"]'), "canonical review flow must own final button state");
+assert(flow.includes('data-mamo-review-continue'), "canonical review flow must own the continue-to-SELF-CHECK action");
 
 console.log("AIR BET review ownership regression checks passed");
