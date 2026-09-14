@@ -55,7 +55,9 @@ assert.match(helper, /読み取り専用/);
 assert.doesNotMatch(helper, /localStorage\.|sessionStorage\.|fetch\s*\(|XMLHttpRequest|\.innerHTML\s*=|setTimeout\s*\(|setInterval\s*\(|requestAnimationFrame\s*\(|MutationObserver|visualViewport|scrollBy\s*\(/);
 assert.doesNotMatch(helper, /window\.MAMO_AIR_BET_DRAFT|MAMO_AIR_BET_DRAFT\s*[.=]|window\.(?:updateReviewLineStake|placeBet|removeReviewLine)\s*=|\.records\s*=|\.coins\s*=|\.pressroom\s*=/);
 
-assert.match(sw, /mamoboat-v518-self-check-phase1-dev/);
+assert.match(sw, /mamoboat-v519-self-check-delivery-dev/);
+assert.match(sw, /url\.pathname\.endsWith\("\/bet-review-flow\.js"\)/);
+assert.match(sw, /url\.pathname\.endsWith\("\/air-bet-review-compact\.css"\)/);
 assert.match(sw, /\/mamo-quant-analysis-\[\^\/\]\+\\\.js\$\/\.test\(url\.pathname\)/);
 assert.match(sw, /fetch\(event\.request,\{cache:"no-store"\}\)/);
 
