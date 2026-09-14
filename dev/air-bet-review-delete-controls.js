@@ -1,12 +1,13 @@
-/* MAMO BOAT — AIR BET safe review controls v3
+/* MAMO BOAT — AIR BET safe review controls v4
  * Presentation-only shortcuts and a safe two-mode chooser for the canonical AIR BET review state.
  * Uses the existing review APIs; never replaces cart, placeBet, reviewBet, wallet, or navigation.
  * Ticket height/scroll ownership stays in canonical CSS (styles.css).
+ * Final confirmation visibility/state belongs only to bet-review-flow.js.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_REVIEW_CONTROLS_V3__) return;
-  window.__MAMO_AIR_BET_REVIEW_CONTROLS_V3__ = true;
+  if (window.__MAMO_AIR_BET_REVIEW_CONTROLS_V4__) return;
+  window.__MAMO_AIR_BET_REVIEW_CONTROLS_V4__ = true;
 
   const SHELL_SELECTOR = '.air-bet-review-shell[data-air-bet-review="1"]';
   const MODE_NORMAL = "normal";
@@ -52,7 +53,6 @@
       heading: shell.querySelector(".air-bet-review-heading"),
       tickets: shell.querySelector(".air-bet-review-tickets"),
       stakeTools: shell.querySelector("#reviewStakeTools"),
-      confirmButton: shell.querySelector(".air-bet-confirm-button"),
     };
   }
 
@@ -155,7 +155,6 @@
     setImportantDisplay(nodes.heading, "flex");
     setImportantDisplay(nodes.tickets, "block");
     setImportantDisplay(nodes.stakeTools, "grid");
-    setImportantDisplay(nodes.confirmButton, "block");
     applyNormalLayoutOverrides(shell);
   }
 
