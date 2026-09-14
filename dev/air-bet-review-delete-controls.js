@@ -1,13 +1,14 @@
-/* MAMO BOAT — AIR BET safe review controls v4
+/* MAMO BOAT — AIR BET safe review controls v5
  * Presentation-only shortcuts and a safe two-mode chooser for the canonical AIR BET review state.
  * Uses the existing review APIs; never replaces cart, placeBet, reviewBet, wallet, or navigation.
  * Ticket height/scroll ownership stays in canonical CSS (styles.css).
  * Final confirmation visibility/state belongs only to bet-review-flow.js.
+ * Normal BET keeps the canonical review continue action visible while hiding allocation-only detail UI.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_AIR_BET_REVIEW_CONTROLS_V4__) return;
-  window.__MAMO_AIR_BET_REVIEW_CONTROLS_V4__ = true;
+  if (window.__MAMO_AIR_BET_REVIEW_CONTROLS_V5__) return;
+  window.__MAMO_AIR_BET_REVIEW_CONTROLS_V5__ = true;
 
   const SHELL_SELECTOR = '.air-bet-review-shell[data-air-bet-review="1"]';
   const MODE_NORMAL = "normal";
@@ -50,6 +51,8 @@
     return {
       allocationPanel: shell.querySelector(".mamo-allocation-panel"),
       allocationResults: shell.querySelector(".mamo-allocation-results"),
+      allocationTitle: shell.querySelector(".mamo-allocation-results-title"),
+      allocationTableWrap: shell.querySelector(".mamo-allocation-table-wrap"),
       heading: shell.querySelector(".air-bet-review-heading"),
       tickets: shell.querySelector(".air-bet-review-tickets"),
       stakeTools: shell.querySelector("#reviewStakeTools"),
@@ -151,7 +154,12 @@
 
     const nodes = modeNodes(shell);
     setImportantDisplay(nodes.allocationPanel, "none");
-    setImportantDisplay(nodes.allocationResults, "none");
+    // Keep the canonical result section mounted so its own continue action
+    // remains reachable in normal BET. Only allocation-specific presentation
+    // is hidden here; transition ownership stays in bet-review-flow.js.
+    setImportantDisplay(nodes.allocationResults, "block");
+    setImportantDisplay(nodes.allocationTitle, "none");
+    setImportantDisplay(nodes.allocationTableWrap, "none");
     setImportantDisplay(nodes.heading, "flex");
     setImportantDisplay(nodes.tickets, "block");
     setImportantDisplay(nodes.stakeTools, "grid");
