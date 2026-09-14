@@ -10,6 +10,7 @@ const review = fs.readFileSync(path.join(root, "dev/bet-review-flow.js"), "utf8"
 const css = fs.readFileSync(path.join(root, "dev/air-bet-review-compact.css"), "utf8");
 const html = fs.readFileSync(path.join(root, "dev/index.html"), "utf8");
 const sw = fs.readFileSync(path.join(root, "dev/sw.js"), "utf8");
+const swRefresh = fs.readFileSync(path.join(root, "dev/sw-refresh.js"), "utf8");
 
 for (const field of [
   "selfCheckVersion",
@@ -49,6 +50,10 @@ for (const asset of [
   assert.ok(html.includes(asset), `index must load ${asset}`);
   assert.ok(sw.includes(asset), `service worker must deliver ${asset}`);
 }
-assert.match(sw, /mamoboat-v518-self-check-phase1-dev/, "PWA cache namespace must be bumped");
+
+assert.match(sw, /mamoboat-v519-self-check-delivery-dev/, "SELF CHECK delivery cache namespace must be current");
+assert.match(html, /<script src="sw-refresh\.js\?v=20260914-1"><\/script>/, "dev page must load the canonical service worker refresh owner");
+assert.match(swRefresh, /navigator\.serviceWorker\.register\("\.\/sw\.js",\{scope:"\.\/",updateViaCache:"none"\}\)/, "refresh owner must register the dev service worker without HTTP cache reuse");
+assert.match(swRefresh, /reg\.update\(\)/, "refresh owner must actively check for a new service worker");
 
 console.log("SELF CHECK Phase 1 ownership and PWA delivery contract: OK");
