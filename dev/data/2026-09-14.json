@@ -15,7 +15,8 @@
     "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
     "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
     "raceCarteEnrichment": "BOAT RACE official pcexpect/beforeinfo/raceresult",
-    "raceCarteEnrichmentPolicy": "static stats cached; preview near close; kimarite after settlement"
+    "raceCarteEnrichmentPolicy": "static stats cached; preview near close; kimarite after settlement",
+    "raceCarteHistoryBackfill": "recent incomplete races via validated official racelist/beforeinfo/raceresult; missing kimarite and missing stats retried until confirmed"
   },
   "venues": [
     {
@@ -3574,7 +3575,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=02&rno=10",
-            "previewFetchedAt": "2026-09-14T19:11:36.453124+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:21.680431+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:11:44.675744+09:00"
           }
@@ -6525,7 +6526,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 2,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=04&rno=7",
-            "previewFetchedAt": "2026-09-14T13:49:42.755728+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:20.500641+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:11:28.146552+09:00"
           }
@@ -6849,7 +6850,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 3,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=04&rno=8",
-            "previewFetchedAt": "2026-09-14T14:32:39.508138+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:19.538656+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:11:32.070665+09:00"
           }
@@ -7463,7 +7464,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 2,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=04&rno=9",
-            "previewFetchedAt": "2026-09-14T14:41:32.428626+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:21.708954+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:11:29.099156+09:00"
           }
@@ -7784,7 +7785,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=04&rno=10",
-            "previewFetchedAt": "2026-09-14T19:11:38.346098+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:27.607210+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:11:46.599082+09:00"
           }
@@ -8109,7 +8110,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 4,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=04&rno=11",
-            "previewFetchedAt": "2026-09-14T19:09:16.203704+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:28.039337+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:09:24.469061+09:00"
           }
@@ -8433,7 +8434,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 3,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=04&rno=12",
-            "previewFetchedAt": "2026-09-14T19:10:11.753482+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:27.905065+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:10:21.002856+09:00"
           }
@@ -16575,7 +16576,8 @@
               "motor2Rate": 25.0,
               "motor3Rate": 31.25,
               "boat2Rate": 29.41,
-              "boat3Rate": 41.18
+              "boat3Rate": 41.18,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 2,
@@ -16599,7 +16601,8 @@
               "motor2Rate": 48.0,
               "motor3Rate": 56.0,
               "boat2Rate": 41.18,
-              "boat3Rate": 64.71
+              "boat3Rate": 64.71,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 3,
@@ -16623,7 +16626,8 @@
               "motor2Rate": 48.15,
               "motor3Rate": 51.85,
               "boat2Rate": 18.18,
-              "boat3Rate": 36.36
+              "boat3Rate": 36.36,
+              "exhibitionTime": 6.74
             },
             {
               "boatNumber": 4,
@@ -16647,7 +16651,8 @@
               "motor2Rate": 13.04,
               "motor3Rate": 17.39,
               "boat2Rate": 25.0,
-              "boat3Rate": 37.5
+              "boat3Rate": 37.5,
+              "exhibitionTime": 6.76
             },
             {
               "boatNumber": 5,
@@ -16671,7 +16676,8 @@
               "motor2Rate": 50.0,
               "motor3Rate": 62.5,
               "boat2Rate": 42.31,
-              "boat3Rate": 61.54
+              "boat3Rate": 61.54,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 6,
@@ -16695,7 +16701,8 @@
               "motor2Rate": 20.83,
               "motor3Rate": 45.83,
               "boat2Rate": 69.23,
-              "boat3Rate": 80.77
+              "boat3Rate": 80.77,
+              "exhibitionTime": 6.75
             }
           ],
           "result": {
@@ -16864,10 +16871,10 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20260914&jcd=07&rno=12",
             "raceCardFetchedAt": "2026-09-14T19:55:50.393065+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=07&rno=12",
-            "previewFetchedAt": "2026-09-14T19:59:28.878586+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:30.751093+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-09-14T21:46:51.510231+09:00"
           },
@@ -19503,7 +19510,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=08&rno=8",
-            "previewFetchedAt": "2026-09-14T14:34:05.136997+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:21.440354+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:11:30.115622+09:00"
           }
@@ -21095,7 +21102,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=08&rno=12",
-            "previewFetchedAt": "2026-09-14T19:09:46.197653+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:29.812369+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T19:09:55.438763+09:00"
           }
@@ -35754,7 +35761,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=12&rno=5",
-            "previewFetchedAt": "2026-09-14T19:10:12.829064+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:30.706662+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-09-14T21:51:26.520873+09:00"
           },
@@ -37092,7 +37099,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=12&rno=9",
-            "previewFetchedAt": "2026-09-14T19:10:43.773646+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:28.764303+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-09-14T21:48:55.982427+09:00"
           },
@@ -43009,7 +43016,7 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=19&rno=1",
-            "previewFetchedAt": "2026-09-14T19:11:38.407782+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:21.588782+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-09-14T20:04:37.894815+09:00"
           },
@@ -45311,7 +45318,7 @@
             "raceCard": "official-racelist-v4-partial",
             "raceCardParsedRacers": 5,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20260914&jcd=19&rno=8",
-            "raceCardFetchedAt": "2026-09-14T19:10:33.569075+09:00",
+            "raceCardFetchedAt": "2026-09-15T01:24:10.474440+09:00",
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=19&rno=8",
@@ -46635,7 +46642,8 @@
               "motor2Rate": 29.35,
               "motor3Rate": 45.65,
               "boat2Rate": 33.73,
-              "boat3Rate": 51.81
+              "boat3Rate": 51.81,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 2,
@@ -46659,7 +46667,8 @@
               "motor2Rate": 26.74,
               "motor3Rate": 40.7,
               "boat2Rate": 25.93,
-              "boat3Rate": 46.91
+              "boat3Rate": 46.91,
+              "exhibitionTime": 6.8
             },
             {
               "boatNumber": 3,
@@ -46683,7 +46692,8 @@
               "motor2Rate": 26.14,
               "motor3Rate": 34.09,
               "boat2Rate": 28.57,
-              "boat3Rate": 50.0
+              "boat3Rate": 50.0,
+              "exhibitionTime": 6.8
             },
             {
               "boatNumber": 4,
@@ -46707,7 +46717,8 @@
               "motor2Rate": 38.2,
               "motor3Rate": 52.81,
               "boat2Rate": 26.51,
-              "boat3Rate": 39.76
+              "boat3Rate": 39.76,
+              "exhibitionTime": 6.81
             },
             {
               "boatNumber": 5,
@@ -46731,7 +46742,8 @@
               "motor2Rate": 22.22,
               "motor3Rate": 35.8,
               "boat2Rate": 26.51,
-              "boat3Rate": 40.96
+              "boat3Rate": 40.96,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 6,
@@ -46755,7 +46767,8 @@
               "motor2Rate": 26.44,
               "motor3Rate": 45.98,
               "boat2Rate": 41.46,
-              "boat3Rate": 62.2
+              "boat3Rate": 62.2,
+              "exhibitionTime": 6.79
             }
           ],
           "result": {
@@ -46924,10 +46937,10 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20260914&jcd=19&rno=12",
             "raceCardFetchedAt": "2026-09-14T19:56:09.651103+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=19&rno=12",
-            "previewFetchedAt": "2026-09-14T19:59:47.100037+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:30.678102+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-09-14T21:46:31.293119+09:00"
           },
@@ -47267,7 +47280,7 @@
             "raceCard": "official-racelist-v4-partial",
             "raceCardParsedRacers": 5,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20260914&jcd=20&rno=1",
-            "raceCardFetchedAt": "2026-09-14T14:31:17.876006+09:00",
+            "raceCardFetchedAt": "2026-09-15T01:24:10.102463+09:00",
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=20&rno=1",
@@ -50927,7 +50940,8 @@
               "motor2Rate": 35.98,
               "motor3Rate": 54.5,
               "boat2Rate": 29.41,
-              "boat3Rate": 55.88
+              "boat3Rate": 55.88,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 2,
@@ -50951,7 +50965,8 @@
               "motor2Rate": 20.65,
               "motor3Rate": 41.29,
               "boat2Rate": 23.44,
-              "boat3Rate": 40.63
+              "boat3Rate": 40.63,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 3,
@@ -50975,7 +50990,8 @@
               "motor2Rate": 33.33,
               "motor3Rate": 47.95,
               "boat2Rate": 29.51,
-              "boat3Rate": 60.66
+              "boat3Rate": 60.66,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 4,
@@ -50999,7 +51015,8 @@
               "motor2Rate": 24.68,
               "motor3Rate": 40.26,
               "boat2Rate": 32.35,
-              "boat3Rate": 55.88
+              "boat3Rate": 55.88,
+              "exhibitionTime": 6.85
             },
             {
               "boatNumber": 5,
@@ -51023,7 +51040,8 @@
               "motor2Rate": 33.51,
               "motor3Rate": 54.05,
               "boat2Rate": 15.79,
-              "boat3Rate": 24.56
+              "boat3Rate": 24.56,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 6,
@@ -51047,7 +51065,8 @@
               "motor2Rate": 31.91,
               "motor3Rate": 53.72,
               "boat2Rate": 23.33,
-              "boat3Rate": 48.33
+              "boat3Rate": 48.33,
+              "exhibitionTime": 6.85
             }
           ],
           "result": {
@@ -51216,10 +51235,10 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20260914&jcd=20&rno=12",
             "raceCardFetchedAt": "2026-09-14T19:56:00.042370+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260914&jcd=20&rno=12",
-            "previewFetchedAt": "2026-09-14T19:59:37.456418+09:00",
+            "previewFetchedAt": "2026-09-15T01:24:30.780102+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-09-14T21:46:40.609708+09:00"
           },
@@ -59743,5 +59762,6 @@
     "oddsDebug": "cached=11 candidates=4 fetched=4 recent=0 requests=20 stored=15 entries=3180",
     "fastResultDebug": "cached=0 candidates=32 fetched=32 pending=0 requests=32 selection=venue-round-robin storedWeb=48 total=168"
   },
-  "raceCarteEnrichedAt": "2026-09-14T20:00:46.659437+09:00"
+  "raceCarteEnrichedAt": "2026-09-14T20:00:46.659437+09:00",
+  "raceCarteHistoryBackfilledAt": "2026-09-15T01:23:52.374452+09:00"
 }
