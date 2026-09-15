@@ -31,10 +31,10 @@
 // Previous quantitative analysis cache: mamoboat-v515-quant-analysis-basic-step2-dev
 // Previous analysis refresh cache: mamoboat-v516-quant-analysis-pwa-refresh-dev
 // Previous SELF CHECK shell cache: mamoboat-v518-self-check-phase1-dev
-const CACHE = "mamoboat-v519-self-check-delivery-dev";
+const CACHE = "mamoboat-v520-post-bet-self-check-dev";
 const SHELL = [
-  "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260914-1","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260914-1",
-  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260914-1","./air-bet-review-delete-controls.js?v=20260912-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1",
+  "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260914-2","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260914-2",
+  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260914-2","./air-bet-review-delete-controls.js?v=20260912-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1",
   "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260911-13","./race-layout-refresh.js?v=20260911-7","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./race-carte-official-payouts.js?v=20260911-1","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260913-1","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
@@ -54,7 +54,7 @@ function withLiveVenueLoader(response){
     html=html.replace(/\s*<script[^>]+src=["'][^"']*ai-safe\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
     html=html.replace(/\s*<script[^>]+src=["'][^"']*official-link\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,"");
     html=html.replace(/pilot-config\.js\?v=[^"']+/g,"pilot-config.js?v=20260910-6");
-    html=html.replace(/app\.js\?v=[^"']+/g,"app.js?v=20260914-1");
+    html=html.replace(/app\.js\?v=[^"']+/g,"app.js?v=20260914-2");
     html=html.replace(/race-airbet-compact\.js\?v=[^"']+/g,"race-airbet-compact.js?v=20260910-6");
     html=html.replace(/race-airbet-first\.js\?v=[^"']+/g,"race-airbet-first.js?v=20260910-8");
     html=html.replace(/air-bet-mode-stability\.js\?v=[^"']+/g,"air-bet-mode-stability.js?v=20260911-13");
@@ -62,7 +62,7 @@ function withLiveVenueLoader(response){
     html=html.replace(/race-carte-official-payouts\.js(?:\?v=[^"']+)?/g,"race-carte-official-payouts.js?v=20260911-1");
     html=html.replace(/decision-event-collector\.js(?:\?v=[^"']+)?/g,"decision-event-collector.js?v=20260910-2");
     html=html.replace(/decision-event-api-compat\.js(?:\?v=[^"']+)?/g,"decision-event-api-compat.js?v=20260912-1");
-    html=html.replace(/bet-review-flow\.js(?:\?v=[^"']+)?/g,"bet-review-flow.js?v=20260914-1");
+    html=html.replace(/bet-review-flow\.js(?:\?v=[^"']+)?/g,"bet-review-flow.js?v=20260914-2");
     html=html.replace(/air-bet-review-delete-controls\.js(?:\?v=[^"']+)?/g,"air-bet-review-delete-controls.js?v=20260912-1");
     html=html.replace(/odds-bet-mode-v1\.js(?:\?v=[^"']+)?/g,"odds-bet-mode-v1.js?v=20260912-1");
     html=html.replace(/odds-reference-odds-sync\.js(?:\?v=[^"']+)?/g,"odds-reference-odds-sync.js?v=20260912-1");
@@ -81,9 +81,9 @@ function withLiveVenueLoader(response){
       html=html.replace("</head>",'<link rel="stylesheet" href="odds-bet-mode.css?v=20260912-3"></head>');
     }
     if(html.includes("air-bet-review-compact.css")) {
-      html=html.replace(/air-bet-review-compact\.css\?v=[^"']+/g,"air-bet-review-compact.css?v=20260914-1");
+      html=html.replace(/air-bet-review-compact\.css\?v=[^"']+/g,"air-bet-review-compact.css?v=20260914-2");
     } else {
-      html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-review-compact.css?v=20260914-1"></head>');
+      html=html.replace("</head>",'<link rel="stylesheet" href="air-bet-review-compact.css?v=20260914-2"></head>');
     }
     if(!html.includes("venue-live-priority.js")) html=html.replace("</body>",'<script src="venue-live-priority.js?v=20260909-1"></script></body>');
     if(!html.includes("general-grade-theme.js")) html=html.replace("</body>",'<script src="general-grade-theme.js?v=20260908-1"></script></body>');
@@ -116,13 +116,25 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(event.request,{cache:"no-store"}).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(canonical,r.clone()));return r;}).catch(()=>caches.match(canonical)));
     return;
   }
+  // The BET owners and stylesheet come from one successfully installed release.
+  // Do not network-refresh one member independently while offline/partly updated.
+  const betAsset = SHELL.find(path =>
+    /\/(?:app\.js|bet-review-flow\.js|air-bet-review-compact\.css)\?/.test(path)
+    && new URL(path, self.registration.scope).pathname === url.pathname);
+  if (betAsset) {
+    event.respondWith(caches.open(CACHE).then(cache => cache.match(betAsset)).then(response => response || Response.error()));
+    return;
+  }
+  const scopePath = new URL(self.registration.scope).pathname;
+  if (event.request.mode === "navigate" && [scopePath, `${scopePath}index.html`].includes(url.pathname)) {
+    event.respondWith(caches.open(CACHE).then(cache => cache.match("./index.html")).then(withLiveVenueLoader));
+    return;
+  }
   if(
     url.pathname.endsWith("/pilot-config.js")
     || url.pathname.endsWith("/ai-safe.js")
     || url.pathname.endsWith("/baseline-intervention.js")
     || url.pathname.endsWith("/decision-event-api-compat.js")
-    || url.pathname.endsWith("/bet-review-flow.js")
-    || url.pathname.endsWith("/air-bet-review-compact.css")
     || url.pathname.endsWith("/air-bet-review-delete-controls.js")
     || url.pathname.endsWith("/race-carte-official-payouts.js")
     || url.pathname.endsWith("/odds-bet-mode-v1.js")

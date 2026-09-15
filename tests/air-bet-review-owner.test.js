@@ -8,8 +8,7 @@ const flow = fs.readFileSync(path.join(root, "dev/bet-review-flow.js"), "utf8");
 
 // The auxiliary review-controls module may rearrange allocation/list UI only.
 // It must never force the final AIR BET button visible; otherwise iPhone/PWA
-// can bypass the canonical SELF CHECK step and placeBet() only sees a missing
-// SELF CHECK payload after the user taps the prematurely exposed button.
+// can bypass the canonical FINAL CHECK before the user confirms the BET.
 assert.equal(
   controls.includes('.air-bet-confirm-button'),
   false,
@@ -22,7 +21,7 @@ assert.equal(
 );
 
 // Normal BET still needs the canonical continue action that advances into
-// SELF CHECK. Hide allocation-only details, not the entire results section
+// FINAL CHECK. Hide allocation-only details, not the entire results section
 // that owns data-mamo-review-continue.
 assert.equal(
   controls.includes('setImportantDisplay(nodes.allocationResults, "none")'),
@@ -42,7 +41,9 @@ assert(
 // The canonical flow must remain the owner of SELF CHECK and final confirmation.
 assert(flow.includes("createSelfCheckPanel"), "canonical review flow must create SELF CHECK");
 assert(flow.includes('reviewStep = "final"'), "canonical review flow must own transition to final step");
-assert(flow.includes('button[onclick="placeBet()"]'), "canonical review flow must own final button state");
-assert(flow.includes('data-mamo-review-continue'), "canonical review flow must own the continue-to-SELF-CHECK action");
+assert(flow.includes("showPostBetSelfCheck"), "canonical review flow must own post-bet presentation");
+assert(flow.includes("shell.replaceChildren(panel)"), "post-bet state must remove confirm/edit controls");
+assert(flow.includes('data-mamo-review-continue'), "canonical review flow must own the continue-to-FINAL-CHECK action");
 
 console.log("AIR BET review ownership regression checks passed");
+

@@ -15,10 +15,12 @@ assert.match(css, /\.mamo-allocation-table-wrap[\s\S]{0,360}touch-action:\s*pan-
 assert.match(css, /\.mamo-allocation-table th[\s\S]{0,180}position:\s*sticky/);
 
 // Delivery must force installed iPhone PWAs onto this CSS revision.
-assert.match(sw, /mamoboat-v509-allocation-results-scroll-dev/);
-assert.match(sw, /air-bet-review-compact\.css\?v=20260912-2/);
+const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const asset = html.match(/href="(air-bet-review-compact\.css\?v=[^"]+)"/)[1];
+assert(sw.includes(`"./${asset}"`), "installed shell must cache the same CSS revision as index");
 
 // Keep risky JS scrolling/timing mechanisms out of this CSS-only fix.
 assert.doesNotMatch(css, /position:\s*fixed/);
 
 console.log("AIR BET allocation results scroll regression checks passed.");
+
