@@ -1,12 +1,13 @@
-/* MAMO BOAT — AIR BET review flow v10
+/* MAMO BOAT — AIR BET review flow v11
  * One canonical review controller for iPhone Safari/PWA.
  * It never wraps selection, review, wallet, record, navigation, or placeBet.
  * The existing cart and placeBet() remain the single source of truth.
- * Review presentation is split into allocation/list -> SELF CHECK -> final confirmation.
+ * Review presentation is split into allocation/list -> final confirmation -> saved BET -> SELF CHECK.
  */
 (() => {
   "use strict";
-  if (window.__MAMO_BET_REVIEW_FLOW_V10__) return;
+  if (window.__MAMO_BET_REVIEW_FLOW_V11__) return;
+  window.__MAMO_BET_REVIEW_FLOW_V11__ = true;
   window.__MAMO_BET_REVIEW_FLOW_V10__ = true;
   window.__MAMO_BET_REVIEW_FLOW_V9__ = true;
 
@@ -47,26 +48,65 @@
   }
 
   function syncSelfCheckConfirm(shell) {
-    if (!shell) return;
+    if (!shell || shell.dataset.mamoReviewStep !== "post-bet") return;
     const complete = selfCheckComplete(selfCheckAnswers(shell));
     const status = shell.querySelector('[data-mamo-self-status="1"]');
-    if (status) {
-      status.textContent = complete
-        ? "SELF CHECKを記録できます。"
-        : "4項目を選ぶとAIR BETを確定できます。";
-    }
-    const confirm = shell.querySelector('button[onclick="placeBet()"]');
-    if (!confirm || reviewStep !== "final") return;
-    const lines = draftLines();
-    const total = lines.reduce((sum, line) => sum + lineAmount(line), 0);
-    let balance = NaN;
-    try {
-      balance = Number(JSON.parse(localStorage.getItem("mamoboat_v40_personal") || "{}").coins);
-    } catch (_) {}
-    const baseBlocked = !lines.length
-      || lines.some((line) => !lineAmount(line))
-      || (Number.isFinite(balance) && total > balance);
-    confirm.disabled = baseBlocked || !complete;
+    if (status) status.textContent = complete
+      ? "SELF CHECKを記録できます。"
+      : "4項目を選ぶとSELF CHECKを保存できます。";
+    const save = shell.querySelector('[data-mamo-self-save="1"]');
+    if (save) save.disabled = !complete;
+  }
+
+  function showPostBetSelfCheck(recordId) {
+    const shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]');
+    if (!shell || !recordId) return false;
+    if (shell.dataset.mamoPostBetRecordId === recordId) return true;
+    reviewStep = "post-bet";
+    detailOpen = false;
+    shell.dataset.mamoReviewStep = reviewStep;
+    shell.dataset.mamoPostBetRecordId = recordId;
+    shell.classList.remove("mamo-review-detail-open");
+    const panel = document.createElement("section");
+    panel.className = "mamo-review-post-bet";
+    panel.setAttribute("aria-label", "AIR BET記録後のSELF CHECK");
+    const heading = document.createElement("h2");
+    heading.textContent = "AIR BET 記録済み";
+    heading.tabIndex = -1;
+    const notice = document.createElement("p");
+    notice.className = "muted";
+    notice.textContent = "BETは成立しています。回答中も成立時刻とBET額は変わりません。";
+    const save = document.createElement("button");
+    save.type = "button";
+    save.className = "btn teal full";
+    save.dataset.mamoSelfSave = "1";
+    save.textContent = "SELF CHECKを保存する";
+    save.disabled = true;
+    save.addEventListener("click", () => {
+      const answers = selfCheckAnswers(shell);
+      if (!selfCheckComplete(answers) || save.disabled) return;
+      save.disabled = true;
+      let result;
+      try { result = window.completeAirBetSelfCheck?.(recordId, answers); }
+      catch (error) { console.warn("SELF CHECKの保存に失敗しました", error); }
+      if (result?.ok) {
+        window.closeModal();
+        return;
+      }
+      shell.querySelector('[data-mamo-self-status="1"]').textContent =
+        "SELF CHECKを保存できませんでした。回答の保存をもう一度お試しください。AIR BETは記録済みです。";
+      save.disabled = false;
+    });
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "btn secondary full";
+    close.textContent = "回答せず閉じる";
+    close.addEventListener("click", () => window.closeModal());
+    panel.append(heading, notice, createSelfCheckPanel(), save, close);
+    // Remove the old confirm/back/edit controls, rather than merely hiding them.
+    shell.replaceChildren(panel);
+    heading.focus({ preventScroll: true });
+    return true;
   }
 
   function choiceButton(label, value, datasetName, panel) {
@@ -96,13 +136,13 @@
     panel.dataset.mamoSelfCheck = "1";
     panel.dataset.confidence = "";
     panel.dataset.realSameAmount = "";
-    panel.setAttribute("aria-label", "AIR BET前のSELF CHECK");
+    panel.setAttribute("aria-label", "AIR BET記録後のSELF CHECK");
 
     const kicker = document.createElement("span");
     kicker.className = "kicker";
     kicker.textContent = "SELF CHECK";
     const title = document.createElement("h3");
-    title.textContent = "予想の前に、自分を知る。";
+    title.textContent = "今の自分を記録する。";
     const lead = document.createElement("p");
     lead.className = "muted";
     lead.textContent = "正解はありません。今の自分に一番近いものを選んでください。";
@@ -141,7 +181,7 @@
     status.dataset.mamoSelfStatus = "1";
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
-    status.textContent = "4項目を選ぶとAIR BETを確定できます。";
+    status.textContent = "4項目を選ぶとSELF CHECKを保存できます。";
 
     panel.append(kicker, title, lead, confidenceLabel, confidence, basis, stake, realLabel, real, status);
     panel.querySelectorAll("select").forEach((select) => {
@@ -571,8 +611,7 @@
     back.className = "mamo-review-final-back";
     back.dataset.mamoReviewBack = "1";
     back.textContent = "← 配分・買い目一覧へ戻る";
-    const selfCheck = createSelfCheckPanel();
-  section.append(kicker, heading, summary, selfCheck, back);
+    section.append(kicker, heading, summary, back);
 
     const anchor = shell.querySelector(".air-bet-review-heading");
     if (anchor?.parentNode === shell) shell.insertBefore(section, anchor);
@@ -679,7 +718,7 @@
   }
 
   function refreshAllocationPanel(shell = document.querySelector('.air-bet-review-shell[data-air-bet-review="1"]')) {
-    if (!shell) return;
+    if (!shell || shell.dataset.mamoReviewStep === "post-bet") return;
     const lines = draftLines();
     const panel = shell.querySelector('[data-mamo-allocation-panel="1"]') || createAllocationPanel(shell);
     ensureLineAdjusters(shell);
@@ -788,7 +827,7 @@
       return;
     }
     const shell = target.closest('.air-bet-review-shell[data-air-bet-review="1"]');
-    if (!shell) return;
+    if (!shell || shell.dataset.mamoReviewStep === "post-bet") return;
     const panel = target.closest('[data-mamo-allocation-panel="1"]');
     const toggle = target.closest('[data-mamo-budget-toggle="1"]');
     if (toggle) {
@@ -865,6 +904,7 @@
 
   window.MAMO_BET_REVIEW_LAYOUT = Object.freeze({ refresh: enhanceBuilder });
   window.MAMO_BET_REVIEW_ALLOCATION = Object.freeze({
+    showPostBetSelfCheck,
     combinedOdds,
     allocate: equalPayoutAllocation,
     refresh: enhanceReviewAllocation,

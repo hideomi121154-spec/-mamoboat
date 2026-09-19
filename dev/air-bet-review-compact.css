@@ -1,5 +1,5 @@
-/* MAMO BOAT — compact AIR BET review content v15.
- * One scroll owner per presentation state: ticket list, allocation table, or final check.
+/* MAMO BOAT — compact AIR BET review content v16.
+ * One scroll owner per presentation state: ticket list, allocation table, final check, or post-bet SELF CHECK.
  * No fixed overlays, nested document scroll, or runtime style injection.
  */
 .air-bet-review-shell #reviewStakePrompt,
@@ -54,6 +54,7 @@
 .air-bet-review-shell .mamo-allocation-keypad,
 .air-bet-review-shell .mamo-allocation-results,
 .air-bet-review-shell .mamo-allocation-table-wrap,
+.air-bet-review-shell .mamo-review-post-bet,
 .air-bet-review-shell .mamo-review-final {
   min-width: 0;
   max-width: 100%;
@@ -379,6 +380,7 @@
 }
 
 /* Final check is a state of the same modal, not another modal layered on top. */
+.air-bet-review-shell .mamo-review-post-bet,
 .air-bet-review-shell .mamo-review-final {
   display: none;
   gap: 10px;
@@ -398,6 +400,7 @@
 
 /* In final state, the final panel is the single vertical scroll owner. The
  * modal and review shell stay fixed, so the page behind the modal cannot move. */
+.air-bet-review-shell[data-mamo-review-step="post-bet"] > .mamo-review-post-bet,
 .air-bet-review-shell[data-mamo-review-step="final"] > .mamo-review-final {
   display: grid;
   flex: 1 1 0;
@@ -466,7 +469,7 @@
   font-weight: 800;
 }
 
-/* SELF CHECK is part of the existing final state; it does not own scrolling. */
+/* SELF CHECK content uses the post-bet panel scroll owner. */
 .air-bet-review-shell .mamo-self-check {
   display: grid;
   gap: 7px;
@@ -501,3 +504,4 @@
 .air-bet-review-tickets .betline-stake-control {
   touch-action: auto !important;
 }
+
