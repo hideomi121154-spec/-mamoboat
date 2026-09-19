@@ -1,7 +1,7 @@
 {
   "schemaVersion": 10,
   "date": "2026-09-19",
-  "generatedAt": "2026-09-19T22:56:04.165746+09:00",
+  "generatedAt": "2026-09-20T03:10:25.855660+09:00",
   "source": {
     "type": "official-lzh",
     "schedule": "BOAT RACE 番組表ダウンロード",
@@ -13,10 +13,7 @@
     "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
     "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
     "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
-    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
-    "raceCarteEnrichment": "BOAT RACE official pcexpect/beforeinfo/raceresult",
-    "raceCarteEnrichmentPolicy": "static stats cached; preview near close; kimarite after settlement",
-    "raceCarteHistoryBackfill": "recent incomplete races via validated official racelist/beforeinfo/raceresult; missing kimarite and missing stats retried until confirmed"
+    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得"
   },
   "venues": [
     {
@@ -57364,14 +57361,9 @@
         "trio": 155
       },
       "gradedVenues": 2,
-      "oddsRaces": 21,
-      "oddsEntries": 4452,
       "lzhCompletedResultRaces": 156,
       "webResultRaces": 0,
       "cachedWebResultRaces": 0
-    },
-    "oddsDebug": "cached=21 candidates=0 fetched=0 recent=0 requests=0 stored=21 entries=4452"
-  },
-  "raceCarteEnrichedAt": "2026-09-19T22:56:04.843683+09:00",
-  "raceCarteHistoryBackfilledAt": "2026-09-20T01:24:30.022414+09:00"
+    }
+  }
 }
