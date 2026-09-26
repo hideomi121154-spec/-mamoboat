@@ -31,7 +31,9 @@ for (const key of [
   assert.match(app, new RegExp(`\\b${key}\\b`), `virtual_bet_placed payload must contain ${key}`);
 }
 
-assert.match(app, /SELF CHECKの4項目を選んでください。/, "placeBet must defensively validate SELF CHECK");
+assert.doesNotMatch(app, /SELF CHECKの4項目を選んでください。/, "SELF CHECK must not gate BET creation");
+assert.match(app, /window\.completeAirBetSelfCheck/, "app owns answer-only persistence");
+assert.match(review, /showPostBetSelfCheck/, "UI exposes the direct post-bet API");
 assert.match(review, /data-mamo-self-check/, "review owner must render SELF CHECK");
 assert.match(review, /このレースへの自信は？/, "confidence prompt must be present");
 assert.match(review, /今回の主な根拠は？/, "basis prompt must be present");
@@ -42,13 +44,14 @@ assert.doesNotMatch(review, /SELF_CHECK_STORE_KEY|pre_bet_self_check_recorded|fi
 assert.match(css, /\.mamo-self-check/, "canonical review stylesheet must own SELF CHECK styling");
 
 for (const asset of [
-  "app.js?v=20260914-1",
-  "bet-review-flow.js?v=20260914-1",
-  "air-bet-review-compact.css?v=20260914-1",
+  "app.js?v=20260914-2",
+  "bet-review-flow.js?v=20260914-2",
+  "air-bet-review-compact.css?v=20260914-2",
 ]) {
   assert.ok(html.includes(asset), `index must load ${asset}`);
   assert.ok(sw.includes(asset), `service worker must deliver ${asset}`);
 }
-assert.match(sw, /mamoboat-v518-self-check-phase1-dev/, "PWA cache namespace must be bumped");
+assert.match(sw, /mamoboat-v520-post-bet-self-check-dev/, "PWA cache namespace must be bumped");
 
 console.log("SELF CHECK Phase 1 ownership and PWA delivery contract: OK");
+
