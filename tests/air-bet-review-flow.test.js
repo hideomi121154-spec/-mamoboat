@@ -120,6 +120,14 @@ function cloneInto(window, value) {
     window.closeModal();
     clickId("nav-race");
     await waitFor(() => window.document.getElementById("builder"), "AIR BET builder did not render");
+    assert(
+      window.document.querySelector("#raceView .race-racer-details"),
+      "official racer detail data must remain visible in the compact race screen"
+    );
+    assert(
+      window.document.querySelector("#raceView .source-note"),
+      "race data source note must not be deleted by compact layout"
+    );
 
     const initialAdd = window.document.querySelector("#builder [data-add-current]");
     assert.equal(initialAdd.hidden, false, "add action must have a permanent position before selection");
@@ -315,6 +323,9 @@ function cloneInto(window, value) {
     assert.equal(window.document.body.dataset.screen, "home");
     clickId("nav-records");
     assert.equal(window.document.body.dataset.screen, "records");
+    clickId("nav-analysis");
+    assert.equal(window.document.body.dataset.screen, "analysis");
+    assert.match(window.document.querySelector("#analysis")?.textContent || "", /編集部|準備中/);
     assert.deepEqual(alerts, []);
 
     console.log("AIR BET picker/review DOM flow checks passed");
