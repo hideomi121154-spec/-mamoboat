@@ -68,7 +68,9 @@ jobs:
           node --check dev/tests/quant-analysis-dashboard.test.js
           node --check dev/tests/editorial-result-review.test.js
           node --check dev/editorial-nav-bridge.js
+          node --check dev/editorial-placeholder-guard.js
           node --check dev/tests/editorial-nav-bridge.test.js
+          node --check dev/tests/editorial-placeholder-guard.test.js
           node --check dev/tests/air-bet-racer-roster.test.js
           node --check dev/tests/air-bet-allocation.test.js
           node --check dev/tests/air-bet-review-delete-controls.test.js
@@ -121,6 +123,7 @@ jobs:
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/editorial-result-review.test.js
           node dev/tests/editorial-nav-bridge.test.js
+          node dev/tests/editorial-placeholder-guard.test.js
           node --test dev/tests/brand-theme.test.js
           node --test dev/tests/shop-coupon.test.js
           node --test dev/tests/mamo-record-timing.test.js

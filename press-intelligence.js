@@ -70,6 +70,7 @@
 
   function ensureGoldDesk(){
     const analysis=document.getElementById("analysis");if(!analysis)return null;
+    if(analysis.dataset?.editorialPlaceholder==="1"){document.getElementById("goldEditorialDesk")?.remove();return null;}
     let desk=document.getElementById("goldEditorialDesk");
     if(desk)return desk;
     desk=document.createElement("section");
