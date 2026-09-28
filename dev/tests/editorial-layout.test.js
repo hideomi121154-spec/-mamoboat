@@ -6,14 +6,14 @@ const test = require("node:test");
 const devRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(devRoot, "..");
 
-test("legacy editorial UI is no longer exposed in the user app", () => {
+test("editorial navigation remains visible while legacy editorial content stays hidden", () => {
   const html = fs.readFileSync(path.join(devRoot, "index.html"), "utf8");
   const app = fs.readFileSync(path.join(devRoot, "app.js"), "utf8");
   const styles = fs.readFileSync(path.join(devRoot, "styles.css"), "utf8");
 
-  assert.doesNotMatch(html, /id="analysis"/);
-  assert.doesNotMatch(html, /id="nav-analysis"/);
-  assert.doesNotMatch(html, /MAMO編集部/);
+  assert.match(html, /<section id="analysis" class="screen">/);
+  assert.match(html, /id="nav-analysis"/);
+  assert.match(html, /<h1>編集部<\/h1>/);
   assert.doesNotMatch(html, /id="pressPaper"/);
   assert.doesNotMatch(html, /id="membershipPanel"/);
   assert.doesNotMatch(html, /新聞の発行設定/);
@@ -21,9 +21,9 @@ test("legacy editorial UI is no longer exposed in the user app", () => {
   assert.doesNotMatch(html, /編集部とAI分析担当/);
   assert.doesNotMatch(html, /PRESS PILOT/);
 
-  assert.match(app, /if \(id === "analysis"\) id = "home";/);
+  assert.doesNotMatch(app, /if \(id === "analysis"\) id = "home";/);
   assert.match(app, /function renderAnalysis\(\) \{\s*if \(!\$\("analysisCards"\) \|\| !\$\("analysisList"\)\) return;/);
-  assert.match(styles, /\.bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(5,/s);
+  assert.match(styles, /\.bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(6,/s);
 });
 
 test("legacy editorial concepts are archived in OWNER ONLY MASTER ROOM", () => {
