@@ -113,7 +113,7 @@ assert.match(sw, /mamoboat-v504-odds-bet-mobile-selector-dev/);
 assert.match(sw, /mamoboat-v505-odds-layout-snapshot-dev/);
 assert.match(sw, /mamoboat-v506-odds-fill-height-dev/);
 assert.match(sw, /mamoboat-v507-odds-all-visible-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260928-3/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260928-4/);
 assert.match(sw, /odds-bet-mode\.css\?v=20260912-2/);
 assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
 assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
