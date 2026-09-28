@@ -158,7 +158,7 @@ test("app captures full pre-race facts and sends a bounded result-review event",
   assert.match(masterHtml, /id="editorialResultReviews"/);
   assert.match(masterHtml, /ユーザー画面にはまだ表示しません/);
   assert.match(masterJs, /function renderEditorialResultReviews\(data\)/);
-  assert.match(masterJs, /BET前の判断/);
+  assert.match(masterJs, /判断と事実の比較/);
   assert.match(masterJs, /result_review/);
 
   assert.doesNotMatch(userHtml, /3連単 レース答え合わせ|editorialResultReviews/);
