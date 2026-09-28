@@ -120,6 +120,14 @@ function cloneInto(window, value) {
     window.closeModal();
     clickId("nav-race");
     await waitFor(() => window.document.getElementById("builder"), "AIR BET builder did not render");
+    assert(
+      window.document.querySelector("#raceView .race-racer-details"),
+      "official racer detail data must remain visible in the compact race screen"
+    );
+    assert(
+      window.document.querySelector("#raceView .source-note"),
+      "race data source note must not be deleted by compact layout"
+    );
 
     const initialAdd = window.document.querySelector("#builder [data-add-current]");
     assert.equal(initialAdd.hidden, false, "add action must have a permanent position before selection");
@@ -292,11 +300,11 @@ function cloneInto(window, value) {
     assert.equal(status().count, 0, "confirmed draft must be reset");
 
     // This fixture does not load the independent quantitative-analysis shell,
-    // so the fixed primary bar contains the four native high-frequency actions.
+    // so the fixed primary bar contains the four high-frequency actions plus the editorial placeholder.
     // SHOP and Settings must remain reachable through the secondary topbar menu.
     assert.deepEqual(
       [...window.document.querySelectorAll(".bottom-nav > .nav")].map((node) => node.id),
-      ["nav-home", "nav-venues", "nav-race", "nav-records"]
+      ["nav-home", "nav-venues", "nav-race", "nav-records", "nav-analysis"]
     );
     assert.equal(window.document.getElementById("nav-shop"), null);
     assert.equal(window.document.getElementById("nav-settings"), null);
@@ -315,6 +323,9 @@ function cloneInto(window, value) {
     assert.equal(window.document.body.dataset.screen, "home");
     clickId("nav-records");
     assert.equal(window.document.body.dataset.screen, "records");
+    clickId("nav-analysis");
+    assert.equal(window.document.body.dataset.screen, "analysis");
+    assert.match(window.document.querySelector("#analysis")?.textContent || "", /編集部|準備中/);
     assert.deepEqual(alerts, []);
 
     console.log("AIR BET picker/review DOM flow checks passed");

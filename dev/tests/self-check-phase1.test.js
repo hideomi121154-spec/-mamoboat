@@ -42,13 +42,13 @@ assert.doesNotMatch(review, /SELF_CHECK_STORE_KEY|pre_bet_self_check_recorded|fi
 assert.match(css, /\.mamo-self-check/, "canonical review stylesheet must own SELF CHECK styling");
 
 for (const asset of [
-  "app.js?v=20260928-3",
+  "app.js?v=20260928-4",
   "bet-review-flow.js?v=20260928-2",
   "air-bet-review-compact.css?v=20260928-2",
 ]) {
   assert.ok(html.includes(asset), `index must load ${asset}`);
   assert.ok(sw.includes(asset), `service worker must deliver ${asset}`);
 }
-assert.match(sw, /mamoboat-v522-editorial-result-review-dev/, "PWA cache namespace must be bumped");
+assert.match(sw, /mamoboat-v523-restore-editorial-race-data-dev/, "PWA cache namespace must be bumped");
 
 console.log("SELF CHECK Phase 1 ownership and PWA delivery contract: OK");

@@ -96,6 +96,7 @@ assert.match(app, /addNormal\(/);
 assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
 assert.match(app, /function racerUrl\(/);
+assert.doesNotMatch(compact, /removeLowerRaceboardDetails\(raceView\);/, "compact layout must keep racer/source data visible");
 
 // PWA shell advances only the assets changed by this repair, while preserving
 // earlier compatibility markers for iPhone clients upgrading across releases.
@@ -108,7 +109,7 @@ assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-9/);
 assert.match(sw, /odds-bet-mode\.css\?v=20260912-2/);
 assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
 assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
-assert.match(sw, /race-airbet-compact\.js\?v=20260910-6/);
+assert.match(sw, /race-airbet-compact\.js\?v=20260928-1/);
 assert.match(sw, /race-layout-refresh\.js\?v=20260911-7/);
 
 console.log("AIR BET racer roster regression contract: OK");

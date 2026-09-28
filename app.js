@@ -959,7 +959,6 @@
     if (event.target.id === "modalBg") window.closeModal();
   };
   window.go = (id) => {
-    if (id === "analysis") id = "home";
     document.body.dataset.screen = id;
     document.querySelectorAll(".screen").forEach(
       (item) => item.classList.toggle("active", item.id === id)

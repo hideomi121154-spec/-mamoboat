@@ -1090,7 +1090,6 @@
     if (event.target.id === "modalBg") window.closeModal();
   };
   window.go = (id) => {
-    if (id === "analysis") id = "home";
     // The 24-venue screen always opens from the actionable list. A filter the
     // user selected during the previous visit must not hide live venues when
     // they return from a race or tap the bottom navigation again.
