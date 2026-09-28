@@ -31,7 +31,7 @@
 // Previous quantitative analysis cache: mamoboat-v515-quant-analysis-basic-step2-dev
 // Previous analysis refresh cache: mamoboat-v516-quant-analysis-pwa-refresh-dev
 // Previous SELF CHECK shell cache: mamoboat-v518-self-check-phase1-dev
-const CACHE = "mamoboat-v527-mobile-picker-layout-dev";
+const CACHE = "mamoboat-v528-mobile-picker-delivery-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260928-1","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260928-3","./air-bet-review-compact.css?v=20260928-2","./editorial-race-result-analysis.css?v=20260928-1","./brand-theme.css?v=20260827-2","./core.js?v=20260928-2","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260928-4",
   "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260928-2","./air-bet-review-delete-controls.js?v=20260928-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1","./mamo-quant-analysis-dashboard.js?v=20260928-1","./mamo-quant-analysis-dashboard.css?v=20260928-1","./mamo-quant-analysis-charts.js?v=20260928-1",
@@ -122,7 +122,8 @@ self.addEventListener("fetch",event=>{
     || url.pathname.endsWith("/ai-safe.js")
     || url.pathname.endsWith("/baseline-intervention.js")
     || url.pathname.endsWith("/decision-event-api-compat.js")
-    || url.pathname.endsWith("/bet-review-flow.js")\n    || url.pathname.endsWith("/editorial-nav-bridge.js")
+    || url.pathname.endsWith("/bet-review-flow.js")
+    || url.pathname.endsWith("/editorial-nav-bridge.js")
     || url.pathname.endsWith("/editorial-placeholder-guard.js")
     || url.pathname.endsWith("/editorial-race-result-analysis.js")
     || url.pathname.endsWith("/editorial-race-result-analysis.css")
