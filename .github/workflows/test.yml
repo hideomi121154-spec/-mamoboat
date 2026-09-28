@@ -69,6 +69,8 @@ jobs:
           node --check dev/tests/editorial-result-review.test.js
           node --check dev/editorial-nav-bridge.js
           node --check dev/editorial-placeholder-guard.js
+          node --check dev/editorial-race-result-analysis.js
+          node --check tests/editorial-race-result-analysis.test.js
           node --check dev/tests/editorial-nav-bridge.test.js
           node --check dev/tests/editorial-placeholder-guard.test.js
           node --check dev/tests/air-bet-racer-roster.test.js
@@ -135,6 +137,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/mamo-record-tests" --no-save --no-package-lock jsdom@26.1.0
           NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/record-today-search.test.js
           NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/air-bet-review-flow.test.js
+          NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/editorial-race-result-analysis.test.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v
