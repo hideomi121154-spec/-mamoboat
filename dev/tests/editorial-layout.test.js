@@ -26,7 +26,7 @@ test("editorial navigation remains visible while legacy editorial content stays 
   assert.match(html, /editorial-placeholder-guard\.js\?v=20260928-1/);
   assert.match(guard, /#goldEditorialDesk/);
   assert.match(guard, /#mamoSpecialAnalysis/);
-  assert.match(guard, /data-editorial-placeholder-core/);
+  assert.match(guard, /editorialPlaceholderCore/);
   assert.match(press, /editorialPlaceholder==="1"/);
   assert.match(benefits, /editorialPlaceholder === "1"/);
 
