@@ -95,7 +95,8 @@ assert.match(app, /pickForm\(/);
 assert.match(app, /addNormal\(/);
 assert.match(app, /addBox\(/);
 assert.match(app, /addForm\(/);
-assert.match(app, /function racerUrl\(/);\nassert.doesNotMatch(compact, /removeLowerRaceboardDetails\\(raceView\\);/, "compact layout must keep racer/source data visible");
+assert.match(app, /function racerUrl\(/);
+assert.doesNotMatch(compact, /removeLowerRaceboardDetails\(raceView\);/, "compact layout must keep racer/source data visible");
 
 // PWA shell advances only the assets changed by this repair, while preserving
 // earlier compatibility markers for iPhone clients upgrading across releases.
