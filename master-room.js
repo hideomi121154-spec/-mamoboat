@@ -33,13 +33,15 @@
     result_settled: "結果反映",
     pilot_plan_selected: "プラン選択",
     press_preferences_saved: "編集部設定",
+    press_feedback_recorded: "新聞フィードバック",
+    deep_interview_theme_selected: "深掘りテーマ選択",
     pilot_settings_saved: "初期設定",
     onboarding_completed: "初回完了",
     wallet_ledger_posted: "B残高更新",
     defense_stamp_earned: "防衛スタンプ",
     official_data_refresh: "公式データ更新",
   };
-  const eventLabel = name => eventLabels[name] || name || "イベント";
+  const eventLabel = name => eventLabels[name] || (String(name || "").startsWith("behavior_") ? `行動分析 / ${String(name).slice(9)}` : name) || "イベント";
 
   function setLocked(locked) {
     $("loginView").classList.toggle("hidden", !locked);
@@ -104,6 +106,54 @@
       kpiCard("衝動平均", o.avgUrge == null ? "—" : `${o.avgUrge}/10`, `事後レビュー ${fmt(o.postRaceReviews)}件`),
     ].join("");
     $("windowLabel").textContent = `直近${data.windowDays || state.days}日表示`;
+  }
+
+  function editorialCard(number, title, value, note) {
+    return `<article class="editorial-card"><small>${esc(number)}</small><h3>${esc(title)}</h3><strong>${esc(value)}</strong><p>${esc(note)}</p><span class="owner-badge">OWNER ONLY</span></article>`;
+  }
+
+  function renderEditorialLab(data) {
+    const archive = $("editorialArchive");
+    const behaviorHost = $("editorialBehavior");
+    const planHost = $("editorialPlanArchive");
+    if (!archive || !behaviorHost || !planHost) return;
+
+    const overview = data.overview || {};
+    const recentEvents = Array.isArray(data.recentEvents) ? data.recentEvents : [];
+    const plans = Array.isArray(data.plans) ? data.plans : [];
+    const editorialNames = new Set([
+      "press_feedback_recorded",
+      "press_preferences_saved",
+      "deep_interview_theme_selected",
+      "pilot_plan_selected",
+    ]);
+    const behaviorEvents = recentEvents.filter(event => String(event?.eventName || "").startsWith("behavior_"));
+    const editorialEvents = recentEvents.filter(event => {
+      const name = String(event?.eventName || "");
+      return name.startsWith("behavior_") || editorialNames.has(name);
+    }).slice(0, 12);
+    const feedbackCount = recentEvents.filter(event => event?.eventName === "press_feedback_recorded").length;
+    const planTotal = plans.reduce((sum, item) => sum + (Number(item?.count) || 0), 0);
+    const days = Number(data.windowDays || state.days) || state.days;
+
+    archive.innerHTML = [
+      editorialCard("01 / MAMO VALUE", "仮想置換額", yen(overview.intendedYen), `${fmt(overview.stakeB)}Bで置換 / 直近${days}日`),
+      editorialCard("02 / CURRENT RECORD", "現在の記録", `${fmt(overview.virtualBets)}回`, `AIR BET / テスター ${fmt(overview.participants)} ID`),
+      editorialCard("03 / BEHAVIOR", "行動パターン", `${fmt(behaviorEvents.length)}件`, "直近ログ内の行動分析イベント。総件数ではありません。"),
+      editorialCard("04 / PRESS", "あなた専用の新聞", `${fmt(feedbackCount)}件`, "直近ログ内の反応。旧設計は「事実 → 傾向 → 問い」。"),
+      editorialCard("05 / PLAN", "旧購読プラン", `${fmt(planTotal)}件`, "FREE / BRONZE / SILVER / GOLD の選択集計。PILOT時の設計保管。"),
+      editorialCard("06 / CAST", "編集部とAI分析担当", "4役", "加音 守 / 新人記者 / トップレーサー / マモカモ。ユーザー表示は停止中。"),
+    ].join("");
+
+    behaviorHost.innerHTML = editorialEvents.length
+      ? editorialEvents.map(event => `<div class="editorial-log-row"><time>${esc(dateTime(event.occurredAt))}</time><span>${esc(event.displayId || "—")}</span><b>${esc(eventLabel(event.eventName))}</b></div>`).join("")
+      : '<div class="empty">編集部・行動分析に関連する直近イベントはありません。</div>';
+
+    const labels = { free: "FREE", bronze: "BRONZE", silver: "SILVER", gold: "GOLD", ume: "BRONZE", take: "SILVER", matsu: "GOLD" };
+    const max = Math.max(1, ...plans.map(item => Number(item?.count) || 0));
+    planHost.innerHTML = plans.length
+      ? plans.map(item => `<div class="mini-row"><span>${esc(labels[item.plan] || String(item.plan || "").toUpperCase())}</span><div class="mini-track"><div class="mini-bar" style="width:${(Number(item.count) || 0) / max * 100}%"></div></div><b>${fmt(item.count)}</b></div>`).join("")
+      : '<div class="empty">旧プラン選択データはまだありません。</div>';
   }
 
   function renderFunnel(data) {
@@ -205,6 +255,7 @@
 
   function render(data) {
     renderOverview(data);
+    renderEditorialLab(data);
     renderFunnel(data);
     renderPlans(data);
     renderTrend(data);
