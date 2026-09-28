@@ -342,47 +342,13 @@
   }
 
   function renderValuePanel() {
-    const host = document.getElementById("mamoValueEditorialSlot");
-    if (!host) return;
-    let panel = document.getElementById("mamoShopValue");
-    if (!panel) {
-      panel = document.createElement("section");
-      panel.id = "mamoShopValue";
-    }
-    if (panel.parentElement !== host) host.appendChild(panel);
-    document.getElementById("mamoValuePanel")?.remove();
-    const amount = guideAmount();
-    const label = PERIOD_LABELS[period];
-    const renderKey = `${period}:${amount}`;
-    if (panel.dataset.renderKey === renderKey) return;
-    panel.dataset.renderKey = renderKey;
-    panel.innerHTML = `
-      <div class="msv-head">
-        <small>MAMO VALUE / CORE RECORD</small>
-        <h3>現金を使わなかった選択を、最初に見る。</h3>
-        <p>勝ち負けではなく、現金投票をAIR BETへ置き換えた事実を期間別に確認します。</p>
-      </div>
-      <div class="msv-periods" role="group" aria-label="比較する期間">
-        ${Object.entries(PERIOD_LABELS).map(([key, text]) => `<button type="button" class="${key === period ? "active" : ""}" data-value-period="${key}">${text}</button>`).join("")}
-      </div>
-      <div class="msv-amount">
-        <div><span>${label}の仮想置換額</span><strong>${money(amount)}</strong></div>
-        <em>${amount ? "SHOPの商品価格にも比較表示" : "AIR BET記録後に表示します"}</em>
-      </div>
-      <p class="msv-explain"><b>これは値引き額ではありません。</b> 実際の損失・貯金を補填するものではなく、AIR BETへ置き換えた現金予定額と商品価格を比べる目安です。</p>
-    `;
+    // Editorial/MAMO VALUE presentation is owner-only for now.
+    // Keep the marketplace independent while the next user-facing concept is redesigned.
+    document.getElementById("mamoShopValue")?.remove();
   }
 
-  function valueMarkup(price) {
-    const comparison = comparePrice(price);
-    const label = PERIOD_LABELS[period];
-    if (comparison.state === "within") {
-      return `<div class="mp-value within">${label}の比較額の範囲内<i style="--ratio:${comparison.ratio}%"></i></div>`;
-    }
-    if (comparison.state === "remaining") {
-      return `<div class="mp-value remaining">比較額まで あと ${money(comparison.remaining)}<i style="--ratio:${comparison.ratio}%"></i></div>`;
-    }
-    return `<div class="mp-value">AIR BET記録後に価格比較<i style="--ratio:0%"></i></div>`;
+  function valueMarkup() {
+    return "";
   }
 
   function renderProducts() {
