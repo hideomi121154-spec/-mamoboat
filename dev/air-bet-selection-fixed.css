@@ -182,12 +182,9 @@
   }
 }
 
-/* Phone portrait: the four-column "racer roster + 1/2/3着" matrix is too
-   dense and can wrap when Safari restores an older roster node. On phones,
-   keep the picker itself as the stable 1/2/3着 grid. Racer facts remain
-   available in the collapsible 選手詳細 panel directly below AIR BET. */
+/* Phone portrait: keep one compact racer list above the three picker columns.
+   The older review-flow column is a duplicate and must not move 3着. */
 @media (max-width: 520px) and (min-height: 541px) {
-  body[data-screen="race"] #raceView #builder:not(.mamo-odds-bet-mode) > .mamo-racer-roster,
   body[data-screen="race"] #raceView #builder:not(.mamo-odds-bet-mode) > .mamo-racer-list {
     display: none !important;
   }
@@ -195,8 +192,8 @@
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) {
     grid-auto-flow: row !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    grid-template-rows: minmax(0, 1fr) 44px !important;
-    gap: 5px !important;
+    grid-template-rows: 76px minmax(0, 1fr) 44px !important;
+    gap: 4px !important;
     overflow: hidden !important;
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix[data-mamo-picker-columns="2"]:not(.mamo-odds-bet-mode) {
@@ -206,13 +203,42 @@
     grid-template-columns: 1fr !important;
   }
 
-  body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .rank {
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .mamo-racer-roster {
+    display: flex !important;
     grid-row: 1 !important;
+    grid-column: 1 / -1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-head {
+    display: none !important;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    gap: 2px !important;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row {
+    grid-template-columns: 14px 23px minmax(0, 1fr) 32px !important;
+    gap: 2px !important;
+    padding: 1px 2px !important;
+    border-left-width: 4px !important;
+    border-radius: 6px !important;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-name {
+    font-size: 11px !important;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-official {
+    font-size: 8px !important;
+  }
+
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .rank {
+    grid-row: 2 !important;
     min-width: 0 !important;
     width: auto !important;
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .add-current-draft {
-    grid-row: 2 !important;
+    grid-row: 3 !important;
     grid-column: 1 / -1 !important;
     width: 100% !important;
   }
@@ -229,9 +255,9 @@
     gap: 5px !important;
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank .pick {
-    min-height: 46px !important;
+    min-height: 0 !important;
     border-radius: 9px !important;
-    font-size: 19px !important;
+    font-size: 17px !important;
   }
 }
 
