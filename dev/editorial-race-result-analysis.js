@@ -75,10 +75,16 @@
     return `${Number(match[1])}年${Number(match[2])}月${Number(match[3])}日`;
   }
 
+  function factNumber(value) {
+    if (value == null || value === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
   function rankEntries(entries, key, direction) {
     const rows = (Array.isArray(entries) ? entries : [])
-      .map((entry) => ({ boatNumber: Number(entry?.boatNumber), value: Number(entry?.[key]) }))
-      .filter((item) => Number.isFinite(item.boatNumber) && Number.isFinite(item.value));
+      .map((entry) => ({ boatNumber: Number(entry?.boatNumber), value: factNumber(entry?.[key]) }))
+      .filter((item) => Number.isFinite(item.boatNumber) && item.value != null);
     return new Map(rows.map((item) => {
       const better = rows.filter((other) => direction === "asc" ? other.value < item.value : other.value > item.value).length;
       return [item.boatNumber, { value: item.value, rank: better + 1 }];
