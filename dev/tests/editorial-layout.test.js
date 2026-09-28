@@ -4,41 +4,56 @@ const path = require("node:path");
 const test = require("node:test");
 
 const devRoot = path.resolve(__dirname, "..");
+const repoRoot = path.resolve(devRoot, "..");
 
-test("editorial starts with MAMO VALUE and ends with the member guide", () => {
+test("legacy editorial UI is no longer exposed in the user app", () => {
   const html = fs.readFileSync(path.join(devRoot, "index.html"), "utf8");
-  const pilot = fs.readFileSync(path.join(devRoot, "pilot-config.js"), "utf8");
+  const app = fs.readFileSync(path.join(devRoot, "app.js"), "utf8");
+  const styles = fs.readFileSync(path.join(devRoot, "styles.css"), "utf8");
 
-  const valueHead = html.indexOf('id="mamoValueSectionHead"');
-  const valueSlot = html.indexOf('id="mamoValueEditorialSlot"');
-  const currentRecords = html.indexOf('id="analysisCards"');
-  const membership = html.indexOf('id="membershipPanel"');
-  const memberGuide = html.indexOf('class="newsroom-cast"');
+  assert.doesNotMatch(html, /id="analysis"/);
+  assert.doesNotMatch(html, /id="nav-analysis"/);
+  assert.doesNotMatch(html, /MAMO編集部/);
+  assert.doesNotMatch(html, /id="pressPaper"/);
+  assert.doesNotMatch(html, /id="membershipPanel"/);
+  assert.doesNotMatch(html, /新聞の発行設定/);
+  assert.doesNotMatch(html, /mamoValueEditorialSlot/);
+  assert.doesNotMatch(html, /編集部とAI分析担当/);
+  assert.doesNotMatch(html, /PRESS PILOT/);
 
-  assert.ok(valueHead >= 0 && valueHead < valueSlot);
-  assert.ok(valueSlot < currentRecords, "MAMO VALUE must precede the record analysis");
-  assert.ok(membership < memberGuide, "member guide must be the final editorial section");
-  assert.match(html, /section-number">01<\/span><h2>仮想置換額<\/h2>/);
-  assert.match(html, /section-number">06<\/span><h2>編集部とAI分析担当<\/h2>/);
-  assert.match(pilot, /#analysis\.active > #mamoValueSectionHead \{ order: 10; \}/);
-  assert.match(pilot, /#analysis\.active > #mamoValueEditorialSlot \{ order: 11; \}/);
-  assert.match(pilot, /#analysis\.active > \.newsroom-cast \{ order: 91; \}/);
+  assert.match(app, /if \(id === "analysis"\) id = "home";/);
+  assert.match(app, /function renderAnalysis\(\) \{\s*if \(!\$\("analysisCards"\) \|\| !\$\("analysisList"\)\) return;/);
+  assert.match(styles, /\.bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(5,/s);
 });
 
-test("MAMO VALUE has one stable owner in the editorial screen", () => {
-  const marketplace = fs.readFileSync(path.join(devRoot, "mamo-shop-marketplace.js"), "utf8");
-  const compatibility = fs.readFileSync(path.join(devRoot, "decision-event-api-compat.js"), "utf8");
-  const cast = fs.readFileSync(path.join(devRoot, "cast-ui.js"), "utf8");
-  const serviceWorker = fs.readFileSync(path.join(devRoot, "sw.js"), "utf8");
+test("legacy editorial concepts are archived in OWNER ONLY MASTER ROOM", () => {
+  const html = fs.readFileSync(path.join(repoRoot, "master-room.html"), "utf8");
+  const js = fs.readFileSync(path.join(repoRoot, "master-room.js"), "utf8");
 
-  assert.match(marketplace, /getElementById\("mamoValueEditorialSlot"\)/);
-  assert.match(marketplace, /panel\.parentElement !== host/);
-  assert.match(marketplace, /panel\.dataset\.renderKey === renderKey/);
-  assert.match(marketplace, /現金を使わなかった選択を、最初に見る。/);
-  assert.doesNotMatch(marketplace, /hero\.insertAdjacentElement\("afterend", panel\)/);
-  assert.doesNotMatch(compatibility, /data-mamo-value-panel/);
-  assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
-  assert.match(cast, /cast\.previousElementSibling\?\.querySelector\("h2"\)/);
-  assert.match(serviceWorker, /mamo-shop-marketplace\.js\?v=20260828-8/);
-  assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
+  assert.match(html, /MAMO編集部（管理用）/);
+  assert.match(html, /USER HIDDEN \/ OWNER ONLY/);
+  assert.match(html, /旧「編集部」はユーザーアプリから非公開に移行しました/);
+  assert.match(html, /id="editorialArchive"/);
+  assert.match(html, /id="editorialBehavior"/);
+  assert.match(html, /id="editorialPlanArchive"/);
+
+  assert.match(js, /function renderEditorialLab\(data\)/);
+  assert.match(js, /MAMO VALUE/);
+  assert.match(js, /現在の記録/);
+  assert.match(js, /行動パターン/);
+  assert.match(js, /あなた専用の新聞/);
+  assert.match(js, /旧購読プラン/);
+  assert.match(js, /編集部とAI分析担当/);
+  assert.match(js, /renderEditorialLab\(data\)/);
+});
+
+test("behavior collection code can remain internal without owning a user-facing editorial screen", () => {
+  const behavior = fs.readFileSync(path.join(devRoot, "behavior-pattern-profile.js"), "utf8");
+  const science = fs.readFileSync(path.join(devRoot, "behavior-science.js"), "utf8");
+  const html = fs.readFileSync(path.join(devRoot, "index.html"), "utf8");
+
+  assert.match(behavior, /analysisCards/);
+  assert.match(science, /analysisList/);
+  assert.doesNotMatch(html, /id="analysisCards"/);
+  assert.doesNotMatch(html, /id="analysisList"/);
 });
