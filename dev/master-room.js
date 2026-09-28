@@ -127,6 +127,15 @@
     return Number.isFinite(number) && number > 0 ? `${number}位` : "—";
   }
 
+  function factText(rank, value, suffix = "") {
+    const rankLabel = rankText(rank);
+    const number = Number(value);
+    if (!Number.isFinite(number)) return rankLabel;
+    const digits = Math.abs(number) < 1 ? 2 : 2;
+    const valueLabel = Number(number.toFixed(digits)).toString();
+    return `${rankLabel} / ${valueLabel}${suffix}`;
+  }
+
   function boatList(value) {
     const rows = Array.isArray(value) ? value : [];
     return rows.length ? rows.map((boat) => `${Number(boat)}号艇`).join("・") : "—";
@@ -150,10 +159,10 @@
 
     const factsRows = facts.map((item) => `<tr>
       <td><b>${esc(`${Number(item.position) || "—"}着 / ${Number(item.boat_number) || "—"}号艇`)}</b></td>
-      <td>${esc(rankText(item.motor_rank))}</td>
-      <td>${esc(rankText(item.exhibition_rank))}</td>
-      <td>${esc(rankText(item.start_rank))}</td>
-      <td>${esc(rankText(item.racer_rank))}</td>
+      <td>${esc(factText(item.motor_rank, item.motor_value, "%"))}</td>
+      <td>${esc(factText(item.exhibition_rank, item.exhibition_value))}</td>
+      <td>${esc(factText(item.start_rank, item.start_value))}</td>
+      <td>${esc(factText(item.racer_rank, item.racer_value))}</td>
     </tr>`).join("");
 
     const lineRows = lines.map((item) => {
@@ -179,6 +188,8 @@
       <div class="result-review-body">
         <div class="result-review-summary">
           <div><span>購入点数</span><b>${fmt(review.line_count)}点</b></div>
+          <div><span>BET総額</span><b>${fmt(event.payload?.stake_b)}B</b></div>
+          <div class="${Number(event.payload?.payout_b) > 0 ? "good" : ""}"><span>払戻</span><b>${fmt(event.payload?.payout_b)}B</b></div>
           <div class="${positionMatches[0] ? "good" : ""}"><span>1着候補</span><b>${esc(matchText(positionMatches[0]))}</b></div>
           <div class="${positionMatches[1] ? "good" : ""}"><span>2着候補</span><b>${esc(matchText(positionMatches[1]))}</b></div>
           <div class="${positionMatches[2] ? "good" : ""}"><span>3着候補</span><b>${esc(matchText(positionMatches[2]))}</b></div>
