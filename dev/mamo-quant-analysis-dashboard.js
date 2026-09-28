@@ -618,6 +618,13 @@
     }
   }
 
+  function setPresentationMode(mount, legacy, dashboardVisible) {
+    const shellIntro = mount?.parentElement?.querySelector?.(":scope > .page-intro");
+    if (shellIntro) shellIntro.hidden = dashboardVisible;
+    mount.hidden = !dashboardVisible;
+    if (legacy) legacy.hidden = dashboardVisible;
+  }
+
   function render() {
     const mount = document.getElementById(MOUNT_ID);
     const legacy = document.getElementById(LEGACY_ID);
@@ -625,8 +632,7 @@
 
     const apis = getApis();
     if (!apis) {
-      mount.hidden = true;
-      if (legacy) legacy.hidden = false;
+      setPresentationMode(mount, legacy, false);
       return false;
     }
 
@@ -641,8 +647,7 @@
         buildHelp()
       );
       mount.replaceChildren(fragment);
-      mount.hidden = false;
-      if (legacy) legacy.hidden = true;
+      setPresentationMode(mount, legacy, true);
       attachEvents(mount, apis);
 
       if (detailOpen) {
@@ -654,8 +659,7 @@
       }
       return true;
     } catch (_) {
-      mount.hidden = true;
-      if (legacy) legacy.hidden = false;
+      setPresentationMode(mount, legacy, false);
       return false;
     }
   }
