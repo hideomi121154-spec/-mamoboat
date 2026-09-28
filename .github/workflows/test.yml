@@ -63,6 +63,9 @@ jobs:
           node --check dev/mamo-quant-analysis-risk-profile.js
           node --check dev/mamo-quant-analysis-data-foundation.js
           node --check dev/mamo-quant-analysis-integrated.js
+          node --check dev/mamo-quant-analysis-charts.js
+          node --check dev/mamo-quant-analysis-dashboard.js
+          node --check dev/tests/quant-analysis-dashboard.test.js
           node --check dev/tests/air-bet-racer-roster.test.js
           node --check dev/tests/air-bet-allocation.test.js
           node --check dev/tests/air-bet-review-delete-controls.test.js
@@ -111,6 +114,7 @@ jobs:
           node dev/tests/quant-analysis-risk-profile.test.js
           node dev/tests/quant-analysis-data-foundation.test.js
           node dev/tests/quant-analysis-integrated.test.js
+          node dev/tests/quant-analysis-dashboard.test.js
           node --test dev/tests/editorial-layout.test.js
           node --test dev/tests/brand-theme.test.js
           node --test dev/tests/shop-coupon.test.js

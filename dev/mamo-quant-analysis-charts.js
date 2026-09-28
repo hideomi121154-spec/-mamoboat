@@ -229,9 +229,9 @@
     return wrap;
   }
 
-  function render() {
+  function render(mountId = "mamoQuantAnalysisCharts") {
     if (typeof document === "undefined") return false;
-    const mount = document.getElementById("mamoQuantAnalysisCharts");
+    const mount = document.getElementById(mountId);
     const riskApi = root?.MAMO_QUANT_RISK_PROFILE;
     const oddsApi = root?.MAMO_QUANT_ODDS_PERFORMANCE;
     const baseApi = root?.MAMO_QUANT_ANALYSIS_BASIC;

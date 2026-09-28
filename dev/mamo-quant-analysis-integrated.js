@@ -5,7 +5,7 @@
 (function initMamoQuantIntegrated(root) {
   "use strict";
 
-  const CHARTS_SCRIPT_SRC = "mamo-quant-analysis-charts.js?v=20260913-1";
+  const CHARTS_SCRIPT_SRC = "mamo-quant-analysis-charts.js?v=20260928-1";
   const CHARTS_SCRIPT_SELECTOR = 'script[data-mamo-quant-analysis-charts="1"]';
 
   const safeNumber = (value) => {
