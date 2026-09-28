@@ -292,11 +292,11 @@ function cloneInto(window, value) {
     assert.equal(status().count, 0, "confirmed draft must be reset");
 
     // This fixture does not load the independent quantitative-analysis shell,
-    // so the fixed primary bar contains the four native high-frequency actions.
+    // so the fixed primary bar contains the four high-frequency actions plus the editorial placeholder.
     // SHOP and Settings must remain reachable through the secondary topbar menu.
     assert.deepEqual(
       [...window.document.querySelectorAll(".bottom-nav > .nav")].map((node) => node.id),
-      ["nav-home", "nav-venues", "nav-race", "nav-records"]
+      ["nav-home", "nav-venues", "nav-race", "nav-records", "nav-analysis"]
     );
     assert.equal(window.document.getElementById("nav-shop"), null);
     assert.equal(window.document.getElementById("nav-settings"), null);
