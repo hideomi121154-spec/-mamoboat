@@ -5,6 +5,6 @@ const vm = require("node:vm");
 
 const source = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
 assert.doesNotThrow(() => new vm.Script(source, { filename: "dev/sw.js" }));
-assert.match(source, /air-bet-selection-fixed\.css\?v=20260928-2/);
+assert.match(source, /air-bet-selection-fixed\.css\?v=20260928-3/);
 
 console.log("Service worker parses and precaches the mobile picker fix: OK");
