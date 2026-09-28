@@ -393,7 +393,7 @@ assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v526-editorial-race-analysis-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v527-mobile-picker-layout-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
