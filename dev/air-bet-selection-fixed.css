@@ -14,7 +14,7 @@
 }
 .air-bet-selection-footer > #reviewBetButton { flex: 1; min-width: 0; margin: 0; }
 
-/* The roster is a mobile enhancement only. Desktop keeps its existing builder layout. */
+/* The racer roster is injected by race-airbet-compact.js. It starts hidden and is explicitly laid out by the desktop/mobile owner rules below. */
 #raceView .mamo-racer-roster { display: none; }
 
 /* Desktop: keep the AIR BET work area compact instead of stretching controls
@@ -51,18 +51,102 @@
     align-items: stretch;
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix[data-mamo-picker-columns="3"]:not(.mamo-odds-bet-mode) {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: minmax(220px, 1.15fr) repeat(3, minmax(0, 1fr)) !important;
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix[data-mamo-picker-columns="2"]:not(.mamo-odds-bet-mode) {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: minmax(220px, 1.15fr) repeat(2, minmax(0, 1fr)) !important;
   }
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix[data-mamo-picker-columns="1"]:not(.mamo-odds-bet-mode) {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(220px, 1.15fr) minmax(0, 1fr) !important;
   }
 
-  body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .mamo-racer-roster,
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .mamo-racer-list {
     display: none !important;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .mamo-racer-roster {
+    display: flex !important;
+    flex-direction: column;
+    grid-row: 1 !important;
+    grid-column: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100%;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-head {
+    box-sizing: border-box;
+    flex: 0 0 34px;
+    min-height: 34px;
+    height: 34px;
+    margin: 0 0 6px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: #eef3f6;
+    color: #082b4a;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 22px;
+    text-align: left;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-rows {
+    display: grid;
+    grid-template-rows: repeat(6, 44px);
+    gap: 6px;
+    min-height: 0;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row {
+    display: grid;
+    grid-template-columns: 24px 34px minmax(0, 1fr) 42px;
+    align-items: center;
+    gap: 5px;
+    box-sizing: border-box;
+    min-width: 0;
+    height: 44px;
+    padding: 4px 6px;
+    overflow: hidden;
+    border: 1px solid #cfdbe2;
+    border-left: 5px solid #c7c9c5;
+    border-radius: 8px;
+    background: #fff;
+    color: #082b4a;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row:nth-child(2) { border-left-color: #252a31; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row:nth-child(3) { border-left-color: #d94444; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row:nth-child(4) { border-left-color: #356fcf; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row:nth-child(5) { border-left-color: #dfb92e; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-row:nth-child(6) { border-left-color: #34955c; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-number {
+    font-size: 13px;
+    font-weight: 900;
+    text-align: center;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-class {
+    padding: 3px 4px;
+    border-radius: 6px;
+    background: #eef3f6;
+    color: #0b5fb5;
+    font-size: 10px;
+    font-weight: 900;
+    text-align: center;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 900;
+  }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .mamo-racer-roster .mamo-racer-official {
+    padding: 4px 2px;
+    border: 1px solid #9fb5c4;
+    border-radius: 6px;
+    background: #fff;
+    color: #082b4a;
+    font-size: 8px;
+    font-weight: 900;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
   }
 
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix:not(.mamo-odds-bet-mode) > .rank {
@@ -70,9 +154,9 @@
     min-width: 0 !important;
     width: auto !important;
   }
-  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="1"] { grid-column: 1 !important; }
-  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="2"] { grid-column: 2 !important; }
-  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="3"] { grid-column: 3 !important; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="1"] { grid-column: 2 !important; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="2"] { grid-column: 3 !important; }
+  body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank[data-mamo-picker-rank="3"] { grid-column: 4 !important; }
 
   body[data-screen="race"] #raceView #builder.mamo-selection-matrix > .rank h3 {
     min-height: 34px !important;
