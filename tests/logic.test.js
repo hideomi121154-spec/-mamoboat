@@ -376,7 +376,7 @@ assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
 assert.match(indexSource, /styles\.css\?v=20260818-3/);
 assert.match(indexSource, /brand-theme\.css\?v=20260827-2/);
 assert.match(indexSource, /cast-ui\.js\?v=20260827-3/);
-assert.match(indexSource, /assets\/EFE288D7-4C85-4906-A6E9-1590E55E7070\.png\?v=20260815-10/);
+assert.match(indexSource, /mamoru-hero\.webp/);
 assert.match(indexSource, /onboard-cover-art/);
 assert.match(indexSource, /匿名の利用状況を送信する（任意）/);
 assert.match(indexSource, /id="pilotConsentOnboard"/);
@@ -385,12 +385,9 @@ assert.match(indexSource, /core\.js\?v=401/);
 assert.match(indexSource, /pilot-config\.js\?v=20260827-5/);
 assert.match(indexSource, /app\.js\?v=20260827-4/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
-assert.match(indexSource, /MAMO編集部/);
+assert.doesNotMatch(indexSource, /MAMO編集部|id="nav-analysis"|新聞の発行設定/);
 assert.match(indexSource, /加音 守/);
-assert.ok(
-  indexSource.indexOf('id="membershipPanel"') < indexSource.indexOf('class="newsroom-cast"'),
-  "the member guide must be the final editorial section"
-);
+assert.doesNotMatch(indexSource, /id="membershipPanel"|class="newsroom-cast"|id="pressPaper"/);
 assert.doesNotMatch(indexSource, /id="realBetFloat"/);
 assert.doesNotMatch(indexSource, /ダブルWIN・防衛スタンプ/);
 assert.match(indexSource, /<\/main>\s*<nav class="bottom-nav"/);

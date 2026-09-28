@@ -45,7 +45,7 @@ test("SHOP is restored without the abandoned horizontal navigation", () => {
   assert.match(compatibility, /mamo-shop-marketplace\.js\?v=20260828-8/);
   assert.match(serviceWorker, /mamo-shop\.js\?v=20260913-1/);
   assert.match(serviceWorker, /mamo-shop-record-benefits\.js\?v=20260830-1/);
-  assert.match(serviceWorker, /mamoboat-v520-airbet-review-layout-dev/);
+  assert.match(serviceWorker, /mamoboat-v521-editorial-owner-only-dev/);
 });
 
 test("mobile primary nav stays fixed while SHOP and settings use a secondary menu", () => {

@@ -209,19 +209,19 @@ assert.match(layout, /class="mamo-racer-meta"/);
 assert.match(styles, /#builder\.mamo-selection-matrix/);
 
 // Every cache-busted path must point at the same release, including PWA shell.
-assert.match(index, /styles\.css\?v=20260910-3/);
-assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260914-1/);
+assert.match(index, /styles\.css\?v=20260928-2/);
+assert.match(index, /air-bet-draft-core\.js\?v=20260909-2[\s\S]*pilot-config\.js\?v=20260909-4[\s\S]*app\.js\?v=20260928-2/);
 assert.match(compatibility, /bet-review-flow\.js\?v=20260908-2/);
 assert.match(growth, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
 assert.match(serviceWorker, /bet-review-flow\.js\?v=20260914-1/);
 assert.match(index, /air-bet-review-compact\.css\?v=20260928-1/);
 assert.match(index, /air-bet-review-delete-controls\.js\?v=20260928-1/);
-assert.match(serviceWorker, /mamoboat-v520-airbet-review-layout-dev/);
+assert.match(serviceWorker, /mamoboat-v521-editorial-owner-only-dev/);
 assert.match(serviceWorker, /air-bet-review-compact\.css\?v=20260928-1/);
 assert.match(serviceWorker, /air-bet-review-delete-controls\.js\?v=20260928-1/);
-assert.match(serviceWorker, /styles\.css\?v=20260910-3/);
-assert.match(serviceWorker, /app\.js\?v=20260914-1/);
+assert.match(serviceWorker, /styles\.css\?v=20260928-2/);
+assert.match(serviceWorker, /app\.js\?v=20260928-2/);
 assert.match(serviceWorker, /venue-live-priority\.js\?v=20260909-1/);
 assert.match(serviceWorker, /air-bet-draft-core\.js\?v=20260909-2/);
 assert.match(serviceWorker, /air-bet-selection-fixed\.css\?v=20260910-4/);

@@ -23,8 +23,11 @@
     .participant-detail{margin-top:10px;background:#071e30;color:#fff;border-radius:15px;padding:15px}.participant-detail h3{margin:2px 0 8px;font-size:18px}.participant-detail small{color:#9eb2be}.participant-detail .pd-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.participant-detail .pd-grid div{background:rgba(255,255,255,.06);padding:9px;border-radius:9px}.participant-detail .pd-grid span{display:block;color:#9fb1bc;font-size:7px}.participant-detail .pd-grid b{font-size:13px}.close-detail{float:right;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;border-radius:8px;padding:5px 8px;font-size:9px}
     .events{display:grid;gap:6px}.event{display:grid;grid-template-columns:115px 105px 1fr;gap:8px;padding:9px 10px;background:#fff;border:1px solid var(--line);border-radius:10px;align-items:start}.event time,.event .who{font-size:8px;color:var(--muted)}.event b{font-size:9px}.event pre{grid-column:3;margin:3px 0 0;white-space:pre-wrap;word-break:break-word;font-size:8px;color:#657781;max-height:90px;overflow:auto}
     .infra{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.infra div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}.infra span{font-size:8px;color:var(--muted)}.infra b{display:block;font-size:17px;margin-top:2px}.empty{padding:24px;text-align:center;color:var(--muted);font-size:11px}.footnote{font-size:8px;color:#81909a;line-height:1.6;margin-top:16px}
-    @media(max-width:800px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}.pd-grid{grid-template-columns:repeat(3,1fr)!important}.event{grid-template-columns:80px 82px 1fr}}
-    @media(max-width:520px){.shell{padding-left:10px;padding-right:10px}.topbar{margin-left:-10px;margin-right:-10px}.kpis{grid-template-columns:repeat(2,1fr)}.kpi b{font-size:20px}.pd-grid{grid-template-columns:repeat(2,1fr)!important}.event{grid-template-columns:1fr 1fr}.event b,.event pre{grid-column:1/-1}.trend-chart{height:150px;margin-left:22px}.section-head h2{font-size:18px}}
+    .editorial-admin-note{margin:0 0 10px;padding:12px 14px;border:1px solid #dfc981;border-left:5px solid var(--gold);border-radius:12px;background:#fffaf0;color:#5f512d;font-size:10px;line-height:1.65}.editorial-admin-note b{color:#7b5c13}
+    .editorial-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.editorial-card{min-width:0;padding:13px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(6,27,43,.04)}.editorial-card small{display:block;color:#9a7419;font-size:8px;font-weight:1000;letter-spacing:.1em}.editorial-card h3{margin:4px 0;color:var(--ink);font-size:14px}.editorial-card strong{display:block;margin-top:7px;color:var(--navy2);font-size:20px;letter-spacing:-.03em;overflow-wrap:anywhere}.editorial-card p{margin:5px 0 0;color:var(--muted);font-size:9px;line-height:1.55}.editorial-card .owner-badge{display:inline-flex;margin-top:8px;padding:3px 7px;border-radius:999px;background:#071e30;color:#fff;font-size:7px;font-weight:900}
+    .editorial-log{display:grid;gap:6px}.editorial-log-row{display:grid;grid-template-columns:95px 82px minmax(0,1fr);gap:7px;padding:8px 9px;border:1px solid #e6ecef;border-radius:9px;background:#fbfcfc}.editorial-log-row time,.editorial-log-row span{color:var(--muted);font-size:8px}.editorial-log-row b{font-size:9px}.editorial-archive-list{display:grid;gap:7px}.editorial-archive-list .mini-row{grid-template-columns:minmax(95px,.8fr) 1fr 45px}
+    @media(max-width:800px){.kpis{grid-template-columns:repeat(3,1fr)}.editorial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}.pd-grid{grid-template-columns:repeat(3,1fr)!important}.event{grid-template-columns:80px 82px 1fr}}
+    @media(max-width:520px){.shell{padding-left:10px;padding-right:10px}.topbar{margin-left:-10px;margin-right:-10px}.kpis{grid-template-columns:repeat(2,1fr)}.editorial-grid{grid-template-columns:1fr}.kpi b{font-size:20px}.pd-grid{grid-template-columns:repeat(2,1fr)!important}.event{grid-template-columns:1fr 1fr}.event b,.event pre{grid-column:1/-1}.trend-chart{height:150px;margin-left:22px}.section-head h2{font-size:18px}}
   </style>
 </head>
 <body>
@@ -48,6 +51,14 @@
     <section id="dashboard" class="hidden">
       <div class="section-head"><div><span>OVERVIEW</span><h2>いま、MAMO BOATはどう使われているか</h2></div><small id="windowLabel"></small></div>
       <div id="kpis" class="kpis"></div>
+
+      <div class="section-head"><div><span>EDITORIAL LAB</span><h2>MAMO編集部（管理用）</h2></div><small>USER HIDDEN / OWNER ONLY</small></div>
+      <div class="editorial-admin-note"><b>旧「編集部」はユーザーアプリから非公開に移行しました。</b><br>ここは旧機能の目的・集計・反応を残しておく運営用アーカイブです。ユーザーに見せる新しい内容は、ここで検討した後に改めて設計します。</div>
+      <div id="editorialArchive" class="editorial-grid"></div>
+      <div class="grid2" style="margin-top:10px">
+        <div class="panel"><div class="panel-title"><b>行動分析・編集部関連の直近ログ</b><small>取得済みイベント内</small></div><div id="editorialBehavior" class="editorial-log"></div></div>
+        <div class="panel"><div class="panel-title"><b>旧購読プランの反応</b><small>設計保管 / 課金なし</small></div><div id="editorialPlanArchive" class="editorial-archive-list"></div></div>
+      </div>
 
       <div class="section-head"><div><span>MARKETING FUNNEL</span><h2>体験がどこまで進んだか</h2></div></div>
       <div class="grid2">
@@ -74,6 +85,6 @@
       <p class="footnote">participant IDはブラウザ/端末単位の匿名識別子です。同一人物が複数端末を使う場合は複数IDになる可能性があります。MASTER ROOMは行動分析用で、勝率やレース予想の評価には使用しません。</p>
     </section>
   </main>
-  <script src="master-room.js?v=20260913-1" defer></script>
+  <script src="master-room.js?v=20260928-2" defer></script>
 </body>
 </html>
