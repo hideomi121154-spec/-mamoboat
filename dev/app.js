@@ -1015,6 +1015,7 @@
     if (event.target.id === "modalBg") window.closeModal();
   };
   window.go = (id) => {
+    if (id === "analysis") id = "home";
     // The 24-venue screen always opens from the actionable list. A filter the
     // user selected during the previous visit must not hide live venues when
     // they return from a race or tap the bottom navigation again.
@@ -3134,6 +3135,7 @@
   };
 
   function renderAnalysis() {
+    if (!$("analysisCards") || !$("analysisList")) return;
     $("analysisCards").dataset.insightVersion = "2";
     $("analysisCards").innerHTML = '<div class="stat-card behavior-loading"><div class="eyebrow">直近30日</div><div class="metric">集計中…</div></div>';
     $("analysisList").dataset.insightVersion = "2";
