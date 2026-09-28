@@ -325,7 +325,7 @@ function cloneInto(window, value) {
     assert.equal(window.document.body.dataset.screen, "records");
     clickId("nav-analysis");
     assert.equal(window.document.body.dataset.screen, "analysis");
-    assert.match(window.document.querySelector("#analysis")?.textContent || "", /編集部|準備中/);
+    assert(window.document.getElementById("editorialRaceResultAnalysis"), "Editorial result-analysis mount must exist");
     assert.deepEqual(alerts, []);
 
     console.log("AIR BET picker/review DOM flow checks passed");
