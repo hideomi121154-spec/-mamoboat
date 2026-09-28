@@ -18,14 +18,17 @@
   overflow: visible !important;
 }
 
+/* iPhone Safari/PWA: keep the receipt heading in normal document flow.
+ * A sticky heading inside the momentum-scrolling ticket viewport can be
+ * composited twice while scrolling, which looks like duplicated text. */
 .air-bet-review-tickets > .betreceipt > summary {
   display: block;
   min-height: 38px;
   box-sizing: border-box;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: inherit;
+  position: static;
+  top: auto;
+  z-index: auto;
+  background: #f6fafa;
 }
 
 .air-bet-review-tickets .betreceipt > .betlines {
@@ -500,4 +503,28 @@
 .air-bet-review-tickets .betline-edit,
 .air-bet-review-tickets .betline-stake-control {
   touch-action: auto !important;
+}
+
+/* Normal BET layout: the user completes ticket amounts first, then continues.
+ * Keep the canonical continue button and state transition unchanged; only move
+ * its presentation to the end of the flex column and remove the empty spacer. */
+.air-bet-review-shell[data-mamo-review-step="allocation"][data-mamo-review-mode="normal"]
+> .mamo-allocation-results {
+  order: 50;
+  flex: 0 0 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.air-bet-review-shell[data-mamo-review-step="allocation"][data-mamo-review-mode="normal"]
+> .mamo-allocation-results
+> .mamo-review-continue {
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
 }

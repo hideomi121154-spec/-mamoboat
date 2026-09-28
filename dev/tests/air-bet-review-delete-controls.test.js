@@ -45,12 +45,12 @@ assert.doesNotMatch(source, /setInterval|setTimeout/);
 
 // The corrected helper must be delivered under a fresh URL/cache generation;
 // otherwise an installed iPhone PWA can continue executing the pre-fix helper.
-assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260912-1/);
+assert.match(compat, /air-bet-review-delete-controls\.js\?v=20260928-1/);
 assert.match(compat, /data-mamo-review-delete-controls/);
 assert.match(sw, /mamoboat-v508-review-ticket-scroll-dev/);
 assert.match(sw, /mamoboat-v507-odds-all-visible-dev/);
 assert.match(sw, /decision-event-api-compat\.js\?v=20260912-1/);
-assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260912-1/);
+assert.match(sw, /air-bet-review-delete-controls\.js\?v=20260928-1/);
 assert.match(sw, /mamoboat-v497-airbet-loader-refresh-dev/);
 assert.match(sw, /url\.pathname\.endsWith\("\/decision-event-api-compat\.js"\)/);
 assert.match(sw, /url\.pathname\.endsWith\("\/air-bet-review-delete-controls\.js"\)/);
