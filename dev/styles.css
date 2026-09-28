@@ -56,7 +56,7 @@ a { color: inherit; }
 .brand-copy small { display: block; margin-top: 1px; color: #9edbd6; font-size: 9px; font-weight: 900; letter-spacing: .11em; }
 .wallet { min-width: 122px; padding: 6px 10px; background: white; color: var(--navy); border-left: 5px solid var(--gold); transform: skew(-5deg); text-align: right; }
 .wallet > * { display: block; transform: skew(5deg); }
-.wallet span { color: var(--teal-dark); font-size: 8px; font-weight: 1000; letter-spacing: .11em; }
+.wallet span { color: var(--teal-dark); font-size: 7px; font-weight: 1000; letter-spacing: .11em; }
 .wallet strong { margin-top: 1px; font-size: 16px; }
 
 main { padding: 14px; }
@@ -74,7 +74,7 @@ main { padding: 14px; }
 .hero-panel::after { content: ""; position: absolute; right: 36%; top: 0; width: 7px; height: 120%; background: var(--coral); transform: rotate(18deg); opacity: .9; }
 .speed-lines { position: absolute; inset: 0; z-index: -1; opacity: .18; background: repeating-linear-gradient(158deg, transparent 0 15px, #fff 16px 17px, transparent 18px 31px); transform: translateX(38%); }
 .hero-copy { position: relative; z-index: 2; max-width: 510px; }
-.kicker { display: block; color: var(--teal); font-size: 10px; font-weight: 1000; letter-spacing: .17em; }
+.kicker { display: block; color: var(--teal); font-size: 9px; font-weight: 1000; letter-spacing: .17em; }
 .hero-panel .kicker, .page-intro .kicker, .onboard .kicker { color: #71eee2; }
 .hero-copy h1, .page-intro h1, .onboard-copy h1 { margin: 8px 0 10px; font-size: clamp(30px, 6vw, 48px); line-height: 1.04; letter-spacing: -.075em; }
 .hero-copy h1 em, .onboard-copy h1 em { color: var(--gold); font-style: normal; }
@@ -178,7 +178,7 @@ main { padding: 14px; }
 .event-banner p { position: relative; z-index: 1; margin: 0; color: #c9dade; font-size: 10px; }
 .event-banner a { position: absolute; right: 11px; bottom: 12px; z-index: 2; color: #8ce7de; font-size: 9px; font-weight: 900; text-decoration: none; }
 .racechips { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 10px; }
-.racechip { position: relative; min-height: 42px; border: 1px solid var(--line); background: white; color: var(--navy); font-size: 12px; font-weight: 1000; }
+.racechip { position: relative; min-height: 42px; border: 1px solid var(--line); background: white; color: var(--navy); font-size: 11px; font-weight: 1000; }
 .racechip.active { border: 2px solid var(--navy); background: var(--mint); box-shadow: 3px 3px 0 var(--teal); }
 .racechip.closed { border-color: #b4bfc3; background: #dfe4e5; color: #7d898e; box-shadow: none; }
 .racechip.closed.active { border-color: #66757c; background: #cbd2d4; color: #39484f; box-shadow: 3px 3px 0 #89969b; }
@@ -196,7 +196,7 @@ main { padding: 14px; }
 .raceclock.waiting { background: var(--warn); color: #765618; }
 .boats { display: grid; gap: 6px; margin-top: 12px; }
 .race-racer-details { margin-top: 10px; border: 1px solid var(--soft-line); border-radius: 10px; background: #fbfdfd; overflow: hidden; }
-.race-racer-details > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; color: var(--navy); cursor: pointer; list-style: none; }
+.race-racer-details > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; min-height: 48px; padding: 8px 10px; color: var(--navy); cursor: pointer; list-style: none; }
 .race-racer-details > summary::-webkit-details-marker { display: none; }
 .race-racer-details > summary b, .race-racer-details > summary small { display: block; }
 .race-racer-details > summary b { font-size: 12px; font-weight: 1000; }
@@ -283,7 +283,7 @@ main { padding: 14px; }
 
 /* AIR BET keeps the existing racer/picker table while app.js owns all actions. */
 .betdesk #modeTabs { min-height: 48px; margin: 0 0 10px; }
-.betdesk #modeTabs .bet-tab { min-height: 48px; font-size: 14px; font-weight: 950; }
+.betdesk #modeTabs .bet-tab { min-height: 48px; font-size: 12px; font-weight: 950; }
 .betdesk .bettypebar { gap: 7px; margin: 0 0 9px; }
 .betdesk .bettypebar .bettypebtn { min-height: 46px; padding: 8px 6px; font-size: 12px; font-weight: 950; }
 .betdesk #betGuide { margin: 0 0 8px; padding: 8px 10px; border: 1px solid #dce7ec; background: #f3f8fb; }
@@ -403,7 +403,7 @@ main { padding: 14px; }
 .reward-score { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .reward-score > div { display: grid; place-items: center; padding: 10px 5px; background: var(--navy); color: white; text-align: center; }
 .reward-score span { color: var(--gold); }
-.reward-score b { font-size: 28px; line-height: 1; }
+.reward-score b { font-size: 24px; line-height: 1; }
 .reward-score small { color: #c8d4d8; font-size: 8px; }
 .defense-stamp-rail { padding: 12px; border: 1px solid var(--line); background: #f8fbfb; }
 .stamp-copy { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 9px; font-size: 9px; }
@@ -1733,56 +1733,56 @@ body { background: #e8dfd2; }
 }
 
 
-/* v4.0.4 — desktop density tuning.
+/* v4.0.5 — desktop density tuning v2.
    Keep mobile/tablet layouts untouched; reduce the visual scale only on wide PC screens. */
 @media (min-width: 1100px) {
   .app-shell {
-    max-width: 1150px;
-    padding-left: 82px;
+    max-width: 1000px;
+    padding-left: 72px;
   }
 
   .bottom-nav {
-    left: max(8px, calc((100vw - 1150px) / 2 + 8px));
-    width: 68px;
-    padding: 7px;
+    left: max(8px, calc((100vw - 1000px) / 2 + 8px));
+    width: 60px;
+    padding: 6px;
     gap: 4px;
   }
   .bottom-nav .nav {
     min-height: 52px;
   }
   .bottom-nav .nav b {
-    height: 20px;
-    font-size: 16px;
-    line-height: 20px;
+    height: 18px;
+    font-size: 15px;
+    line-height: 18px;
   }
   .bottom-nav .nav span {
     font-size: 8px;
   }
 
   body[data-screen="home"] main {
-    padding: 16px;
+    padding: 14px;
   }
   body[data-screen="home"] .home-masthead,
   body[data-screen="home"] .home-titlebar,
   body[data-screen="home"] .home-command {
-    margin-left: -16px;
-    margin-right: -16px;
+    margin-left: -14px;
+    margin-right: -14px;
   }
 
   body[data-screen="home"] .home-masthead {
-    height: 290px;
+    height: 240px;
   }
   body[data-screen="home"] .masthead-brand {
-    left: 22px;
-    top: 24px;
-    transform: scale(.92);
+    left: 18px;
+    top: 19px;
+    transform: scale(.84);
     transform-origin: top left;
   }
   body[data-screen="home"] .masthead-callout {
-    left: 22px;
-    top: 103px;
-    min-width: 116px;
-    padding: 8px 10px;
+    left: 18px;
+    top: 84px;
+    min-width: 108px;
+    padding: 7px 9px;
   }
   body[data-screen="home"] .masthead-callout span {
     font-size: 10px;
@@ -1791,11 +1791,11 @@ body { background: #e8dfd2; }
     font-size: 14px;
   }
   body[data-screen="home"] .masthead-wallet {
-    left: 20px;
-    bottom: 18px;
-    width: 205px;
-    min-height: 72px;
-    padding: 10px 14px;
+    left: 18px;
+    bottom: 14px;
+    width: 180px;
+    min-height: 64px;
+    padding: 9px 12px;
   }
   body[data-screen="home"] .masthead-wallet > span {
     font-size: 10px;
@@ -1805,16 +1805,16 @@ body { background: #e8dfd2; }
   }
 
   body[data-screen="home"] .home-titlebar {
-    padding: 14px 18px 11px;
+    padding: 11px 16px 9px;
   }
   body[data-screen="home"] .home-titlebar h1 {
-    font-size: 48px;
+    font-size: 42px;
   }
   body[data-screen="home"] .home-date strong {
     font-size: 12px;
   }
   body[data-screen="home"] .home-date span {
-    margin-top: 6px;
-    font-size: 8px;
+    margin-top: 5px;
+    font-size: 7px;
   }
 }
