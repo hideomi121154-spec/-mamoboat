@@ -29,6 +29,7 @@
     return {
       confidence: Number(panel.dataset.confidence || 0),
       basis: String(panel.querySelector('[data-mamo-self-basis="1"]')?.value || ""),
+      focusBoat: Number(panel.dataset.focusBoat || 0) || null,
       stakeFeeling: String(panel.querySelector('[data-mamo-self-stake-feeling="1"]')?.value || ""),
       realSameAmount: String(panel.dataset.realSameAmount || ""),
     };
@@ -90,12 +91,35 @@
     return button;
   }
 
+  function optionalBoatButton(boatNumber, panel) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "filter";
+    button.textContent = `${boatNumber}号艇`;
+    button.dataset.mamoSelfFocusBoat = String(boatNumber);
+    button.setAttribute("aria-pressed", "false");
+    button.addEventListener("click", () => {
+      const wasSelected = panel.dataset.focusBoat === String(boatNumber);
+      panel.querySelectorAll("[data-mamo-self-focus-boat]").forEach((item) => {
+        item.classList.remove("active");
+        item.setAttribute("aria-pressed", "false");
+      });
+      panel.dataset.focusBoat = wasSelected ? "" : String(boatNumber);
+      if (!wasSelected) {
+        button.classList.add("active");
+        button.setAttribute("aria-pressed", "true");
+      }
+    });
+    return button;
+  }
+
   function createSelfCheckPanel() {
     const panel = document.createElement("section");
     panel.className = "mamo-self-check";
     panel.dataset.mamoSelfCheck = "1";
     panel.dataset.confidence = "";
     panel.dataset.realSameAmount = "";
+    panel.dataset.focusBoat = "";
     panel.setAttribute("aria-label", "AIR BET前のSELF CHECK");
 
     const kicker = document.createElement("span");
@@ -121,6 +145,16 @@
     basis.className = "field";
     basis.innerHTML = '<span>2. 今回の主な根拠は？</span><select data-mamo-self-basis="1"><option value="">選んでください</option><option value="racer">選手</option><option value="motor">モーター</option><option value="exhibition">展示</option><option value="odds">オッズ</option><option value="start">スタート</option><option value="intuition">直感</option><option value="other">その他</option></select>';
 
+    const focusLabel = document.createElement("h4");
+    focusLabel.textContent = "2-A. 特に評価した艇は？（任意）";
+    const focus = document.createElement("div");
+    focus.className = "mamo-self-choice focus-boat";
+    focus.setAttribute("role", "group");
+    focus.setAttribute("aria-label", "特に評価した艇。任意回答");
+    for (let boatNumber = 1; boatNumber <= 6; boatNumber += 1) {
+      focus.append(optionalBoatButton(boatNumber, panel));
+    }
+
     const stake = document.createElement("label");
     stake.className = "field";
     stake.innerHTML = '<span>3. このBET額をどう感じますか？</span><select data-mamo-self-stake-feeling="1"><option value="">選んでください</option><option value="very_low">かなり少ない</option><option value="low">少ない</option><option value="appropriate">適切</option><option value="high">多い</option><option value="very_high">かなり多い</option></select>';
@@ -143,7 +177,7 @@
     status.setAttribute("aria-live", "polite");
     status.textContent = "4項目を選ぶとAIR BETを確定できます。";
 
-    panel.append(kicker, title, lead, confidenceLabel, confidence, basis, stake, realLabel, real, status);
+    panel.append(kicker, title, lead, confidenceLabel, confidence, basis, focusLabel, focus, stake, realLabel, real, status);
     panel.querySelectorAll("select").forEach((select) => {
       select.addEventListener("change", () => syncSelfCheckConfirm(
         panel.closest('.air-bet-review-shell[data-air-bet-review="1"]')

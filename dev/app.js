@@ -298,6 +298,41 @@
     };
   }
 
+  function finiteSnapshotNumber(value) {
+    if (value == null || value === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function entryFactSnapshot(entry) {
+    const source = entry || {};
+    return {
+      boatNumber: Number(source.boatNumber),
+      racerNumber: String(source.racerNumber || ""),
+      name: String(source.name || ""),
+      class: String(source.class || ""),
+      branch: String(source.branch || ""),
+      age: finiteSnapshotNumber(source.age),
+      weight: finiteSnapshotNumber(source.weight),
+      motorNumber: source.motorNumber == null ? "" : String(source.motorNumber),
+      boatPart: source.boatPart == null ? "" : String(source.boatPart),
+      nationalWinRate: finiteSnapshotNumber(source.nationalWinRate),
+      national2Rate: finiteSnapshotNumber(source.national2Rate),
+      national3Rate: finiteSnapshotNumber(source.national3Rate),
+      localWinRate: finiteSnapshotNumber(source.localWinRate),
+      local2Rate: finiteSnapshotNumber(source.local2Rate),
+      local3Rate: finiteSnapshotNumber(source.local3Rate),
+      averageStart: finiteSnapshotNumber(source.averageStart),
+      flyingCount: finiteSnapshotNumber(source.flyingCount),
+      lateCount: finiteSnapshotNumber(source.lateCount),
+      motor2Rate: finiteSnapshotNumber(source.motor2Rate),
+      motor3Rate: finiteSnapshotNumber(source.motor3Rate),
+      boat2Rate: finiteSnapshotNumber(source.boat2Rate),
+      boat3Rate: finiteSnapshotNumber(source.boat3Rate),
+      exhibitionTime: finiteSnapshotNumber(source.exhibitionTime),
+    };
+  }
+
   function normalizeState(source) {
     const state = Object.assign(fresh(), source || {});
     const raw = Array.isArray(state.records)
@@ -422,11 +457,7 @@
           ? record.betMode
           : null,
         entrySnapshot: Array.isArray(record.entrySnapshot)
-          ? record.entrySnapshot.map((entry) => ({
-            boatNumber: Number(entry.boatNumber),
-            racerNumber: String(entry.racerNumber || ""),
-            name: String(entry.name || ""),
-          }))
+          ? record.entrySnapshot.map(entryFactSnapshot)
           : [],
         stake: stake || lines.reduce((sum, line) => sum + line.stake, 0),
         intendedYen: stake || intended,
@@ -775,10 +806,54 @@
     return outcome;
   }
 
+  function resultReviewEventPayload(analysis) {
+    if (!analysis || Number(analysis.version) !== 1) return null;
+    return {
+      version: 1,
+      result_combo: analysis.resultCombo || null,
+      line_count: Number(analysis.lineCount) || 0,
+      exact_hit_count: Number(analysis.exactHitCount) || 0,
+      exact_order_hit: analysis.exactOrderHit === true,
+      first_candidates: Array.isArray(analysis.firstCandidates) ? analysis.firstCandidates.slice(0, 6) : [],
+      second_candidates: Array.isArray(analysis.secondCandidates) ? analysis.secondCandidates.slice(0, 6) : [],
+      third_candidates: Array.isArray(analysis.thirdCandidates) ? analysis.thirdCandidates.slice(0, 6) : [],
+      position_matches: Array.isArray(analysis.positionMatches) ? analysis.positionMatches.slice(0, 3) : [],
+      matched_position_count: Number(analysis.matchedPositionCount) || 0,
+      top3_coverage: Number(analysis.top3Coverage) || 0,
+      self_basis: analysis.selfCheck?.basis || null,
+      self_focus_boat: analysis.selfCheck?.focusBoat || null,
+      self_confidence: analysis.selfCheck?.confidence || null,
+      basis_metric_label: analysis.basisComparison?.metricLabel || null,
+      winner_basis_value: analysis.basisComparison?.winnerValue ?? null,
+      winner_basis_rank: analysis.basisComparison?.winnerRank || null,
+      focus_basis_value: analysis.basisComparison?.focusValue ?? null,
+      focus_basis_rank: analysis.basisComparison?.focusRank || null,
+      focus_result_position: analysis.basisComparison?.focusResultPosition || null,
+      finish_facts: (analysis.finishFacts || []).slice(0, 3).map((item) => ({
+        position: Number(item.position) || null,
+        boat_number: Number(item.boatNumber) || null,
+        motor_value: item.facts?.motor?.value ?? null,
+        motor_rank: item.facts?.motor?.rank || null,
+        exhibition_value: item.facts?.exhibition?.value ?? null,
+        exhibition_rank: item.facts?.exhibition?.rank || null,
+        start_value: item.facts?.start?.value ?? null,
+        start_rank: item.facts?.start?.rank || null,
+        racer_value: item.facts?.racer?.value ?? null,
+        racer_rank: item.facts?.racer?.rank || null,
+      })),
+      lines: (analysis.lineResults || []).slice(0, 30).map((item) => ({
+        combo: String(item.combo || ""),
+        exact: item.exact === true,
+        position_matches: Array.isArray(item.positionMatches) ? item.positionMatches.slice(0, 3) : [],
+      })),
+    };
+  }
+
   function settlementPayload(record, source) {
     return Object.assign(rewardEventPayload(record), {
       settlement_source: source,
       result_combo: record.resultCombo || null,
+      result_review: resultReviewEventPayload(record.resultAnalysis),
       refund_b: Number(record.refundC) || 0,
       result_reflected_at: record.resultReflectedAt || null,
       result_latency_minutes: Number.isFinite(record.resultLatencyMinutes)
@@ -2285,6 +2360,8 @@
     const selfBasis = String(selfCheckPanel?.querySelector?.('[data-mamo-self-basis="1"]')?.value || "");
     const selfStakeFeeling = String(selfCheckPanel?.querySelector?.('[data-mamo-self-stake-feeling="1"]')?.value || "");
     const selfRealSameAmount = String(selfCheckPanel?.dataset?.realSameAmount || "");
+    const selfFocusBoatRaw = Number(selfCheckPanel?.dataset?.focusBoat || 0);
+    const selfFocusBoat = Number.isInteger(selfFocusBoatRaw) && selfFocusBoatRaw >= 1 && selfFocusBoatRaw <= 6 ? selfFocusBoatRaw : null;
     const selfCheckComplete = Number.isInteger(selfConfidence)
       && selfConfidence >= 1
       && selfConfidence <= 5
@@ -2319,11 +2396,9 @@
       eventDayLabel: event.dayLabel,
       betMode: recordedModes.length === 1 ? recordedModes[0] : null,
       betModes: recordedModes,
-      entrySnapshot: (Array.isArray(raceItem.entries) ? raceItem.entries : []).map((entry) => ({
-        boatNumber: entry.boatNumber,
-        racerNumber: entry.racerNumber,
-        name: entry.name,
-      })),
+      entrySnapshotVersion: 2,
+      entrySnapshotCapturedAt: new Date().toISOString(),
+      entrySnapshot: (Array.isArray(raceItem.entries) ? raceItem.entries : []).map(entryFactSnapshot),
       lines: cart.map((line) => ({
         combo: lineCombination(line),
         betType: C.normalizeBetType(line.betType),
@@ -2340,6 +2415,7 @@
       selfCheckVersion: 1,
       selfConfidence,
       selfBasis,
+      selfFocusBoat,
       selfStakeFeeling,
       selfRealSameAmount,
       status: "pending",
@@ -2399,6 +2475,7 @@
       self_check_version: record.selfCheckVersion,
       self_confidence: record.selfConfidence,
       self_basis: record.selfBasis,
+      self_focus_boat: record.selfFocusBoat,
       self_stake_feeling: record.selfStakeFeeling,
       self_real_same_amount: record.selfRealSameAmount,
       reward_challenge: record.rewardChallenge,
