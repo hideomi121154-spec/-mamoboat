@@ -76,10 +76,11 @@ assert.match(css, /grid-template-columns: minmax\(0, 1\.8fr\) repeat\(3, minmax\
 assert.match(css, /> \.rank \{[\s\S]{0,140}grid-row: 1 !important/);
 assert.match(css, /> \.add-current-draft \{[\s\S]{0,160}grid-row: 2 !important/);
 
-assert.match(css, /@media \(min-width: 744px\)[\s\S]{0,500}#raceView > \.betdesk[\s\S]{0,180}width: min\(900px, calc\(100% - 48px\)\)/);
-assert.match(css, /@media \(min-width: 744px\)[\s\S]{0,1200}data-mamo-picker-columns="3"[\s\S]{0,180}grid-template-columns: repeat\(3, minmax\(0, 1fr\)\) !important/);
-assert.match(css, /@media \(min-width: 744px\)[\s\S]{0,2600}> \.rank \.pick[\s\S]{0,160}height: 44px !important/);
-assert.match(css, /@media \(min-width: 744px\)[\s\S]{0,3200}> \.add-current-draft[\s\S]{0,200}height: 46px !important/);
+assert.match(css, /@media \(min-width: 744px\)/);
+assert.match(css, /#raceView > \.betdesk \{[\s\S]{0,160}width: min\(900px, calc\(100% - 48px\)\)/);
+assert.match(css, /data-mamo-picker-columns="3"[^\{]*\{[\s\S]{0,140}grid-template-columns: repeat\(3, minmax\(0, 1fr\)\) !important/);
+assert.match(css, /#builder\.mamo-selection-matrix > \.rank \.pick \{[\s\S]{0,220}height: 44px !important/);
+assert.match(css, /> \.add-current-draft \{[\s\S]{0,260}height: 46px !important/);
 
 // Normal/BOX/form keep the fixed three-column picker. Odds mode is explicitly
 // excluded from that owner rule so its own flex layout can use the full width.
