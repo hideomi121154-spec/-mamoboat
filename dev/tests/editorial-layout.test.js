@@ -10,8 +10,11 @@ test("editorial navigation remains visible while legacy editorial content stays 
   const html = fs.readFileSync(path.join(devRoot, "index.html"), "utf8");
   const app = fs.readFileSync(path.join(devRoot, "app.js"), "utf8");
   const styles = fs.readFileSync(path.join(devRoot, "styles.css"), "utf8");
+  const guard = fs.readFileSync(path.join(devRoot, "editorial-placeholder-guard.js"), "utf8");
+  const press = fs.readFileSync(path.join(devRoot, "press-intelligence.js"), "utf8");
+  const benefits = fs.readFileSync(path.join(devRoot, "mamo-shop-record-benefits.js"), "utf8");
 
-  assert.match(html, /<section id="analysis" class="screen">/);
+  assert.match(html, /<section id="analysis" class="screen" data-editorial-placeholder="1">/);
   assert.match(html, /id="nav-analysis"/);
   assert.match(html, /<h1>編集部<\/h1>/);
   assert.doesNotMatch(html, /id="pressPaper"/);
@@ -20,6 +23,12 @@ test("editorial navigation remains visible while legacy editorial content stays 
   assert.doesNotMatch(html, /mamoValueEditorialSlot/);
   assert.doesNotMatch(html, /編集部とAI分析担当/);
   assert.doesNotMatch(html, /PRESS PILOT/);
+  assert.match(html, /editorial-placeholder-guard\.js\?v=20260928-1/);
+  assert.match(guard, /#goldEditorialDesk/);
+  assert.match(guard, /#mamoSpecialAnalysis/);
+  assert.match(guard, /data-editorial-placeholder-core/);
+  assert.match(press, /editorialPlaceholder==="1"/);
+  assert.match(benefits, /editorialPlaceholder === "1"/);
 
   assert.doesNotMatch(app, /if \(id === "analysis"\) id = "home";/);
   assert.match(app, /function renderAnalysis\(\) \{\s*if \(!\$\("analysisCards"\) \|\| !\$\("analysisList"\)\) return;/);
