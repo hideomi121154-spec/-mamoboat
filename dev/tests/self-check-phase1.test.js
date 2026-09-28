@@ -44,7 +44,7 @@ assert.match(css, /\.mamo-self-check/, "canonical review stylesheet must own SEL
 for (const asset of [
   "app.js?v=20260914-1",
   "bet-review-flow.js?v=20260914-1",
-  "air-bet-review-compact.css?v=20260914-1",
+  "air-bet-review-compact.css?v=20260928-1",
 ]) {
   assert.ok(html.includes(asset), `index must load ${asset}`);
   assert.ok(sw.includes(asset), `service worker must deliver ${asset}`);
