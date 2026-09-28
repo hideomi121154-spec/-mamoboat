@@ -959,6 +959,7 @@
     if (event.target.id === "modalBg") window.closeModal();
   };
   window.go = (id) => {
+    if (id === "analysis") id = "home";
     document.body.dataset.screen = id;
     document.querySelectorAll(".screen").forEach(
       (item) => item.classList.toggle("active", item.id === id)
@@ -2750,6 +2751,7 @@ const reference = liveValue != null
   };
 
   function renderAnalysis() {
+    if (!$("analysisCards") || !$("analysisList")) return;
     const stats = C.behaviorStats(S.records);
     const total = C.savedTotals(S.records).all;
     const low = S.records.filter((item) => item.conf <= 4 && item.urge >= 7).length;
