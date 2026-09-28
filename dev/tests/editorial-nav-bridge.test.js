@@ -95,7 +95,7 @@ window.go("home");
 assert.deepEqual(legacyCalls, ["home"], "non-editorial navigation must delegate to app.js");
 
 assert.match(html, /editorial-nav-bridge\.js\?v=20260928-1/);
-assert.match(sw, /mamoboat-v531-desktop-airbet-density-dev/);
+assert.match(sw, /mamoboat-v532-desktop-home-density-dev/);
 assert.match(sw, /editorial-nav-bridge\.js\?v=20260928-1/);
 
 console.log("editorial navigation bridge regression: OK");
