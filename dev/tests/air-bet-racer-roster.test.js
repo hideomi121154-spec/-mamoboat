@@ -51,8 +51,8 @@ assert.doesNotMatch(layoutRefresh, /\.mamo-racer-name/);
 assert.doesNotMatch(layoutRefresh, /\.mamo-racer-class/);
 assert.doesNotMatch(layoutRefresh, /\.mamo-racer-official/);
 
-// Desktop keeps the existing builder. Mobile gives names real width instead
-// of shrinking them to 7px, while still avoiding intentional ellipsis.
+// The racer roster is presentation-only on both desktop and mobile. Desktop
+// shows it as the left column beside 1/2/3着, while mobile keeps its compact owner rules.
 assert.match(css, /#raceView \.mamo-racer-roster \{ display: none; \}/);
 assert.match(css, /#builder\.mamo-selection-matrix/);
 assert.match(css, /#builder > \.mamo-racer-roster[\s\S]*display: flex/);
@@ -78,7 +78,11 @@ assert.match(css, /> \.add-current-draft \{[\s\S]{0,160}grid-row: 2 !important/)
 
 assert.match(css, /@media \(min-width: 744px\)/);
 assert.match(css, /#raceView > \.betdesk \{[\s\S]{0,160}width: min\(900px, calc\(100% - 48px\)\)/);
-assert.match(css, /data-mamo-picker-columns="3"[^\{]*\{[\s\S]{0,140}grid-template-columns: repeat\(3, minmax\(0, 1fr\)\) !important/);
+assert.match(css, /data-mamo-picker-columns="3"[^\{]*\{[\s\S]{0,180}grid-template-columns: minmax\(220px, 1\.15fr\) repeat\(3, minmax\(0, 1fr\)\) !important/);
+assert.match(css, /@media \(min-width: 744px\)[\s\S]*?> \.mamo-racer-roster \{[\s\S]{0,220}display: flex !important[\s\S]{0,180}grid-column: 1 !important/);
+assert.match(css, /@media \(min-width: 744px\)[\s\S]*?\.rank\[data-mamo-picker-rank="1"\][\s\S]{0,80}grid-column: 2 !important/);
+assert.match(css, /@media \(min-width: 744px\)[\s\S]*?\.rank\[data-mamo-picker-rank="3"\][\s\S]{0,80}grid-column: 4 !important/);
+assert.match(css, /@media \(min-width: 744px\)[\s\S]*?\.mamo-racer-rows \{[\s\S]{0,140}grid-template-rows: repeat\(6, 44px\)/);
 assert.match(css, /#builder\.mamo-selection-matrix > \.rank \.pick \{[\s\S]{0,220}height: 44px !important/);
 assert.match(css, /> \.add-current-draft \{[\s\S]{0,260}height: 46px !important/);
 
@@ -119,7 +123,7 @@ assert.match(sw, /mamoboat-v504-odds-bet-mobile-selector-dev/);
 assert.match(sw, /mamoboat-v505-odds-layout-snapshot-dev/);
 assert.match(sw, /mamoboat-v506-odds-fill-height-dev/);
 assert.match(sw, /mamoboat-v507-odds-all-visible-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260928-4/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260928-5/);
 assert.match(sw, /odds-bet-mode\.css\?v=20260912-2/);
 assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
 assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
