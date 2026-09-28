@@ -1,7 +1,7 @@
-/* MAMO BOAT — user editorial placeholder guard.
- * The user-facing Editorial screen intentionally contains only the two
- * COMING SOON blocks. Legacy editorial modules may still be delivered by an
- * older PWA cache, so remove any content they try to inject.
+/* MAMO BOAT — user editorial ownership guard.
+ * The user-facing Editorial screen is owned by the current race-result analysis.
+ * Legacy editorial modules may still be delivered by an older PWA cache,
+ * so remove any content they try to inject outside the current core mount.
  */
 (() => {
   "use strict";

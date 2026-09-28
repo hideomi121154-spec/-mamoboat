@@ -21,7 +21,7 @@ assert.doesNotMatch(index, /master-room\.html/);
 assert.match(html, /MAMO編集部（管理用）/);
 assert.match(html, /USER HIDDEN \/ OWNER ONLY/);
 assert.match(js, /function renderEditorialLab\(data\)/);
-assert.match(userIndex, /<h1>編集部<\/h1>/);
+assert.match(userIndex, /id="editorialRaceResultAnalysis"/);
 assert.match(userIndex, /id="nav-analysis"/);
 assert.doesNotMatch(userIndex, /新聞の発行設定/);
 assert.doesNotMatch(userIndex, /mamoValueEditorialSlot/);
