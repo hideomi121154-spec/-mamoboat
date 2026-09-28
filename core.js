@@ -276,11 +276,15 @@
     const exactHitCount = lineResults.filter((line) => line.exact).length;
     const top3Coverage = finish.filter((boat) => allSelectedBoats.has(boat)).length;
 
-    const entries = Array.isArray(record.entrySnapshot) && record.entrySnapshot.length
-      ? record.entrySnapshot
-      : Array.isArray(race.entries)
-        ? race.entries
-        : [];
+    const liveEntries = Array.isArray(race.entries) ? race.entries : [];
+    const snapshotEntries = Array.isArray(record.entrySnapshot) ? record.entrySnapshot : [];
+    const liveByBoat = new Map(liveEntries.map((entry) => [Number(entry?.boatNumber), entry]));
+    const entries = snapshotEntries.length
+      ? snapshotEntries.map((entry) => ({
+        ...(liveByBoat.get(Number(entry?.boatNumber)) || {}),
+        ...entry,
+      }))
+      : liveEntries;
     const finishFacts = finish.map((boatNumber, index) => {
       const entry = entries.find((item) => Number(item?.boatNumber) === boatNumber) || {};
       return {
