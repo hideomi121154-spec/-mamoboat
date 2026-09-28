@@ -243,7 +243,9 @@
     const trifectaLines = (record.lines || [])
       .filter((line) => normalizeBetType(line.betType) === "trifecta")
       .map((line) => ({
-        combo: normalizeCombo(line.combo, "trifecta"),
+        combo: (Array.isArray(line.combo) ? line.combo : normalizeCombo(line.combo).split("-"))
+          .map(Number)
+          .filter((boat) => Number.isInteger(boat) && boat >= 1 && boat <= 6),
         stake: Number(line.stake) || 0,
       }))
       .filter((line) => line.combo.length === 3);
