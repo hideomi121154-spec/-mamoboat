@@ -382,7 +382,7 @@ assert.match(indexSource, /core\.js\?v=20260928-2/);
 assert.match(indexSource, /pilot-config\.js\?v=20260909-4/);
 assert.match(indexSource, /app\.js\?v=20260928-3/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
-assert.doesNotMatch(indexSource, /MAMO編集部|id="nav-analysis"|新聞の発行設定/);
+assert.match(indexSource, /id="nav-analysis"[\s\S]*<span>編集部<\/span>/);\nassert.doesNotMatch(indexSource, /新聞の発行設定|id="pressPaper"|id="membershipPanel"/);
 assert.match(indexSource, /加音 守/);
 assert.doesNotMatch(indexSource, /id="realBetFloat"/);
 assert.doesNotMatch(indexSource, /ダブルWIN・防衛スタンプ/);
