@@ -23,7 +23,9 @@ test("editorial navigation remains visible while legacy editorial content stays 
   assert.doesNotMatch(html, /mamoValueEditorialSlot/);
   assert.doesNotMatch(html, /編集部とAI分析担当/);
   assert.doesNotMatch(html, /PRESS PILOT/);
-  assert.match(html, /editorial-placeholder-guard\.js\?v=20260928-2/);\n  assert.match(html, /editorial-race-result-analysis\.js\?v=20260928-1/);\n  assert.match(html, /editorial-race-result-analysis\.css\?v=20260928-1/);
+  assert.match(html, /editorial-placeholder-guard\.js\?v=20260928-2/);
+  assert.match(html, /editorial-race-result-analysis\.js\?v=20260928-1/);
+  assert.match(html, /editorial-race-result-analysis\.css\?v=20260928-1/);
   assert.match(guard, /#goldEditorialDesk/);
   assert.match(guard, /#mamoSpecialAnalysis/);
   assert.match(guard, /editorialPlaceholderCore/);
