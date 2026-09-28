@@ -373,7 +373,7 @@ const manifestSource = fs.readFileSync(
 const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
 const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
-assert.match(indexSource, /styles\.css\?v=20260818-3/);
+assert.match(indexSource, /styles\.css\?v=20260928-3/);
 assert.match(indexSource, /brand-theme\.css\?v=20260827-2/);
 assert.match(indexSource, /cast-ui\.js\?v=20260827-3/);
 assert.match(indexSource, /mamoru-hero\.webp/);
@@ -383,7 +383,7 @@ assert.match(indexSource, /id="pilotConsentOnboard"/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
 assert.match(indexSource, /pilot-config\.js\?v=20260827-5/);
-assert.match(indexSource, /app\.js\?v=20260827-4/);
+assert.match(indexSource, /app\.js\?v=20260928-4/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /id="nav-analysis"[\s\S]*<span>編集部<\/span>/);
 assert.doesNotMatch(indexSource, /新聞の発行設定|id="pressPaper"|id="membershipPanel"/);
