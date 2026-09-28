@@ -77,7 +77,7 @@
   const loadDeleteControls = () => {
     if (document.querySelector('script[data-mamo-review-delete-controls]')) return;
     const script = document.createElement("script");
-    script.src = "air-bet-review-delete-controls.js?v=20260912-1";
+    script.src = "air-bet-review-delete-controls.js?v=20260928-1";
     script.async = true;
     script.dataset.mamoReviewDeleteControls = "1";
     document.head.appendChild(script);
