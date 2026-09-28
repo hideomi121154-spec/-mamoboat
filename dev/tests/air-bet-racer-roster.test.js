@@ -67,6 +67,11 @@ assert.match(css, /grid-template-columns: minmax\(164px, 1\.75fr\) repeat\(3, mi
 assert.match(css, /grid-template-columns: 18px 24px minmax\(52px, 1fr\) 24px/);
 assert.match(css, /font-size: clamp\(9\.5px, 2\.6vw, 10\.5px\)/);
 assert.doesNotMatch(css, /font-size: clamp\(7px, 2\.25vw, 9px\)/);
+assert.match(css, /@media \(max-width: 520px\) and \(min-height: 541px\)/);
+assert.match(css, /#builder:not\(\.mamo-odds-bet-mode\) > \.mamo-racer-roster,[\s\S]{0,180}display: none !important/);
+assert.match(css, /#builder\.mamo-selection-matrix:not\(\.mamo-odds-bet-mode\)[\s\S]{0,240}grid-template-columns: repeat\(3, minmax\(0, 1fr\)\) !important/);
+assert.match(css, /> \.rank \{[\s\S]{0,140}grid-row: 1 !important/);
+assert.match(css, /> \.add-current-draft \{[\s\S]{0,160}grid-row: 2 !important/);
 
 // Normal/BOX/form keep the fixed three-column picker. Odds mode is explicitly
 // excluded from that owner rule so its own flex layout can use the full width.
@@ -105,7 +110,7 @@ assert.match(sw, /mamoboat-v504-odds-bet-mobile-selector-dev/);
 assert.match(sw, /mamoboat-v505-odds-layout-snapshot-dev/);
 assert.match(sw, /mamoboat-v506-odds-fill-height-dev/);
 assert.match(sw, /mamoboat-v507-odds-all-visible-dev/);
-assert.match(sw, /air-bet-selection-fixed\.css\?v=20260911-9/);
+assert.match(sw, /air-bet-selection-fixed\.css\?v=20260928-1/);
 assert.match(sw, /odds-bet-mode\.css\?v=20260912-2/);
 assert.match(sw, /odds-bet-mode-v1\.js\?v=20260911-3/);
 assert.match(sw, /air-bet-mode-stability\.js\?v=20260911-13/);
