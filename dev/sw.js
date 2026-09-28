@@ -34,7 +34,7 @@
 const CACHE = "mamoboat-v520-airbet-review-layout-dev";
 const SHELL = [
   "./","./index.html","./air-bet-selection-fixed.css?v=20260911-9","./odds-bet-mode.css?v=20260912-3","./styles.css?v=20260910-3","./air-bet-review-compact.css?v=20260928-1","./brand-theme.css?v=20260827-2","./core.js?v=20260908-1","./air-bet-draft-core.js?v=20260909-2","./pilot-config.js?v=20260910-6","./app.js?v=20260914-1",
-  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260914-1","./air-bet-review-delete-controls.js?v=20260928-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1",
+  "./decision-event-schema.js","./decision-conflict-core.js","./decision-conflict-guard.js?v=20260906-2","./decision-event-collector.js?v=20260910-2","./decision-event-api-compat.js?v=20260912-1","./bet-review-flow.js?v=20260914-1","./air-bet-review-delete-controls.js?v=20260928-1","./odds-bet-mode-v1.js?v=20260912-1","./odds-reference-odds-sync.js?v=20260912-1","./allocation-keypad-stability.js?v=20260912-2","./mamo-quant-analysis-shell.js?v=20260912-2","./mamo-quant-analysis-basic.js?v=20260912-1","./mamo-quant-analysis-dashboard.js?v=20260928-1","./mamo-quant-analysis-dashboard.css?v=20260928-1","./mamo-quant-analysis-charts.js?v=20260928-1",
   "./decision-transition-model.js","./growth-entry.js?v=20260908-2","./venue-live-priority.js?v=20260909-1","./air-bet-mode-stability.js?v=20260911-13","./race-layout-refresh.js?v=20260911-7","./race-airbet-compact.js?v=20260910-6","./race-airbet-first.js?v=20260910-8","./race-carte-official-payouts.js?v=20260911-1","./ai-safe.js?v=20260910-5","./general-grade-theme.js?v=20260908-1","./air-outcome-experience.js?v=20260909-5","./record-unified-layout-v2.js?v=20260909-5","./record-mobile-layout-fix.js?v=20260908-2","./race-carte-live-state-fix.js?v=20260908-3","./race-carte-manual-refresh.js?v=20260909-3","./manifest.webmanifest","./icon.svg","./mamoru-hero.webp",
   "./mamokamo.js?v=20260823-4","./behavior-pattern-profile.js?v=20260828-3","./behavior-science.js?v=20260829-2","./assets/mamokamo-ai-v5.png?v=20260822-5",
   "./mamo-shop.js?v=20260913-1","./mamo-shop-value-core.js?v=20260822-1","./mamo-shop-marketplace.js?v=20260828-8","./mamo-shop-record-benefits.js?v=20260830-1","./motion-experience.js?v=20260827-1"
@@ -131,6 +131,7 @@ self.addEventListener("fetch",event=>{
     || url.pathname.endsWith("/allocation-keypad-stability.js")
     || url.pathname.endsWith("/mamo-shop.js")
     || /\/mamo-quant-analysis-[^/]+\.js$/.test(url.pathname)
+    || url.pathname.endsWith("/mamo-quant-analysis-dashboard.css")
     || url.pathname.endsWith("/air-bet-mode-stability.js")
   ){
     event.respondWith((async()=>{
