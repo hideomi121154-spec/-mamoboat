@@ -199,6 +199,144 @@
     };
   }
 
+
+  const RESULT_REVIEW_METRICS = Object.freeze({
+    motor: Object.freeze({ key: "motor2Rate", label: "モーター2連率", direction: "desc" }),
+    exhibition: Object.freeze({ key: "exhibitionTime", label: "展示タイム", direction: "asc" }),
+    start: Object.freeze({ key: "averageStart", label: "平均ST", direction: "asc" }),
+    racer: Object.freeze({ key: "nationalWinRate", label: "全国勝率", direction: "desc" }),
+  });
+
+  function numericFact(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function rankFact(entries, key, direction, boatNumber) {
+    const target = (entries || []).find((entry) => Number(entry?.boatNumber) === Number(boatNumber));
+    const value = numericFact(target?.[key]);
+    if (value == null) return { value: null, rank: null };
+    const values = (entries || [])
+      .map((entry) => numericFact(entry?.[key]))
+      .filter((item) => item != null);
+    if (!values.length) return { value, rank: null };
+    const better = values.filter((item) => direction === "asc" ? item < value : item > value).length;
+    return { value, rank: better + 1 };
+  }
+
+  function resultReviewFacts(entries, boatNumber) {
+    const facts = {};
+    for (const [basis, metric] of Object.entries(RESULT_REVIEW_METRICS)) {
+      const ranked = rankFact(entries, metric.key, metric.direction, boatNumber);
+      facts[basis] = {
+        key: metric.key,
+        label: metric.label,
+        value: ranked.value,
+        rank: ranked.rank,
+      };
+    }
+    return facts;
+  }
+
+  function buildTrifectaResultAnalysis(record, race) {
+    if (!record || !race?.result) return null;
+    const trifectaLines = (record.lines || [])
+      .filter((line) => normalizeBetType(line.betType) === "trifecta")
+      .map((line) => ({
+        combo: normalizeCombo(line.combo, "trifecta"),
+        stake: Number(line.stake) || 0,
+      }))
+      .filter((line) => line.combo.length === 3);
+    if (!trifectaLines.length) return null;
+
+    const finish = (race.result.finish || []).slice(0, 3)
+      .map((item) => Number(item?.boatNumber))
+      .filter((boat) => Number.isInteger(boat) && boat >= 1 && boat <= 6);
+    if (finish.length !== 3) return null;
+
+    const uniqueSorted = (values) => [...new Set(values.map(Number).filter(Number.isFinite))].sort((a, b) => a - b);
+    const firstCandidates = uniqueSorted(trifectaLines.map((line) => line.combo[0]));
+    const secondCandidates = uniqueSorted(trifectaLines.map((line) => line.combo[1]));
+    const thirdCandidates = uniqueSorted(trifectaLines.map((line) => line.combo[2]));
+    const allSelectedBoats = new Set(trifectaLines.flatMap((line) => line.combo));
+    const positionMatches = [
+      firstCandidates.includes(finish[0]),
+      secondCandidates.includes(finish[1]),
+      thirdCandidates.includes(finish[2]),
+    ];
+    const resultKey = canonicalCombo(finish, "trifecta");
+    const lineResults = trifectaLines.map((line) => ({
+      combo: line.combo.join("-"),
+      stake: line.stake,
+      exact: canonicalCombo(line.combo, "trifecta") === resultKey,
+      positionMatches: line.combo.map((boat, index) => Number(boat) === finish[index]),
+    }));
+    const exactHitCount = lineResults.filter((line) => line.exact).length;
+    const top3Coverage = finish.filter((boat) => allSelectedBoats.has(boat)).length;
+
+    const entries = Array.isArray(record.entrySnapshot) && record.entrySnapshot.length
+      ? record.entrySnapshot
+      : Array.isArray(race.entries)
+        ? race.entries
+        : [];
+    const finishFacts = finish.map((boatNumber, index) => {
+      const entry = entries.find((item) => Number(item?.boatNumber) === boatNumber) || {};
+      return {
+        position: index + 1,
+        boatNumber,
+        racerNumber: String(entry.racerNumber || ""),
+        name: String(entry.name || ""),
+        facts: resultReviewFacts(entries, boatNumber),
+      };
+    });
+
+    const selfBasis = String(record.selfBasis || "");
+    const basisMetric = RESULT_REVIEW_METRICS[selfBasis] || null;
+    const focusBoat = Number(record.selfFocusBoat);
+    const validFocusBoat = Number.isInteger(focusBoat) && focusBoat >= 1 && focusBoat <= 6 ? focusBoat : null;
+    const winnerBasisFact = basisMetric
+      ? rankFact(entries, basisMetric.key, basisMetric.direction, finish[0])
+      : { value: null, rank: null };
+    const focusBasisFact = basisMetric && validFocusBoat
+      ? rankFact(entries, basisMetric.key, basisMetric.direction, validFocusBoat)
+      : { value: null, rank: null };
+    const focusResultPosition = validFocusBoat ? (finish.indexOf(validFocusBoat) + 1 || null) : null;
+
+    return {
+      version: 1,
+      betType: "trifecta",
+      lineCount: trifectaLines.length,
+      result: finish,
+      resultCombo: finish.join("-"),
+      firstCandidates,
+      secondCandidates,
+      thirdCandidates,
+      positionMatches,
+      matchedPositionCount: positionMatches.filter(Boolean).length,
+      top3Coverage,
+      exactHitCount,
+      exactOrderHit: exactHitCount > 0,
+      lineResults,
+      finishFacts,
+      selfCheck: {
+        confidence: Number(record.selfConfidence) || null,
+        basis: selfBasis || null,
+        focusBoat: validFocusBoat,
+      },
+      basisComparison: {
+        basis: selfBasis || null,
+        metricKey: basisMetric?.key || null,
+        metricLabel: basisMetric?.label || null,
+        winnerValue: winnerBasisFact.value,
+        winnerRank: winnerBasisFact.rank,
+        focusBoat: validFocusBoat,
+        focusValue: focusBasisFact.value,
+        focusRank: focusBasisFact.rank,
+        focusResultPosition,
+      },
+    };
+  }
+
   function settleRecord(record, dataset, reflectedAt = new Date().toISOString()) {
     if (!record || record.settled || !dataset || record.raceDate !== dataset.date) {
       return { changed: false, payoutAdded: 0, hit: false, refunded: false };
@@ -283,6 +421,7 @@
     record.resultPayout = relevantPayouts[0]?.payout || null;
     record.resultPayouts = officialPayouts(race.result);
     record.resultPayoutsScope = "all-official";
+    record.resultAnalysis = buildTrifectaResultAnalysis(record, race);
     record.settled = true;
     stampResultTiming(record, race, reflectedAt);
     return {
@@ -624,6 +763,7 @@
     syncRecordOfficialPayouts,
     findRace,
     settleRecord,
+    buildTrifectaResultAnalysis,
     resultLatencyStats,
     validateDataset,
     savedTotals,
