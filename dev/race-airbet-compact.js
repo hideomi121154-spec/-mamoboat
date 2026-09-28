@@ -258,7 +258,7 @@
     raceView.querySelector(":scope > .racechips")?.remove();
     syncRacerRoster(raceView, path);
     keepAirBetBeforeOfficial(raceView);
-    removeLowerRaceboardDetails(raceView);
+    // Keep official racer/source data visible. Compact layout must not delete race facts.
   }
 
   window.addEventListener("mamo:air-bet-rendered", compactRaceAirBet);
