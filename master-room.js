@@ -112,6 +112,101 @@
     return `<article class="editorial-card"><small>${esc(number)}</small><h3>${esc(title)}</h3><strong>${esc(value)}</strong><p>${esc(note)}</p><span class="owner-badge">OWNER ONLY</span></article>`;
   }
 
+  const RESULT_BASIS_LABELS = Object.freeze({
+    racer: "選手",
+    motor: "モーター",
+    exhibition: "展示",
+    odds: "オッズ",
+    start: "スタート",
+    intuition: "直感",
+    other: "その他",
+  });
+
+  function rankText(value) {
+    const number = Number(value);
+    return Number.isFinite(number) && number > 0 ? `${number}位` : "—";
+  }
+
+  function boatList(value) {
+    const rows = Array.isArray(value) ? value : [];
+    return rows.length ? rows.map((boat) => `${Number(boat)}号艇`).join("・") : "—";
+  }
+
+  function matchText(value) {
+    return value === true ? "一致" : "不一致";
+  }
+
+  function resultReviewCard(event) {
+    const review = event?.payload?.result_review;
+    if (!review || Number(review.version) !== 1) return "";
+    const resultCombo = String(review.result_combo || "—");
+    const basis = RESULT_BASIS_LABELS[review.self_basis] || String(review.self_basis || "未選択");
+    const focusBoat = Number(review.self_focus_boat);
+    const lines = Array.isArray(review.lines) ? review.lines : [];
+    const facts = Array.isArray(review.finish_facts) ? review.finish_facts : [];
+    const positionMatches = Array.isArray(review.position_matches) ? review.position_matches : [];
+    const exactHits = Number(review.exact_hit_count) || 0;
+    const top3Coverage = Math.max(0, Math.min(3, Number(review.top3_coverage) || 0));
+
+    const factsRows = facts.map((item) => `<tr>
+      <td><b>${esc(`${Number(item.position) || "—"}着 / ${Number(item.boat_number) || "—"}号艇`)}</b></td>
+      <td>${esc(rankText(item.motor_rank))}</td>
+      <td>${esc(rankText(item.exhibition_rank))}</td>
+      <td>${esc(rankText(item.start_rank))}</td>
+      <td>${esc(rankText(item.racer_rank))}</td>
+    </tr>`).join("");
+
+    const lineRows = lines.map((item) => {
+      const matches = Array.isArray(item.position_matches) ? item.position_matches : [];
+      return `<div class="result-review-line"><b>${esc(item.combo || "—")}</b><span class="${item.exact ? "hit" : ""}">${item.exact ? "完全一致" : "不的中"}</span><span>1着 ${matches[0] ? "○" : "×"} / 2着 ${matches[1] ? "○" : "×"} / 3着 ${matches[2] ? "○" : "×"}</span></div>`;
+    }).join("");
+
+    let basisSentence = `SELF CHECKの主な根拠：${basis}。`;
+    if (review.basis_metric_label && review.winner_basis_rank) {
+      basisSentence += ` 1着艇の${review.basis_metric_label}は6艇中${rankText(review.winner_basis_rank)}でした。`;
+    } else {
+      basisSentence += " 今回はこの根拠を順位化できる公式指標がないため、事実データだけ保存しています。";
+    }
+    if (Number.isInteger(focusBoat) && focusBoat >= 1 && focusBoat <= 6) {
+      basisSentence += ` 特に評価した${focusBoat}号艇`;
+      if (review.focus_basis_rank) basisSentence += `は${review.basis_metric_label || "該当指標"}で${rankText(review.focus_basis_rank)}`;
+      if (review.focus_result_position) basisSentence += `、結果は${review.focus_result_position}着`;
+      basisSentence += "でした。";
+    }
+
+    return `<article class="result-review-card">
+      <div class="result-review-head"><div><small>${esc(dateTime(event.occurredAt))} / ${esc(event.displayId || "—")} / ${esc(event.venueCode || "—")}${event.raceNo ? ` ${esc(event.raceNo)}R` : ""}</small><h3>複数買い目の答え合わせ</h3></div><b>結果 ${esc(resultCombo)}</b></div>
+      <div class="result-review-body">
+        <div class="result-review-summary">
+          <div><span>購入点数</span><b>${fmt(review.line_count)}点</b></div>
+          <div class="${positionMatches[0] ? "good" : ""}"><span>1着候補</span><b>${esc(matchText(positionMatches[0]))}</b></div>
+          <div class="${positionMatches[1] ? "good" : ""}"><span>2着候補</span><b>${esc(matchText(positionMatches[1]))}</b></div>
+          <div class="${positionMatches[2] ? "good" : ""}"><span>3着候補</span><b>${esc(matchText(positionMatches[2]))}</b></div>
+          <div class="${exactHits ? "good" : ""}"><span>完全一致</span><b>${fmt(exactHits)}点</b></div>
+        </div>
+        <div class="result-review-candidates">
+          <div><span>1着軸・候補</span><b>${esc(boatList(review.first_candidates))}</b></div>
+          <div><span>2着候補</span><b>${esc(boatList(review.second_candidates))}</b></div>
+          <div><span>3着候補</span><b>${esc(boatList(review.third_candidates))}</b></div>
+        </div>
+        <div class="result-review-basis"><b>判断と事実の比較</b><br>${esc(basisSentence)}<br>1〜3着に入った艇のカバー：${top3Coverage}/3。</div>
+        <div class="result-review-facts"><table><thead><tr><th>実着順</th><th>モーター2連率</th><th>展示タイム</th><th>平均ST</th><th>全国勝率</th></tr></thead><tbody>${factsRows || '<tr><td colspan="5">事実スナップショットなし</td></tr>'}</tbody></table></div>
+        <details class="result-review-lines"><summary>買い目ごとの答え合わせ（${fmt(lines.length)}点）</summary>${lineRows || '<div class="empty">買い目詳細なし</div>'}</details>
+      </div>
+    </article>`;
+  }
+
+  function renderEditorialResultReviews(data) {
+    const host = $("editorialResultReviews");
+    if (!host) return;
+    const rows = (Array.isArray(data?.recentEvents) ? data.recentEvents : [])
+      .filter((event) => event?.eventName === "result_settled" && Number(event?.payload?.result_review?.version) === 1)
+      .slice(0, 8);
+    host.innerHTML = rows.length
+      ? rows.map(resultReviewCard).join("")
+      : '<div class="panel empty">まだ新しいレース答え合わせデータはありません。機能反映後の3連単AIR BETが確定すると、ここへ自動で追加されます。</div>';
+  }
+
   function renderEditorialLab(data) {
     const archive = $("editorialArchive");
     const behaviorHost = $("editorialBehavior");
@@ -154,6 +249,7 @@
     planHost.innerHTML = plans.length
       ? plans.map(item => `<div class="mini-row"><span>${esc(labels[item.plan] || String(item.plan || "").toUpperCase())}</span><div class="mini-track"><div class="mini-bar" style="width:${(Number(item.count) || 0) / max * 100}%"></div></div><b>${fmt(item.count)}</b></div>`).join("")
       : '<div class="empty">旧プラン選択データはまだありません。</div>';
+    renderEditorialResultReviews(data);
   }
 
   function renderFunnel(data) {
@@ -238,7 +334,7 @@
   function safePayload(payload) {
     if (!payload || typeof payload !== "object") return "";
     const useful = {};
-    const keys = ["plan", "source", "stake_b", "intended_yen", "urge_before", "urge_after", "reason", "confidence", "result_status", "line_count", "bet_types", "display_mode"];
+    const keys = ["plan", "source", "stake_b", "intended_yen", "urge_before", "urge_after", "reason", "confidence", "result_status", "result_combo", "line_count", "bet_types", "display_mode", "result_review"];
     for (const key of keys) if (payload[key] !== undefined) useful[key] = payload[key];
     const text = JSON.stringify(useful, null, 2);
     return text === "{}" ? "" : text;
