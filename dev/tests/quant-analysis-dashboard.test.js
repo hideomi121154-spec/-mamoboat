@@ -25,6 +25,8 @@ assert.match(dashboard, /③ 資金の耐久力/);
 assert.match(dashboard, /④ 詳細データ/);
 assert.match(dashboard, /分析トップに戻る/);
 assert.match(dashboard, /ヘルプ \/ 見方ガイド/);
+assert.match(dashboard, /function setPresentationMode\(/);
+assert.match(dashboard, /shellIntro\.hidden = dashboardVisible/);
 assert.match(dashboard, /data-analysis-dashboard-slider/);
 assert.match(dashboard, /MAMO_QUANT_ANALYSIS_BASIC/);
 assert.match(dashboard, /MAMO_QUANT_ODDS_PERFORMANCE/);
