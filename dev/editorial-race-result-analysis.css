@@ -1,0 +1,95 @@
+/* MAMO BOAT — Editorial race result analysis */
+#editorialRaceResultAnalysis{padding:0 0 110px;background:#f3f7fb;min-height:100vh;color:#082b4a}
+.era-picker{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:#eaf2f8;border-bottom:1px solid #d7e2eb}
+.era-picker label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900}
+.era-picker select{max-width:56vw;border:1px solid #c7d7e4;border-radius:9px;background:#fff;padding:8px 10px;color:#082b4a;font:inherit}
+.era-picker small{color:#6b7f90;font-size:9px}
+.era-shell{padding:0 6px 18px}
+.era-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 18px;border-radius:0 0 12px 12px;background:linear-gradient(135deg,#062b4b,#0b4b70);color:#fff;box-shadow:0 4px 14px rgba(8,43,74,.16)}
+.era-topbar h1{margin:0;font-size:24px;letter-spacing:-.03em}
+.era-topbar p{margin:4px 0 0;color:#d8e8f2;font-size:10px}
+.era-race-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.era-race-meta b,.era-race-meta span{font-size:10px}
+.era-race-meta button{border:1px solid rgba(255,255,255,.65);border-radius:8px;background:transparent;color:#fff;padding:8px 12px;font-weight:900}
+.era-grid{display:grid;gap:8px;margin-top:8px}
+.era-overview-grid{grid-template-columns:minmax(0,1.9fr) minmax(260px,1fr)}
+.era-build-grid{grid-template-columns:minmax(0,2.1fr) minmax(270px,.9fr)}
+.era-detail-grid{grid-template-columns:minmax(0,2.5fr) minmax(230px,.7fr)}
+.era-facts-grid{grid-template-columns:minmax(0,2.25fr) minmax(280px,.75fr)}
+.era-panel{background:#fff;border:1px solid #d7e4ee;border-radius:12px;box-shadow:0 4px 14px rgba(7,37,64,.05);overflow:hidden}
+.era-panel h2{display:flex;align-items:center;gap:7px;margin:0;padding:10px 13px;border-bottom:1px solid #dde7ee;font-size:16px;line-height:1.2}
+.era-panel h2>span{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#e42a91;color:#fff;font-size:17px}
+.era-panel h2 small{margin-left:4px;color:#657a8c;font-size:9px;font-weight:800}
+.era-summary-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:10px}
+.era-summary-cards>div{min-width:0;padding:12px 8px;border-radius:10px;background:#eef5fb;text-align:center}
+.era-summary-cards>div.accent{background:#e9fbf0}
+.era-summary-cards small{display:block;color:#567086;font-size:9px}
+.era-summary-cards strong{display:block;margin-top:6px;font-size:18px;white-space:nowrap}
+.era-summary-cards .accent strong,.era-summary-cards .positive{color:#17933c}
+.era-summary-cards .negative{color:#d33c49}
+.era-result h2{justify-content:flex-start}
+.era-finish-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px}
+.era-finish-card{text-align:center;padding:8px;border-radius:10px;background:#f4f8fb}
+.era-finish-card>span{display:block;font-size:10px;font-weight:1000}
+.era-finish-card>b{display:block;margin-top:5px;font-size:11px}
+.era-finish-card>small{display:block;color:#718292;font-size:8px}
+.era-lane{display:inline-grid;place-items:center;width:31px;height:31px;margin-top:6px;border-radius:7px;border:1px solid rgba(0,0,0,.12);font-weight:1000}
+.boat-1{background:#fff;color:#111}
+.boat-2{background:#171717;color:#fff}
+.boat-3{background:#e43b43;color:#fff}
+.boat-4{background:#2486e8;color:#fff}
+.boat-5{background:#ffd42a;color:#111}
+.boat-6{background:#2cb55a;color:#fff}
+.era-selfcheck{margin:10px 12px 0;padding:9px 11px;border-radius:9px;background:#f2f6f9;color:#496276;font-size:10px}
+.era-role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px}
+.era-role-card{border:1px solid #dce6ee;border-top:7px solid var(--role-accent);border-radius:10px;background:linear-gradient(#fff,#f7fbfd);overflow:hidden}
+.era-role-card header{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 9px;background:#f7fafc}
+.era-role-card header span{font-weight:1000;font-size:11px}
+.era-role-card header b{font-size:9px}
+.era-role-card header .match{color:#168d42}.era-role-card header .miss{color:#d13e4a}
+.era-role-boats{display:flex;flex-wrap:wrap;gap:6px;min-height:54px;padding:10px;align-items:center}
+.era-boat-chip{display:inline-flex;align-items:center;gap:2px;padding:5px 7px;border:1px solid #d4e0e8;border-radius:9px;background:#fff;font-size:9px;font-weight:900}
+.era-boat-chip>b{display:grid;place-items:center;width:24px;height:24px;border-radius:6px}
+.era-boat-chip.boat-1>b{border:1px solid #cfd7de}
+.era-boat-chip.focus{outline:2px solid #e42a91}
+.era-boat-chip em{margin-left:3px;color:#d21d78;font-size:7px;font-style:normal}
+.era-role-card p{margin:0;padding:8px 10px;border-top:1px solid #edf2f5;color:#637888;font-size:9px;line-height:1.45}
+.era-role-card footer{padding:8px 10px;border-top:1px solid #edf2f5;font-size:9px}
+.era-score dl,.era-overall dl{margin:0;padding:4px 12px 10px}
+.era-score dl>div,.era-overall dl>div{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid #e7edf2}
+.era-score dt,.era-overall dt{font-size:10px;font-weight:900}
+.era-score dd,.era-overall dd{margin:0;font-size:11px;font-weight:1000}
+.era-score dd.ok{color:#149340}.era-score dd.ng{color:#d53d4b}.era-score dd.strong{font-size:13px}
+.era-table-wrap{overflow:auto;-webkit-overflow-scrolling:touch}
+.era-table-wrap table{width:100%;min-width:720px;border-collapse:collapse}
+.era-table-wrap th,.era-table-wrap td{padding:7px 7px;border-right:1px solid #dfe8ef;border-bottom:1px solid #dfe8ef;text-align:center;font-size:9px;white-space:nowrap}
+.era-table-wrap th{background:#edf5fb;color:#173c5a;font-weight:1000}
+.era-table-wrap td small{display:block;color:#768a99;font-size:7px}
+.era-lines tbody tr.exact{background:#fff0f3}
+.era-status{display:inline-block;padding:4px 7px;border-radius:7px;font-weight:1000}.era-status.hit{background:#e82950;color:#fff}.era-status.miss{background:#eef2f5;color:#506575}
+.era-facts table{min-width:880px}
+.era-facts td:nth-child(n+3):nth-child(-n+6) b{display:block;font-size:10px}.era-facts td:nth-child(n+3):nth-child(-n+6) span{display:block;color:#7c8d99;font-size:7px}
+.era-focus-note{display:inline-block;padding:4px 7px;border-radius:999px;background:#fff0f5;color:#d21e68;font-weight:1000}
+.era-insights ul{display:grid;gap:8px;margin:0;padding:12px 15px;list-style:none}
+.era-insights li{position:relative;padding-left:24px;font-size:10px;line-height:1.55}
+.era-insights li::before{content:"✓";position:absolute;left:0;top:0;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#1ba34d;color:#fff;font-size:10px;font-weight:1000}
+.era-insights p{margin:0;padding:10px 14px;border-top:1px solid #e1e8ee;background:#f4f8fb;color:#617787;font-size:8px;line-height:1.6}
+.era-empty{margin:16px;padding:26px;border:1px solid #d7e4ee;border-top:7px solid #0d4f75;border-radius:16px;background:#fff;box-shadow:0 7px 20px rgba(7,37,64,.06)}
+.era-empty span{color:#d82473;font-size:9px;font-weight:1000;letter-spacing:.12em}.era-empty h1{margin:5px 0 8px;font-size:24px}.era-empty p{margin:0;color:#5d7384;font-size:11px;line-height:1.7}
+.era-muted{color:#718595;font-size:9px}
+
+@media(max-width:760px){
+  .era-picker{align-items:stretch;flex-direction:column}.era-picker label{justify-content:space-between}.era-picker select{max-width:68vw}
+  .era-topbar{align-items:flex-start;flex-direction:column;padding:12px 14px}.era-topbar h1{font-size:22px}.era-race-meta{justify-content:flex-start}
+  .era-overview-grid,.era-build-grid,.era-detail-grid,.era-facts-grid{grid-template-columns:1fr}
+  .era-summary-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .era-summary-cards>div:nth-last-child(-n+2){grid-column:span 1}
+  .era-role-grid{grid-template-columns:1fr}
+  .era-finish-card>b{font-size:10px}
+}
+@media(max-width:390px){
+  .era-summary-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .era-summary-cards>div.accent{grid-column:1/-1}
+  .era-summary-cards strong{font-size:16px}
+  .era-picker select{max-width:63vw}
+}
