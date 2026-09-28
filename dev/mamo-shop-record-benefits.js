@@ -102,8 +102,10 @@
   function renderSpecial() {
     const state = benefitState();
     let box = document.getElementById("mamoSpecialAnalysis");
+    const analysis = document.getElementById("analysis");
+    if (analysis?.dataset?.editorialPlaceholder === "1") { box?.remove(); return; }
     if (!state.claims["special-analysis"]) { box?.remove(); return; }
-    const host = document.getElementById("mamoAiSafeReport") || document.getElementById("analysisCards") || document.getElementById("analysis");
+    const host = document.getElementById("mamoAiSafeReport") || document.getElementById("analysisCards");
     if (!host) return;
     if (!box) {
       box = document.createElement("section");
