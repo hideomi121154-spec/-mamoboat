@@ -1733,88 +1733,88 @@ body { background: #e8dfd2; }
 }
 
 
-/* v4.0.4 — desktop density tuning.
+/* v4.0.5 — desktop density tuning v2.
    Keep mobile/tablet layouts untouched; reduce the visual scale only on wide PC screens. */
 @media (min-width: 1100px) {
   .app-shell {
-    max-width: 1150px;
-    padding-left: 82px;
+    max-width: 1000px;
+    padding-left: 72px;
   }
 
   .bottom-nav {
-    left: max(8px, calc((100vw - 1150px) / 2 + 8px));
-    width: 68px;
-    padding: 7px;
+    left: max(8px, calc((100vw - 1000px) / 2 + 8px));
+    width: 60px;
+    padding: 6px;
     gap: 4px;
   }
   .bottom-nav .nav {
-    min-height: 52px;
+    min-height: 48px;
   }
   .bottom-nav .nav b {
-    height: 20px;
-    font-size: 16px;
-    line-height: 20px;
+    height: 18px;
+    font-size: 15px;
+    line-height: 18px;
   }
   .bottom-nav .nav span {
-    font-size: 8px;
+    font-size: 7px;
   }
 
   body[data-screen="home"] main {
-    padding: 16px;
+    padding: 14px;
   }
   body[data-screen="home"] .home-masthead,
   body[data-screen="home"] .home-titlebar,
   body[data-screen="home"] .home-command {
-    margin-left: -16px;
-    margin-right: -16px;
+    margin-left: -14px;
+    margin-right: -14px;
   }
 
   body[data-screen="home"] .home-masthead {
-    height: 290px;
+    height: 240px;
   }
   body[data-screen="home"] .masthead-brand {
-    left: 22px;
-    top: 24px;
-    transform: scale(.92);
+    left: 18px;
+    top: 19px;
+    transform: scale(.84);
     transform-origin: top left;
   }
   body[data-screen="home"] .masthead-callout {
-    left: 22px;
-    top: 103px;
-    min-width: 116px;
-    padding: 8px 10px;
+    left: 18px;
+    top: 84px;
+    min-width: 108px;
+    padding: 7px 9px;
   }
   body[data-screen="home"] .masthead-callout span {
-    font-size: 10px;
+    font-size: 9px;
   }
   body[data-screen="home"] .masthead-callout strong {
-    font-size: 14px;
+    font-size: 12px;
   }
   body[data-screen="home"] .masthead-wallet {
-    left: 20px;
-    bottom: 18px;
-    width: 205px;
-    min-height: 72px;
-    padding: 10px 14px;
+    left: 18px;
+    bottom: 14px;
+    width: 180px;
+    min-height: 64px;
+    padding: 9px 12px;
   }
   body[data-screen="home"] .masthead-wallet > span {
-    font-size: 10px;
+    font-size: 9px;
   }
   body[data-screen="home"] .masthead-wallet > strong {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   body[data-screen="home"] .home-titlebar {
-    padding: 14px 18px 11px;
+    padding: 11px 16px 9px;
   }
   body[data-screen="home"] .home-titlebar h1 {
-    font-size: 48px;
+    font-size: 42px;
   }
   body[data-screen="home"] .home-date strong {
-    font-size: 12px;
+    font-size: 11px;
   }
   body[data-screen="home"] .home-date span {
-    margin-top: 6px;
-    font-size: 8px;
+    margin-top: 5px;
+    font-size: 7px;
   }
 }

@@ -372,7 +372,7 @@ const manifestSource = fs.readFileSync(
 const serviceWorkerSource = fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8");
 const stylesSource = fs.readFileSync(path.join(__dirname, "..", "styles.css"), "utf8");
 assert.match(indexSource, /<title>MAMO BOAT v4\.0\.1<\/title>/);
-assert.match(indexSource, /styles\.css\?v=20260928-4/);
+assert.match(indexSource, /styles\.css\?v=20260928-5/);
 assert.match(indexSource, /brand-theme\.css\?v=20260827-2/);
 assert.match(indexSource, /cast-ui\.js\?v=20260827-3/);
 assert.match(indexSource, /mamoru-hero\.webp/);
@@ -391,13 +391,13 @@ assert.match(indexSource, /<\/main>\s*<nav class="bottom-nav"/);
 assert.match(stylesSource, /@media \(max-width: 743px\)[\s\S]*?\.bottom-nav[\s\S]*?bottom: 0 !important/);
 assert.match(stylesSource, /\.bottom-nav[\s\S]*?transform: none !important/);
 assert.match(stylesSource, /FIRST VOYAGE magazine cover/);
-assert.match(stylesSource, /v4\.0\.4 — desktop density tuning/);
-assert.match(stylesSource, /@media \(min-width: 1100px\)[\s\S]*?max-width: 1150px/);
-assert.match(stylesSource, /body\[data-screen="home"\] \.home-masthead \{[\s\S]*?height: 290px/);
-assert.match(stylesSource, /body\[data-screen="home"\] \.home-titlebar h1 \{[\s\S]*?font-size: 48px/);
+assert.match(stylesSource, /v4\.0\.5 — desktop density tuning v2/);
+assert.match(stylesSource, /@media \(min-width: 1100px\)[\s\S]*?max-width: 1000px/);
+assert.match(stylesSource, /body\[data-screen="home"\] \.home-masthead \{[\s\S]*?height: 240px/);
+assert.match(stylesSource, /body\[data-screen="home"\] \.home-titlebar h1 \{[\s\S]*?font-size: 42px/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v532-desktop-home-density-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v533-desktop-home-density-v2-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
