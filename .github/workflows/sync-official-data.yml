@@ -127,13 +127,13 @@ jobs:
         run: |
           FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
           if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
-            # Results can arrive before the next 15-minute full sync. Capture the
-            # same race's beforeinfo/weather now so a settled Race Carte never has
-            # a result while environment remains "未保存".
+            # Keep the lightweight 10-minute run self-sufficient for the race
+            # currently approaching deadline. Missing racer/motor facts and
+            # beforeinfo are both refreshed, while completed previews are skipped.
             python scripts/enrich_race_carte_data.py \
-              --max-race-cards 0 \
-              --max-previews 24 \
-              --max-results 24 \
+              --max-race-cards 16 \
+              --max-previews 16 \
+              --max-results 16 \
               --sleep 0.05
             exit 0
           fi
