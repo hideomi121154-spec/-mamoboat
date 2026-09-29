@@ -1,0 +1,199 @@
+/* MAMO BOAT — race fact summary v1 */
+.race-fact-card {
+  margin-top: 10px;
+  border: 1px solid #d8e3e9;
+  border-left: 5px solid #d9a321;
+  border-radius: 12px;
+  background: #fff;
+  color: #082b4a;
+  overflow: visible;
+  box-shadow: 0 5px 14px rgba(8, 43, 74, .06);
+}
+.race-fact-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e3ebef;
+}
+.race-fact-head > div { min-width: 0; }
+.race-fact-head b { display: block; font-size: 14px; font-weight: 1000; }
+.race-fact-head small { display: block; margin-top: 2px; color: #718692; font-size: 8px; font-weight: 800; }
+.race-fact-more { position: static; flex: 0 0 auto; }
+.race-fact-more > summary {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #082b4a;
+  color: #fff;
+  cursor: pointer;
+  list-style: none;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+.race-fact-more > summary::-webkit-details-marker { display: none; }
+.race-fact-more[open] > summary { background: #d9a321; color: #082b4a; }
+.race-fact-more[open] > summary::before { content: "−"; }
+.race-fact-more[open] > summary { font-size: 0; }
+.race-fact-more[open] > summary::before { font-size: 20px; }
+.race-fact-more-panel {
+  position: absolute;
+  z-index: 25;
+  top: 46px;
+  left: 8px;
+  right: 8px;
+  padding: 10px;
+  border: 1px solid #cad9e1;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(8, 43, 74, .18);
+}
+.race-fact-more-panel > b { display: block; margin-bottom: 7px; font-size: 11px; }
+.race-fact-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  padding: 7px 9px;
+  border-bottom: 1px solid #edf2f5;
+}
+.race-fact-row:last-of-type { border-bottom: 0; }
+.race-fact-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: #082b4a;
+}
+.race-fact-label > span {
+  color: #1678c8;
+  font-size: 13px;
+  font-weight: 1000;
+}
+.race-fact-label b {
+  font-size: 10px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.race-fact-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+.race-fact-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-height: 28px;
+  padding: 4px 6px;
+  border: 1px solid #d7e2e8;
+  border-radius: 8px;
+  background: #f8fbfd;
+  color: #082b4a;
+}
+.race-fact-chip small {
+  color: #687f8d;
+  font-size: 7px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.race-fact-chip b {
+  font-size: 10px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.race-fact-chip.tone-blue { border-color: #b8d8f2; background: #eef7ff; }
+.race-fact-chip.tone-navy { border-color: #c7d4de; background: #eef3f6; }
+.race-fact-chip.tone-green { border-color: #b6ddcf; background: #effaf6; color: #126447; }
+.race-fact-chip.tone-warn { border-color: #edc3c6; background: #fff2f3; color: #b21f2a; }
+.race-fact-chip.tone-muted { color: #788b96; background: #f2f5f6; }
+.race-fact-note {
+  grid-column: 2;
+  margin-top: -2px;
+  color: #7a8c96;
+  font-size: 7px;
+  line-height: 1.35;
+}
+.race-fact-summary-row {
+  background: #fffaf0;
+}
+.race-fact-summary-row p {
+  margin: 0;
+  color: #173c5b;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.5;
+}
+.race-fact-source {
+  margin: 0;
+  padding: 6px 9px 8px;
+  color: #7b8e99;
+  font-size: 7px;
+  line-height: 1.4;
+}
+.race-fact-detail-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.race-fact-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+.race-fact-table th,
+.race-fact-table td {
+  padding: 6px 5px;
+  border-bottom: 1px solid #e5edf1;
+  text-align: center;
+  white-space: nowrap;
+}
+.race-fact-table th:first-child { text-align: left; }
+.race-fact-boat {
+  display: inline-block;
+  min-width: 34px;
+  margin-right: 4px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: #eef3f6;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 1000;
+}
+
+@media (max-width: 743px) {
+  .race-fact-card {
+    margin-top: 8px;
+    border-radius: 10px;
+  }
+  .race-fact-head {
+    min-height: 44px;
+    padding: 6px 8px;
+  }
+  .race-fact-row {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 5px;
+    padding: 6px 7px;
+  }
+  .race-fact-label b { font-size: 9px; }
+  .race-fact-chip {
+    min-height: 25px;
+    padding: 3px 5px;
+  }
+  .race-fact-chip small { font-size: 6.5px; }
+  .race-fact-chip b { font-size: 9px; }
+  .race-fact-summary-row p { font-size: 8.5px; }
+}
+
+/* Keep the 20-point odds grid as the priority while odds mode is open. */
+#raceView.mamo-odds-active .race-fact-card {
+  display: none !important;
+}
