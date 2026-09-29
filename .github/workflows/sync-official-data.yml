@@ -38,7 +38,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       TZ: Asia/Tokyo
     steps:
@@ -131,9 +131,9 @@ jobs:
             # currently approaching deadline. Missing racer/motor facts and
             # beforeinfo are both refreshed, while completed previews are skipped.
             python scripts/enrich_race_carte_data.py \
-              --max-race-cards 16 \
-              --max-previews 16 \
-              --max-results 16 \
+              --max-race-cards 12 \
+              --max-previews 12 \
+              --max-results 8 \
               --sleep 0.05
             exit 0
           fi
@@ -141,7 +141,14 @@ jobs:
             TARGET_DATE="$(TZ=Asia/Tokyo date -d yesterday +%F)"
             export TARGET_DATE
           fi
-          python scripts/enrich_race_carte_data.py
+          # Keep the full sync bounded. Upcoming races are already sorted first
+          # by enrich_race_carte_data.py, so fewer requests still cover the race
+          # a user is about to bet while avoiding a 15-minute publish timeout.
+          python scripts/enrich_race_carte_data.py \
+            --max-race-cards 16 \
+            --max-previews 12 \
+            --max-results 8 \
+            --sleep 0.05
 
       - name: Attach kimarite before publish
         continue-on-error: true
@@ -153,12 +160,12 @@ jobs:
           # このステップは Commit validated JSON より前に実行するため、
           # 「結果だけ公開済み / 決まり手は後待ち」の中間状態をGitHub Pagesへ出さない。
           if [ -n "$TARGET_DATE" ]; then
-            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 96 --sleep 0.03
+            python scripts/repair_kimarite.py --date "$TARGET_DATE" --max-races 32 --sleep 0.03
           elif [ "$SCHEDULE" = "35 15,20 * * *" ]; then
             YESTERDAY_JST="$(TZ=Asia/Tokyo date -d yesterday +%F)"
-            python scripts/repair_kimarite.py --date "$YESTERDAY_JST" --max-races 96 --sleep 0.03
+            python scripts/repair_kimarite.py --date "$YESTERDAY_JST" --max-races 32 --sleep 0.03
           else
-            python scripts/repair_kimarite.py --max-races 96 --sleep 0.03
+            python scripts/repair_kimarite.py --max-races 32 --sleep 0.03
           fi
 
       - name: Mirror official data into dev
