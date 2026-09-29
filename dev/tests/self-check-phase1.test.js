@@ -49,6 +49,6 @@ for (const asset of [
   assert.ok(html.includes(asset), `index must load ${asset}`);
   assert.ok(sw.includes(asset), `service worker must deliver ${asset}`);
 }
-assert.match(sw, /mamoboat-v535-odds-four-column-cards-dev/, "PWA cache namespace must be bumped");
+assert.match(sw, /mamoboat-v536-odds-expanded-grid-dev/, "PWA cache namespace must be bumped");
 
 console.log("SELF CHECK Phase 1 ownership and PWA delivery contract: OK");
