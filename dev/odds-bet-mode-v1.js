@@ -192,22 +192,40 @@
   function renderList(list) {
     const added = new Set(addedTrifectaLines().map(lineComboKey));
     const combos = axisCombos(axisBoat, axisPosition);
-    const rows = combos.map((combo) => {
+    const cards = combos.map((combo, index) => {
       const key = comboKey(combo);
       const isAdded = added.has(key);
-      const row = element("div", "mamo-odds-row");
-      row.append(combinationCell(combo));
       const odds = oddsNumber(oddsValues?.[key]);
-      row.append(element("strong", "mamo-odds-value", odds ? `${odds.toFixed(1)}倍` : "—"));
-      const action = element("button", isAdded ? "is-added" : "", isAdded ? "削除" : "＋追加");
-      action.type = "button";
-      if (isAdded) action.dataset.oddsRemove = key;
-      else action.dataset.oddsAdd = key;
-      action.disabled = busy || (!isAdded && !odds);
-      row.append(action);
-      return row;
+      const card = element(
+        "button",
+        `mamo-odds-row mamo-odds-card${isAdded ? " is-added" : ""}`
+      );
+      card.type = "button";
+      card.dataset.oddsKey = key;
+      card.dataset.oddsRank = String(index + 1);
+      if (isAdded) card.dataset.oddsRemove = key;
+      else card.dataset.oddsAdd = key;
+      card.disabled = busy || (!isAdded && !odds);
+      card.setAttribute("aria-pressed", String(isAdded));
+      card.setAttribute(
+        "aria-label",
+        `${combo.join("→")} ${odds ? `${odds.toFixed(1)}倍` : "オッズ未取得"} ${isAdded ? "選択解除" : "追加"}`
+      );
+
+      const rank = element("span", "mamo-odds-rank", String(index + 1));
+      rank.setAttribute("aria-hidden", "true");
+      const state = element("span", "mamo-odds-card-state", isAdded ? "✓" : "");
+      state.setAttribute("aria-hidden", "true");
+
+      card.append(
+        rank,
+        combinationCell(combo),
+        element("strong", "mamo-odds-value", odds ? `${odds.toFixed(1)}倍` : "—"),
+        state
+      );
+      return card;
     });
-    list.replaceChildren(...rows);
+    list.replaceChildren(...cards);
   }
 
   function renderSummary(summary) {
