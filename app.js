@@ -2718,7 +2718,7 @@ const reference = liveValue != null
     const target = $("membershipPanel");
     if (!target) return;
     if (target.dataset.planUiReady === "true") return;
-    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3 id="membershipCurrentTitle"></h3><b id="membershipCurrentPrice"></b><p>有料化前のPILOTです。決済はまだ発生しません。価格を見たうえで「使いたい」を選ぶと、有料化の申込意向として匿名集計します。</p></div>
+    target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3 id="membershipCurrentTitle"></h3><b id="membershipCurrentPrice"></b><p>PILOT版では決済されません。価格を見たうえで「使いたい」を選ぶと、有料化の申込意向として匿名集計します。</p></div>
       <div class="membership-points membership-selectable" role="group" aria-label="PILOTプラン">
         <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>0円 / AIR BET・基本記録・安全介入</span></button>
         <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="openPaidPlanIntent('bronze','membership_panel')"><b>BRONZE</b><span>390円/月 / 朝刊・前期間比較・基本グラフ</span></button>
