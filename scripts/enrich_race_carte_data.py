@@ -314,6 +314,47 @@ def close_dt(race: dict[str, Any]) -> datetime | None:
         return None
 
 
+def minutes_to_close(race: dict[str, Any], now: datetime) -> float | None:
+    close = close_dt(race)
+    if not close:
+        return None
+    return (close - now).total_seconds() / 60
+
+
+def target_priority(item: tuple[str, dict[str, Any]], now: datetime) -> tuple[int, float]:
+    """Prioritize upcoming races before recently closed/background races.
+
+    A race the user can still AIR BET must never lose its slot merely because
+    many already-closed races are numerically closer to the current time.
+    """
+    delta = minutes_to_close(item[1], now)
+    if delta is None:
+        return (4, float("inf"))
+    if 0 <= delta <= 90:
+        return (0, delta)
+    if -35 <= delta < 0:
+        return (1, abs(delta))
+    if delta > 90:
+        return (2, delta)
+    return (3, abs(delta))
+
+
+def has_preview_snapshot(race: dict[str, Any]) -> bool:
+    """Return True after all six official exhibition rows were captured."""
+    entries = race.get("entries") or []
+    if not entries:
+        return False
+    source = race.get("carteSource") or {}
+    try:
+        parsed = int(source.get("previewParsedRacers") or 0)
+    except (TypeError, ValueError):
+        parsed = 0
+    return (
+        parsed == len(entries)
+        and all(entry.get("exhibitionTime") is not None for entry in entries)
+    )
+
+
 def has_static_stats(race: dict[str, Any]) -> bool:
     entries = race.get("entries") or []
     return bool(entries) and all(
@@ -345,10 +386,11 @@ def main() -> int:
             if race.get("entries"):
                 races.append((code, race))
 
-    # Static racer/motor stats: prioritize races nearest to the current time and
-    # keep previously enriched values to avoid repeatedly hitting the official site.
+    # Static racer/motor stats: upcoming races get first priority. Previously,
+    # absolute-time sorting could let already-closed races consume the request
+    # budget and leave a currently selectable race stuck on "取得待ち".
     static_targets = [(code, race) for code, race in races if not has_static_stats(race)]
-    static_targets.sort(key=lambda item: abs(((close_dt(item[1]) or now) - now).total_seconds()))
+    static_targets.sort(key=lambda item: target_priority(item, now))
 
     changed = False
     race_card_done = 0
@@ -360,17 +402,17 @@ def main() -> int:
             print(f"race-card enrichment failed {code}-{race.get('number')}R: {exc}")
         time.sleep(max(0.0, args.sleep))
 
-    # Dynamic preview/weather: only around the betting window, so these values
-    # reflect the race conditions users actually saw near AIR BET time.
+    # Dynamic preview/weather: only around the betting window. Fully captured
+    # exhibition snapshots are final, so do not re-download them every run.
+    # This keeps the 10-minute lightweight job short enough to avoid a queue.
     preview_targets: list[tuple[str, dict[str, Any]]] = []
     for code, race in races:
-        close = close_dt(race)
-        if not close:
+        delta = minutes_to_close(race, now)
+        if delta is None:
             continue
-        delta = (close - now).total_seconds() / 60
-        if -35 <= delta <= 75:
+        if -35 <= delta <= 75 and not has_preview_snapshot(race):
             preview_targets.append((code, race))
-    preview_targets.sort(key=lambda item: abs(((close_dt(item[1]) or now) - now).total_seconds()))
+    preview_targets.sort(key=lambda item: target_priority(item, now))
 
     preview_done = 0
     for code, race in preview_targets[: max(0, args.max_previews)]:
@@ -395,7 +437,7 @@ def main() -> int:
 
     source = payload.setdefault("source", {})
     source["raceCarteEnrichment"] = "BOAT RACE official pcexpect/beforeinfo/raceresult"
-    source["raceCarteEnrichmentPolicy"] = "static stats cached; preview near close; kimarite after settlement"
+    source["raceCarteEnrichmentPolicy"] = "upcoming-first static stats; final preview cached near close; kimarite after settlement"
     payload["raceCarteEnrichedAt"] = now.isoformat()
 
     if changed:
