@@ -8,6 +8,7 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+import enrich_race_carte_data as enrichment  # noqa: E402
 import race_carte_official_v2 as parser  # noqa: E402
 from bs4 import BeautifulSoup  # noqa: E402
 
@@ -146,6 +147,25 @@ class RaceCarteOfficialParserTest(unittest.TestCase):
             "airTemperature": 28.0,
             "waterTemperature": 28.0,
         })
+
+
+    def test_upcoming_race_is_prioritized_before_recently_closed_race(self):
+        now = enrichment.datetime.fromisoformat("2026-09-29T15:35:00+09:00")
+        upcoming = ("15", {"number": 4, "closeTime": "2026-09-29T16:34:00+09:00"})
+        closed = ("04", {"number": 10, "closeTime": "2026-09-29T15:30:00+09:00"})
+        targets = [closed, upcoming]
+        targets.sort(key=lambda item: enrichment.target_priority(item, now))
+        self.assertEqual(targets[0], upcoming)
+
+    def test_complete_preview_snapshot_is_not_considered_missing(self):
+        race = race_fixture()
+        race["carteSource"] = {"previewParsedRacers": 6}
+        for entry, expected in zip(race["entries"], RACERS):
+            entry["exhibitionTime"] = expected[-1]
+        self.assertTrue(enrichment.has_preview_snapshot(race))
+
+        race["entries"][0].pop("exhibitionTime")
+        self.assertFalse(enrichment.has_preview_snapshot(race))
 
 
 if __name__ == "__main__":
