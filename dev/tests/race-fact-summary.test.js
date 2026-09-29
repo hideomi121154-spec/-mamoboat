@@ -28,6 +28,10 @@ const html = api.render({
 });
 
 assert.match(html, /事実まとめ/);
+assert.match(html, /<details class="race-fact-disclosure">/);
+assert.match(html, /class="race-fact-quick"/);
+assert.match(html, /class="race-fact-toggle"[^>]*>＋</);
+assert.doesNotMatch(html, /<details class="race-fact-disclosure"\s+open/);
 assert.match(html, /選手情報/);
 assert.match(html, /場所の特徴/);
 assert.match(html, /モーター/);
@@ -66,12 +70,14 @@ assert.match(app, /carteSource:\s*raceItem\.carteSource/);
 assert.match(app, /race-racer-details race-racer-details-source/);
 assert.match(app, /factSummary \? `\$\{factSummary\}\$\{legacyEntries\}` : legacyEntries/);
 assert.match(css, /\.race-racer-details-source\s*\{[\s\S]{0,80}display:\s*none !important/);
+assert.match(css, /@media \(max-width: 743px\)[\s\S]*?\.race-fact-head\s*\{[\s\S]{0,180}min-height:\s*82px/);
+assert.match(css, /\.race-fact-disclosure\[open\][\s\S]{0,120}\.race-fact-toggle/);
 assert.match(css, /#raceView\.mamo-odds-active \.race-fact-card\s*\{[\s\S]{0,80}display:\s*none !important/);
-assert.match(index, /race-fact-summary\.css\?v=20260929-3/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-4/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-4[\s\S]*app\.js\?v=20260929-2/);
-assert.match(sw, /mamoboat-v541-race-fact-summary-links-dev/);
-assert.match(sw, /race-fact-summary\.css\?v=20260929-3/);
-assert.match(sw, /race-fact-summary\.js\?v=20260929-4/);
+assert.match(index, /race-fact-summary\.css\?v=20260929-4/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-5/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-5[\s\S]*app\.js\?v=20260929-2/);
+assert.match(sw, /mamoboat-v542-race-fact-summary-compact-dev/);
+assert.match(sw, /race-fact-summary\.css\?v=20260929-4/);
+assert.match(sw, /race-fact-summary\.js\?v=20260929-5/);
 
 console.log("race fact summary regression contract: OK");
