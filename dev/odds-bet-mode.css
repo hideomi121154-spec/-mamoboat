@@ -369,3 +369,49 @@
   }
 }
 
+/* Mobile odds active-state owner.
+ * Use an explicit raceView class instead of relying only on :has(), so iPhone
+ * always collapses the lower racer/source card while odds mode is open.
+ * Five grid rows share the actual remaining height; no minimum row height may
+ * push row 5 underneath the summary.
+ */
+@media (max-width: 430px) {
+  #raceView.mamo-odds-active .race-racer-details,
+  #raceView.mamo-odds-active .source-note {
+    display: none !important;
+  }
+
+  #raceView.mamo-odds-active > .raceboard {
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #raceView.mamo-odds-active > .betdesk {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 5px !important;
+    overflow: hidden !important;
+  }
+
+  #raceView.mamo-odds-active #builder.mamo-odds-bet-mode,
+  #raceView.mamo-odds-active .mamo-odds-shell,
+  #raceView.mamo-odds-active .mamo-odds-list {
+    min-height: 0 !important;
+  }
+
+  #raceView.mamo-odds-active .mamo-odds-list {
+    flex: 1 1 0 !important;
+    grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+    overflow: hidden !important;
+  }
+
+  #raceView.mamo-odds-active .mamo-odds-row.mamo-odds-card {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+}
