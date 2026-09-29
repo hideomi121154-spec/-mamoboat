@@ -22,8 +22,8 @@
 // Previous review ticket scroll cache: mamoboat-v508-review-ticket-scroll-dev
 // Previous allocation scroll cache: mamoboat-v509-allocation-results-scroll-dev
 // Previous odds UI CSS: odds-bet-mode.css?v=20260912-2
-// Previous odds 2-column UI CSS: odds-bet-mode.css?v=20260929-1
-// Previous odds UI script: odds-bet-mode-v1.js?v=20260929-1
+// Previous odds 2-column UI CSS: odds-bet-mode.css?v=20260912-3
+// Previous odds UI script: odds-bet-mode-v1.js?v=20260912-1
 // Previous odds compact controls cache: mamoboat-v510-odds-compact-controls-dev
 // Previous odds reference sync cache: mamoboat-v511-odds-reference-sync-dev
 // Previous allocation keypad cache: mamoboat-v512-allocation-keypad-height-dev
