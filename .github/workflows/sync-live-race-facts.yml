@@ -1,0 +1,76 @@
+name: Sync live race facts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/build_live_race_facts.py"
+      - ".github/workflows/sync-live-race-facts.yml"
+  schedule:
+    # JST daytime/evening: refresh the user-facing race fact overlay every 5 minutes.
+    # Avoid :00 to reduce GitHub Actions peak-time delay.
+    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 0-14,21-23 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mamoboat-live-race-facts
+  cancel-in-progress: true
+
+jobs:
+  sync-live-facts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      TZ: Asia/Tokyo
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install parser dependency
+        run: python -m pip install beautifulsoup4
+
+      - name: Validate live overlay builder
+        run: |
+          python -m py_compile scripts/build_live_race_facts.py
+          python -m py_compile scripts/enrich_race_carte_data.py
+          python -m py_compile scripts/race_carte_official_v2.py
+
+      - name: Build live race fact overlay
+        run: python scripts/build_live_race_facts.py
+
+      - name: Mirror live facts into dev
+        run: |
+          mkdir -p dev/data
+          cp data/live-race-facts.json dev/data/live-race-facts.json
+
+      - name: Commit live overlay
+        run: |
+          git config user.name "mamoboat-live-facts-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/live-race-facts.json dev/data/live-race-facts.json
+          if git diff --cached --quiet; then
+            echo "No live fact changes"
+            exit 0
+          fi
+          git commit -m "Update live BOAT RACE facts"
+          for attempt in 1 2 3 4; do
+            echo "Push attempt ${attempt}/4"
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "Live fact push failed after 4 attempts"
+          exit 1
