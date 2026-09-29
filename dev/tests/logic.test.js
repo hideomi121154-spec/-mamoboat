@@ -397,7 +397,7 @@ assert.match(stylesSource, /body\[data-screen="home"\] \.home-masthead \{[\s\S]*
 assert.match(stylesSource, /body\[data-screen="home"\] \.home-titlebar h1 \{[\s\S]*?font-size: 42px/);
 assert.equal(JSON.parse(manifestSource).name, "MAMO BOAT");
 assert.equal(JSON.parse(manifestSource).short_name, "MAMO BOAT");
-assert.match(serviceWorkerSource, /mamoboat-v540-race-fact-summary-final-dev/);
+assert.match(serviceWorkerSource, /mamoboat-v541-race-fact-summary-links-dev/);
 
 const pilotConfigSource = fs.readFileSync(path.join(__dirname, "..", "pilot-config.js"), "utf8");
 assert.match(pilotConfigSource, /enabled:\s*true/);
