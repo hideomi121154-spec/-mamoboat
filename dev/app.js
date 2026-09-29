@@ -1510,7 +1510,7 @@
         onclick="selectRace(${item.number})">${item.number}R</button>`;
     }).join("");
     const entriesList = Array.isArray(raceItem.entries) ? raceItem.entries : [];
-    const entries = entriesList.length === 6
+    const legacyEntries = entriesList.length === 6
       ? `<details class="race-racer-details"><summary><span><b>選手詳細</b><small>級別・支部・年齢・体重・M/B</small></span><span class="race-racer-count">6艇</span></summary><div class="boats">${entriesList.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く"
       data-racer-class="${esc(entry.class || "")}" data-motor-number="${esc(entry.motorNumber || "")}" data-boat-part="${esc(entry.boatPart || "")}">
       <div class="num b${entry.boatNumber}">${entry.boatNumber}</div>
@@ -1518,6 +1518,18 @@
       <div><b class="tiny">${esc(entry.class || "")}</b><div class="tiny">${entry.motorNumber ? `M${entry.motorNumber}` : ""}${entry.boatPart ? ` / B${entry.boatPart}` : ""}</div><div class="racerlinkhint">公式情報 ↗</div></div>
     </a>`).join("")}</div></details>`
       : '<div class="notice warn">番組表を取得中です。6艇の公式データが揃うまでAIR BETを停止しています。</div>';
+    const factSummary = entriesList.length === 6
+      ? window.MAMO_RACE_FACT_SUMMARY?.render?.({
+          venueCode: venueItem.code,
+          venueName: venueItem.name,
+          raceNumber: raceItem.number,
+          closeTime: raceItem.closeTime,
+          entries: entriesList,
+          environment: raceItem.environment || {},
+          carteSource: raceItem.carteSource || {},
+        }) || ""
+      : "";
+    const entries = factSummary || legacyEntries;
     const open = closeState(raceItem);
     lastRenderedRaceOpen = open;
     const raceStatus = raceStatusInfo(raceItem);
