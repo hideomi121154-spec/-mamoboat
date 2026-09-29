@@ -23,5 +23,14 @@ class WorkflowScheduleTests(unittest.TestCase):
         self.assertIn("continue-on-error: true", fallback_step)
 
 
+    def test_fast_sync_refreshes_missing_race_facts(self):
+        source = WORKFLOW.read_text(encoding="utf-8")
+        start = source.index("- name: Enrich race carte official details")
+        end = source.index("- name: Attach kimarite before publish", start)
+        enrich_step = source[start:end]
+        self.assertIn("--max-race-cards 16", enrich_step)
+        self.assertNotIn("--max-race-cards 0", enrich_step)
+
+
 if __name__ == "__main__":
     unittest.main()
