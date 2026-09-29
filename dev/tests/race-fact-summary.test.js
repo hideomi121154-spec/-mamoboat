@@ -10,7 +10,7 @@ const api = global.window.MAMO_RACE_FACT_SUMMARY;
 assert.ok(api && typeof api.render === "function");
 
 const entries = [
-  { boatNumber: 1, name: "A", class: "A1", motorNumber: 11, localWinRate: 7.21, averageStart: 0.14, flyingCount: 0, lateCount: 0, motor2Rate: 30.0, motor3Rate: 45.0, exhibitionTime: 6.72 },
+  { boatNumber: 1, racerNumber: 1001, name: "A", class: "A1", motorNumber: 11, localWinRate: 7.21, averageStart: 0.14, flyingCount: 0, lateCount: 0, motor2Rate: 30.0, motor3Rate: 45.0, exhibitionTime: 6.72 },
   { boatNumber: 2, name: "B", class: "A2", motorNumber: 22, localWinRate: 5.10, averageStart: 0.16, flyingCount: 1, lateCount: 0, motor2Rate: 28.0, motor3Rate: 44.0, exhibitionTime: 6.75 },
   { boatNumber: 3, name: "C", class: "B1", motorNumber: 33, localWinRate: 4.90, averageStart: 0.12, flyingCount: 0, lateCount: 0, motor2Rate: 31.0, motor3Rate: 46.0, exhibitionTime: 6.70 },
   { boatNumber: 4, name: "D", class: "A2", motorNumber: 44, localWinRate: 5.80, averageStart: 0.15, flyingCount: 0, lateCount: 0, motor2Rate: 35.0, motor3Rate: 50.0, exhibitionTime: 6.69 },
@@ -41,7 +41,7 @@ assert.match(html, /北2m/);
 assert.match(html, /波/);
 assert.match(html, /1cm/);
 assert.match(html, /race-fact-racer-link/);
-assert.match(html, /boatrace\.jp\/owpc\/pc\/data\/racersearch\/profile\?toban=1/);
+assert.match(html, /boatrace\.jp\/owpc\/pc\/data\/racersearch\/profile\?toban=1001/);
 assert.doesNotMatch(html, /本命|おすすめ|買うべき|狙い目/);
 
 const pendingEntries = entries.map(({ exhibitionTime, ...entry }) => entry);
