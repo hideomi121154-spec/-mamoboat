@@ -194,6 +194,38 @@
     </div>`;
   }
 
+  function quickStrip(entries) {
+    const local = topFact(entries, "localWinRate", "desc");
+    const motor = topFact(entries, "motor2Rate", "desc");
+    const exhibition = topFact(entries, "exhibitionTime", "asc");
+    const facts = [];
+
+    if (local) {
+      facts.push(chip(
+        `${boat(local.entry)}号艇 当地`,
+        fmt(local.value, 2),
+        "blue"
+      ));
+    }
+    if (motor) {
+      facts.push(chip(
+        `${boat(motor.entry)}号艇 M${motor.entry?.motorNumber || "—"}`,
+        `2連 ${fmt(motor.value, 1)}%`,
+        "green"
+      ));
+    }
+    if (exhibition) {
+      facts.push(chip(
+        `${boat(exhibition.entry)}号艇 展示`,
+        fmt(exhibition.value, 2),
+        "navy"
+      ));
+    } else {
+      facts.push(chip("展示", "待ち", "muted"));
+    }
+    return facts.slice(0, 3).join("");
+  }
+
   function detailTable(entries) {
     const rows = (entries || []).map((entry) => {
       const penalties = [
@@ -228,22 +260,28 @@
     if (entries.length !== 6) return "";
 
     return `<section class="race-fact-card" aria-label="レース事実まとめ">
-      <div class="race-fact-head">
-        <div><b>事実まとめ</b><small>公式データを見やすく整理</small></div>
-        <details class="race-fact-more">
-          <summary aria-label="事実まとめの詳細を開く">＋</summary>
-          <div class="race-fact-more-panel">
+      <details class="race-fact-disclosure">
+        <summary class="race-fact-head" aria-label="事実まとめの詳細を開く">
+          <div class="race-fact-title">
+            <b>事実まとめ</b>
+            <small>公式データを見やすく整理</small>
+          </div>
+          <span class="race-fact-toggle" aria-hidden="true">＋</span>
+          <div class="race-fact-quick">${quickStrip(entries)}</div>
+        </summary>
+        <div class="race-fact-expanded">
+          ${playerRow(entries)}
+          ${venueRow(context)}
+          ${motorRow(entries)}
+          ${exhibitionRow(entries, context.carteSource)}
+          ${summaryRow(entries)}
+          <div class="race-fact-detail">
             <b>6艇の詳細</b>
             ${detailTable(entries)}
           </div>
-        </details>
-      </div>
-      ${playerRow(entries)}
-      ${venueRow(context)}
-      ${motorRow(entries)}
-      ${exhibitionRow(entries, context.carteSource)}
-      ${summaryRow(entries)}
-      <p class="race-fact-source">事実表示のみ。予想・推奨ではありません。欠損データは「取得待ち」と表示します。</p>
+          <p class="race-fact-source">事実表示のみ。予想・推奨ではありません。欠損データは「取得待ち」と表示します。</p>
+        </div>
+      </details>
     </section>`;
   }
 
