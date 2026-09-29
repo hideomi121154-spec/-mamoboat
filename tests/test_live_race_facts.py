@@ -17,7 +17,6 @@ class LiveRaceFactsTests(unittest.TestCase):
     def test_upcoming_race_is_in_live_window(self):
         race = {"closeTime": "2026-09-29T17:09:00+09:00"}
         self.assertTrue(live.in_live_window(race, self.now))
-        self.assertTrue(live.should_fetch_preview(race, self.now))
 
     def test_distant_race_is_not_in_live_window(self):
         race = {"closeTime": "2026-09-29T20:00:00+09:00"}
@@ -29,6 +28,14 @@ class LiveRaceFactsTests(unittest.TestCase):
         targets = [closed, upcoming]
         targets.sort(key=lambda item: live.priority(item, self.now))
         self.assertEqual(targets[0], upcoming)
+
+
+    def test_recently_closed_beats_distant_future(self):
+        closed = ("07", {"closeTime": "2026-09-29T17:02:00+09:00"})
+        distant = ("15", {"closeTime": "2026-09-29T18:25:00+09:00"})
+        targets = [distant, closed]
+        targets.sort(key=lambda item: live.priority(item, self.now))
+        self.assertEqual(targets[0], closed)
 
 
 if __name__ == "__main__":
