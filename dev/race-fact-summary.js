@@ -141,12 +141,12 @@
     const fetchedAt = carteSource?.previewFetchedAt || "";
     const facts = [];
     if (exhibition) {
+      const count = ranked(entries, "exhibitionTime", "asc").length;
       facts.push(chip(
-        `展示トップ ${boat(exhibition.entry)}号艇`,
+        `${count === 6 ? "展示トップ" : "展示タイム"} ${boat(exhibition.entry)}号艇`,
         fmt(exhibition.value, 2),
         "blue"
       ));
-      const count = ranked(entries, "exhibitionTime", "asc").length;
       facts.push(chip("取得", `${count}/6艇`));
     } else {
       facts.push(chip("展示", "直前データ待ち", "muted"));
