@@ -34,6 +34,13 @@
 
   const boat = (entry) => Number(entry?.boatNumber) || 0;
 
+  function racerProfileUrl(racerNumber) {
+    const number = String(racerNumber || "").trim();
+    return number
+      ? `https://www.boatrace.jp/owpc/pc/data/racersearch/profile?toban=${encodeURIComponent(number)}`
+      : "";
+  }
+
   function ranked(entries, key, direction = "desc") {
     return (entries || [])
       .map((entry) => ({ entry, value: num(entry?.[key]) }))
@@ -193,8 +200,12 @@
         (num(entry.flyingCount) || 0) ? `F${num(entry.flyingCount)}` : "",
         (num(entry.lateCount) || 0) ? `L${num(entry.lateCount)}` : "",
       ].filter(Boolean).join("/");
+      const profile = racerProfileUrl(entry.racerNumber);
+      const name = profile
+        ? `<a class="race-fact-racer-link" href="${profile}" target="_blank" rel="noopener noreferrer">${esc(entry.name || "—")} ↗</a>`
+        : esc(entry.name || "—");
       return `<tr>
-        <th>${boatBadge(entry)} ${esc(entry.name || "")}</th>
+        <th>${boatBadge(entry)} ${name}</th>
         <td>${esc(entry.class || "—")}</td>
         <td>${fmt(entry.localWinRate, 2)}</td>
         <td>${fmt(entry.averageStart, 2)}</td>
