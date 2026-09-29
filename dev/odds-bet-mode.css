@@ -276,15 +276,16 @@
   #raceView .mamo-odds-total { font-size: 8px; }
 
   #raceView .mamo-odds-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-template-rows: repeat(5, minmax(46px, 1fr));
-    gap: 3px;
-    padding: 3px;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(5, minmax(52px, 1fr)) !important;
+    gap: 4px;
+    padding: 4px;
   }
   #raceView .mamo-odds-row.mamo-odds-card {
-    min-height: 46px;
+    min-height: 52px;
+    height: 100%;
     gap: 3px;
-    padding: 4px 2px 3px;
+    padding: 5px 2px 4px;
     border-radius: 8px;
   }
   #raceView .mamo-odds-rank {
@@ -299,12 +300,12 @@
   }
   #raceView .mamo-odds-combo { gap: 1px; }
   #raceView .mamo-odds-combo span {
-    width: 17px;
-    height: 17px;
-    font-size: 9px;
+    width: 19px;
+    height: 19px;
+    font-size: 10px;
   }
-  #raceView .mamo-odds-combo i { font-size: 7px; }
-  #raceView .mamo-odds-value { font-size: 11px; }
+  #raceView .mamo-odds-combo i { font-size: 8px; }
+  #raceView .mamo-odds-value { font-size: 12px; }
   #raceView .mamo-odds-summary {
     flex-basis: 38px;
     gap: 4px;
@@ -313,8 +314,32 @@
   #raceView .mamo-odds-summary span { font-size: 8px; }
   #raceView .mamo-odds-summary strong { font-size: 14px; }
 
+  /* Odds mode prioritizes the 20-card comparison area. The lower racer-detail
+     disclosure and reference note remain available in normal AIR BET, but are
+     removed here so their height is returned to the odds grid. */
+  body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView .race-racer-details,
+  body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView .source-note {
+    display: none !important;
+  }
+  body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView > .raceboard {
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
   body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView > .betdesk {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    margin-bottom: 0 !important;
     padding: 5px !important;
+    overflow: hidden !important;
+  }
+  body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #builder.mamo-odds-bet-mode,
+  body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView .mamo-odds-shell {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
   }
   body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView .mamo-bet-selector-row {
     flex: 0 0 36px !important;
@@ -334,6 +359,7 @@
   body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView .air-bet-selection-footer {
     flex: 0 0 42px !important;
     min-height: 42px !important;
+    margin: 3px 0 0 !important;
     gap: 6px;
   }
   body[data-screen="race"]:has(#builder.mamo-odds-bet-mode) #raceView #reviewBetButton {
