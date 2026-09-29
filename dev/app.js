@@ -1511,7 +1511,7 @@
     }).join("");
     const entriesList = Array.isArray(raceItem.entries) ? raceItem.entries : [];
     const legacyEntries = entriesList.length === 6
-      ? `<details class="race-racer-details"><summary><span><b>選手詳細</b><small>級別・支部・年齢・体重・M/B</small></span><span class="race-racer-count">6艇</span></summary><div class="boats">${entriesList.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く"
+      ? `<details class="race-racer-details race-racer-details-source"><summary><span><b>選手詳細</b><small>級別・支部・年齢・体重・M/B</small></span><span class="race-racer-count">6艇</span></summary><div class="boats">${entriesList.map((entry) => `<a class="boat" href="${racerUrl(entry.racerNumber)}" target="_blank" rel="noopener" aria-label="${esc(entry.name)}選手の公式情報を開く"
       data-racer-class="${esc(entry.class || "")}" data-motor-number="${esc(entry.motorNumber || "")}" data-boat-part="${esc(entry.boatPart || "")}">
       <div class="num b${entry.boatNumber}">${entry.boatNumber}</div>
       <div><b>${esc(entry.name)}</b><div class="tiny">${entry.racerNumber} ${esc(entry.branch || "")}${entry.age ? ` / ${entry.age}歳` : ""}${entry.weight ? ` / ${entry.weight}kg` : ""}</div></div>
@@ -1529,7 +1529,7 @@
           carteSource: raceItem.carteSource || {},
         }) || ""
       : "";
-    const entries = factSummary || legacyEntries;
+    const entries = factSummary ? `${factSummary}${legacyEntries}` : legacyEntries;
     const open = closeState(raceItem);
     lastRenderedRaceOpen = open;
     const raceStatus = raceStatusInfo(raceItem);
