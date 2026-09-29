@@ -66,10 +66,10 @@ assert.match(app, /factSummary \? `\$\{factSummary\}\$\{legacyEntries\}` : legac
 assert.match(css, /\.race-racer-details-source\s*\{[\s\S]{0,80}display:\s*none !important/);
 assert.match(css, /#raceView\.mamo-odds-active \.race-fact-card\s*\{[\s\S]{0,80}display:\s*none !important/);
 assert.match(index, /race-fact-summary\.css\?v=20260929-2/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-2/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-2[\s\S]*app\.js\?v=20260929-1/);
-assert.match(sw, /mamoboat-v539-race-fact-summary-source-dev/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-3/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-3[\s\S]*app\.js\?v=20260929-1/);
+assert.match(sw, /mamoboat-v540-race-fact-summary-final-dev/);
 assert.match(sw, /race-fact-summary\.css\?v=20260929-2/);
-assert.match(sw, /race-fact-summary\.js\?v=20260929-2/);
+assert.match(sw, /race-fact-summary\.js\?v=20260929-3/);
 
 console.log("race fact summary regression contract: OK");
