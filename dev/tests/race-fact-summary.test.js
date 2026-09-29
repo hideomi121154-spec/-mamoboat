@@ -40,6 +40,8 @@ assert.match(html, /尼崎/);
 assert.match(html, /北2m/);
 assert.match(html, /波/);
 assert.match(html, /1cm/);
+assert.match(html, /race-fact-racer-link/);
+assert.match(html, /boatrace\.jp\/owpc\/pc\/data\/racersearch\/profile\?toban=1/);
 assert.doesNotMatch(html, /本命|おすすめ|買うべき|狙い目/);
 
 const pendingEntries = entries.map(({ exhibitionTime, ...entry }) => entry);
@@ -65,11 +67,11 @@ assert.match(app, /race-racer-details race-racer-details-source/);
 assert.match(app, /factSummary \? `\$\{factSummary\}\$\{legacyEntries\}` : legacyEntries/);
 assert.match(css, /\.race-racer-details-source\s*\{[\s\S]{0,80}display:\s*none !important/);
 assert.match(css, /#raceView\.mamo-odds-active \.race-fact-card\s*\{[\s\S]{0,80}display:\s*none !important/);
-assert.match(index, /race-fact-summary\.css\?v=20260929-2/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-3/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-3[\s\S]*app\.js\?v=20260929-2/);
-assert.match(sw, /mamoboat-v540-race-fact-summary-final-dev/);
-assert.match(sw, /race-fact-summary\.css\?v=20260929-2/);
-assert.match(sw, /race-fact-summary\.js\?v=20260929-3/);
+assert.match(index, /race-fact-summary\.css\?v=20260929-3/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-4/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-4[\s\S]*app\.js\?v=20260929-2/);
+assert.match(sw, /mamoboat-v541-race-fact-summary-links-dev/);
+assert.match(sw, /race-fact-summary\.css\?v=20260929-3/);
+assert.match(sw, /race-fact-summary\.js\?v=20260929-4/);
 
 console.log("race fact summary regression contract: OK");
