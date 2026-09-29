@@ -58,6 +58,18 @@ jobs:
           SCHEDULE: ${{ github.event.schedule }}
         run: |
           FAST_RESULTS_CRON="7,17,27,37,47,57 0-14,21-23 * * *"
+
+          # A code/config push should publish the current race quickly instead of
+          # spending several minutes backfilling the whole day before commit.
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ -z "$TARGET_DATE" ]; then
+            python scripts/enrich_race_carte_data.py \
+              --max-race-cards 8 \
+              --max-previews 8 \
+              --max-results 0 \
+              --sleep 0.02
+            exit 0
+          fi
+
           if [ "$SCHEDULE" = "$FAST_RESULTS_CRON" ]; then
             # Fast-result runs also capture Race Carte weather/preview data and kimarite.
             # BeautifulSoup is the only third-party dependency needed there.
@@ -158,6 +170,13 @@ jobs:
           TARGET_DATE: ${{ inputs.target_date }}
           SCHEDULE: ${{ github.event.schedule }}
         run: |
+          # Push-triggered repair runs are for publishing live race facts quickly.
+          # Kimarite is handled by scheduled runs and must not block this commit.
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ -z "$TARGET_DATE" ]; then
+            echo "Push run: skip kimarite backfill for fast publish"
+            exit 0
+          fi
+
           # 決まり手は着順・払戻と同じ公開単位にする。
           # このステップは Commit validated JSON より前に実行するため、
           # 「結果だけ公開済み / 決まり手は後待ち」の中間状態をGitHub Pagesへ出さない。
