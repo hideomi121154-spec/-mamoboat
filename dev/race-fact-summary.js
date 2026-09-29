@@ -26,6 +26,12 @@
     return n.toFixed(digits).replace(/\.00$/, "");
   };
 
+  const compact1 = (value) => {
+    const n = num(value);
+    if (n == null) return "—";
+    return Number.isInteger(n) ? String(n) : n.toFixed(1);
+  };
+
   const boat = (entry) => Number(entry?.boatNumber) || 0;
 
   function ranked(entries, key, direction = "desc") {
@@ -92,11 +98,11 @@
     if (env.weather) facts.push(chip("天候", env.weather));
     const windSpeed = num(env.windSpeed);
     if (env.windDirection || windSpeed != null) {
-      const wind = `${env.windDirection ? esc(env.windDirection) : ""}${windSpeed != null ? `${fmt(windSpeed, 1)}m` : ""}`;
+      const wind = `${env.windDirection || ""}${windSpeed != null ? `${compact1(windSpeed)}m` : ""}`;
       facts.push(chip("風", wind || "—", "navy"));
     }
     const wave = num(env.waveHeight);
-    if (wave != null) facts.push(chip("波", `${fmt(wave, 1)}cm`));
+    if (wave != null) facts.push(chip("波", `${compact1(wave)}cm`));
     if (!facts.length) facts.push(chip("当日水面", "取得待ち", "muted"));
 
     return `<div class="race-fact-row">
