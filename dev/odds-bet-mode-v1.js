@@ -243,6 +243,7 @@
     const builder = document.getElementById("builder");
     if (!builder) return;
     builder.classList.add("mamo-odds-bet-mode");
+    document.getElementById("raceView")?.classList?.add("mamo-odds-active");
 
     const normalized = racerSnapshot.length === 6
       ? racerSnapshot
@@ -344,6 +345,7 @@
     fetchController = null;
     const builder = document.getElementById("builder");
     builder?.classList?.remove("mamo-odds-bet-mode");
+    document.getElementById("raceView")?.classList?.remove("mamo-odds-active");
   }
 
   function returnToNormalMode() {
