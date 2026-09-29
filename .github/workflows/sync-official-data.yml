@@ -33,7 +33,9 @@ permissions:
 
 concurrency:
   group: mamoboat-official-data-sync
-  cancel-in-progress: false
+  # Code/config fixes must not wait behind a stale long-running sync. Normal
+  # scheduled runs still queue rather than cancelling each other.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   sync:
