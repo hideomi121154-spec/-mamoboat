@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Build a lightweight live overlay for race facts shown in MAMO BOAT.
 
-This deliberately does not rewrite data/today.json. It enriches only races near
-their betting deadline and publishes data/live-race-facts.json, so user-facing
-facts are not blocked by the heavier full-day synchronization workflow.
+The full-day GitHub sync can be slow because BOAT RACE official pages sometimes
+throttle GitHub runner IPs. This live layer asks the existing Supabase edge
+network to fetch one official race at a time, then publishes only the races near
+their deadline.
 """
 from __future__ import annotations
 
@@ -13,13 +14,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-
-import enrich_race_carte_data as base
-import race_carte_official_v2 as official
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 JST = timezone(timedelta(hours=9))
 DATASET = Path("data/today.json")
 OUTPUT = Path("data/live-race-facts.json")
+EDGE_URL = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-race-facts"
+PUBLISHABLE_KEY = "sb_publishable_cexgWfIKzthZ1d6tLOH3_g_sWgcunHB"
 
 FACT_FIELDS = (
     "boatNumber",
@@ -88,41 +90,79 @@ def in_live_window(race: dict[str, Any], now: datetime) -> bool:
     return delta is not None and -30 <= delta <= 120
 
 
-def should_fetch_preview(race: dict[str, Any], now: datetime) -> bool:
-    delta = minutes_to_close(race, now)
-    return delta is not None and -30 <= delta <= 60
-
-
 def compact_entry(entry: dict[str, Any]) -> dict[str, Any]:
     return {key: entry.get(key) for key in FACT_FIELDS if entry.get(key) is not None}
 
 
-def fast_fetch_html(path: str, timeout: int = 12) -> str:
-    # The overlay runs frequently; fail fast rather than holding publication for
-    # a slow official response. The next 5-minute run will retry.
-    return base.fetch_html(path, timeout=min(timeout, 5))
+def merge_nonempty(target: dict[str, Any], source: dict[str, Any], fields: tuple[str, ...]) -> None:
+    for field in fields:
+        value = source.get(field)
+        if value is not None and value != "":
+            target[field] = value
+
+
+def fetch_edge_facts(date_text: str, venue_code: str, race_no: int) -> dict[str, Any]:
+    body = json.dumps({
+        "date": date_text,
+        "venueCode": venue_code,
+        "raceNo": race_no,
+    }).encode("utf-8")
+    request = Request(
+        EDGE_URL,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "apikey": PUBLISHABLE_KEY,
+            "User-Agent": "MAMOBOAT-LiveFacts/1.0",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"edge fetch failed: {exc}") from exc
+    if not payload.get("ok"):
+        raise RuntimeError(f"edge returned error: {payload.get('error') or payload.get('status')}")
+    return payload
 
 
 def enrich_one(
     venue_code: str,
     race: dict[str, Any],
     date_text: str,
-    now: datetime,
+    _now: datetime,
 ) -> dict[str, Any]:
     current = copy.deepcopy(race)
     errors: list[str] = []
 
-    if not official.has_static_stats(current):
-        try:
-            official.enrich_race_card(current, date_text, venue_code)
-        except Exception as exc:  # best effort, preserve base facts
-            errors.append(f"raceCard:{exc}")
+    try:
+        live = fetch_edge_facts(date_text, venue_code, int(current.get("number") or 0))
+        live_entries = {
+            int(entry.get("boatNumber") or 0): entry
+            for entry in live.get("entries") or []
+        }
+        for entry in current.get("entries") or []:
+            live_entry = live_entries.get(int(entry.get("boatNumber") or 0))
+            if live_entry:
+                merge_nonempty(entry, live_entry, FACT_FIELDS)
 
-    if should_fetch_preview(current, now):
-        try:
-            official.enrich_preview(current, date_text, venue_code)
-        except Exception as exc:  # best effort, preserve base facts
-            errors.append(f"preview:{exc}")
+        if isinstance(live.get("environment"), dict):
+            current["environment"] = {
+                **(current.get("environment") or {}),
+                **live["environment"],
+            }
+        if isinstance(live.get("carteSource"), dict):
+            current["carteSource"] = {
+                **(current.get("carteSource") or {}),
+                **live["carteSource"],
+            }
+
+        if live.get("status") not in {"available", "partial"}:
+            errors.append(f"edgeStatus:{live.get('status')}")
+    except Exception as exc:  # best effort, preserve base facts
+        errors.append(str(exc))
 
     result = {
         "venueCode": venue_code,
@@ -170,13 +210,12 @@ def build_overlay(payload: dict[str, Any], now: datetime, max_races: int = 18) -
     ))
 
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "date": date_text,
         "generatedAt": now.isoformat(),
         "source": {
             "type": "official-live-overlay",
-            "raceCard": official.RACE_CARD_SOURCE,
-            "preview": official.PREVIEW_SOURCE,
+            "transport": "supabase-edge",
         },
         "races": races,
     }
@@ -188,20 +227,16 @@ def main() -> int:
         return 0
 
     payload = json.loads(DATASET.read_text(encoding="utf-8"))
-    now = jst_now()
-
-    # Make the validated parser use a shorter network timeout for this live layer.
-    official.fetch_html = fast_fetch_html
-
-    overlay = build_overlay(payload, now)
+    overlay = build_overlay(payload, jst_now())
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(
         json.dumps(overlay, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    errors = sum(1 for race in overlay["races"] if race.get("warnings"))
     print(
         f"live race facts date={overlay['date']} races={len(overlay['races'])} "
-        f"generatedAt={overlay['generatedAt']}"
+        f"errors={errors} generatedAt={overlay['generatedAt']}"
     )
     return 0
 
