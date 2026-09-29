@@ -76,13 +76,15 @@ def priority(item: tuple[str, dict[str, Any]], now: datetime) -> tuple[int, floa
     delta = minutes_to_close(item[1], now)
     if delta is None:
         return (4, float("inf"))
-    if 0 <= delta <= 120:
+    if 0 <= delta <= 60:
         return (0, delta)
     if -30 <= delta < 0:
         return (1, abs(delta))
-    if delta > 120:
+    if 60 < delta <= 120:
         return (2, delta)
-    return (3, abs(delta))
+    if delta > 120:
+        return (3, delta)
+    return (4, abs(delta))
 
 
 def in_live_window(race: dict[str, Any], now: datetime) -> bool:
@@ -177,7 +179,7 @@ def enrich_one(
     return result
 
 
-def build_overlay(payload: dict[str, Any], now: datetime, max_races: int = 18) -> dict[str, Any]:
+def build_overlay(payload: dict[str, Any], now: datetime, max_races: int = 24) -> dict[str, Any]:
     date_text = str(payload.get("date") or now.date().isoformat())
     candidates: list[tuple[str, dict[str, Any]]] = []
     for venue in payload.get("venues") or []:
