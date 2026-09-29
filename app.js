@@ -772,6 +772,72 @@
     evaluateReward(record);
   }
 
+  const LIVE_RACE_FACT_FIELDS = Object.freeze([
+    "nationalWinRate", "national2Rate", "national3Rate",
+    "localWinRate", "local2Rate", "local3Rate",
+    "averageStart", "flyingCount", "lateCount",
+    "motorNumber", "motor2Rate", "motor3Rate",
+    "boatPart", "boat2Rate", "boat3Rate", "exhibitionTime",
+  ]);
+
+  async function fetchLiveRaceFacts(date, force = false) {
+    if (date !== C.jstDate()) return null;
+    const basePath = "data/live-race-facts.json";
+    const path = force ? `${basePath}?refresh=${Date.now()}` : basePath;
+    try {
+      const response = await fetch(path, { cache: "no-store" });
+      if (!response.ok) return null;
+      const overlay = await response.json();
+      if (overlay?.date !== date || !Array.isArray(overlay?.races)) return null;
+      return overlay;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function applyLiveRaceFacts(dataset, overlay) {
+    if (!dataset || !overlay || overlay.date !== dataset.date) return dataset;
+    const venueMap = new Map(
+      (dataset.venues || []).map((venueItem) => [String(venueItem.code || "").padStart(2, "0"), venueItem])
+    );
+
+    for (const liveRace of overlay.races || []) {
+      const venueItem = venueMap.get(String(liveRace.venueCode || "").padStart(2, "0"));
+      if (!venueItem) continue;
+      const raceItem = (venueItem.races || []).find(
+        (item) => Number(item.number) === Number(liveRace.raceNumber)
+      );
+      if (!raceItem) continue;
+
+      if (liveRace.environment && typeof liveRace.environment === "object") {
+        raceItem.environment = Object.assign({}, raceItem.environment || {}, liveRace.environment);
+      }
+      if (liveRace.carteSource && typeof liveRace.carteSource === "object") {
+        raceItem.carteSource = Object.assign({}, raceItem.carteSource || {}, liveRace.carteSource);
+      }
+
+      const entryMap = new Map(
+        (raceItem.entries || []).map((entry) => [Number(entry.boatNumber), entry])
+      );
+      for (const liveEntry of liveRace.entries || []) {
+        const entry = entryMap.get(Number(liveEntry.boatNumber));
+        if (!entry) continue;
+        for (const field of LIVE_RACE_FACT_FIELDS) {
+          const value = liveEntry[field];
+          if (value !== null && value !== undefined && value !== "") {
+            entry[field] = value;
+          }
+        }
+      }
+      raceItem.liveFactsAt = overlay.generatedAt || null;
+    }
+
+    dataset.source = Object.assign({}, dataset.source || {}, {
+      liveRaceFactsAt: overlay.generatedAt || null,
+    });
+    return dataset;
+  }
+
   async function fetchDataset(date, force = false) {
     const basePath = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;
     const path = force ? `${basePath}?refresh=${Date.now()}` : basePath;
@@ -780,6 +846,10 @@
     const dataset = await response.json();
     if (dataset.source?.type !== "official-lzh" || !C.validateDataset(dataset)) {
       throw new Error(`構造検証エラー ${path}`);
+    }
+    if (date === C.jstDate()) {
+      const liveFacts = await fetchLiveRaceFacts(date, force);
+      applyLiveRaceFacts(dataset, liveFacts);
     }
     return dataset;
   }
