@@ -53,6 +53,8 @@ jobs:
           node --check dev/bet-review-flow.js
           node --check dev/air-bet-review-delete-controls.js
           node --check dev/race-airbet-compact.js
+          node --check dev/race-fact-summary.js
+          node --check dev/tests/race-fact-summary.test.js
           node --check dev/odds-reference-odds-sync.js
           node --check dev/allocation-keypad-stability.js
           node --check dev/mamo-quant-analysis-shell.js
@@ -108,6 +110,7 @@ jobs:
           node tests/race-carte-data-flow.test.js
           node tests/record-card-ui.test.js
           node dev/tests/air-bet-racer-roster.test.js
+          node dev/tests/race-fact-summary.test.js
           node dev/tests/air-bet-allocation.test.js
           node dev/tests/air-bet-review-delete-controls.test.js
           node dev/tests/odds-bet-compact-ui.test.js
