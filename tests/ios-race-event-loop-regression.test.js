@@ -200,8 +200,8 @@ assert.match(styles, /\.air-bet-review-button \{ min-height: 56px;/);
 assert.match(styles, /\.mamo-bet-modal-back \{ width: 100%; min-height: 46px;/);
 
 // Racer table and official links stay available after removing action wrappers.
-assert.match(app, /<details class="race-racer-details">/);
-assert.doesNotMatch(app, /<details class="race-racer-details"\s+open/);
+assert.match(app, /<details class="race-racer-details(?: race-racer-details-source)?">/);
+assert.doesNotMatch(app, /<details class="race-racer-details(?: race-racer-details-source)?"\s+open/);
 assert.match(app, /data-racer-class=/);
 assert.match(app, /data-motor-number=/);
 assert.match(app, /data-boat-part=/);
