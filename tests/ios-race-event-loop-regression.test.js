@@ -217,7 +217,7 @@ assert.match(serviceWorker, /mamoboat-v494-airbet-allocation-dev/);
 assert.match(serviceWorker, /bet-review-flow\.js\?v=20260928-2/);
 assert.match(index, /air-bet-review-compact\.css\?v=20260928-2/);
 assert.match(index, /air-bet-review-delete-controls\.js\?v=20260928-1/);
-assert.match(serviceWorker, /mamoboat-v535-odds-four-column-cards-dev/);
+assert.match(serviceWorker, /mamoboat-v536-odds-expanded-grid-dev/);
 assert.match(serviceWorker, /air-bet-review-compact\.css\?v=20260928-2/);
 assert.match(serviceWorker, /air-bet-review-delete-controls\.js\?v=20260928-1/);
 assert.match(serviceWorker, /styles\.css\?v=20260928-5/);
