@@ -2849,6 +2849,7 @@ const reference = liveValue != null
   window.selectPilotPlan = (key) => {
     if (!PRESS_PLANS[key]) return;
     S.pressroom.plan = key;
+    if (document.body) document.body.dataset.mamoPlan = key;
     if (key === "free") {
       S.pressroom.morningEnabled = false;
       S.pressroom.weeklyEnabled = false;
