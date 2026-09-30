@@ -3609,6 +3609,11 @@ B的中: ${stats.virtualHits}件
     renderSettings();
   }
 
+  window.addEventListener("mamo:state-synced", () => {
+    S = load();
+    renderAll();
+  });
+
   trackEvent("app_opened", {
     returning_user: S.accepted === true,
     local_records: S.records.length,
