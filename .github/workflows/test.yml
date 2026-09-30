@@ -96,6 +96,8 @@ jobs:
           node --check dev/behavior-science.js
           node --check dev/decision-conflict-core.js
           node --check dev/decision-conflict-guard.js
+          node --check evals/evaluator.js
+          node --check evals/run-evals.js
           node --check tests/master-room.test.js
           node --check tests/mamokamo-asset.test.js
           python -m py_compile scripts/sync_official_data.py scripts/fallback_openapi.py scripts/build_live_race_facts.py tests/test_sync_transform.py tests/test_result_validation.py tests/test_fallback_openapi.py tests/test_live_race_facts.py tests/smoke_live_results.py
@@ -145,6 +147,9 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/record-today-search.test.js
           NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/air-bet-review-flow.test.js
           NODE_PATH="$RUNNER_TEMP/mamo-record-tests/node_modules" node tests/editorial-race-result-analysis.test.js
+
+      - name: Run MAMO automatic evals
+        run: node evals/run-evals.js
 
       - name: Run Python tests
         run: python -m unittest discover -s tests -v
