@@ -43,7 +43,7 @@ assert.doesNotMatch(css, /\.mamo-odds-axis\s/);
 
 assert.match(html, /odds-bet-mode\.css\?v=20260929-3/);
 assert.match(html, /odds-bet-mode-v1\.js\?v=20260929-2/);
-assert.match(sw, /mamoboat-v542-race-fact-summary-compact-dev/);
+assert.match(sw, /mamoboat-v543-wallet-sync-refresh-dev/);
 assert.match(sw, /odds-bet-mode\.css\?v=20260929-3/);
 assert.match(sw, /odds-bet-mode-v1\.js\?v=20260929-2/);
 
