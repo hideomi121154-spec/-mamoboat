@@ -411,7 +411,7 @@ assert.doesNotMatch(
   pilotConfigSource,
   /plan-(?:stable-controller|partial-update|selection-stable|click-stability|anchor-fix|system)|nav-stability|analysis-zoom-stability/
 );
-assert.match(pilotConfigSource, /device-sync\.js\?v=20260827-2/);
+assert.match(pilotConfigSource, /device-sync\.js\?v=20260930-3/);
 assert.match(deviceSyncSource, /const HANDOFF_SKIP_KEY = "mamoboat_handoff_skip_v2"/);
 assert.match(deviceSyncSource, /const ACCEPTED_KEY = "mamoboat_onboarding_accepted_v1"/);
 assert.match(deviceSyncSource, /function prepareFreshOnboarding\(\)/);
