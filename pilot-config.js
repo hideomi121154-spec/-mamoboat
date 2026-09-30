@@ -118,9 +118,7 @@ function installMamoPlanTierStyles() {
       --mamo-plan-lock: "SILVERで開放";
     }
 
-    body:not([data-mamo-plan="gold"]) #pressPaper,
-    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser {
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel {
       --mamo-plan-lock: "GOLDで開放";
     }
 
@@ -133,13 +131,12 @@ function installMamoPlanTierStyles() {
     body[data-mamo-plan="bronze"] #mamoBaselinePanel,
     body[data-mamo-plan="bronze"] #mamoTriggerPanel,
     body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary,
-    body:not([data-mamo-plan="gold"]) #pressPaper,
-    body:not([data-mamo-plan="gold"]) #mamoPressIntel,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser {
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel {
       position: relative !important;
       isolation: isolate;
       overflow: hidden !important;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
       color: transparent !important;
       text-shadow: none !important;
     }
@@ -153,9 +150,7 @@ function installMamoPlanTierStyles() {
     body[data-mamo-plan="bronze"] #mamoBaselinePanel > *,
     body[data-mamo-plan="bronze"] #mamoTriggerPanel > *,
     body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary > *,
-    body:not([data-mamo-plan="gold"]) #pressPaper > *,
-    body:not([data-mamo-plan="gold"]) #mamoPressIntel > *,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser > * {
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel > * {
       visibility: hidden !important;
     }
 
@@ -168,9 +163,7 @@ function installMamoPlanTierStyles() {
     body[data-mamo-plan="bronze"] #mamoBaselinePanel::before,
     body[data-mamo-plan="bronze"] #mamoTriggerPanel::before,
     body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::before,
-    body:not([data-mamo-plan="gold"]) #pressPaper::before,
-    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser::before {
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::before {
       content: "🔒  " var(--mamo-plan-title);
       position: absolute;
       z-index: 21;
@@ -195,9 +188,7 @@ function installMamoPlanTierStyles() {
     body[data-mamo-plan="bronze"] #mamoBaselinePanel::after,
     body[data-mamo-plan="bronze"] #mamoTriggerPanel::after,
     body[data-mamo-plan="bronze"] #mamoPeriodTriggerSummary::after,
-    body:not([data-mamo-plan="gold"]) #pressPaper::after,
-    body:not([data-mamo-plan="gold"]) #mamoPressIntel::after,
-    body:not([data-mamo-plan="gold"]) #homePressTeaser::after {
+    body:not([data-mamo-plan="gold"]) #mamoPressIntel::after {
       content: var(--mamo-plan-lock);
       position: absolute;
       z-index: 21;
@@ -217,8 +208,7 @@ function installMamoPlanTierStyles() {
       white-space: nowrap;
     }
 
-    body:not([data-mamo-plan="gold"]) .paper-tabs button {
-      pointer-events: none;
+    .paper-tabs button.locked {
       opacity: 0.62;
     }
   `;
