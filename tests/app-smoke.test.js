@@ -227,6 +227,9 @@ assert.match(elements.get("pressPaper").innerHTML, /MAMO朝刊/);
 assert.match(elements.get("pressPaper").innerHTML, /B的中後の「現金なら」/);
 assert.doesNotMatch(elements.get("pressPaper").innerHTML, /勝率|おすすめ艇|公式投票/);
 assert.match(elements.get("membershipPanel").innerHTML, /PILOT版では決済されません/);
+assert.match(elements.get("membershipPanel").innerHTML, /480円\/月/);
+assert.match(elements.get("membershipPanel").innerHTML, /880円\/月/);
+assert.match(elements.get("membershipPanel").innerHTML, /1,480円\/月/);
 assert.match(elements.get("homePressTeaser").innerHTML, /最新号を読む/);
 
 const stableTargets = ["pressPaper", "analysisCards", "analysisList", "membershipPanel"];
