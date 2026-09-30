@@ -121,6 +121,22 @@
     return counted ? total : null;
   }
 
+  function syncWalletDom(state) {
+    const derived = ledgerBalance(state?.ledger);
+    const balance = derived !== null ? derived : Number(state?.coins) || 0;
+    const formatted = Math.round(balance).toLocaleString("ja-JP");
+    const values = {
+      homeCoins: `${formatted}B`,
+      topCoins: `${formatted} B`,
+      coins: `${formatted} B`,
+    };
+    for (const [id, value] of Object.entries(values)) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    return balance;
+  }
+
   function isFresh(state) {
     if (!state) return true;
     const records = Array.isArray(state.records) ? state.records.length : 0;
@@ -227,8 +243,9 @@
 
       await request("POST", { state: stateForSync(merged) });
       writeLocal(LINKED_KEY, "1");
+      const syncedBalance = syncWalletDom(merged);
       setStatus("同期済み");
-      window.dispatchEvent(new CustomEvent("mamo:state-synced", { detail: { changed } }));
+      window.dispatchEvent(new CustomEvent("mamo:state-synced", { detail: { changed, coins: syncedBalance } }));
       return { ok: true, changed };
     } catch (error) {
       console.warn("端末同期に失敗しました", error);
