@@ -105,7 +105,7 @@ function evaluateOutput(input = {}) {
   const score = Math.max(0, 100 - penalty);
   const critical = violations.some((item) => item.severity === "critical");
   return {
-    pass: !critical && score >= 80,
+    pass: !critical && score >= 90,
     score,
     violations,
   };
