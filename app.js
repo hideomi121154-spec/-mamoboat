@@ -3099,6 +3099,14 @@ B的中後の「現金なら」強度7以上: ${fomo}件
     renderSettings();
   }
 
+  // device-sync.js writes the merged snapshot directly to localStorage.
+  // Refresh this module's in-memory state too, otherwise a later save can
+  // overwrite the freshly synchronized wallet/records with stale values.
+  window.addEventListener("mamo:state-synced", () => {
+    S = load();
+    renderAll();
+  });
+
   trackEvent("app_opened", {
     returning_user: S.accepted === true,
     local_records: S.records.length,
