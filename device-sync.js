@@ -56,11 +56,22 @@
     window.MAMO_RELEASE_SYNC_GATE?.();
   }
 
+  function stateForSync(state) {
+    const copy = structuredClone(state || {});
+    if (copy.pilot && typeof copy.pilot === "object") {
+      // Anonymous telemetry stays local / collector-only. It is not needed for
+      // Safari <-> PWA state sync and can make each POST unnecessarily large.
+      copy.pilot = { ...copy.pilot, events: [] };
+    }
+    return copy;
+  }
+
   async function request(method, body) {
     const t = token();
     if (!t) return null;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeoutMs = method === "POST" ? 20000 : 12000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const res = await fetch(ENDPOINT, {
         method,
@@ -158,13 +169,15 @@
     if (!state) return false;
     networkBusy = true;
     try {
-      await request("POST", { state });
+      await request("POST", { state: stateForSync(state) });
       writeLocal(LINKED_KEY, "1");
       setStatus("同期済み");
       return true;
     } catch (error) {
       console.warn("端末同期アップロードに失敗しました", error);
-      setStatus("同期できませんでした");
+      setStatus(error?.name === "AbortError"
+        ? "同期できませんでした（通信タイムアウト）"
+        : "同期できませんでした");
       return false;
     } finally {
       networkBusy = false;
@@ -197,14 +210,17 @@
         suppressUpload = false;
       }
 
-      await request("POST", { state: merged });
+      await request("POST", { state: stateForSync(merged) });
       writeLocal(LINKED_KEY, "1");
       setStatus("同期済み");
       window.dispatchEvent(new CustomEvent("mamo:state-synced", { detail: { changed } }));
       return { ok: true, changed };
     } catch (error) {
       console.warn("端末同期に失敗しました", error);
-      setStatus("同期できませんでした");
+      const message = error?.name === "AbortError"
+        ? "同期できませんでした（通信タイムアウト）"
+        : "同期できませんでした";
+      setStatus(message);
       return { ok: false, error: String(error) };
     } finally {
       networkBusy = false;
