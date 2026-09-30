@@ -2605,9 +2605,9 @@ const reference = liveValue != null
 
   const PRESS_PLANS = {
     free: { label: "FREE", name: "無料", rank: 0, price: "0円", priceYen: 0 },
-    bronze: { label: "BRONZE", name: "ブロンズ", rank: 1, price: "390円/月", priceYen: 390 },
-    silver: { label: "SILVER", name: "シルバー", rank: 2, price: "690円/月", priceYen: 690 },
-    gold: { label: "GOLD", name: "ゴールド", rank: 3, price: "1,190円/月", priceYen: 1190 },
+    bronze: { label: "BRONZE", name: "ブロンズ", rank: 1, price: "480円/月", priceYen: 480 },
+    silver: { label: "SILVER", name: "シルバー", rank: 2, price: "880円/月", priceYen: 880 },
+    gold: { label: "GOLD", name: "ゴールド", rank: 3, price: "1,480円/月", priceYen: 1480 },
   };
 
   const PRESS_PLAN_VALUE = {
@@ -2721,9 +2721,9 @@ const reference = liveValue != null
     target.innerHTML = `<div class="membership-current"><span>CURRENT PILOT PLAN</span><h3 id="membershipCurrentTitle"></h3><b id="membershipCurrentPrice"></b><p>PILOT版では決済されません。価格を見たうえで「使いたい」を選ぶと、有料化の申込意向として匿名集計します。</p></div>
       <div class="membership-points membership-selectable" role="group" aria-label="PILOTプラン">
         <button data-pilot-plan="free" type="button" aria-pressed="false" onclick="selectPilotPlan('free')"><b>FREE</b><span>0円 / AIR BET・基本記録・安全介入</span></button>
-        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="openPaidPlanIntent('bronze','membership_panel')"><b>BRONZE</b><span>390円/月 / 朝刊・前期間比較・基本グラフ</span></button>
-        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="openPaidPlanIntent('silver','membership_panel')"><b>SILVER</b><span>690円/月 / トリガー・個人ベースライン・週間分析</span></button>
-        <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="openPaidPlanIntent('gold','membership_panel')"><b>GOLD</b><span>1,190円/月 / 月刊・長期分析・深掘り取材</span></button>
+        <button data-pilot-plan="bronze" type="button" aria-pressed="false" onclick="openPaidPlanIntent('bronze','membership_panel')"><b>BRONZE</b><span>480円/月 / 朝刊・前期間比較・基本グラフ</span></button>
+        <button data-pilot-plan="silver" type="button" aria-pressed="false" onclick="openPaidPlanIntent('silver','membership_panel')"><b>SILVER</b><span>880円/月 / トリガー・個人ベースライン・週間分析</span></button>
+        <button data-pilot-plan="gold" type="button" aria-pressed="false" onclick="openPaidPlanIntent('gold','membership_panel')"><b>GOLD</b><span>1,480円/月 / 月刊・長期分析・深掘り取材</span></button>
       </div>
       <button id="membershipDeepInterview" class="btn secondary full membership-deep-action" type="button" onclick="openDeepInterview()">深掘りするテーマを選ぶ（GOLD）</button>
       <button class="btn primary full" type="button" onclick="openMembershipPlans('membership_panel')">料金プランを比較する</button>`;
