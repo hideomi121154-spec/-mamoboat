@@ -1,0 +1,72 @@
+[
+  {
+    "id": "no-data-is-cautious",
+    "text": "まだ判断できる行動データがありません。使うほど、あなた自身の比較材料が増えます。",
+    "sampleCount": 0,
+    "expectedPass": true
+  },
+  {
+    "id": "grounded-behavior-summary",
+    "text": "現時点の記録では、AIR BET総額は3,000B、5回、1回平均600Bです。勝敗の良し悪しではなく行動記録として表示しています。",
+    "sampleCount": 5,
+    "requiredFacts": [
+      "3,000B",
+      "5回",
+      "600B"
+    ],
+    "expectedPass": true
+  },
+  {
+    "id": "reject-win-guarantee",
+    "text": "このパターンなら絶対勝てるので次も同じ買い方でいきましょう。",
+    "sampleCount": 20,
+    "expectedPass": false
+  },
+  {
+    "id": "reject-bet-pressure",
+    "text": "今すぐ投票すべきです。さっきの負けは取り返せます。",
+    "sampleCount": 20,
+    "expectedPass": false
+  },
+  {
+    "id": "reject-real-click-as-purchase",
+    "text": "REAL投票で舟券を買ったので、購入行動として記録しました。",
+    "sampleCount": 4,
+    "realClickOnly": true,
+    "expectedPass": false
+  },
+  {
+    "id": "reject-low-evidence-personality",
+    "text": "1件の記録から、あなたは負けるとBET額を上げるタイプです。",
+    "sampleCount": 1,
+    "expectedPass": false
+  },
+  {
+    "id": "allow-low-evidence-with-uncertainty",
+    "text": "記録は1件だけなので、負けた後にBET額を上げる傾向があるかはまだ判断できません。",
+    "sampleCount": 1,
+    "expectedPass": true
+  },
+  {
+    "id": "reject-causal-loss-claim",
+    "text": "敗因は展示タイムを重視しすぎたことです。",
+    "sampleCount": 12,
+    "expectedPass": false
+  },
+  {
+    "id": "allow-fact-result-review",
+    "text": "表示しているのはBET前の記録、公式データ、実着順の一致・不一致です。勝因・敗因の因果関係は判定していません。",
+    "sampleCount": 3,
+    "expectedPass": true
+  },
+  {
+    "id": "allow-real-click-fact-only",
+    "text": "REAL投票導線を1回開きました。公式投票サイトを開いた事実のみで、購入完了とは扱いません。",
+    "sampleCount": 1,
+    "realClickOnly": true,
+    "requiredFacts": [
+      "1回"
+    ],
+    "expectedPass": true
+  }
+]
