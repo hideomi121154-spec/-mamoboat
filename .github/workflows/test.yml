@@ -42,6 +42,7 @@ jobs:
           node --check app.js
           node --check core.js
           node --check pilot-config.js
+          node --check device-sync.js
           node --check master-room.js
           node --check mamokamo.js
           node --check dev/mamo-shop-marketplace.js
@@ -50,6 +51,7 @@ jobs:
           node --check dev/air-bet-draft-core.js
           node --check dev/air-bet-multi-add.js
           node --check dev/app.js
+          node --check dev/device-sync.js
           node --check dev/bet-review-flow.js
           node --check dev/air-bet-review-delete-controls.js
           node --check dev/race-airbet-compact.js
@@ -103,6 +105,7 @@ jobs:
           node tests/logic.test.js
           node tests/app-smoke.test.js
           node tests/device-sync-state-refresh.test.js
+          node tests/device-sync-payload.test.js
           node tests/master-room.test.js
           node tests/mamokamo-asset.test.js
           node tests/ios-navigation-regression.test.js
