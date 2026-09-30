@@ -107,6 +107,20 @@
     return [...map.values()];
   }
 
+  function ledgerBalance(ledger) {
+    const items = Array.isArray(ledger) ? ledger : [];
+    if (!items.length) return null;
+    let total = 0;
+    let counted = 0;
+    for (const item of items) {
+      const amount = Number(item?.amount);
+      if (!Number.isFinite(amount)) continue;
+      total += amount;
+      counted += 1;
+    }
+    return counted ? total : null;
+  }
+
   function isFresh(state) {
     if (!state) return true;
     const records = Array.isArray(state.records) ? state.records.length : 0;
@@ -143,16 +157,17 @@
       feedback: mergeByKey(rp.feedback, lp.feedback, item => `${item.issueKey || ""}:${item.value || ""}:${item.at || ""}`),
     };
 
-    const localEstablished = !isFresh(local);
-    const remoteEstablished = !isFresh(remote);
-    if (remoteEstablished && !localEstablished) merged.coins = Number(remote.coins) || 0;
-    else if (localEstablished && !remoteEstablished) merged.coins = Number(local.coins) || 0;
-    else if (remoteEstablished && localEstablished) {
-      const rr = Array.isArray(remote.records) ? remote.records.length : 0;
-      const lr = Array.isArray(local.records) ? local.records.length : 0;
-      merged.coins = rr >= lr ? Number(remote.coins) || 0 : Number(local.coins) || 0;
+    const balanceFromLedger = ledgerBalance(merged.ledger);
+    if (balanceFromLedger !== null) {
+      // B balance is derived from the append-only ledger. Record counts must
+      // never decide which wallet value wins during Safari/PWA synchronization.
+      merged.coins = balanceFromLedger;
     } else {
-      merged.coins = Math.max(Number(remote.coins) || 0, Number(local.coins) || 0);
+      const localEstablished = !isFresh(local);
+      const remoteEstablished = !isFresh(remote);
+      if (remoteEstablished && !localEstablished) merged.coins = Number(remote.coins) || 0;
+      else if (localEstablished && !remoteEstablished) merged.coins = Number(local.coins) || 0;
+      else merged.coins = Math.max(Number(remote.coins) || 0, Number(local.coins) || 0);
     }
 
     merged.accepted = local.accepted === true || remote.accepted === true;
