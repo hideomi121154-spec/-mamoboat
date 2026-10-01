@@ -383,7 +383,7 @@ assert.match(indexSource, /id="pilotConsentOnboard"/);
 assert.doesNotMatch(indexSource, /onboard-(?:racer|cover)-tag/);
 assert.match(indexSource, /core\.js\?v=401/);
 assert.match(indexSource, /pilot-config\.js\?v=20260930-2/);
-assert.match(indexSource, /app\.js\?v=20261001-2/);
+assert.match(indexSource, /app\.js\?v=20260930-3/);
 assert.doesNotMatch(indexSource, /まもボート|Air Boat|v3\.9\.2|v=392/);
 assert.match(indexSource, /id="nav-analysis"[\s\S]*<span>編集部<\/span>/);
 assert.doesNotMatch(indexSource, /新聞の発行設定|id="pressPaper"|id="membershipPanel"/);
