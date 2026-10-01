@@ -23,6 +23,10 @@
   ];
   const PILOT_CONFIG = window.MAMOBOAT_PILOT || {};
   const COLLECTOR = PILOT_CONFIG.collector || {};
+  const LIVE_RACE_FACT_EDGE_URL = "https://mihicuoijitluvrufsoj.supabase.co/functions/v1/boatrace-race-facts";
+  const LIVE_RACE_FACT_EDGE_KEY = COLLECTOR.publishableKey || "sb_publishable_cexgWfIKzthZ1d6tLOH3_g_sWgcunHB";
+  const LIVE_RACE_FACT_DIRECT_WINDOW_MS = 120 * 60 * 1000;
+  const LIVE_RACE_FACT_DIRECT_GRACE_MS = 10 * 60 * 1000;
   const SESSION_ID = window.crypto?.randomUUID
     ? window.crypto.randomUUID()
     : `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -224,6 +228,8 @@
   let lastLoadAt = 0;
   let dataLoadPromise = null;
   let lastRenderedRaceOpen = null;
+  const liveRaceFactDirectCheckedAt = new Map();
+  const liveRaceFactDirectInFlight = new Map();
   let betType = "trifecta";
   let mode = "normal";
   let normal = [null, null, null];
@@ -955,6 +961,115 @@
     return dataset;
   }
 
+  function liveRaceFactRefreshInterval(raceItem, now = Date.now()) {
+    const close = raceItem?.closeTime ? new Date(raceItem.closeTime).getTime() : NaN;
+    if (!Number.isFinite(close)) return null;
+    const delta = close - now;
+    if (delta < -LIVE_RACE_FACT_DIRECT_GRACE_MS || delta > LIVE_RACE_FACT_DIRECT_WINDOW_MS) {
+      return null;
+    }
+    if (delta <= 10 * 60 * 1000) return 30 * 1000;
+    if (delta <= 45 * 60 * 1000) return 60 * 1000;
+    return 2 * 60 * 1000;
+  }
+
+  function directRaceFactOverlay(payload) {
+    if (!payload?.ok || !payload.date || !payload.venueCode || !payload.raceNo) return null;
+    return {
+      date: payload.date,
+      generatedAt: payload.checkedAt || new Date().toISOString(),
+      races: [{
+        venueCode: payload.venueCode,
+        raceNumber: Number(payload.raceNo),
+        entries: Array.isArray(payload.entries) ? payload.entries : [],
+        environment: payload.environment || {},
+        carteSource: payload.carteSource || {},
+      }],
+    };
+  }
+
+  async function refreshCurrentRaceFacts(force = false) {
+    if (!isFresh() || document.hidden) return false;
+    if ((document.body.dataset.screen || "home") !== "race") return false;
+
+    const venueItem = venue(S.venue);
+    const raceItem = race(venueItem?.code, S.raceNo);
+    if (!venueItem || !raceItem || (raceItem.entries || []).length !== 6) return false;
+
+    const interval = liveRaceFactRefreshInterval(raceItem);
+    if (interval == null) return false;
+
+    const key = `${DATA.date}:${String(venueItem.code).padStart(2, "0")}:${Number(raceItem.number)}`;
+    const now = Date.now();
+    const lastChecked = liveRaceFactDirectCheckedAt.get(key) || 0;
+    if (!force && now - lastChecked < interval) return false;
+    if (liveRaceFactDirectInFlight.has(key)) return liveRaceFactDirectInFlight.get(key);
+
+    const request = (async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      try {
+        const response = await fetch(LIVE_RACE_FACT_EDGE_URL, {
+          method: "POST",
+          cache: "no-store",
+          signal: controller.signal,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "apikey": LIVE_RACE_FACT_EDGE_KEY,
+          },
+          body: JSON.stringify({
+            date: DATA.date,
+            venueCode: String(venueItem.code).padStart(2, "0"),
+            raceNo: Number(raceItem.number),
+          }),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        const overlay = directRaceFactOverlay(payload);
+        if (!overlay) throw new Error(payload?.error || "invalid live race facts");
+        applyLiveRaceFacts(DATA, overlay);
+        liveRaceFactDirectCheckedAt.set(key, Date.now());
+
+        const stillCurrent = (document.body.dataset.screen || "home") === "race"
+          && String(S.venue).padStart(2, "0") === String(venueItem.code).padStart(2, "0")
+          && Number(S.raceNo) === Number(raceItem.number);
+        if (stillCurrent) renderRace();
+        return true;
+      } catch (error) {
+        liveRaceFactDirectCheckedAt.set(key, Date.now());
+        raceItem.liveFactsDirectErrorAt = new Date().toISOString();
+        console.warn("MAMO BOAT 直前公式データ取得に失敗しました。静的データを維持します。", error);
+        return false;
+      } finally {
+        clearTimeout(timer);
+        liveRaceFactDirectInFlight.delete(key);
+      }
+    })();
+
+    liveRaceFactDirectInFlight.set(key, request);
+    return request;
+  }
+
+  function liveRaceFactStatusHtml(raceItem) {
+    const close = raceItem?.closeTime ? new Date(raceItem.closeTime).getTime() : NaN;
+    if (!Number.isFinite(close)) return "";
+    const delta = close - Date.now();
+    if (delta > 45 * 60 * 1000 || delta < -LIVE_RACE_FACT_DIRECT_GRACE_MS) return "";
+
+    const checkedAt = raceItem.liveFactsAt || raceItem.carteSource?.previewFetchedAt || "";
+    if (!checkedAt) {
+      return '<div class="notice warn live-fact-status">直前公式データを確認中…</div>';
+    }
+    const checkedMs = new Date(checkedAt).getTime();
+    const label = timeText(checkedAt);
+    const age = Number.isFinite(checkedMs) ? Date.now() - checkedMs : Infinity;
+    if (age <= 3 * 60 * 1000) {
+      return `<div class="notice good live-fact-status">直前公式データ 最終確認 ${esc(label)}</div>`;
+    }
+    return `<div class="notice warn live-fact-status">直前公式データ 最終確認 ${esc(label)} / 再確認中…</div>`;
+  }
+
   async function fetchDataset(date, force = false) {
     const basePath = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;
     const path = force ? `${basePath}?refresh=${Date.now()}` : basePath;
@@ -1172,6 +1287,7 @@
       (item) => item.classList.toggle("active", item.id === `nav-${id}`)
     );
     renderCurrent(id);
+    if (id === "race") refreshCurrentRaceFacts(true);
     if (id === "venues") window.dispatchEvent(new CustomEvent("mamo:venues-opened"));
     trackEvent("screen_view", { destination: id }, {
       venueCode: S.venue,
@@ -1517,6 +1633,7 @@
     save();
     window.closeModal();
     renderRace();
+    refreshCurrentRaceFacts(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   window.jumpRace = (code, number) => {
@@ -1541,6 +1658,7 @@
     });
     save();
     renderRace();
+    refreshCurrentRaceFacts(true);
   };
 
   function closeState(raceItem) {
@@ -1620,6 +1738,7 @@
         <div class="tiny">電話投票締切予定 ${timeText(raceItem.closeTime)} ※変更される場合があります</div></div>
         <div id="raceStatusPanel" class="raceclock ${raceStatus.key}">${raceStatusHtml(raceItem)}</div></div>
         ${resultHtml(raceItem)}
+        ${liveRaceFactStatusHtml(raceItem)}
         <div class="officialmenu" style="margin-top:10px">
           <a class="officiallink" href="${officialUrl(venueItem.code, raceItem.number)}" target="_blank" rel="noopener noreferrer"><span>出走表</span><b>公式で確認 ↗</b></a>
           <a id="officialOddsMain" class="officiallink" href="${officialOddsUrl(venueItem.code, raceItem.number)}" target="_blank" rel="noopener noreferrer"><span>オッズ</span><b id="officialOddsMainLabel">公式3連単 ↗</b></a>
@@ -3625,6 +3744,7 @@ B的中: ${stats.virtualHits}件
   setInterval(() => {
     if (!document.hidden) {
       updateTimeDisplays();
+      refreshCurrentRaceFacts(false);
     }
   }, 10 * 1000);
  setInterval(() => {
@@ -3642,6 +3762,9 @@ B的中: ${stats.virtualHits}件
 
     if (Date.now() - lastLoadAt > 5 * 60 * 1000) {
       loadOfficialData();
+    }
+    if ((document.body.dataset.screen || "home") === "race") {
+      refreshCurrentRaceFacts(true);
     }
   } else {
     flushPilotEvents();
