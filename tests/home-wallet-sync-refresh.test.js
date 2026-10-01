@@ -12,8 +12,8 @@ for (const relative of ["device-sync.js", "dev/device-sync.js"]) {
 }
 
 const sw = fs.readFileSync(path.join(__dirname, "..", "dev", "sw.js"), "utf8");
-assert.match(sw, /mamoboat-v543-wallet-sync-refresh-dev/);
-assert.match(sw, /app\.js\?v=20260930-3/);
+assert.match(sw, /mamoboat-v544-live-race-facts-direct-refresh-dev/);
+assert.match(sw, /app\.js\?v=20261001-1/);
 assert.match(sw, /pilot-config\.js\?v=20260930-2/);
 assert.match(sw, /url\.pathname\.endsWith\("\/device-sync\.js"\)/);
 assert.match(sw, /url\.pathname\.endsWith\("\/app\.js"\)/);
