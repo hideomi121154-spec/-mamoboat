@@ -1110,6 +1110,9 @@
       lastLoadAt = Date.now();
       await settleAllPending();
       renderAfterBackgroundUpdate();
+      if ((document.body.dataset.screen || "home") === "race") {
+        refreshCurrentRaceFacts(true);
+      }
       return { ok: !dataError, error: dataError };
     })();
     try {
