@@ -25,7 +25,7 @@ test("editorial navigation remains visible while legacy editorial content stays 
   assert.doesNotMatch(html, /PRESS PILOT/);
   assert.match(html, /editorial-placeholder-guard\.js\?v=20260928-2/);
   assert.match(html, /editorial-race-result-analysis\.js\?v=20260928-1/);
-  assert.match(html, /editorial-race-result-analysis\.css\?v=20260928-1/);
+  assert.match(html, /editorial-race-result-analysis\.css\?v=20261001-1/);
   assert.match(guard, /#goldEditorialDesk/);
   assert.match(guard, /#mamoSpecialAnalysis/);
   assert.match(guard, /editorialPlaceholderCore/);
@@ -34,6 +34,10 @@ test("editorial navigation remains visible while legacy editorial content stays 
 
   assert.doesNotMatch(app, /if \(id === "analysis"\) id = "home";/);
   assert.match(app, /function renderAnalysis\(\) \{\s*if \(!\$\("analysisCards"\) \|\| !\$\("analysisList"\)\) return;/);
+  const editorialCss = fs.readFileSync(path.join(devRoot, "editorial-race-result-analysis.css"), "utf8");
+  assert.match(editorialCss, /\.era-boat-chip\{[^}]*color:#082b4a/);
+  assert.match(editorialCss, /\.era-boat-chip\.boat-2>b\{background:#171717;color:#fff\}/);
+  assert.match(editorialCss, /\.era-boat-chip\.boat-3>b\{background:#e43b43;color:#fff\}/);
   assert.match(styles, /\.bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(6,/s);
 });
 
