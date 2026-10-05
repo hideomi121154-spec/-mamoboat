@@ -81,8 +81,8 @@ assert.match(css, /\.race-fact-disclosure\[open\][\s\S]{0,120}\.race-fact-toggle
 assert.match(css, /#raceView\.mamo-odds-active \.race-fact-card\s*\{[\s\S]{0,80}display:\s*none !important/);
 assert.match(index, /race-fact-summary\.css\?v=20261001-1/);
 assert.match(index, /race-fact-summary\.js\?v=20260929-5/);
-assert.match(index, /race-fact-summary\.js\?v=20260929-5[\s\S]*app\.js\?v=20261001-2/);
-assert.match(sw, /mamoboat-v545-live-race-facts-direct-refresh-dev/);
+assert.match(index, /race-fact-summary\.js\?v=20260929-5[\s\S]*app\.js\?v=20261006-1/);
+assert.match(sw, /mamoboat-v546-today-dataset-fallback-dev/);
 assert.match(sw, /race-fact-summary\.css\?v=20261001-1/);
 assert.match(sw, /race-fact-summary\.js\?v=20260929-5/);
 
