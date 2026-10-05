@@ -1071,19 +1071,41 @@
   }
 
   async function fetchDataset(date, force = false) {
-    const basePath = date === C.jstDate() ? "data/today.json" : `data/${date}.json`;
-    const path = force ? `${basePath}?refresh=${Date.now()}` : basePath;
-    const response = await fetch(path, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status} ${path}`);
-    const dataset = await response.json();
-    if (dataset.source?.type !== "official-lzh" || !C.validateDataset(dataset)) {
-      throw new Error(`構造検証エラー ${path}`);
+    const current = date === C.jstDate();
+    const candidates = current
+      ? ["data/today.json", `data/${date}.json`]
+      : [`data/${date}.json`];
+    let lastError = null;
+
+    for (let index = 0; index < candidates.length; index += 1) {
+      const basePath = candidates[index];
+      const path = (force || current)
+        ? `${basePath}?refresh=${Date.now()}-${index}`
+        : basePath;
+      try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status} ${path}`);
+        const dataset = await response.json();
+        if (dataset.date !== date) {
+          throw new Error(`日付不一致 ${path}: expected=${date} actual=${dataset.date || "unknown"}`);
+        }
+        if (dataset.source?.type !== "official-lzh" || !C.validateDataset(dataset)) {
+          throw new Error(`構造検証エラー ${path}`);
+        }
+        if (current) {
+          const liveFacts = await fetchLiveRaceFacts(date, force);
+          applyLiveRaceFacts(dataset, liveFacts);
+        }
+        return dataset;
+      } catch (error) {
+        lastError = error;
+        if (index + 1 < candidates.length) {
+          console.warn("MAMO BOAT today.jsonを採用できないため日付ファイルへフォールバックします。", error);
+        }
+      }
     }
-    if (date === C.jstDate()) {
-      const liveFacts = await fetchLiveRaceFacts(date, force);
-      applyLiveRaceFacts(dataset, liveFacts);
-    }
-    return dataset;
+
+    throw lastError || new Error(`公式データを取得できませんでした: ${date}`);
   }
 
   async function loadOfficialData(force = false) {
