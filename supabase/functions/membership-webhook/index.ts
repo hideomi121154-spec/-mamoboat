@@ -26,7 +26,7 @@ async function saveSubscription(s: Stripe.Subscription) {
   const userId = s.metadata.user_id;
   if (!validUuid(userId)) throw new Error("Missing verified user reference");
   const itemPrice = s.items.data[0]?.price?.id;
-  const plan = pricePlans().get(itemPrice) || validPlan(s.metadata.plan);
+  const plan = pricePlans().get(itemPrice) || "free";
   const customer = typeof s.customer === "string" ? s.customer : s.customer.id;
   const { error } = await admin.from("paid_memberships").upsert({
     user_id: userId, stripe_customer_id: customer, stripe_subscription_id: s.id,
@@ -67,9 +67,10 @@ Deno.serve(async req => {
       return new Response("Ignored", { status: 200 });
     }
     // Processing is idempotent through upsert on user_id; event history is audit-only.
-    await admin.schema("private").from("billing_webhook_events").upsert({
+    const { error: auditError } = await admin.from("billing_webhook_events").upsert({
       stripe_event_id: event.id, event_type: event.type, processed_at: new Date().toISOString()
     }, { onConflict: "stripe_event_id" });
+    if (auditError) throw auditError;
     return new Response("OK", { status: 200 });
   } catch {
     // Non-2xx causes Stripe to retry. Do not reveal customer information in errors.
