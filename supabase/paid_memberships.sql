@@ -17,15 +17,13 @@ drop policy if exists "members can view own billing status" on public.paid_membe
 create policy "members can view own billing status" on public.paid_memberships
   for select to authenticated using (user_id = (select auth.uid()));
 
-create schema if not exists private;
-create table if not exists private.billing_webhook_events (
+create table if not exists public.billing_webhook_events (
   stripe_event_id text primary key,
   event_type text not null,
   processed_at timestamptz not null default now()
 );
-revoke all on schema private from public, anon, authenticated;
-revoke all on private.billing_webhook_events from public, anon, authenticated;
-grant usage on schema private to service_role;
-grant all on private.billing_webhook_events to service_role;
+alter table public.billing_webhook_events enable row level security;
+revoke all on public.billing_webhook_events from public, anon, authenticated;
+grant all on public.billing_webhook_events to service_role;
 
 comment on table public.paid_memberships is 'Server-verified Stripe subscription state. Client can read only its own row.';
