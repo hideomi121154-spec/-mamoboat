@@ -51,6 +51,8 @@ jobs:
           node --check dev/air-bet-draft-core.js
           node --check dev/air-bet-multi-add.js
           node --check dev/app.js
+          node --check dev/paid-membership.js
+          node --check tests/paid-membership.test.js
           node --check dev/device-sync.js
           node --check dev/bet-review-flow.js
           node --check dev/air-bet-review-delete-controls.js
@@ -105,6 +107,7 @@ jobs:
       - name: Run JavaScript tests
         run: |
           node tests/logic.test.js
+          node tests/paid-membership.test.js
           node tests/app-smoke.test.js
           node tests/device-sync-state-refresh.test.js
           node tests/device-sync-payload.test.js
