@@ -1,22 +1,19 @@
 {
   "schemaVersion": 10,
   "date": "2026-10-19",
-  "generatedAt": "2026-10-19T22:13:42.532732+09:00",
+  "generatedAt": "2026-10-20T05:41:09.582578+09:00",
   "source": {
     "type": "official-lzh",
     "schedule": "BOAT RACE 番組表ダウンロード",
     "performance": "BOAT RACE 競走成績ダウンロード",
     "performanceLoaded": true,
-    "performanceComplete": false,
+    "performanceComplete": true,
     "gradeSchedule": "BOAT RACE グレードスケジュール週次キャッシュ",
     "gradeScheduleLoaded": true,
     "odds": "BOAT RACE 公式オッズ画面の締切前・15分周期スナップショット",
     "oddsPolicy": "締切45分以内を15分周期で直列取得・失敗時は直前値を維持",
     "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
-    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
-    "raceCarteEnrichment": "BOAT RACE official pcexpect/beforeinfo/raceresult",
-    "raceCarteEnrichmentPolicy": "upcoming-first static stats; final preview cached near close; kimarite after settlement",
-    "raceCarteHistoryBackfill": "recent incomplete races via validated official racelist/beforeinfo/raceresult; missing kimarite and missing stats retried until confirmed"
+    "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得"
   },
   "venues": [
     {
@@ -230,7 +227,7 @@
                 "position": 6,
                 "boatNumber": 1,
                 "racerNumber": 3286,
-                "name": "坂東満"
+                "name": "坂東 満"
               }
             ],
             "sanrensho": [
@@ -308,14 +305,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 3286,
-                "status": "06"
-              },
-              {
-                "boatNumber": 2,
-                "racerNumber": 3722,
-                "status": "05"
+                "boatNumber": 5,
+                "racerNumber": 5039,
+                "status": "01"
               },
               {
                 "boatNumber": 3,
@@ -323,28 +315,30 @@
                 "status": "02"
               },
               {
+                "boatNumber": 6,
+                "racerNumber": 4122,
+                "status": "03"
+              },
+              {
                 "boatNumber": 4,
                 "racerNumber": 3315,
                 "status": "04"
               },
               {
-                "boatNumber": 5,
-                "racerNumber": 5039,
-                "status": "01"
+                "boatNumber": 2,
+                "racerNumber": 3722,
+                "status": "05"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 4122,
-                "status": "03"
+                "boatNumber": 1,
+                "racerNumber": 3286,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:53:57.277151+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=1",
             "kimarite": "差し"
           },
           "environment": {
@@ -366,11 +360,6 @@
             "previewFetchedAt": "2026-10-19T19:16:28.566677+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:59:08.469306+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:53:57.663926+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=1"
           }
         },
         {
@@ -643,24 +632,14 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 4406,
-                "status": "02"
-              },
-              {
                 "boatNumber": 2,
                 "racerNumber": 4459,
                 "status": "01"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 4695,
-                "status": "06"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 4104,
-                "status": "04"
+                "boatNumber": 1,
+                "racerNumber": 4406,
+                "status": "02"
               },
               {
                 "boatNumber": 5,
@@ -668,18 +647,25 @@
                 "status": "03"
               },
               {
+                "boatNumber": 4,
+                "racerNumber": 4104,
+                "status": "04"
+              },
+              {
                 "boatNumber": 6,
                 "racerNumber": 4220,
                 "status": "05"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4695,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:00.818369+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=2",
             "kimarite": "差し"
           },
           "environment": {
@@ -701,11 +687,6 @@
             "previewFetchedAt": "2026-10-19T19:16:30.980971+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:58:49.675748+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:01.291400+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=2"
           }
         },
         {
@@ -978,14 +959,24 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 4752,
-                "status": "04"
+                "boatNumber": 5,
+                "racerNumber": 4933,
+                "status": "01"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5259,
+                "status": "02"
               },
               {
                 "boatNumber": 2,
                 "racerNumber": 3869,
                 "status": "03"
+              },
+              {
+                "boatNumber": 1,
+                "racerNumber": 4752,
+                "status": "04"
               },
               {
                 "boatNumber": 3,
@@ -996,25 +987,12 @@
                 "boatNumber": 4,
                 "racerNumber": 3889,
                 "status": "06"
-              },
-              {
-                "boatNumber": 5,
-                "racerNumber": 4933,
-                "status": "01"
-              },
-              {
-                "boatNumber": 6,
-                "racerNumber": 5259,
-                "status": "02"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:04.430275+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=3",
             "kimarite": "まくり差し"
           },
           "environment": {
@@ -1036,11 +1014,6 @@
             "previewFetchedAt": "2026-10-19T19:16:45.563326+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:58:28.760785+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:04.791586+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=3"
           }
         },
         {
@@ -1229,13 +1202,13 @@
                 "position": 5,
                 "boatNumber": 6,
                 "racerNumber": 5394,
-                "name": "福西広太郎"
+                "name": "福西広太"
               },
               {
                 "position": 6,
                 "boatNumber": 2,
                 "racerNumber": 4211,
-                "name": "村田敦"
+                "name": "村田 敦"
               }
             ],
             "sanrensho": [
@@ -1313,19 +1286,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 4708,
-                "status": "04"
-              },
-              {
-                "boatNumber": 2,
-                "racerNumber": 4211,
-                "status": "06"
-              },
-              {
-                "boatNumber": 3,
-                "racerNumber": 4163,
-                "status": "03"
+                "boatNumber": 5,
+                "racerNumber": 3896,
+                "status": "01"
               },
               {
                 "boatNumber": 4,
@@ -1333,23 +1296,30 @@
                 "status": "02"
               },
               {
-                "boatNumber": 5,
-                "racerNumber": 3896,
-                "status": "01"
+                "boatNumber": 3,
+                "racerNumber": 4163,
+                "status": "03"
+              },
+              {
+                "boatNumber": 1,
+                "racerNumber": 4708,
+                "status": "04"
               },
               {
                 "boatNumber": 6,
                 "racerNumber": 5394,
                 "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4211,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:07.982308+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=4",
             "kimarite": "まくり差し"
           },
           "environment": {
@@ -1371,11 +1341,6 @@
             "previewFetchedAt": "2026-10-19T19:15:31.567015+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:58:09.804365+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:08.302470+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=4"
           }
         },
         {
@@ -1546,7 +1511,7 @@
                 "position": 2,
                 "boatNumber": 2,
                 "racerNumber": 4934,
-                "name": "佐々木翔斗"
+                "name": "佐々木翔"
               },
               {
                 "position": 3,
@@ -1564,7 +1529,7 @@
                 "position": 5,
                 "boatNumber": 1,
                 "racerNumber": 5285,
-                "name": "若林麗"
+                "name": "若林 麗"
               },
               {
                 "position": 6,
@@ -1648,9 +1613,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 5285,
-                "status": "05"
+                "boatNumber": 4,
+                "racerNumber": 3772,
+                "status": "01"
               },
               {
                 "boatNumber": 2,
@@ -1658,14 +1623,9 @@
                 "status": "02"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 4272,
-                "status": "06"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 3772,
-                "status": "01"
+                "boatNumber": 6,
+                "racerNumber": 5043,
+                "status": "03"
               },
               {
                 "boatNumber": 5,
@@ -1673,18 +1633,20 @@
                 "status": "04"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 5043,
-                "status": "03"
+                "boatNumber": 1,
+                "racerNumber": 5285,
+                "status": "05"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4272,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:11.351636+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=5",
             "kimarite": "まくり差し"
           },
           "environment": {
@@ -1706,11 +1668,6 @@
             "previewFetchedAt": "2026-10-19T19:15:31.324403+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:57:49.787793+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:11.869064+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=5"
           }
         },
         {
@@ -1975,6 +1932,11 @@
                 "status": "01"
               },
               {
+                "boatNumber": 4,
+                "racerNumber": 5039,
+                "status": "02"
+              },
+              {
                 "boatNumber": 2,
                 "racerNumber": 4904,
                 "status": "03"
@@ -1983,11 +1945,6 @@
                 "boatNumber": 3,
                 "racerNumber": 4406,
                 "status": "04"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 5039,
-                "status": "02"
               },
               {
                 "boatNumber": 5,
@@ -2004,9 +1961,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:23.115069+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=6",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -2028,11 +1982,6 @@
             "previewFetchedAt": "2026-10-19T19:15:30.645650+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:16:29.054454+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:23.480724+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=6"
           }
         },
         {
@@ -2197,7 +2146,7 @@
                 "position": 1,
                 "boatNumber": 1,
                 "racerNumber": 4560,
-                "name": "庄司樹良々"
+                "name": "庄司樹良"
               },
               {
                 "position": 2,
@@ -2215,7 +2164,7 @@
                 "position": 4,
                 "boatNumber": 5,
                 "racerNumber": 3286,
-                "name": "坂東満"
+                "name": "坂東 満"
               },
               {
                 "position": 5,
@@ -2227,7 +2176,7 @@
                 "position": 6,
                 "boatNumber": 6,
                 "racerNumber": 4082,
-                "name": "濱崎誠"
+                "name": "濱崎 誠"
               }
             ],
             "sanrensho": [
@@ -2320,14 +2269,14 @@
                 "status": "03"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 4752,
-                "status": "05"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 3286,
                 "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4752,
+                "status": "05"
               },
               {
                 "boatNumber": 6,
@@ -2339,9 +2288,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:26.576471+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=7",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -2363,11 +2309,6 @@
             "previewFetchedAt": "2026-10-19T19:15:54.386994+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:16:10.356289+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:26.836700+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=7"
           }
         },
         {
@@ -2532,7 +2473,7 @@
                 "position": 1,
                 "boatNumber": 5,
                 "racerNumber": 5065,
-                "name": "伊久間陽優"
+                "name": "伊久間陽"
               },
               {
                 "position": 2,
@@ -2550,13 +2491,13 @@
                 "position": 4,
                 "boatNumber": 3,
                 "racerNumber": 5394,
-                "name": "福西広太郎"
+                "name": "福西広太"
               },
               {
                 "position": 5,
                 "boatNumber": 1,
                 "racerNumber": 4706,
-                "name": "三浦洋次朗"
+                "name": "三浦洋次"
               },
               {
                 "position": 6,
@@ -2640,9 +2581,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 4706,
-                "status": "05"
+                "boatNumber": 5,
+                "racerNumber": 5065,
+                "status": "01"
               },
               {
                 "boatNumber": 2,
@@ -2650,19 +2591,19 @@
                 "status": "02"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 5394,
-                "status": "04"
-              },
-              {
                 "boatNumber": 4,
                 "racerNumber": 3722,
                 "status": "03"
               },
               {
-                "boatNumber": 5,
-                "racerNumber": 5065,
-                "status": "01"
+                "boatNumber": 3,
+                "racerNumber": 5394,
+                "status": "04"
+              },
+              {
+                "boatNumber": 1,
+                "racerNumber": 4706,
+                "status": "05"
               },
               {
                 "boatNumber": 6,
@@ -2674,9 +2615,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:29.776670+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=8",
             "kimarite": "まくり差し"
           },
           "environment": {
@@ -2698,11 +2636,6 @@
             "previewFetchedAt": "2026-10-19T19:15:58.491613+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:15:51.791734+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:30.004382+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=8"
           }
         },
         {
@@ -2897,7 +2830,7 @@
                 "position": 6,
                 "boatNumber": 6,
                 "racerNumber": 4211,
-                "name": "村田敦"
+                "name": "村田 敦"
               }
             ],
             "sanrensho": [
@@ -2980,24 +2913,24 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4137,
-                "status": "04"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 3889,
                 "status": "02"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 4695,
-                "status": "05"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 4607,
                 "status": "03"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4137,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4695,
+                "status": "05"
               },
               {
                 "boatNumber": 6,
@@ -3009,9 +2942,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:32.911008+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=9",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -3033,11 +2963,6 @@
             "previewFetchedAt": "2026-10-19T19:16:00.580363+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:15:32.109861+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:33.161024+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=9"
           }
         },
         {
@@ -3055,15 +2980,15 @@
               "weight": 50.0,
               "motorNumber": 17,
               "boatPart": 62,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 5.91,
               "national2Rate": 39.84,
               "national3Rate": 62.5,
               "localWinRate": 5.24,
               "local2Rate": 34.15,
               "local3Rate": 51.22,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 33.48,
               "motor3Rate": 50.64,
               "boat2Rate": 32.16,
@@ -3080,15 +3005,15 @@
               "weight": 54.0,
               "motorNumber": 56,
               "boatPart": 36,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.4,
               "national2Rate": 35.25,
               "national3Rate": 51.64,
               "localWinRate": 5.0,
               "local2Rate": 30.0,
               "local3Rate": 50.0,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 38.51,
               "motor3Rate": 51.15,
               "boat2Rate": 34.47,
@@ -3105,15 +3030,15 @@
               "weight": 50.0,
               "motorNumber": 65,
               "boatPart": 40,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.51,
               "national2Rate": 54.2,
               "national3Rate": 66.41,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 37.5,
               "motor3Rate": 52.4,
               "boat2Rate": 33.33,
@@ -3130,15 +3055,15 @@
               "weight": 54.0,
               "motorNumber": 15,
               "boatPart": 33,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 4.38,
               "national2Rate": 23.75,
               "national3Rate": 37.5,
               "localWinRate": 4.04,
               "local2Rate": 20.0,
               "local3Rate": 37.78,
+              "averageStart": 0.18,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 39.29,
               "motor3Rate": 54.29,
               "boat2Rate": 34.29,
@@ -3155,15 +3080,15 @@
               "weight": 54.0,
               "motorNumber": 46,
               "boatPart": 44,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.2,
               "nationalWinRate": 4.56,
               "national2Rate": 22.22,
               "national3Rate": 37.04,
               "localWinRate": 4.0,
               "local2Rate": 10.0,
               "local3Rate": 30.0,
+              "averageStart": 0.2,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 36.79,
               "motor3Rate": 51.89,
               "boat2Rate": 37.44,
@@ -3180,15 +3105,15 @@
               "weight": 56.0,
               "motorNumber": 32,
               "boatPart": 27,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.66,
               "national2Rate": 37.62,
               "national3Rate": 56.44,
               "localWinRate": 5.91,
               "local2Rate": 35.29,
               "local3Rate": 58.82,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 44.24,
               "motor3Rate": 58.18,
               "boat2Rate": 46.08,
@@ -3208,7 +3133,7 @@
                 "position": 2,
                 "boatNumber": 2,
                 "racerNumber": 4574,
-                "name": "東潤樹"
+                "name": "東 潤樹"
               },
               {
                 "position": 3,
@@ -3220,13 +3145,13 @@
                 "position": 4,
                 "boatNumber": 6,
                 "racerNumber": 4934,
-                "name": "佐々木翔斗"
+                "name": "佐々木翔"
               },
               {
                 "position": 5,
                 "boatNumber": 3,
                 "racerNumber": 4703,
-                "name": "森永隆"
+                "name": "森永 隆"
               },
               {
                 "position": 6,
@@ -3320,16 +3245,6 @@
                 "status": "02"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 4703,
-                "status": "05"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 3869,
-                "status": "06"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 4396,
                 "status": "03"
@@ -3338,15 +3253,22 @@
                 "boatNumber": 6,
                 "racerNumber": 4934,
                 "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4703,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 3869,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:36.056838+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=10",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -3367,11 +3289,6 @@
             "previewFetchedAt": "2026-10-19T20:07:28.771657+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:15:11.529995+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:36.346130+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=10"
           }
         },
         {
@@ -3389,15 +3306,15 @@
               "weight": 59.0,
               "motorNumber": 69,
               "boatPart": 34,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.14,
               "national2Rate": 43.94,
               "national3Rate": 61.36,
               "localWinRate": 5.95,
               "local2Rate": 40.0,
               "local3Rate": 65.0,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 31.63,
               "motor3Rate": 51.02,
               "boat2Rate": 31.43,
@@ -3414,15 +3331,15 @@
               "weight": 52.0,
               "motorNumber": 73,
               "boatPart": 60,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 5.99,
               "national2Rate": 42.55,
               "national3Rate": 60.64,
               "localWinRate": 7.14,
               "local2Rate": 61.11,
               "local3Rate": 72.22,
+              "averageStart": 0.14,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 48.86,
               "motor3Rate": 69.89,
               "boat2Rate": 37.56,
@@ -3439,15 +3356,15 @@
               "weight": 57.0,
               "motorNumber": 57,
               "boatPart": 11,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.71,
               "national2Rate": 38.71,
               "national3Rate": 57.26,
               "localWinRate": 4.96,
               "local2Rate": 25.0,
               "local3Rate": 39.29,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 30.29,
               "motor3Rate": 46.15,
               "boat2Rate": 28.57,
@@ -3464,15 +3381,15 @@
               "weight": 56.0,
               "motorNumber": 48,
               "boatPart": 31,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 5.73,
               "national2Rate": 40.4,
               "national3Rate": 52.53,
               "localWinRate": 4.67,
               "local2Rate": 22.22,
               "local3Rate": 33.33,
+              "averageStart": 0.18,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 32.11,
               "motor3Rate": 53.21,
               "boat2Rate": 38.83,
@@ -3489,15 +3406,15 @@
               "weight": 53.0,
               "motorNumber": 52,
               "boatPart": 52,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.67,
               "national2Rate": 20.69,
               "national3Rate": 42.53,
               "localWinRate": 6.24,
               "local2Rate": 52.0,
               "local3Rate": 56.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 27.92,
               "motor3Rate": 38.96,
               "boat2Rate": 39.22,
@@ -3514,15 +3431,15 @@
               "weight": 52.0,
               "motorNumber": 20,
               "boatPart": 75,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 6.91,
               "national2Rate": 54.32,
               "national3Rate": 72.84,
               "localWinRate": 6.7,
               "local2Rate": 55.0,
               "local3Rate": 75.0,
+              "averageStart": 0.14,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 37.91,
               "motor3Rate": 60.13,
               "boat2Rate": 29.13,
@@ -3659,9 +3576,9 @@
                 "status": "03"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 4220,
-                "status": "06"
+                "boatNumber": 6,
+                "racerNumber": 4296,
+                "status": "04"
               },
               {
                 "boatNumber": 5,
@@ -3669,18 +3586,15 @@
                 "status": "05"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 4296,
-                "status": "04"
+                "boatNumber": 4,
+                "racerNumber": 4220,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:39.304592+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=11",
             "kimarite": "逃げ"
           },
           "odds": {
@@ -3993,11 +3907,6 @@
             "previewFetchedAt": "2026-10-19T20:06:30.289453+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:44.480409+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:39.532436+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=11"
           }
         },
         {
@@ -4015,15 +3924,15 @@
               "weight": 54.0,
               "motorNumber": 71,
               "boatPart": 66,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 7.03,
               "national2Rate": 58.68,
               "national3Rate": 72.73,
               "localWinRate": 6.39,
               "local2Rate": 42.86,
               "local3Rate": 67.86,
+              "averageStart": 0.13,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 30.21,
               "motor3Rate": 45.31,
               "boat2Rate": 32.14,
@@ -4040,15 +3949,15 @@
               "weight": 53.0,
               "motorNumber": 74,
               "boatPart": 59,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 6.08,
               "national2Rate": 40.8,
               "national3Rate": 59.2,
               "localWinRate": 6.77,
               "local2Rate": 55.63,
               "local3Rate": 68.31,
+              "averageStart": 0.13,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 37.8,
               "motor3Rate": 57.89,
               "boat2Rate": 38.1,
@@ -4065,15 +3974,15 @@
               "weight": 52.0,
               "motorNumber": 30,
               "boatPart": 51,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 5.88,
               "national2Rate": 41.58,
               "national3Rate": 63.37,
               "localWinRate": 7.63,
               "local2Rate": 62.5,
               "local3Rate": 87.5,
+              "averageStart": 0.18,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 43.27,
               "motor3Rate": 60.23,
               "boat2Rate": 32.35,
@@ -4090,15 +3999,15 @@
               "weight": 53.0,
               "motorNumber": 27,
               "boatPart": 35,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 5.7,
               "national2Rate": 38.05,
               "national3Rate": 61.95,
               "localWinRate": 5.23,
               "local2Rate": 33.33,
               "local3Rate": 48.72,
+              "averageStart": 0.18,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 52.38,
               "motor3Rate": 71.43,
               "boat2Rate": 39.62,
@@ -4115,15 +4024,15 @@
               "weight": 53.0,
               "motorNumber": 70,
               "boatPart": 17,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.12,
               "nationalWinRate": 6.33,
               "national2Rate": 43.33,
               "national3Rate": 55.56,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.12,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 33.49,
               "motor3Rate": 47.25,
               "boat2Rate": 39.22,
@@ -4140,15 +4049,15 @@
               "weight": 54.0,
               "motorNumber": 35,
               "boatPart": 21,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 6.49,
               "national2Rate": 46.08,
               "national3Rate": 59.8,
               "localWinRate": 6.2,
               "local2Rate": 30.0,
               "local3Rate": 50.0,
+              "averageStart": 0.14,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 41.97,
               "motor3Rate": 56.48,
               "boat2Rate": 30.62,
@@ -4168,7 +4077,7 @@
                 "position": 2,
                 "boatNumber": 3,
                 "racerNumber": 4082,
-                "name": "濱崎誠"
+                "name": "濱崎 誠"
               },
               {
                 "position": 3,
@@ -4275,19 +4184,9 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4539,
-                "status": "06"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 4082,
                 "status": "02"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 5036,
-                "status": "05"
               },
               {
                 "boatNumber": 5,
@@ -4298,15 +4197,22 @@
                 "boatNumber": 6,
                 "racerNumber": 4933,
                 "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5036,
+                "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4539,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:41.417380+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=12",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -4328,11 +4234,6 @@
             "previewFetchedAt": "2026-10-20T02:01:29.427415+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:17.438716+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:41.732205+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=01&rno=12"
           }
         }
       ],
@@ -26142,7 +26043,7 @@
                 "position": 2,
                 "boatNumber": 3,
                 "racerNumber": 5148,
-                "name": "松本怜"
+                "name": "松本 怜"
               },
               {
                 "position": 3,
@@ -26249,19 +26150,14 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4534,
-                "status": "05"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 5148,
                 "status": "02"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 5418,
-                "status": "06"
+                "boatNumber": 6,
+                "racerNumber": 5264,
+                "status": "03"
               },
               {
                 "boatNumber": 5,
@@ -26269,18 +26165,20 @@
                 "status": "04"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 5264,
-                "status": "03"
+                "boatNumber": 2,
+                "racerNumber": 4534,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5418,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:53:55.785159+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=1",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -26302,11 +26200,6 @@
             "previewFetchedAt": "2026-10-19T22:18:14.002508+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:59:17.921021+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:53:56.476870+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=1"
           }
         },
         {
@@ -26483,7 +26376,7 @@
                 "position": 3,
                 "boatNumber": 3,
                 "racerNumber": 5117,
-                "name": "冨名腰桃奈"
+                "name": "冨名腰桃"
               },
               {
                 "position": 4,
@@ -26584,9 +26477,9 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 5327,
-                "status": "06"
+                "boatNumber": 6,
+                "racerNumber": 4208,
+                "status": "02"
               },
               {
                 "boatNumber": 3,
@@ -26594,28 +26487,25 @@
                 "status": "03"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 5144,
-                "status": "05"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 3302,
                 "status": "04"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 4208,
-                "status": "02"
+                "boatNumber": 4,
+                "racerNumber": 5144,
+                "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5327,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:53:59.695093+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=2",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -26637,11 +26527,6 @@
             "previewFetchedAt": "2026-10-19T19:16:28.788765+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:58:59.074929+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:00.018110+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=2"
           }
         },
         {
@@ -26812,7 +26697,7 @@
                 "position": 2,
                 "boatNumber": 2,
                 "racerNumber": 5357,
-                "name": "田中瀬里奈"
+                "name": "田中瀬里"
               },
               {
                 "position": 3,
@@ -26914,9 +26799,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 5277,
-                "status": "03"
+                "boatNumber": 3,
+                "racerNumber": 3435,
+                "status": "01"
               },
               {
                 "boatNumber": 2,
@@ -26924,9 +26809,9 @@
                 "status": "02"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 3435,
-                "status": "01"
+                "boatNumber": 1,
+                "racerNumber": 5277,
+                "status": "03"
               },
               {
                 "boatNumber": 4,
@@ -26934,23 +26819,20 @@
                 "status": "04"
               },
               {
-                "boatNumber": 5,
-                "racerNumber": 5438,
-                "status": "06"
-              },
-              {
                 "boatNumber": 6,
                 "racerNumber": 4443,
                 "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5438,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:03.315884+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=3",
             "kimarite": "まくり"
           },
           "environment": {
@@ -26972,11 +26854,6 @@
             "previewFetchedAt": "2026-10-19T19:16:37.538666+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:58:39.239693+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:03.630027+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=3"
           }
         },
         {
@@ -27139,7 +27016,7 @@
                 "position": 5,
                 "boatNumber": 6,
                 "racerNumber": 5471,
-                "name": "田中結"
+                "name": "田中 結"
               },
               {
                 "position": 6,
@@ -27223,24 +27100,19 @@
             },
             "statuses": [
               {
+                "boatNumber": 4,
+                "racerNumber": 5281,
+                "status": "01"
+              },
+              {
                 "boatNumber": 1,
                 "racerNumber": 3357,
                 "status": "02"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 5227,
-                "status": "06"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 5250,
                 "status": "03"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 5281,
-                "status": "01"
               },
               {
                 "boatNumber": 5,
@@ -27251,15 +27123,17 @@
                 "boatNumber": 6,
                 "racerNumber": 5471,
                 "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 5227,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:06.776886+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=4",
             "kimarite": "差し"
           },
           "environment": {
@@ -27281,11 +27155,6 @@
             "previewFetchedAt": "2026-10-19T19:15:27.773823+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T21:58:18.302652+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:07.182065+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=4"
           }
         },
         {
@@ -27456,7 +27325,7 @@
                 "position": 2,
                 "boatNumber": 6,
                 "racerNumber": 4373,
-                "name": "若狭奈美子"
+                "name": "若狭奈美"
               },
               {
                 "position": 3,
@@ -27468,7 +27337,7 @@
                 "position": 4,
                 "boatNumber": 2,
                 "racerNumber": 4224,
-                "name": "大橋栄里佳"
+                "name": "大橋栄里"
               },
               {
                 "position": 5,
@@ -27480,7 +27349,7 @@
                 "position": 6,
                 "boatNumber": 3,
                 "racerNumber": 5412,
-                "name": "久保田凪紗"
+                "name": "久保田凪"
               }
             ],
             "sanrensho": [
@@ -27563,14 +27432,9 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4224,
-                "status": "04"
-              },
-              {
-                "boatNumber": 3,
-                "racerNumber": 5412,
-                "status": "06"
+                "boatNumber": 6,
+                "racerNumber": 4373,
+                "status": "02"
               },
               {
                 "boatNumber": 4,
@@ -27578,23 +27442,25 @@
                 "status": "03"
               },
               {
+                "boatNumber": 2,
+                "racerNumber": 4224,
+                "status": "04"
+              },
+              {
                 "boatNumber": 5,
                 "racerNumber": 4941,
                 "status": "05"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 4373,
-                "status": "02"
+                "boatNumber": 3,
+                "racerNumber": 5412,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:10.217849+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=5",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -27615,11 +27481,6 @@
             "previewFetchedAt": "2026-10-19T19:15:30.349118+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:58:00.231465+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:10.551364+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=5"
           }
         },
         {
@@ -27796,7 +27657,7 @@
                 "position": 3,
                 "boatNumber": 6,
                 "racerNumber": 5129,
-                "name": "山口真喜子"
+                "name": "山口真喜"
               },
               {
                 "position": 4,
@@ -27892,9 +27753,19 @@
             },
             "statuses": [
               {
+                "boatNumber": 4,
+                "racerNumber": 4556,
+                "status": "01"
+              },
+              {
                 "boatNumber": 1,
                 "racerNumber": 3579,
                 "status": "02"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5129,
+                "status": "03"
               },
               {
                 "boatNumber": 2,
@@ -27902,33 +27773,20 @@
                 "status": "04"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 5264,
-                "status": "06"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 4556,
-                "status": "01"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 5327,
                 "status": "05"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 5129,
-                "status": "03"
+                "boatNumber": 3,
+                "racerNumber": 5264,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:13.801690+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=6",
             "kimarite": "まくり"
           },
           "environment": {
@@ -27950,11 +27808,6 @@
             "previewFetchedAt": "2026-10-19T19:15:32.362841+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:57:39.388128+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:14.223084+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=6"
           }
         },
         {
@@ -28227,11 +28080,6 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 5144,
-                "status": "03"
-              },
-              {
                 "boatNumber": 2,
                 "racerNumber": 3435,
                 "status": "01"
@@ -28240,6 +28088,11 @@
                 "boatNumber": 3,
                 "racerNumber": 3611,
                 "status": "02"
+              },
+              {
+                "boatNumber": 1,
+                "racerNumber": 5144,
+                "status": "03"
               },
               {
                 "boatNumber": 4,
@@ -28261,9 +28114,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:24.281012+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=7",
             "kimarite": "差し"
           },
           "environment": {
@@ -28285,11 +28135,6 @@
             "previewFetchedAt": "2026-10-19T19:15:33.521282+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:16:19.708530+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:24.738177+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=7"
           }
         },
         {
@@ -28472,13 +28317,13 @@
                 "position": 4,
                 "boatNumber": 5,
                 "racerNumber": 5148,
-                "name": "松本怜"
+                "name": "松本 怜"
               },
               {
                 "position": 5,
                 "boatNumber": 6,
                 "racerNumber": 4479,
-                "name": "矢野真梨菜"
+                "name": "矢野真梨"
               },
               {
                 "position": 6,
@@ -28562,16 +28407,6 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 3175,
-                "status": "03"
-              },
-              {
-                "boatNumber": 2,
-                "racerNumber": 3871,
-                "status": "06"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 5281,
                 "status": "01"
@@ -28582,6 +28417,11 @@
                 "status": "02"
               },
               {
+                "boatNumber": 1,
+                "racerNumber": 3175,
+                "status": "03"
+              },
+              {
                 "boatNumber": 5,
                 "racerNumber": 5148,
                 "status": "04"
@@ -28590,15 +28430,17 @@
                 "boatNumber": 6,
                 "racerNumber": 4479,
                 "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3871,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:27.636966+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=8",
             "kimarite": "まくり"
           },
           "environment": {
@@ -28619,11 +28461,6 @@
             "previewFetchedAt": "2026-10-19T19:15:56.450649+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:16:01.068409+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:27.911983+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=8"
           }
         },
         {
@@ -28787,7 +28624,7 @@
                 "position": 3,
                 "boatNumber": 2,
                 "racerNumber": 4694,
-                "name": "高田綾"
+                "name": "高田 綾"
               },
               {
                 "position": 4,
@@ -28799,7 +28636,7 @@
                 "position": 5,
                 "boatNumber": 4,
                 "racerNumber": 5123,
-                "name": "福山恵里奈"
+                "name": "福山恵里"
               },
               {
                 "position": 6,
@@ -28888,24 +28725,24 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4694,
-                "status": "03"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 4289,
                 "status": "02"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 5123,
-                "status": "05"
+                "boatNumber": 2,
+                "racerNumber": 4694,
+                "status": "03"
               },
               {
                 "boatNumber": 5,
                 "racerNumber": 4534,
                 "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5123,
+                "status": "05"
               },
               {
                 "boatNumber": 6,
@@ -28917,9 +28754,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:30.804644+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=9",
             "kimarite": "抜き"
           },
           "environment": {
@@ -28940,11 +28774,6 @@
             "previewFetchedAt": "2026-10-19T19:15:58.466775+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:15:41.447233+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:31.080086+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=9"
           }
         },
         {
@@ -28962,15 +28791,15 @@
               "weight": 48.0,
               "motorNumber": 32,
               "boatPart": 60,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.14,
               "national2Rate": 44.37,
               "national3Rate": 64.79,
               "localWinRate": 5.05,
               "local2Rate": 25.0,
               "local3Rate": 45.0,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 33.6,
               "motor3Rate": 48.8,
               "boat2Rate": 28.21,
@@ -28987,15 +28816,15 @@
               "weight": 46.0,
               "motorNumber": 81,
               "boatPart": 82,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 6.15,
               "national2Rate": 39.47,
               "national3Rate": 62.28,
               "localWinRate": 5.95,
               "local2Rate": 42.5,
               "local3Rate": 62.5,
+              "averageStart": 0.17,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 32.8,
               "motor3Rate": 50.4,
               "boat2Rate": 42.61,
@@ -29012,15 +28841,15 @@
               "weight": 53.0,
               "motorNumber": 34,
               "boatPart": 89,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.07,
               "national2Rate": 35.8,
               "national3Rate": 51.85,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 31.15,
               "motor3Rate": 46.72,
               "boat2Rate": 34.21,
@@ -29037,15 +28866,15 @@
               "weight": 48.0,
               "motorNumber": 56,
               "boatPart": 32,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.99,
               "national2Rate": 41.67,
               "national3Rate": 62.88,
               "localWinRate": 6.29,
               "local2Rate": 52.38,
               "local3Rate": 61.9,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 33.07,
               "motor3Rate": 50.39,
               "boat2Rate": 37.29,
@@ -29062,15 +28891,15 @@
               "weight": 45.0,
               "motorNumber": 31,
               "boatPart": 70,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 4.98,
               "national2Rate": 25.56,
               "national3Rate": 48.89,
               "localWinRate": 5.78,
               "local2Rate": 33.33,
               "local3Rate": 55.56,
+              "averageStart": 0.15,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 20.33,
               "motor3Rate": 37.4,
               "boat2Rate": 21.49,
@@ -29087,15 +28916,15 @@
               "weight": 45.0,
               "motorNumber": 69,
               "boatPart": 63,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.19,
               "nationalWinRate": 5.27,
               "national2Rate": 33.33,
               "national3Rate": 52.56,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.19,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 35.0,
               "motor3Rate": 51.67,
               "boat2Rate": 33.33,
@@ -29109,13 +28938,13 @@
                 "position": 1,
                 "boatNumber": 1,
                 "racerNumber": 4286,
-                "name": "平田さやか"
+                "name": "平田さや"
               },
               {
                 "position": 2,
                 "boatNumber": 2,
                 "racerNumber": 4373,
-                "name": "若狭奈美子"
+                "name": "若狭奈美"
               },
               {
                 "position": 3,
@@ -29127,7 +28956,7 @@
                 "position": 4,
                 "boatNumber": 6,
                 "racerNumber": 5117,
-                "name": "冨名腰桃奈"
+                "name": "冨名腰桃"
               },
               {
                 "position": 5,
@@ -29221,16 +29050,6 @@
                 "status": "02"
               },
               {
-                "boatNumber": 3,
-                "racerNumber": 3932,
-                "status": "05"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 5129,
-                "status": "落"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 5277,
                 "status": "03"
@@ -29239,15 +29058,22 @@
                 "boatNumber": 6,
                 "racerNumber": 5117,
                 "status": "04"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 3932,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5129,
+                "status": "S1"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:33.961301+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=10",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -29268,11 +29094,6 @@
             "previewFetchedAt": "2026-10-19T20:07:39.167204+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:15:21.836464+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:34.215642+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=10"
           }
         },
         {
@@ -29290,15 +29111,15 @@
               "weight": 47.0,
               "motorNumber": 12,
               "boatPart": 79,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.56,
               "national2Rate": 51.46,
               "national3Rate": 66.99,
               "localWinRate": 8.11,
               "local2Rate": 66.67,
               "local3Rate": 100.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 28.69,
               "motor3Rate": 45.9,
               "boat2Rate": 36.21,
@@ -29315,15 +29136,15 @@
               "weight": 50.0,
               "motorNumber": 14,
               "boatPart": 81,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.19,
               "nationalWinRate": 5.59,
               "national2Rate": 39.82,
               "national3Rate": 53.98,
               "localWinRate": 6.2,
               "local2Rate": 40.0,
               "local3Rate": 64.0,
+              "averageStart": 0.19,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 29.03,
               "motor3Rate": 52.42,
               "boat2Rate": 40.19,
@@ -29340,15 +29161,15 @@
               "weight": 46.0,
               "motorNumber": 19,
               "boatPart": 61,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 7.36,
               "national2Rate": 61.48,
               "national3Rate": 79.26,
               "localWinRate": 8.83,
               "local2Rate": 77.78,
               "local3Rate": 83.33,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.15,
               "motor3Rate": 56.1,
               "boat2Rate": 30.0,
@@ -29365,15 +29186,15 @@
               "weight": 47.0,
               "motorNumber": 83,
               "boatPart": 25,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.19,
               "nationalWinRate": 7.11,
               "national2Rate": 52.83,
               "national3Rate": 75.47,
               "localWinRate": 6.76,
               "local2Rate": 52.94,
               "local3Rate": 58.82,
+              "averageStart": 0.19,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 30.08,
               "motor3Rate": 46.34,
               "boat2Rate": 29.82,
@@ -29390,15 +29211,15 @@
               "weight": 48.0,
               "motorNumber": 72,
               "boatPart": 54,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 6.18,
               "national2Rate": 41.74,
               "national3Rate": 63.48,
               "localWinRate": 5.25,
               "local2Rate": 25.0,
               "local3Rate": 50.0,
+              "averageStart": 0.14,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 29.92,
               "motor3Rate": 42.52,
               "boat2Rate": 26.32,
@@ -29415,15 +29236,15 @@
               "weight": 49.0,
               "motorNumber": 30,
               "boatPart": 22,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.2,
               "nationalWinRate": 4.82,
               "national2Rate": 26.09,
               "national3Rate": 41.3,
               "localWinRate": 3.57,
               "local2Rate": 28.57,
               "local3Rate": 28.57,
+              "averageStart": 0.2,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 24.19,
               "motor3Rate": 42.74,
               "boat2Rate": 42.11,
@@ -29467,7 +29288,7 @@
                 "position": 6,
                 "boatNumber": 6,
                 "racerNumber": 4224,
-                "name": "大橋栄里佳"
+                "name": "大橋栄里"
               }
             ],
             "sanrensho": [
@@ -29550,9 +29371,9 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4443,
-                "status": "04"
+                "boatNumber": 4,
+                "racerNumber": 5045,
+                "status": "02"
               },
               {
                 "boatNumber": 3,
@@ -29560,9 +29381,9 @@
                 "status": "03"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 5045,
-                "status": "02"
+                "boatNumber": 2,
+                "racerNumber": 4443,
+                "status": "04"
               },
               {
                 "boatNumber": 5,
@@ -29579,9 +29400,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:37.146401+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=11",
             "kimarite": "逃げ"
           },
           "odds": {
@@ -29893,11 +29711,6 @@
             "previewFetchedAt": "2026-10-19T20:06:19.822216+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:54.812660+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:37.441572+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=11"
           }
         },
         {
@@ -29915,15 +29728,15 @@
               "weight": 46.0,
               "motorNumber": 17,
               "boatPart": 19,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.94,
               "national2Rate": 51.45,
               "national3Rate": 72.46,
               "localWinRate": 5.75,
               "local2Rate": 25.0,
               "local3Rate": 75.0,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 33.6,
               "motor3Rate": 51.2,
               "boat2Rate": 25.0,
@@ -29940,15 +29753,15 @@
               "weight": 44.0,
               "motorNumber": 68,
               "boatPart": 38,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.19,
               "nationalWinRate": 6.37,
               "national2Rate": 45.65,
               "national3Rate": 61.59,
               "localWinRate": 6.66,
               "local2Rate": 52.63,
               "local3Rate": 73.68,
+              "averageStart": 0.19,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 26.83,
               "motor3Rate": 43.09,
               "boat2Rate": 29.06,
@@ -29965,15 +29778,15 @@
               "weight": 44.0,
               "motorNumber": 24,
               "boatPart": 74,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 6.15,
               "national2Rate": 40.57,
               "national3Rate": 58.49,
               "localWinRate": 5.55,
               "local2Rate": 29.03,
               "local3Rate": 58.06,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 42.52,
               "motor3Rate": 56.69,
               "boat2Rate": 22.69,
@@ -29990,15 +29803,15 @@
               "weight": 47.0,
               "motorNumber": 77,
               "boatPart": 75,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 6.28,
               "national2Rate": 39.86,
               "national3Rate": 62.32,
               "localWinRate": 5.78,
               "local2Rate": 38.89,
               "local3Rate": 61.11,
+              "averageStart": 0.14,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.15,
               "motor3Rate": 49.59,
               "boat2Rate": 30.0,
@@ -30015,15 +29828,15 @@
               "weight": 46.0,
               "motorNumber": 29,
               "boatPart": 33,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 6.68,
               "national2Rate": 50.44,
               "national3Rate": 67.26,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.13,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 48.76,
               "motor3Rate": 61.16,
               "boat2Rate": 40.71,
@@ -30040,15 +29853,15 @@
               "weight": 46.0,
               "motorNumber": 63,
               "boatPart": 52,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.55,
               "national2Rate": 46.15,
               "national3Rate": 67.52,
               "localWinRate": 6.11,
               "local2Rate": 38.89,
               "local3Rate": 55.56,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 23.2,
               "motor3Rate": 36.8,
               "boat2Rate": 29.66,
@@ -30068,19 +29881,19 @@
                 "position": 2,
                 "boatNumber": 3,
                 "racerNumber": 5188,
-                "name": "武井莉里佳"
+                "name": "武井莉里"
               },
               {
                 "position": 3,
                 "boatNumber": 4,
                 "racerNumber": 4938,
-                "name": "小芦るり華"
+                "name": "小芦るり"
               },
               {
                 "position": 4,
                 "boatNumber": 6,
                 "racerNumber": 4964,
-                "name": "土屋南"
+                "name": "土屋 南"
               },
               {
                 "position": 5,
@@ -30169,11 +29982,6 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 3618,
-                "status": "転"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 5188,
                 "status": "02"
@@ -30184,23 +29992,25 @@
                 "status": "03"
               },
               {
+                "boatNumber": 6,
+                "racerNumber": 4964,
+                "status": "04"
+              },
+              {
                 "boatNumber": 5,
                 "racerNumber": 4823,
                 "status": "05"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 4964,
-                "status": "04"
+                "boatNumber": 2,
+                "racerNumber": 3618,
+                "status": "S0"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:40.332744+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=12",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -30221,11 +30031,6 @@
             "previewFetchedAt": "2026-10-19T22:16:50.030568+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:25.740991+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:40.617142+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=12&rno=12"
           }
         }
       ],
@@ -38835,13 +38640,13 @@
                 "position": 3,
                 "boatNumber": 4,
                 "racerNumber": 5000,
-                "name": "岡本翔太郎"
+                "name": "岡本翔太"
               },
               {
                 "position": 4,
                 "boatNumber": 6,
                 "racerNumber": 5104,
-                "name": "山田丈"
+                "name": "山田 丈"
               },
               {
                 "position": 5,
@@ -38853,7 +38658,7 @@
                 "position": 6,
                 "boatNumber": 2,
                 "racerNumber": 3797,
-                "name": "岩井繁"
+                "name": "岩井 繁"
               }
             ],
             "sanrensho": [
@@ -38931,6 +38736,26 @@
             },
             "statuses": [
               {
+                "boatNumber": 3,
+                "racerNumber": 4638,
+                "status": "01"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5185,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5000,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5104,
+                "status": "04"
+              },
+              {
                 "boatNumber": 1,
                 "racerNumber": 4905,
                 "status": "05"
@@ -38939,35 +38764,12 @@
                 "boatNumber": 2,
                 "racerNumber": 3797,
                 "status": "06"
-              },
-              {
-                "boatNumber": 3,
-                "racerNumber": 4638,
-                "status": "01"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 5000,
-                "status": "03"
-              },
-              {
-                "boatNumber": 5,
-                "racerNumber": 5185,
-                "status": "02"
-              },
-              {
-                "boatNumber": 6,
-                "racerNumber": 5104,
-                "status": "04"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:53:58.464171+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=1",
             "kimarite": "抜き"
           },
           "environment": {
@@ -38989,11 +38791,6 @@
             "previewFetchedAt": "2026-10-19T19:15:30.408909+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:57:28.957387+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:53:58.894839+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=1"
           }
         },
         {
@@ -39145,7 +38942,7 @@
                 "position": 1,
                 "boatNumber": 4,
                 "racerNumber": 3388,
-                "name": "今垣光太郎"
+                "name": "今垣光太"
               },
               {
                 "position": 2,
@@ -39175,7 +38972,7 @@
                 "position": 6,
                 "boatNumber": 2,
                 "racerNumber": 3976,
-                "name": "内田圭"
+                "name": "内田 圭"
               }
             ],
             "sanrensho": [
@@ -39253,14 +39050,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 5312,
-                "status": "03"
-              },
-              {
-                "boatNumber": 2,
-                "racerNumber": 3976,
-                "status": "06"
+                "boatNumber": 4,
+                "racerNumber": 3388,
+                "status": "01"
               },
               {
                 "boatNumber": 3,
@@ -39268,9 +39060,9 @@
                 "status": "02"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 3388,
-                "status": "01"
+                "boatNumber": 1,
+                "racerNumber": 5312,
+                "status": "03"
               },
               {
                 "boatNumber": 5,
@@ -39281,15 +39073,17 @@
                 "boatNumber": 6,
                 "racerNumber": 5448,
                 "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3976,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:02.091679+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=2",
             "kimarite": "まくり差し"
           },
           "environment": {
@@ -39311,11 +39105,6 @@
             "previewFetchedAt": "2026-10-19T19:15:52.176622+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:57:20.570595+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:02.515628+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=2"
           }
         },
         {
@@ -39593,21 +39382,6 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4740,
-                "status": "05"
-              },
-              {
-                "boatNumber": 3,
-                "racerNumber": 4630,
-                "status": "04"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 4988,
-                "status": "06"
-              },
-              {
                 "boatNumber": 5,
                 "racerNumber": 4434,
                 "status": "02"
@@ -39616,15 +39390,27 @@
                 "boatNumber": 6,
                 "racerNumber": 4350,
                 "status": "03"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4630,
+                "status": "04"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4740,
+                "status": "05"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4988,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:05.591849+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=3",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -39646,11 +39432,6 @@
             "previewFetchedAt": "2026-10-19T19:15:57.994910+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:57:11.038019+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:05.976630+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=3"
           }
         },
         {
@@ -39808,7 +39589,7 @@
                 "position": 2,
                 "boatNumber": 5,
                 "racerNumber": 4236,
-                "name": "松村敏"
+                "name": "松村 敏"
               },
               {
                 "position": 3,
@@ -39910,24 +39691,9 @@
             },
             "statuses": [
               {
-                "boatNumber": 1,
-                "racerNumber": 5385,
-                "status": "06"
-              },
-              {
-                "boatNumber": 2,
-                "racerNumber": 3621,
-                "status": "04"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 4910,
                 "status": "01"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 4219,
-                "status": "03"
               },
               {
                 "boatNumber": 5,
@@ -39935,18 +39701,30 @@
                 "status": "02"
               },
               {
+                "boatNumber": 4,
+                "racerNumber": 4219,
+                "status": "03"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 3621,
+                "status": "04"
+              },
+              {
                 "boatNumber": 6,
                 "racerNumber": 5450,
                 "status": "05"
+              },
+              {
+                "boatNumber": 1,
+                "racerNumber": 5385,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:09.102736+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=4",
             "kimarite": "まくり"
           },
           "environment": {
@@ -39968,11 +39746,6 @@
             "previewFetchedAt": "2026-10-19T19:15:56.599241+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:57:02.564148+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:09.417548+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=4"
           }
         },
         {
@@ -39990,15 +39763,15 @@
               "weight": 56.0,
               "motorNumber": 48,
               "boatPart": 22,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.98,
               "national2Rate": 31.33,
               "national3Rate": 46.99,
               "localWinRate": 0.5,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 33.05,
               "motor3Rate": 50.85,
               "boat2Rate": 32.11,
@@ -40015,15 +39788,15 @@
               "weight": 53.0,
               "motorNumber": 62,
               "boatPart": 68,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 5.04,
               "national2Rate": 32.22,
               "national3Rate": 43.33,
               "localWinRate": 5.11,
               "local2Rate": 34.21,
               "local3Rate": 47.37,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 42.61,
               "motor3Rate": 61.74,
               "boat2Rate": 41.82,
@@ -40040,15 +39813,15 @@
               "weight": 52.0,
               "motorNumber": 21,
               "boatPart": 43,
-              "flyingCount": 2,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 4.21,
               "national2Rate": 28.57,
               "national3Rate": 39.29,
               "localWinRate": 5.63,
               "local2Rate": 37.04,
               "local3Rate": 48.15,
+              "averageStart": 0.13,
+              "flyingCount": 2,
+              "lateCount": 0,
               "motor2Rate": 42.11,
               "motor3Rate": 56.14,
               "boat2Rate": 38.89,
@@ -40065,15 +39838,15 @@
               "weight": 54.0,
               "motorNumber": 44,
               "boatPart": 30,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.12,
               "nationalWinRate": 7.2,
               "national2Rate": 61.54,
               "national3Rate": 73.5,
               "localWinRate": 7.78,
               "local2Rate": 64.86,
               "local3Rate": 78.38,
+              "averageStart": 0.12,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 30.33,
               "motor3Rate": 48.36,
               "boat2Rate": 30.56,
@@ -40090,15 +39863,15 @@
               "weight": 57.0,
               "motorNumber": 12,
               "boatPart": 59,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 4.59,
               "national2Rate": 26.17,
               "national3Rate": 38.32,
               "localWinRate": 4.81,
               "local2Rate": 30.77,
               "local3Rate": 38.46,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 52.29,
               "motor3Rate": 65.14,
               "boat2Rate": 32.32,
@@ -40115,15 +39888,15 @@
               "weight": 57.0,
               "motorNumber": 67,
               "boatPart": 31,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.73,
               "national2Rate": 25.69,
               "national3Rate": 44.04,
               "localWinRate": 5.08,
               "local2Rate": 34.02,
               "local3Rate": 48.45,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 50.47,
               "motor3Rate": 63.55,
               "boat2Rate": 34.55,
@@ -40137,13 +39910,13 @@
                 "position": 1,
                 "boatNumber": 1,
                 "racerNumber": 5009,
-                "name": "大賀龍之介"
+                "name": "大賀龍之"
               },
               {
                 "position": 2,
                 "boatNumber": 5,
                 "racerNumber": 3863,
-                "name": "海老澤泰行"
+                "name": "海老澤泰"
               },
               {
                 "position": 3,
@@ -40155,7 +39928,7 @@
                 "position": 4,
                 "boatNumber": 6,
                 "racerNumber": 4158,
-                "name": "木場雄二郎"
+                "name": "木場雄二"
               },
               {
                 "position": 5,
@@ -40250,6 +40023,21 @@
                 "status": "01"
               },
               {
+                "boatNumber": 5,
+                "racerNumber": 3863,
+                "status": "02"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4288,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4158,
+                "status": "04"
+              },
+              {
                 "boatNumber": 2,
                 "racerNumber": 5207,
                 "status": "05"
@@ -40258,30 +40046,12 @@
                 "boatNumber": 3,
                 "racerNumber": 4889,
                 "status": "06"
-              },
-              {
-                "boatNumber": 4,
-                "racerNumber": 4288,
-                "status": "03"
-              },
-              {
-                "boatNumber": 5,
-                "racerNumber": 3863,
-                "status": "02"
-              },
-              {
-                "boatNumber": 6,
-                "racerNumber": 4158,
-                "status": "04"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T21:54:12.669343+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=5",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -40303,11 +40073,6 @@
             "previewFetchedAt": "2026-10-19T20:07:48.650662+09:00",
             "resultDetail": "official-raceresult",
             "resultDetailFetchedAt": "2026-10-19T21:56:54.122087+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T21:54:13.001387+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=5"
           }
         },
         {
@@ -40325,15 +40090,15 @@
               "weight": 56.0,
               "motorNumber": 42,
               "boatPart": 51,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.8,
               "national2Rate": 37.39,
               "national3Rate": 60.0,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 31.3,
               "motor3Rate": 46.09,
               "boat2Rate": 44.44,
@@ -40350,15 +40115,15 @@
               "weight": 52.0,
               "motorNumber": 51,
               "boatPart": 14,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 6.62,
               "national2Rate": 48.67,
               "national3Rate": 65.49,
               "localWinRate": 6.93,
               "local2Rate": 59.26,
               "local3Rate": 70.37,
+              "averageStart": 0.13,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 29.82,
               "motor3Rate": 40.35,
               "boat2Rate": 33.03,
@@ -40375,15 +40140,15 @@
               "weight": 53.0,
               "motorNumber": 33,
               "boatPart": 49,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 5.9,
               "national2Rate": 32.0,
               "national3Rate": 53.0,
               "localWinRate": 7.13,
               "local2Rate": 57.45,
               "local3Rate": 68.09,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 31.78,
               "motor3Rate": 52.34,
               "boat2Rate": 39.45,
@@ -40400,15 +40165,15 @@
               "weight": 52.0,
               "motorNumber": 57,
               "boatPart": 53,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.59,
               "national2Rate": 27.03,
               "national3Rate": 43.24,
               "localWinRate": 5.09,
               "local2Rate": 28.57,
               "local3Rate": 51.43,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 42.86,
               "motor3Rate": 58.93,
               "boat2Rate": 35.19,
@@ -40437,15 +40202,15 @@
               "weight": 56.0,
               "motorNumber": 14,
               "boatPart": 17,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 6.35,
               "national2Rate": 45.67,
               "national3Rate": 63.78,
               "localWinRate": 5.9,
               "local2Rate": 38.78,
               "local3Rate": 63.27,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 38.53,
               "motor3Rate": 60.55,
               "boat2Rate": 33.33,
@@ -40572,6 +40337,11 @@
                 "status": "01"
               },
               {
+                "boatNumber": 6,
+                "racerNumber": 4287,
+                "status": "02"
+              },
+              {
                 "boatNumber": 2,
                 "racerNumber": 4643,
                 "status": "03"
@@ -40590,20 +40360,12 @@
                 "boatNumber": 5,
                 "racerNumber": 5448,
                 "status": "06"
-              },
-              {
-                "boatNumber": 6,
-                "racerNumber": 4287,
-                "status": "02"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:25.538446+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=6",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -40624,11 +40386,6 @@
             "previewFetchedAt": "2026-10-19T20:07:18.348164+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:15:03.202031+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:25.776212+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=6"
           }
         },
         {
@@ -40646,15 +40403,15 @@
               "weight": 54.0,
               "motorNumber": 52,
               "boatPart": 64,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.21,
               "national2Rate": 48.03,
               "national3Rate": 63.78,
               "localWinRate": 5.53,
               "local2Rate": 36.11,
               "local3Rate": 55.56,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.95,
               "motor3Rate": 50.49,
               "boat2Rate": 36.61,
@@ -40671,15 +40428,15 @@
               "weight": 54.0,
               "motorNumber": 39,
               "boatPart": 63,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.21,
               "nationalWinRate": 4.09,
               "national2Rate": 22.34,
               "national3Rate": 29.79,
               "localWinRate": 4.43,
               "local2Rate": 26.19,
               "local3Rate": 33.33,
+              "averageStart": 0.21,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 40.0,
               "motor3Rate": 51.82,
               "boat2Rate": 31.86,
@@ -40696,15 +40453,15 @@
               "weight": 53.0,
               "motorNumber": 17,
               "boatPart": 38,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 4.08,
               "national2Rate": 24.14,
               "national3Rate": 35.63,
               "localWinRate": 1.6,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.18,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 49.53,
               "motor3Rate": 68.22,
               "boat2Rate": 35.45,
@@ -40721,15 +40478,15 @@
               "weight": 53.0,
               "motorNumber": 46,
               "boatPart": 33,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.25,
               "national2Rate": 45.83,
               "national3Rate": 62.5,
               "localWinRate": 6.54,
               "local2Rate": 47.47,
               "local3Rate": 68.69,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 42.98,
               "motor3Rate": 70.18,
               "boat2Rate": 31.07,
@@ -40746,15 +40503,15 @@
               "weight": 54.0,
               "motorNumber": 70,
               "boatPart": 26,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.09,
               "national2Rate": 21.05,
               "national3Rate": 36.84,
               "localWinRate": 3.98,
               "local2Rate": 22.5,
               "local3Rate": 30.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 28.3,
               "motor3Rate": 46.23,
               "boat2Rate": 32.74,
@@ -40771,15 +40528,15 @@
               "weight": 53.0,
               "motorNumber": 38,
               "boatPart": 25,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.21,
               "nationalWinRate": 4.35,
               "national2Rate": 19.15,
               "national3Rate": 41.49,
               "localWinRate": 3.06,
               "local2Rate": 5.88,
               "local3Rate": 23.53,
+              "averageStart": 0.21,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 37.86,
               "motor3Rate": 47.57,
               "boat2Rate": 43.52,
@@ -40805,7 +40562,7 @@
                 "position": 3,
                 "boatNumber": 3,
                 "racerNumber": 5284,
-                "name": "嘉手苅徹哉"
+                "name": "嘉手苅徹"
               },
               {
                 "position": 4,
@@ -40906,9 +40663,9 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 3224,
-                "status": "04"
+                "boatNumber": 4,
+                "racerNumber": 4239,
+                "status": "02"
               },
               {
                 "boatNumber": 3,
@@ -40916,9 +40673,9 @@
                 "status": "03"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 4239,
-                "status": "02"
+                "boatNumber": 2,
+                "racerNumber": 3224,
+                "status": "04"
               },
               {
                 "boatNumber": 5,
@@ -40935,9 +40692,6 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:28.712268+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=7",
             "kimarite": "逃げ"
           },
           "odds": {
@@ -41250,11 +41004,6 @@
             "previewFetchedAt": "2026-10-19T22:16:58.347687+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:34.100979+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:28.976390+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=7"
           }
         },
         {
@@ -41272,15 +41021,15 @@
               "weight": 56.0,
               "motorNumber": 35,
               "boatPart": 60,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 4.12,
               "national2Rate": 26.67,
               "national3Rate": 36.0,
               "localWinRate": 4.57,
               "local2Rate": 28.57,
               "local3Rate": 42.86,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 28.7,
               "motor3Rate": 49.07,
               "boat2Rate": 39.81,
@@ -41297,15 +41046,15 @@
               "weight": 52.0,
               "motorNumber": 40,
               "boatPart": 69,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.2,
               "nationalWinRate": 5.14,
               "national2Rate": 35.0,
               "national3Rate": 51.0,
               "localWinRate": 5.14,
               "local2Rate": 27.59,
               "local3Rate": 48.28,
+              "averageStart": 0.2,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 40.57,
               "motor3Rate": 55.66,
               "boat2Rate": 43.12,
@@ -41322,15 +41071,15 @@
               "weight": 55.0,
               "motorNumber": 56,
               "boatPart": 57,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.33,
               "national2Rate": 46.22,
               "national3Rate": 64.71,
               "localWinRate": 6.5,
               "local2Rate": 37.5,
               "local3Rate": 50.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.91,
               "motor3Rate": 50.94,
               "boat2Rate": 31.78,
@@ -41347,15 +41096,15 @@
               "weight": 53.0,
               "motorNumber": 16,
               "boatPart": 21,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.21,
               "nationalWinRate": 4.31,
               "national2Rate": 21.51,
               "national3Rate": 36.56,
               "localWinRate": 3.75,
               "local2Rate": 16.67,
               "local3Rate": 33.33,
+              "averageStart": 0.21,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.55,
               "motor3Rate": 53.64,
               "boat2Rate": 33.33,
@@ -41372,15 +41121,15 @@
               "weight": 55.0,
               "motorNumber": 50,
               "boatPart": 13,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 3.04,
               "national2Rate": 8.97,
               "national3Rate": 23.08,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.14,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 33.01,
               "motor3Rate": 42.72,
               "boat2Rate": 29.63,
@@ -41397,15 +41146,15 @@
               "weight": 51.0,
               "motorNumber": 59,
               "boatPart": 55,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.14,
               "nationalWinRate": 5.58,
               "national2Rate": 36.05,
               "national3Rate": 55.81,
               "localWinRate": 5.36,
               "local2Rate": 40.0,
               "local3Rate": 60.0,
+              "averageStart": 0.14,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 37.17,
               "motor3Rate": 55.75,
               "boat2Rate": 37.17,
@@ -41419,7 +41168,7 @@
                 "position": 1,
                 "boatNumber": 3,
                 "racerNumber": 4977,
-                "name": "馬野耀"
+                "name": "馬野 耀"
               },
               {
                 "position": 2,
@@ -41527,6 +41276,11 @@
             },
             "statuses": [
               {
+                "boatNumber": 3,
+                "racerNumber": 4977,
+                "status": "01"
+              },
+              {
                 "boatNumber": 1,
                 "racerNumber": 4988,
                 "status": "02"
@@ -41535,11 +41289,6 @@
                 "boatNumber": 2,
                 "racerNumber": 4154,
                 "status": "03"
-              },
-              {
-                "boatNumber": 3,
-                "racerNumber": 4977,
-                "status": "01"
               },
               {
                 "boatNumber": 4,
@@ -41561,10 +41310,14 @@
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:31.880343+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=8",
             "kimarite": "抜き"
+          },
+          "environment": {
+            "airTemperature": 23.0,
+            "waterTemperature": 24.0,
+            "windSpeed": 0.0,
+            "waveHeight": 1.0,
+            "weather": "曇"
           },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
@@ -41577,18 +41330,6 @@
             "previewFetchedAt": "2026-10-19T22:16:39.647201+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:09.118493+09:00"
-          },
-          "environment": {
-            "airTemperature": 23.0,
-            "waterTemperature": 24.0,
-            "windSpeed": 0.0,
-            "waveHeight": 1.0,
-            "weather": "曇"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:32.110751+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=8"
           }
         },
         {
@@ -41606,15 +41347,15 @@
               "weight": 51.0,
               "motorNumber": 69,
               "boatPart": 71,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.77,
               "national2Rate": 50.98,
               "national3Rate": 68.63,
               "localWinRate": 6.9,
               "local2Rate": 50.0,
               "local3Rate": 75.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 43.75,
               "motor3Rate": 62.5,
               "boat2Rate": 30.84,
@@ -41631,15 +41372,15 @@
               "weight": 54.0,
               "motorNumber": 18,
               "boatPart": 67,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.08,
               "national2Rate": 45.83,
               "national3Rate": 59.17,
               "localWinRate": 5.61,
               "local2Rate": 28.57,
               "local3Rate": 51.79,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 49.07,
               "motor3Rate": 60.19,
               "boat2Rate": 35.45,
@@ -41656,15 +41397,15 @@
               "weight": 53.0,
               "motorNumber": 65,
               "boatPart": 58,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.2,
               "national2Rate": 38.1,
               "national3Rate": 59.52,
               "localWinRate": 7.31,
               "local2Rate": 45.71,
               "local3Rate": 65.71,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 32.14,
               "motor3Rate": 48.21,
               "boat2Rate": 41.44,
@@ -41681,15 +41422,15 @@
               "weight": 51.0,
               "motorNumber": 63,
               "boatPart": 35,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.82,
               "national2Rate": 53.17,
               "national3Rate": 65.87,
               "localWinRate": 5.39,
               "local2Rate": 32.14,
               "local3Rate": 57.14,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 40.38,
               "motor3Rate": 62.5,
               "boat2Rate": 32.11,
@@ -41706,15 +41447,15 @@
               "weight": 53.0,
               "motorNumber": 58,
               "boatPart": 27,
-              "flyingCount": 2,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.74,
               "national2Rate": 35.29,
               "national3Rate": 61.76,
               "localWinRate": 5.42,
               "local2Rate": 37.5,
               "local3Rate": 54.17,
+              "averageStart": 0.17,
+              "flyingCount": 2,
+              "lateCount": 0,
               "motor2Rate": 32.22,
               "motor3Rate": 41.11,
               "boat2Rate": 32.46,
@@ -41731,15 +41472,15 @@
               "weight": 56.0,
               "motorNumber": 48,
               "boatPart": 22,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.98,
               "national2Rate": 31.33,
               "national3Rate": 46.99,
               "localWinRate": 0.5,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 33.05,
               "motor3Rate": 50.85,
               "boat2Rate": 32.11,
@@ -41753,13 +41494,13 @@
                 "position": 1,
                 "boatNumber": 1,
                 "racerNumber": 5104,
-                "name": "山田丈"
+                "name": "山田 丈"
               },
               {
                 "position": 2,
                 "boatNumber": 3,
                 "racerNumber": 3388,
-                "name": "今垣光太郎"
+                "name": "今垣光太"
               },
               {
                 "position": 3,
@@ -41771,7 +41512,7 @@
                 "position": 4,
                 "boatNumber": 6,
                 "racerNumber": 5009,
-                "name": "大賀龍之介"
+                "name": "大賀龍之"
               },
               {
                 "position": 5,
@@ -41866,19 +41607,19 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4434,
-                "status": "03"
-              },
-              {
                 "boatNumber": 3,
                 "racerNumber": 3388,
                 "status": "02"
               },
               {
-                "boatNumber": 4,
-                "racerNumber": 4910,
-                "status": "06"
+                "boatNumber": 2,
+                "racerNumber": 4434,
+                "status": "03"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5009,
+                "status": "04"
               },
               {
                 "boatNumber": 5,
@@ -41886,18 +41627,15 @@
                 "status": "05"
               },
               {
-                "boatNumber": 6,
-                "racerNumber": 5009,
-                "status": "04"
+                "boatNumber": 4,
+                "racerNumber": 4910,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:35.015943+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=9",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -41919,11 +41657,6 @@
             "previewFetchedAt": "2026-10-19T21:56:43.747747+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:14:00.807588+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:35.256535+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=9"
           }
         },
         {
@@ -41941,15 +41674,15 @@
               "weight": 54.0,
               "motorNumber": 13,
               "boatPart": 40,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 8.06,
               "national2Rate": 65.65,
               "national3Rate": 80.92,
               "localWinRate": 7.17,
               "local2Rate": 45.65,
               "local3Rate": 63.04,
+              "averageStart": 0.13,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 32.67,
               "motor3Rate": 50.5,
               "boat2Rate": 37.04,
@@ -41966,15 +41699,15 @@
               "weight": 54.0,
               "motorNumber": 71,
               "boatPart": 19,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.11,
               "nationalWinRate": 7.61,
               "national2Rate": 66.07,
               "national3Rate": 85.71,
               "localWinRate": 8.28,
               "local2Rate": 72.0,
               "local3Rate": 92.0,
+              "averageStart": 0.11,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 40.38,
               "motor3Rate": 55.77,
               "boat2Rate": 32.11,
@@ -41991,15 +41724,15 @@
               "weight": 54.0,
               "motorNumber": 44,
               "boatPart": 30,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.12,
               "nationalWinRate": 7.2,
               "national2Rate": 61.54,
               "national3Rate": 73.5,
               "localWinRate": 7.78,
               "local2Rate": 64.86,
               "local3Rate": 78.38,
+              "averageStart": 0.12,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 30.33,
               "motor3Rate": 48.36,
               "boat2Rate": 30.56,
@@ -42016,15 +41749,15 @@
               "weight": 54.0,
               "motorNumber": 24,
               "boatPart": 34,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.19,
               "nationalWinRate": 5.21,
               "national2Rate": 32.93,
               "national3Rate": 50.0,
               "localWinRate": 6.35,
               "local2Rate": 42.31,
               "local3Rate": 65.38,
+              "averageStart": 0.19,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.78,
               "motor3Rate": 50.43,
               "boat2Rate": 35.14,
@@ -42041,15 +41774,15 @@
               "weight": 52.0,
               "motorNumber": 51,
               "boatPart": 14,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 6.62,
               "national2Rate": 48.67,
               "national3Rate": 65.49,
               "localWinRate": 6.93,
               "local2Rate": 59.26,
               "local3Rate": 70.37,
+              "averageStart": 0.13,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 29.82,
               "motor3Rate": 40.35,
               "boat2Rate": 33.03,
@@ -42066,15 +41799,15 @@
               "weight": 56.0,
               "motorNumber": 42,
               "boatPart": 51,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 5.8,
               "national2Rate": 37.39,
               "national3Rate": 60.0,
               "localWinRate": 0.0,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 31.3,
               "motor3Rate": 46.09,
               "boat2Rate": 44.44,
@@ -42118,7 +41851,7 @@
                 "position": 6,
                 "boatNumber": 2,
                 "racerNumber": 4236,
-                "name": "松村敏"
+                "name": "松村 敏"
               }
             ],
             "sanrensho": [
@@ -42201,14 +41934,9 @@
                 "status": "01"
               },
               {
-                "boatNumber": 2,
-                "racerNumber": 4236,
-                "status": "06"
-              },
-              {
-                "boatNumber": 3,
-                "racerNumber": 4288,
-                "status": "04"
+                "boatNumber": 5,
+                "racerNumber": 4643,
+                "status": "02"
               },
               {
                 "boatNumber": 4,
@@ -42216,23 +41944,25 @@
                 "status": "03"
               },
               {
-                "boatNumber": 5,
-                "racerNumber": 4643,
-                "status": "02"
+                "boatNumber": 3,
+                "racerNumber": 4288,
+                "status": "04"
               },
               {
                 "boatNumber": 6,
                 "racerNumber": 4430,
                 "status": "05"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4236,
+                "status": "06"
               }
             ],
             "refundBoats": [],
             "payoutStatus": "paid",
             "notEstablishedTypes": [],
             "settleable": true,
-            "source": "official-web-result",
-            "fetchedAt": "2026-10-19T22:13:38.241881+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=10",
             "kimarite": "逃げ"
           },
           "environment": {
@@ -42254,11 +41984,6 @@
             "previewFetchedAt": "2026-10-19T21:56:35.330281+09:00",
             "resultDetail": "official-raceresult-kimarite-v2",
             "resultDetailFetchedAt": "2026-10-19T22:13:51.539207+09:00"
-          },
-          "resultCheck": {
-            "state": "confirmed",
-            "checkedAt": "2026-10-19T22:13:38.504331+09:00",
-            "officialUrl": "https://www.boatrace.jp/owpc/pc/race/raceresult?hd=20261019&jcd=19&rno=10"
           }
         },
         {
@@ -42276,15 +42001,15 @@
               "weight": 56.0,
               "motorNumber": 14,
               "boatPart": 17,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 6.35,
               "national2Rate": 45.67,
               "national3Rate": 63.78,
               "localWinRate": 5.9,
               "local2Rate": 38.78,
               "local3Rate": 63.27,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 38.53,
               "motor3Rate": 60.55,
               "boat2Rate": 33.33,
@@ -42301,15 +42026,15 @@
               "weight": 53.0,
               "motorNumber": 43,
               "boatPart": 70,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.13,
               "nationalWinRate": 5.66,
               "national2Rate": 38.75,
               "national3Rate": 53.75,
               "localWinRate": 6.32,
               "local2Rate": 52.63,
               "local3Rate": 68.42,
+              "averageStart": 0.13,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 37.86,
               "motor3Rate": 47.57,
               "boat2Rate": 33.94,
@@ -42326,15 +42051,15 @@
               "weight": 53.0,
               "motorNumber": 46,
               "boatPart": 33,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.15,
               "nationalWinRate": 6.25,
               "national2Rate": 45.83,
               "national3Rate": 62.5,
               "localWinRate": 6.54,
               "local2Rate": 47.47,
               "local3Rate": 68.69,
+              "averageStart": 0.15,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 42.98,
               "motor3Rate": 70.18,
               "boat2Rate": 31.07,
@@ -42351,15 +42076,15 @@
               "weight": 53.0,
               "motorNumber": 33,
               "boatPart": 49,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 5.9,
               "national2Rate": 32.0,
               "national3Rate": 53.0,
               "localWinRate": 7.13,
               "local2Rate": 57.45,
               "local3Rate": 68.09,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 31.78,
               "motor3Rate": 52.34,
               "boat2Rate": 39.45,
@@ -42376,15 +42101,15 @@
               "weight": 53.0,
               "motorNumber": 62,
               "boatPart": 68,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 5.04,
               "national2Rate": 32.22,
               "national3Rate": 43.33,
               "localWinRate": 5.11,
               "local2Rate": 34.21,
               "local3Rate": 47.37,
+              "averageStart": 0.16,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 42.61,
               "motor3Rate": 61.74,
               "boat2Rate": 41.82,
@@ -42401,15 +42126,15 @@
               "weight": 54.0,
               "motorNumber": 52,
               "boatPart": 64,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.21,
               "national2Rate": 48.03,
               "national3Rate": 63.78,
               "localWinRate": 5.53,
               "local2Rate": 36.11,
               "local3Rate": 55.56,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.95,
               "motor3Rate": 50.49,
               "boat2Rate": 36.61,
@@ -42418,6 +42143,153 @@
             }
           ],
           "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 2,
+                "racerNumber": 5185,
+                "name": "加藤優弥"
+              },
+              {
+                "position": 2,
+                "boatNumber": 3,
+                "racerNumber": 4239,
+                "name": "竹田辰也"
+              },
+              {
+                "position": 3,
+                "boatNumber": 1,
+                "racerNumber": 4287,
+                "name": "今井貴士"
+              },
+              {
+                "position": 4,
+                "boatNumber": 5,
+                "racerNumber": 5207,
+                "name": "高山敬悟"
+              },
+              {
+                "position": 5,
+                "boatNumber": 4,
+                "racerNumber": 4227,
+                "name": "安達裕樹"
+              },
+              {
+                "position": 6,
+                "boatNumber": 6,
+                "racerNumber": 4531,
+                "name": "武富智亮"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "2-3-1",
+                "payout": 10120,
+                "popularity": 26
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "2",
+                  "payout": 960,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "2",
+                  "payout": 340,
+                  "popularity": null
+                },
+                {
+                  "combination": "3",
+                  "payout": 180,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "2-3",
+                  "payout": 7560,
+                  "popularity": 15
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "2-3",
+                  "payout": 2470,
+                  "popularity": 5
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "2-3",
+                  "payout": 320,
+                  "popularity": 7
+                },
+                {
+                  "combination": "1-2",
+                  "payout": 150,
+                  "popularity": 2
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 120,
+                  "popularity": 1
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "2-3-1",
+                  "payout": 10120,
+                  "popularity": 26
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-2-3",
+                  "payout": 290,
+                  "popularity": 1
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 2,
+                "racerNumber": 5185,
+                "status": "01"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 4239,
+                "status": "02"
+              },
+              {
+                "boatNumber": 1,
+                "racerNumber": 4287,
+                "status": "03"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 5207,
+                "status": "04"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 4227,
+                "status": "05"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 4531,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
             "kimarite": "差し"
           },
           "environment": {
@@ -42456,15 +42328,15 @@
               "weight": 55.0,
               "motorNumber": 56,
               "boatPart": 57,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 6.33,
               "national2Rate": 46.22,
               "national3Rate": 64.71,
               "localWinRate": 6.5,
               "local2Rate": 37.5,
               "local3Rate": 50.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 34.91,
               "motor3Rate": 50.94,
               "boat2Rate": 31.78,
@@ -42481,15 +42353,15 @@
               "weight": 54.0,
               "motorNumber": 70,
               "boatPart": 26,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.16,
               "nationalWinRate": 4.09,
               "national2Rate": 21.05,
               "national3Rate": 36.84,
               "localWinRate": 3.98,
               "local2Rate": 22.5,
               "local3Rate": 30.0,
+              "averageStart": 0.16,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 28.3,
               "motor3Rate": 46.23,
               "boat2Rate": 32.74,
@@ -42506,15 +42378,15 @@
               "weight": 51.0,
               "motorNumber": 49,
               "boatPart": 56,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 4.06,
               "national2Rate": 26.88,
               "national3Rate": 36.56,
               "localWinRate": 3.87,
               "local2Rate": 6.67,
               "local3Rate": 33.33,
+              "averageStart": 0.18,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 36.84,
               "motor3Rate": 49.12,
               "boat2Rate": 44.55,
@@ -42531,15 +42403,15 @@
               "weight": 53.0,
               "motorNumber": 15,
               "boatPart": 24,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 3.28,
               "national2Rate": 7.41,
               "national3Rate": 22.22,
               "localWinRate": 2.04,
               "local2Rate": 0.0,
               "local3Rate": 8.33,
+              "averageStart": 0.17,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 34.86,
               "motor3Rate": 45.87,
               "boat2Rate": 32.71,
@@ -42556,15 +42428,15 @@
               "weight": 53.0,
               "motorNumber": 30,
               "boatPart": 65,
-              "flyingCount": 0,
-              "lateCount": 0,
-              "averageStart": 0.17,
               "nationalWinRate": 3.65,
               "national2Rate": 19.78,
               "national3Rate": 27.47,
               "localWinRate": 4.4,
               "local2Rate": 28.57,
               "local3Rate": 38.1,
+              "averageStart": 0.17,
+              "flyingCount": 0,
+              "lateCount": 0,
               "motor2Rate": 38.68,
               "motor3Rate": 60.38,
               "boat2Rate": 37.61,
@@ -42581,15 +42453,15 @@
               "weight": 53.0,
               "motorNumber": 17,
               "boatPart": 38,
-              "flyingCount": 1,
-              "lateCount": 0,
-              "averageStart": 0.18,
               "nationalWinRate": 4.08,
               "national2Rate": 24.14,
               "national3Rate": 35.63,
               "localWinRate": 1.6,
               "local2Rate": 0.0,
               "local3Rate": 0.0,
+              "averageStart": 0.18,
+              "flyingCount": 1,
+              "lateCount": 0,
               "motor2Rate": 49.53,
               "motor3Rate": 68.22,
               "boat2Rate": 35.45,
@@ -42598,6 +42470,153 @@
             }
           ],
           "result": {
+            "finish": [
+              {
+                "position": 1,
+                "boatNumber": 1,
+                "racerNumber": 4977,
+                "name": "馬野 耀"
+              },
+              {
+                "position": 2,
+                "boatNumber": 4,
+                "racerNumber": 5312,
+                "name": "川辺郭人"
+              },
+              {
+                "position": 3,
+                "boatNumber": 3,
+                "racerNumber": 5022,
+                "name": "伊藤尚汰"
+              },
+              {
+                "position": 4,
+                "boatNumber": 2,
+                "racerNumber": 4563,
+                "name": "齋藤真之"
+              },
+              {
+                "position": 5,
+                "boatNumber": 6,
+                "racerNumber": 5284,
+                "name": "嘉手苅徹"
+              },
+              {
+                "position": 6,
+                "boatNumber": 5,
+                "racerNumber": 3976,
+                "name": "内田 圭"
+              }
+            ],
+            "sanrensho": [
+              {
+                "combination": "1-4-3",
+                "payout": 3420,
+                "popularity": 11
+              }
+            ],
+            "payouts": {
+              "win": [
+                {
+                  "combination": "1",
+                  "payout": 120,
+                  "popularity": null
+                }
+              ],
+              "place": [
+                {
+                  "combination": "1",
+                  "payout": 100,
+                  "popularity": null
+                },
+                {
+                  "combination": "4",
+                  "payout": 250,
+                  "popularity": null
+                }
+              ],
+              "exacta": [
+                {
+                  "combination": "1-4",
+                  "payout": 1390,
+                  "popularity": 5
+                }
+              ],
+              "quinella": [
+                {
+                  "combination": "1-4",
+                  "payout": 860,
+                  "popularity": 5
+                }
+              ],
+              "wide": [
+                {
+                  "combination": "1-4",
+                  "payout": 240,
+                  "popularity": 5
+                },
+                {
+                  "combination": "1-3",
+                  "payout": 140,
+                  "popularity": 1
+                },
+                {
+                  "combination": "3-4",
+                  "payout": 610,
+                  "popularity": 9
+                }
+              ],
+              "trifecta": [
+                {
+                  "combination": "1-4-3",
+                  "payout": 3420,
+                  "popularity": 11
+                }
+              ],
+              "trio": [
+                {
+                  "combination": "1-3-4",
+                  "payout": 600,
+                  "popularity": 3
+                }
+              ]
+            },
+            "statuses": [
+              {
+                "boatNumber": 1,
+                "racerNumber": 4977,
+                "status": "01"
+              },
+              {
+                "boatNumber": 4,
+                "racerNumber": 5312,
+                "status": "02"
+              },
+              {
+                "boatNumber": 3,
+                "racerNumber": 5022,
+                "status": "03"
+              },
+              {
+                "boatNumber": 2,
+                "racerNumber": 4563,
+                "status": "04"
+              },
+              {
+                "boatNumber": 6,
+                "racerNumber": 5284,
+                "status": "05"
+              },
+              {
+                "boatNumber": 5,
+                "racerNumber": 3976,
+                "status": "06"
+              }
+            ],
+            "refundBoats": [],
+            "payoutStatus": "paid",
+            "notEstablishedTypes": [],
+            "settleable": true,
             "kimarite": "逃げ"
           },
           "environment": {
@@ -46929,27 +46948,30 @@
       "19 下関 event: grade=一般 day=4日目 title=開催情報",
       "23 唐津 event: grade=GⅠ day=2日目 title=全日本王者決定戦(開設73周年記念)"
     ],
-    "performanceDebug": "96 races / 576 entries / 96 trifecta / 959 all payouts",
+    "performanceDebug": "132 races / 792 entries / 132 trifecta / 1319 all payouts",
     "performanceDetails": [
       "K261019.TXT:2 begin 23 唐津",
       "K261019.TXT:282 begin 19 下関",
-      "K261019.TXT:290 begin 18 徳山",
-      "K261019.TXT:570 begin 16 児島",
-      "K261019.TXT:850 begin 12 住之江",
-      "K261019.TXT:858 begin 10 三国",
-      "K261019.TXT:1138 begin 09 津",
-      "K261019.TXT:1418 begin 08 常滑",
-      "K261019.TXT:1698 begin 03 江戸川",
-      "K261019.TXT:1978 begin 02 戸田",
-      "K261019.TXT:2258 begin 01 桐生",
-      "K261019.TXT: 11 venue blocks / 96 races / 576 result rows / 96 sanrensho / 959 all payouts / fallbacks=0",
+      "K261019.TXT:562 begin 18 徳山",
+      "K261019.TXT:842 begin 16 児島",
+      "K261019.TXT:1122 begin 12 住之江",
+      "K261019.TXT:1402 begin 10 三国",
+      "K261019.TXT:1682 begin 09 津",
+      "K261019.TXT:1962 begin 08 常滑",
+      "K261019.TXT:2242 begin 03 江戸川",
+      "K261019.TXT:2522 begin 02 戸田",
+      "K261019.TXT:2802 begin 01 桐生",
+      "K261019.TXT: 11 venue blocks / 132 races / 792 result rows / 132 sanrensho / 1319 all payouts / fallbacks=0",
+      "01 桐生: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "02 戸田: 12 result races / 72 rows / 12 sanrensho / 119 all payouts",
       "03 江戸川: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "08 常滑: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "09 津: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "10 三国: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
+      "12 住之江: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "16 児島: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "18 徳山: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
+      "19 下関: 12 result races / 72 rows / 12 sanrensho / 120 all payouts",
       "23 唐津: 12 result races / 72 rows / 12 sanrensho / 120 all payouts"
     ],
     "scheduleFiles": [
@@ -46962,31 +46984,25 @@
       "scheduleVenues": 11,
       "scheduleRaces": 132,
       "scheduleEntries": 792,
-      "performanceRaces": 96,
-      "matchedResultRaces": 96,
-      "completedResultRaces": 130,
-      "resultRows": 576,
-      "sanrenshoPayouts": 96,
-      "totalPayoutEntries": 959,
+      "performanceRaces": 132,
+      "matchedResultRaces": 132,
+      "completedResultRaces": 132,
+      "resultRows": 792,
+      "sanrenshoPayouts": 132,
+      "totalPayoutEntries": 1319,
       "payoutsByType": {
-        "win": 96,
-        "place": 191,
-        "exacta": 96,
-        "quinella": 96,
-        "wide": 288,
-        "trifecta": 96,
-        "trio": 96
+        "win": 132,
+        "place": 263,
+        "exacta": 132,
+        "quinella": 132,
+        "wide": 396,
+        "trifecta": 132,
+        "trio": 132
       },
       "gradedVenues": 2,
-      "oddsRaces": 13,
-      "oddsEntries": 2756,
-      "lzhCompletedResultRaces": 96,
-      "webResultRaces": 34,
+      "lzhCompletedResultRaces": 132,
+      "webResultRaces": 0,
       "cachedWebResultRaces": 0
-    },
-    "oddsDebug": "cached=10 candidates=3 fetched=3 recent=0 requests=15 stored=13 entries=2756",
-    "fastResultDebug": "cached=0 candidates=18 fetched=18 pending=0 requests=18 selection=venue-round-robin storedWeb=34 total=130"
-  },
-  "raceCarteEnrichedAt": "2026-10-19T21:54:15.537789+09:00",
-  "raceCarteHistoryBackfilledAt": "2026-10-20T02:00:50.114362+09:00"
+    }
+  }
 }
