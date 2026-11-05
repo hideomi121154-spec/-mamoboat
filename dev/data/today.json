@@ -15,7 +15,8 @@
     "fastResults": "BOAT RACE 公式レース結果画面の終了レース限定チェック",
     "fastResultPolicy": "締切5分後から10分周期・未確定のみ・各場均等巡回・直列取得",
     "raceCarteEnrichment": "BOAT RACE official pcexpect/beforeinfo/raceresult",
-    "raceCarteEnrichmentPolicy": "upcoming-first static stats; final preview cached near close; kimarite after settlement"
+    "raceCarteEnrichmentPolicy": "upcoming-first static stats; final preview cached near close; kimarite after settlement",
+    "raceCarteHistoryBackfill": "recent incomplete races via validated official racelist/beforeinfo/raceresult; missing kimarite and missing stats retried until confirmed"
   },
   "venues": [
     {
@@ -722,7 +723,20 @@
               "weight": 53.0,
               "motorNumber": 71,
               "boatPart": 50,
-              "exhibitionTime": 6.91
+              "exhibitionTime": 6.91,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 6.15,
+              "national2Rate": 43.01,
+              "national3Rate": 63.44,
+              "localWinRate": 4.76,
+              "local2Rate": 30.95,
+              "local3Rate": 47.62,
+              "motor2Rate": 32.7,
+              "motor3Rate": 47.87,
+              "boat2Rate": 30.53,
+              "boat3Rate": 46.46
             },
             {
               "boatNumber": 2,
@@ -734,7 +748,20 @@
               "weight": 58.0,
               "motorNumber": 35,
               "boatPart": 75,
-              "exhibitionTime": 6.89
+              "exhibitionTime": 6.89,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.2,
+              "nationalWinRate": 3.18,
+              "national2Rate": 9.41,
+              "national3Rate": 22.35,
+              "localWinRate": 4.19,
+              "local2Rate": 11.11,
+              "local3Rate": 33.33,
+              "motor2Rate": 42.45,
+              "motor3Rate": 58.02,
+              "boat2Rate": 30.4,
+              "boat3Rate": 50.22
             },
             {
               "boatNumber": 3,
@@ -746,7 +773,20 @@
               "weight": 53.0,
               "motorNumber": 15,
               "boatPart": 21,
-              "exhibitionTime": 6.99
+              "exhibitionTime": 6.99,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 5.09,
+              "national2Rate": 28.0,
+              "national3Rate": 48.0,
+              "localWinRate": 6.18,
+              "local2Rate": 35.29,
+              "local3Rate": 58.82,
+              "motor2Rate": 38.99,
+              "motor3Rate": 54.09,
+              "boat2Rate": 31.44,
+              "boat3Rate": 54.15
             },
             {
               "boatNumber": 4,
@@ -758,7 +798,20 @@
               "weight": 52.0,
               "motorNumber": 32,
               "boatPart": 74,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 4.61,
+              "national2Rate": 29.58,
+              "national3Rate": 38.03,
+              "localWinRate": 6.0,
+              "local2Rate": 36.36,
+              "local3Rate": 54.55,
+              "motor2Rate": 43.78,
+              "motor3Rate": 60.0,
+              "boat2Rate": 33.33,
+              "boat3Rate": 52.38
             },
             {
               "boatNumber": 5,
@@ -770,7 +823,20 @@
               "weight": 59.0,
               "motorNumber": 53,
               "boatPart": 66,
-              "exhibitionTime": 6.9
+              "exhibitionTime": 6.9,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 6.09,
+              "national2Rate": 38.05,
+              "national3Rate": 62.83,
+              "localWinRate": 5.89,
+              "local2Rate": 39.47,
+              "local3Rate": 57.89,
+              "motor2Rate": 34.93,
+              "motor3Rate": 51.09,
+              "boat2Rate": 33.98,
+              "boat3Rate": 47.09
             },
             {
               "boatNumber": 6,
@@ -782,7 +848,20 @@
               "weight": 54.0,
               "motorNumber": 48,
               "boatPart": 52,
-              "exhibitionTime": 6.81
+              "exhibitionTime": 6.81,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 5.82,
+              "national2Rate": 40.17,
+              "national3Rate": 54.7,
+              "localWinRate": 6.18,
+              "local2Rate": 41.18,
+              "local3Rate": 47.06,
+              "motor2Rate": 32.07,
+              "motor3Rate": 51.48,
+              "boat2Rate": 37.95,
+              "boat3Rate": 56.25
             }
           ],
           "result": {
@@ -952,7 +1031,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=3",
-            "previewFetchedAt": "2026-11-05T17:21:59.416946+09:00"
+            "previewFetchedAt": "2026-11-05T17:21:59.416946+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=3",
+            "raceCardFetchedAt": "2026-11-05T23:57:09.997496+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -1948,7 +2031,8 @@
               "motor2Rate": 28.27,
               "motor3Rate": 40.31,
               "boat2Rate": 35.68,
-              "boat3Rate": 52.58
+              "boat3Rate": 52.58,
+              "exhibitionTime": 6.96
             },
             {
               "boatNumber": 2,
@@ -1959,7 +2043,8 @@
               "age": 61,
               "weight": 53.0,
               "motorNumber": 31,
-              "boatPart": 61
+              "boatPart": 61,
+              "exhibitionTime": 6.81
             },
             {
               "boatNumber": 3,
@@ -1983,7 +2068,8 @@
               "motor2Rate": 39.9,
               "motor3Rate": 59.11,
               "boat2Rate": 29.7,
-              "boat3Rate": 45.45
+              "boat3Rate": 45.45,
+              "exhibitionTime": 6.76
             },
             {
               "boatNumber": 4,
@@ -2007,7 +2093,8 @@
               "motor2Rate": 36.75,
               "motor3Rate": 54.27,
               "boat2Rate": 32.88,
-              "boat3Rate": 51.35
+              "boat3Rate": 51.35,
+              "exhibitionTime": 6.9
             },
             {
               "boatNumber": 5,
@@ -2031,7 +2118,8 @@
               "motor2Rate": 36.32,
               "motor3Rate": 55.72,
               "boat2Rate": 33.49,
-              "boat3Rate": 47.91
+              "boat3Rate": 47.91,
+              "exhibitionTime": 6.92
             },
             {
               "boatNumber": 6,
@@ -2042,15 +2130,18 @@
               "age": 19,
               "weight": 52.0,
               "motorNumber": 27,
-              "boatPart": 59
+              "boatPart": 59,
+              "exhibitionTime": 6.74
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "逃げ"
+          },
           "environment": {
-            "airTemperature": 15.0,
+            "airTemperature": 14.0,
             "waterTemperature": 16.0,
-            "windSpeed": 1.0,
-            "waveHeight": 1.0,
+            "windSpeed": 0.0,
+            "waveHeight": 0.0,
             "weather": "曇",
             "windDirection": "東南東"
           },
@@ -2059,10 +2150,12 @@
             "raceCardParsedRacers": 4,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=6",
             "raceCardFetchedAt": "2026-11-05T16:57:12.445530+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=6",
-            "previewFetchedAt": "2026-11-05T16:59:39.010683+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:27.599667+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:36.910012+09:00"
           }
         },
         {
@@ -2092,7 +2185,8 @@
               "motor2Rate": 30.45,
               "motor3Rate": 46.91,
               "boat2Rate": 36.52,
-              "boat3Rate": 51.74
+              "boat3Rate": 51.74,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 2,
@@ -2116,7 +2210,8 @@
               "motor2Rate": 39.35,
               "motor3Rate": 58.33,
               "boat2Rate": 37.78,
-              "boat3Rate": 58.67
+              "boat3Rate": 58.67,
+              "exhibitionTime": 6.73
             },
             {
               "boatNumber": 3,
@@ -2140,7 +2235,8 @@
               "motor2Rate": 43.98,
               "motor3Rate": 61.78,
               "boat2Rate": 37.17,
-              "boat3Rate": 52.65
+              "boat3Rate": 52.65,
+              "exhibitionTime": 6.74
             },
             {
               "boatNumber": 4,
@@ -2164,7 +2260,8 @@
               "motor2Rate": 37.91,
               "motor3Rate": 52.13,
               "boat2Rate": 40.57,
-              "boat3Rate": 52.36
+              "boat3Rate": 52.36,
+              "exhibitionTime": 6.71
             },
             {
               "boatNumber": 5,
@@ -2188,7 +2285,8 @@
               "motor2Rate": 32.51,
               "motor3Rate": 55.14,
               "boat2Rate": 40.09,
-              "boat3Rate": 58.59
+              "boat3Rate": 58.59,
+              "exhibitionTime": 6.64
             },
             {
               "boatNumber": 6,
@@ -2212,15 +2310,18 @@
               "motor2Rate": 43.39,
               "motor3Rate": 59.79,
               "boat2Rate": 33.19,
-              "boat3Rate": 45.41
+              "boat3Rate": 45.41,
+              "exhibitionTime": 6.87
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "まくり"
+          },
           "environment": {
-            "airTemperature": 15.0,
+            "airTemperature": 14.0,
             "waterTemperature": 16.0,
-            "windSpeed": 1.0,
-            "waveHeight": 1.0,
+            "windSpeed": 0.0,
+            "waveHeight": 0.0,
             "weather": "曇",
             "windDirection": "東南東"
           },
@@ -2229,10 +2330,12 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=7",
             "raceCardFetchedAt": "2026-11-05T16:57:38.655356+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=7",
-            "previewFetchedAt": "2026-11-05T17:00:07.180467+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:20.351805+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:28.763674+09:00"
           }
         },
         {
@@ -2262,7 +2365,8 @@
               "motor2Rate": 40.5,
               "motor3Rate": 60.0,
               "boat2Rate": 30.23,
-              "boat3Rate": 44.65
+              "boat3Rate": 44.65,
+              "exhibitionTime": 6.73
             },
             {
               "boatNumber": 2,
@@ -2286,7 +2390,8 @@
               "motor2Rate": 34.71,
               "motor3Rate": 48.35,
               "boat2Rate": 29.78,
-              "boat3Rate": 48.44
+              "boat3Rate": 48.44,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 3,
@@ -2310,7 +2415,8 @@
               "motor2Rate": 33.05,
               "motor3Rate": 51.05,
               "boat2Rate": 32.47,
-              "boat3Rate": 47.19
+              "boat3Rate": 47.19,
+              "exhibitionTime": 6.67
             },
             {
               "boatNumber": 4,
@@ -2334,7 +2440,8 @@
               "motor2Rate": 32.7,
               "motor3Rate": 47.87,
               "boat2Rate": 30.53,
-              "boat3Rate": 46.46
+              "boat3Rate": 46.46,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 5,
@@ -2358,7 +2465,8 @@
               "motor2Rate": 30.8,
               "motor3Rate": 47.26,
               "boat2Rate": 41.63,
-              "boat3Rate": 57.01
+              "boat3Rate": 57.01,
+              "exhibitionTime": 6.85
             },
             {
               "boatNumber": 6,
@@ -2382,12 +2490,15 @@
               "motor2Rate": 38.51,
               "motor3Rate": 60.92,
               "boat2Rate": 36.65,
-              "boat3Rate": 55.2
+              "boat3Rate": 55.2,
+              "exhibitionTime": 6.85
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "逃げ"
+          },
           "environment": {
-            "airTemperature": 14.0,
+            "airTemperature": 13.0,
             "waterTemperature": 16.0,
             "windSpeed": 0.0,
             "waveHeight": 0.0,
@@ -2398,10 +2509,12 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=8",
             "raceCardFetchedAt": "2026-11-05T16:58:06.597419+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=8",
-            "previewFetchedAt": "2026-11-05T17:21:22.794190+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:21.246643+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:29.811506+09:00"
           }
         },
         {
@@ -2431,7 +2544,8 @@
               "motor2Rate": 27.88,
               "motor3Rate": 43.81,
               "boat2Rate": 32.88,
-              "boat3Rate": 51.35
+              "boat3Rate": 51.35,
+              "exhibitionTime": 6.77
             },
             {
               "boatNumber": 2,
@@ -2455,7 +2569,8 @@
               "motor2Rate": 39.38,
               "motor3Rate": 63.21,
               "boat2Rate": 31.53,
-              "boat3Rate": 47.3
+              "boat3Rate": 47.3,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 3,
@@ -2479,7 +2594,8 @@
               "motor2Rate": 28.37,
               "motor3Rate": 44.71,
               "boat2Rate": 34.67,
-              "boat3Rate": 53.33
+              "boat3Rate": 53.33,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 4,
@@ -2503,7 +2619,8 @@
               "motor2Rate": 34.73,
               "motor3Rate": 48.54,
               "boat2Rate": 35.94,
-              "boat3Rate": 55.76
+              "boat3Rate": 55.76,
+              "exhibitionTime": 6.73
             },
             {
               "boatNumber": 5,
@@ -2527,7 +2644,8 @@
               "motor2Rate": 26.63,
               "motor3Rate": 45.23,
               "boat2Rate": 41.15,
-              "boat3Rate": 51.67
+              "boat3Rate": 51.67,
+              "exhibitionTime": 6.66
             },
             {
               "boatNumber": 6,
@@ -2551,16 +2669,32 @@
               "motor2Rate": 34.93,
               "motor3Rate": 51.09,
               "boat2Rate": 33.98,
-              "boat3Rate": 47.09
+              "boat3Rate": 47.09,
+              "exhibitionTime": 6.86
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "差し"
+          },
+          "environment": {
+            "airTemperature": 13.0,
+            "waterTemperature": 16.0,
+            "windSpeed": 1.0,
+            "waveHeight": 1.0,
+            "weather": "曇",
+            "windDirection": "南南西"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=9",
-            "raceCardFetchedAt": "2026-11-05T17:04:15.602226+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:04:15.602226+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=9",
+            "previewFetchedAt": "2026-11-05T23:56:37.823690+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:48.145610+09:00"
           }
         },
         {
@@ -2590,7 +2724,8 @@
               "motor2Rate": 34.56,
               "motor3Rate": 53.92,
               "boat2Rate": 35.68,
-              "boat3Rate": 49.78
+              "boat3Rate": 49.78,
+              "exhibitionTime": 6.7
             },
             {
               "boatNumber": 2,
@@ -2614,7 +2749,8 @@
               "motor2Rate": 28.95,
               "motor3Rate": 47.81,
               "boat2Rate": 30.0,
-              "boat3Rate": 48.18
+              "boat3Rate": 48.18,
+              "exhibitionTime": 6.93
             },
             {
               "boatNumber": 3,
@@ -2638,7 +2774,8 @@
               "motor2Rate": 33.07,
               "motor3Rate": 50.6,
               "boat2Rate": 31.05,
-              "boat3Rate": 47.37
+              "boat3Rate": 47.37,
+              "exhibitionTime": 6.91
             },
             {
               "boatNumber": 4,
@@ -2662,7 +2799,8 @@
               "motor2Rate": 39.04,
               "motor3Rate": 59.65,
               "boat2Rate": 32.49,
-              "boat3Rate": 51.9
+              "boat3Rate": 51.9,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 5,
@@ -2686,7 +2824,8 @@
               "motor2Rate": 38.02,
               "motor3Rate": 51.04,
               "boat2Rate": 29.9,
-              "boat3Rate": 48.53
+              "boat3Rate": 48.53,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 6,
@@ -2710,16 +2849,31 @@
               "motor2Rate": 38.99,
               "motor3Rate": 54.09,
               "boat2Rate": 31.44,
-              "boat3Rate": 54.15
+              "boat3Rate": 54.15,
+              "exhibitionTime": 6.9
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "差し"
+          },
+          "environment": {
+            "airTemperature": 13.0,
+            "waterTemperature": 16.0,
+            "windSpeed": 0.0,
+            "waveHeight": 0.0,
+            "weather": "曇"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=10",
-            "raceCardFetchedAt": "2026-11-05T17:04:42.827893+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:04:42.827893+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=10",
+            "previewFetchedAt": "2026-11-05T23:56:41.039416+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:51.321021+09:00"
           }
         },
         {
@@ -2749,7 +2903,8 @@
               "motor2Rate": 43.98,
               "motor3Rate": 61.78,
               "boat2Rate": 37.17,
-              "boat3Rate": 52.65
+              "boat3Rate": 52.65,
+              "exhibitionTime": 6.69
             },
             {
               "boatNumber": 2,
@@ -2773,7 +2928,8 @@
               "motor2Rate": 37.84,
               "motor3Rate": 51.8,
               "boat2Rate": 38.46,
-              "boat3Rate": 53.85
+              "boat3Rate": 53.85,
+              "exhibitionTime": 6.75
             },
             {
               "boatNumber": 3,
@@ -2797,7 +2953,8 @@
               "motor2Rate": 35.06,
               "motor3Rate": 51.95,
               "boat2Rate": 35.68,
-              "boat3Rate": 57.75
+              "boat3Rate": 57.75,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 4,
@@ -2821,7 +2978,8 @@
               "motor2Rate": 28.27,
               "motor3Rate": 40.31,
               "boat2Rate": 35.68,
-              "boat3Rate": 52.58
+              "boat3Rate": 52.58,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 5,
@@ -2845,7 +3003,8 @@
               "motor2Rate": 40.44,
               "motor3Rate": 56.0,
               "boat2Rate": 34.33,
-              "boat3Rate": 49.79
+              "boat3Rate": 49.79,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 6,
@@ -2869,16 +3028,32 @@
               "motor2Rate": 38.12,
               "motor3Rate": 53.81,
               "boat2Rate": 29.82,
-              "boat3Rate": 45.61
+              "boat3Rate": 45.61,
+              "exhibitionTime": 6.74
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 13.0,
+            "waterTemperature": 16.0,
+            "windSpeed": 2.0,
+            "waveHeight": 1.0,
+            "weather": "曇",
+            "windDirection": "東北東"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=11",
-            "raceCardFetchedAt": "2026-11-05T17:05:10.833225+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:05:10.833225+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=11",
+            "previewFetchedAt": "2026-11-05T23:56:48.324734+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:57.612383+09:00"
           }
         },
         {
@@ -2895,7 +3070,21 @@
               "age": 38,
               "weight": 52.0,
               "motorNumber": 51,
-              "boatPart": 17
+              "boatPart": 17,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 6.26,
+              "national2Rate": 40.0,
+              "national3Rate": 62.22,
+              "localWinRate": 6.24,
+              "local2Rate": 45.95,
+              "local3Rate": 64.86,
+              "motor2Rate": 35.58,
+              "motor3Rate": 47.12,
+              "boat2Rate": 40.18,
+              "boat3Rate": 59.82,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 2,
@@ -2906,7 +3095,21 @@
               "age": 51,
               "weight": 54.0,
               "motorNumber": 48,
-              "boatPart": 52
+              "boatPart": 52,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 5.82,
+              "national2Rate": 40.17,
+              "national3Rate": 54.7,
+              "localWinRate": 6.18,
+              "local2Rate": 41.18,
+              "local3Rate": 47.06,
+              "motor2Rate": 32.07,
+              "motor3Rate": 51.48,
+              "boat2Rate": 37.95,
+              "boat3Rate": 56.25,
+              "exhibitionTime": 6.9
             },
             {
               "boatNumber": 3,
@@ -2917,7 +3120,21 @@
               "age": 45,
               "weight": 54.0,
               "motorNumber": 60,
-              "boatPart": 57
+              "boatPart": 57,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 5.89,
+              "national2Rate": 39.13,
+              "national3Rate": 59.78,
+              "localWinRate": 5.95,
+              "local2Rate": 30.0,
+              "local3Rate": 60.0,
+              "motor2Rate": 37.91,
+              "motor3Rate": 52.13,
+              "boat2Rate": 40.57,
+              "boat3Rate": 52.36,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 4,
@@ -2928,7 +3145,21 @@
               "age": 43,
               "weight": 52.0,
               "motorNumber": 37,
-              "boatPart": 48
+              "boatPart": 48,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.98,
+              "national2Rate": 43.56,
+              "national3Rate": 61.39,
+              "localWinRate": 5.92,
+              "local2Rate": 40.16,
+              "local3Rate": 62.2,
+              "motor2Rate": 30.8,
+              "motor3Rate": 47.26,
+              "boat2Rate": 41.63,
+              "boat3Rate": 57.01,
+              "exhibitionTime": 6.79
             },
             {
               "boatNumber": 5,
@@ -2939,7 +3170,21 @@
               "age": 43,
               "weight": 50.0,
               "motorNumber": 34,
-              "boatPart": 54
+              "boatPart": 54,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.21,
+              "nationalWinRate": 4.5,
+              "national2Rate": 22.62,
+              "national3Rate": 40.48,
+              "localWinRate": 5.59,
+              "local2Rate": 34.38,
+              "local3Rate": 56.25,
+              "motor2Rate": 34.87,
+              "motor3Rate": 53.36,
+              "boat2Rate": 35.48,
+              "boat3Rate": 54.84,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 6,
@@ -2950,12 +3195,45 @@
               "age": 38,
               "weight": 52.0,
               "motorNumber": 28,
-              "boatPart": 62
+              "boatPart": 62,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 6.03,
+              "national2Rate": 45.83,
+              "national3Rate": 60.42,
+              "localWinRate": 5.39,
+              "local2Rate": 33.33,
+              "local3Rate": 50.0,
+              "motor2Rate": 37.56,
+              "motor3Rate": 53.99,
+              "boat2Rate": 31.8,
+              "boat3Rate": 48.85,
+              "exhibitionTime": 6.92
             }
           ],
-          "result": null,
-          "environment": {},
-          "carteSource": {}
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 13.0,
+            "waterTemperature": 16.0,
+            "windSpeed": 0.0,
+            "waveHeight": 0.0,
+            "weather": "曇"
+          },
+          "carteSource": {
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=01&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:56:19.433658+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=01&rno=12",
+            "previewFetchedAt": "2026-11-05T23:56:28.724172+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:37.973858+09:00"
+          }
         }
       ],
       "boatcast": "https://race.boatcast.jp/?jo=01"
@@ -6820,7 +7098,20 @@
               "weight": 52.0,
               "motorNumber": 22,
               "boatPart": 16,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 7.29,
+              "national2Rate": 56.57,
+              "national3Rate": 62.63,
+              "localWinRate": 7.38,
+              "local2Rate": 75.0,
+              "local3Rate": 75.0,
+              "motor2Rate": 30.19,
+              "motor3Rate": 38.68,
+              "boat2Rate": 38.24,
+              "boat3Rate": 54.9
             },
             {
               "boatNumber": 2,
@@ -6832,7 +7123,20 @@
               "weight": 54.0,
               "motorNumber": 20,
               "boatPart": 62,
-              "exhibitionTime": 6.93
+              "exhibitionTime": 6.93,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 6.35,
+              "national2Rate": 41.35,
+              "national3Rate": 62.5,
+              "localWinRate": 6.79,
+              "local2Rate": 50.0,
+              "local3Rate": 74.19,
+              "motor2Rate": 31.37,
+              "motor3Rate": 48.04,
+              "boat2Rate": 37.74,
+              "boat3Rate": 60.38
             },
             {
               "boatNumber": 3,
@@ -6844,7 +7148,20 @@
               "weight": 52.0,
               "motorNumber": 16,
               "boatPart": 11,
-              "exhibitionTime": 6.87
+              "exhibitionTime": 6.87,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.68,
+              "national2Rate": 51.91,
+              "national3Rate": 70.99,
+              "localWinRate": 6.0,
+              "local2Rate": 38.89,
+              "local3Rate": 61.11,
+              "motor2Rate": 35.0,
+              "motor3Rate": 52.0,
+              "boat2Rate": 25.0,
+              "boat3Rate": 43.27
             },
             {
               "boatNumber": 4,
@@ -6856,7 +7173,20 @@
               "weight": 52.0,
               "motorNumber": 62,
               "boatPart": 70,
-              "exhibitionTime": 6.91
+              "exhibitionTime": 6.91,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.5,
+              "national2Rate": 51.35,
+              "national3Rate": 67.57,
+              "localWinRate": 6.77,
+              "local2Rate": 53.33,
+              "local3Rate": 73.33,
+              "motor2Rate": 38.1,
+              "motor3Rate": 58.1,
+              "boat2Rate": 26.26,
+              "boat3Rate": 38.38
             },
             {
               "boatNumber": 5,
@@ -6868,7 +7198,20 @@
               "weight": 56.0,
               "motorNumber": 46,
               "boatPart": 23,
-              "exhibitionTime": 6.95
+              "exhibitionTime": 6.95,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.18,
+              "national2Rate": 40.21,
+              "national3Rate": 59.79,
+              "localWinRate": 6.35,
+              "local2Rate": 44.9,
+              "local3Rate": 61.22,
+              "motor2Rate": 37.62,
+              "motor3Rate": 50.5,
+              "boat2Rate": 23.71,
+              "boat3Rate": 50.52
             },
             {
               "boatNumber": 6,
@@ -6880,7 +7223,20 @@
               "weight": 54.0,
               "motorNumber": 19,
               "boatPart": 57,
-              "exhibitionTime": 6.96
+              "exhibitionTime": 6.96,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.87,
+              "national2Rate": 55.0,
+              "national3Rate": 74.0,
+              "localWinRate": 7.87,
+              "local2Rate": 69.57,
+              "local3Rate": 82.61,
+              "motor2Rate": 25.74,
+              "motor3Rate": 42.57,
+              "boat2Rate": 26.42,
+              "boat3Rate": 48.11
             }
           ],
           "result": {
@@ -7041,7 +7397,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=03&rno=12",
-            "previewFetchedAt": "2026-11-05T17:22:27.559833+09:00"
+            "previewFetchedAt": "2026-11-05T17:22:27.559833+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=03&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:57:06.958648+09:00"
           }
         }
       ],
@@ -10942,7 +11302,20 @@
               "weight": 53.0,
               "motorNumber": 56,
               "boatPart": 49,
-              "exhibitionTime": 6.83
+              "exhibitionTime": 6.83,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 6.8,
+              "national2Rate": 56.31,
+              "national3Rate": 70.87,
+              "localWinRate": 6.0,
+              "local2Rate": 22.22,
+              "local3Rate": 66.67,
+              "motor2Rate": 28.09,
+              "motor3Rate": 47.19,
+              "boat2Rate": 32.22,
+              "boat3Rate": 50.0
             },
             {
               "boatNumber": 2,
@@ -10954,7 +11327,20 @@
               "weight": 54.0,
               "motorNumber": 62,
               "boatPart": 36,
-              "exhibitionTime": 6.51
+              "exhibitionTime": 6.51,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 6.35,
+              "national2Rate": 47.06,
+              "national3Rate": 68.07,
+              "localWinRate": 6.89,
+              "local2Rate": 56.25,
+              "local3Rate": 71.25,
+              "motor2Rate": 39.13,
+              "motor3Rate": 56.52,
+              "boat2Rate": 24.68,
+              "boat3Rate": 49.35
             },
             {
               "boatNumber": 3,
@@ -10966,7 +11352,20 @@
               "weight": 52.0,
               "motorNumber": 37,
               "boatPart": 72,
-              "exhibitionTime": 6.81
+              "exhibitionTime": 6.81,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 4.71,
+              "national2Rate": 29.07,
+              "national3Rate": 41.86,
+              "localWinRate": 4.3,
+              "local2Rate": 20.0,
+              "local3Rate": 40.0,
+              "motor2Rate": 40.74,
+              "motor3Rate": 55.56,
+              "boat2Rate": 34.67,
+              "boat3Rate": 57.33
             },
             {
               "boatNumber": 4,
@@ -10978,7 +11377,20 @@
               "weight": 53.0,
               "motorNumber": 30,
               "boatPart": 26,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.32,
+              "national2Rate": 43.1,
+              "national3Rate": 68.97,
+              "localWinRate": 6.1,
+              "local2Rate": 40.0,
+              "local3Rate": 65.0,
+              "motor2Rate": 45.35,
+              "motor3Rate": 67.44,
+              "boat2Rate": 39.02,
+              "boat3Rate": 58.54
             },
             {
               "boatNumber": 5,
@@ -10990,7 +11402,20 @@
               "weight": 55.0,
               "motorNumber": 31,
               "boatPart": 24,
-              "exhibitionTime": 6.75
+              "exhibitionTime": 6.75,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.66,
+              "national2Rate": 39.29,
+              "national3Rate": 55.36,
+              "localWinRate": 5.63,
+              "local2Rate": 37.5,
+              "local3Rate": 50.0,
+              "motor2Rate": 25.71,
+              "motor3Rate": 40.0,
+              "boat2Rate": 39.56,
+              "boat3Rate": 56.04
             },
             {
               "boatNumber": 6,
@@ -11002,7 +11427,20 @@
               "weight": 51.0,
               "motorNumber": 16,
               "boatPart": 11,
-              "exhibitionTime": 6.75
+              "exhibitionTime": 6.75,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.62,
+              "national2Rate": 37.5,
+              "national3Rate": 57.81,
+              "localWinRate": 5.38,
+              "local2Rate": 30.77,
+              "local3Rate": 53.85,
+              "motor2Rate": 46.34,
+              "motor3Rate": 52.44,
+              "boat2Rate": 30.68,
+              "boat3Rate": 47.73
             }
           ],
           "result": {
@@ -11169,7 +11607,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=04&rno=12",
-            "previewFetchedAt": "2026-11-05T17:21:41.642433+09:00"
+            "previewFetchedAt": "2026-11-05T17:21:41.642433+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=04&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:57:11.963083+09:00"
           }
         }
       ],
@@ -15102,7 +15544,20 @@
               "weight": 54.0,
               "motorNumber": 12,
               "boatPart": 36,
-              "exhibitionTime": 6.63
+              "exhibitionTime": 6.63,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 6.43,
+              "national2Rate": 48.91,
+              "national3Rate": 61.96,
+              "localWinRate": 0.0,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 59.09,
+              "motor3Rate": 59.09,
+              "boat2Rate": 29.87,
+              "boat3Rate": 42.86
             },
             {
               "boatNumber": 2,
@@ -15114,7 +15569,20 @@
               "weight": 53.0,
               "motorNumber": 4,
               "boatPart": 46,
-              "exhibitionTime": 6.68
+              "exhibitionTime": 6.68,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 5.72,
+              "national2Rate": 36.7,
+              "national3Rate": 56.88,
+              "localWinRate": 6.44,
+              "local2Rate": 38.89,
+              "local3Rate": 66.67,
+              "motor2Rate": 57.89,
+              "motor3Rate": 63.16,
+              "boat2Rate": 25.97,
+              "boat3Rate": 42.86
             },
             {
               "boatNumber": 3,
@@ -15126,7 +15594,20 @@
               "weight": 53.0,
               "motorNumber": 8,
               "boatPart": 55,
-              "exhibitionTime": 6.6
+              "exhibitionTime": 6.6,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 6.28,
+              "national2Rate": 44.64,
+              "national3Rate": 57.14,
+              "localWinRate": 7.21,
+              "local2Rate": 62.07,
+              "local3Rate": 75.86,
+              "motor2Rate": 42.86,
+              "motor3Rate": 71.43,
+              "boat2Rate": 34.52,
+              "boat3Rate": 48.81
             },
             {
               "boatNumber": 4,
@@ -15138,7 +15619,20 @@
               "weight": 52.0,
               "motorNumber": 29,
               "boatPart": 78,
-              "exhibitionTime": 6.66
+              "exhibitionTime": 6.66,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.37,
+              "national2Rate": 32.43,
+              "national3Rate": 52.25,
+              "localWinRate": 5.12,
+              "local2Rate": 24.49,
+              "local3Rate": 51.02,
+              "motor2Rate": 12.5,
+              "motor3Rate": 25.0,
+              "boat2Rate": 36.47,
+              "boat3Rate": 48.24
             },
             {
               "boatNumber": 5,
@@ -15150,7 +15644,20 @@
               "weight": 52.0,
               "motorNumber": 6,
               "boatPart": 29,
-              "exhibitionTime": 6.6
+              "exhibitionTime": 6.6,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 4.53,
+              "national2Rate": 26.44,
+              "national3Rate": 40.23,
+              "localWinRate": 5.33,
+              "local2Rate": 37.04,
+              "local3Rate": 48.15,
+              "motor2Rate": 45.0,
+              "motor3Rate": 70.0,
+              "boat2Rate": 26.39,
+              "boat3Rate": 47.22
             },
             {
               "boatNumber": 6,
@@ -15162,7 +15669,20 @@
               "weight": 58.0,
               "motorNumber": 54,
               "boatPart": 43,
-              "exhibitionTime": 6.64
+              "exhibitionTime": 6.64,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.26,
+              "national2Rate": 40.34,
+              "national3Rate": 60.5,
+              "localWinRate": 5.92,
+              "local2Rate": 48.0,
+              "local3Rate": 56.0,
+              "motor2Rate": 52.38,
+              "motor3Rate": 66.67,
+              "boat2Rate": 31.08,
+              "boat3Rate": 48.65
             }
           ],
           "result": {
@@ -15325,7 +15845,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=08&rno=12",
-            "previewFetchedAt": "2026-11-05T17:22:19.168696+09:00"
+            "previewFetchedAt": "2026-11-05T17:22:19.168696+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=08&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:57:08.974775+09:00"
           }
         }
       ],
@@ -19223,7 +19747,20 @@
               "weight": 46.0,
               "motorNumber": 21,
               "boatPart": 69,
-              "exhibitionTime": 6.69
+              "exhibitionTime": 6.69,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.83,
+              "national2Rate": 38.05,
+              "national3Rate": 49.56,
+              "localWinRate": 7.33,
+              "local2Rate": 61.11,
+              "local3Rate": 61.11,
+              "motor2Rate": 36.07,
+              "motor3Rate": 55.19,
+              "boat2Rate": 35.41,
+              "boat3Rate": 55.02
             },
             {
               "boatNumber": 2,
@@ -19235,7 +19772,20 @@
               "weight": 44.0,
               "motorNumber": 67,
               "boatPart": 60,
-              "exhibitionTime": 6.74
+              "exhibitionTime": 6.74,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 6.07,
+              "national2Rate": 43.81,
+              "national3Rate": 64.76,
+              "localWinRate": 6.88,
+              "local2Rate": 57.69,
+              "local3Rate": 69.23,
+              "motor2Rate": 41.9,
+              "motor3Rate": 55.87,
+              "boat2Rate": 32.42,
+              "boat3Rate": 48.35
             },
             {
               "boatNumber": 3,
@@ -19247,7 +19797,20 @@
               "weight": 47.0,
               "motorNumber": 58,
               "boatPart": 11,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 6.96,
+              "national2Rate": 52.07,
+              "national3Rate": 72.73,
+              "localWinRate": 6.34,
+              "local2Rate": 50.0,
+              "local3Rate": 65.63,
+              "motor2Rate": 36.65,
+              "motor3Rate": 52.36,
+              "boat2Rate": 30.41,
+              "boat3Rate": 47.93
             },
             {
               "boatNumber": 4,
@@ -19259,7 +19822,20 @@
               "weight": 46.0,
               "motorNumber": 52,
               "boatPart": 63,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.78,
+              "national2Rate": 49.62,
+              "national3Rate": 68.42,
+              "localWinRate": 0.0,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 31.46,
+              "motor3Rate": 47.75,
+              "boat2Rate": 35.5,
+              "boat3Rate": 52.0
             },
             {
               "boatNumber": 5,
@@ -19271,7 +19847,20 @@
               "weight": 47.0,
               "motorNumber": 63,
               "boatPart": 18,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 6.31,
+              "national2Rate": 45.37,
+              "national3Rate": 61.11,
+              "localWinRate": 5.28,
+              "local2Rate": 38.89,
+              "local3Rate": 55.56,
+              "motor2Rate": 32.43,
+              "motor3Rate": 50.45,
+              "boat2Rate": 37.57,
+              "boat3Rate": 57.46
             },
             {
               "boatNumber": 6,
@@ -19283,7 +19872,20 @@
               "weight": 47.0,
               "motorNumber": 35,
               "boatPart": 22,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 7.22,
+              "national2Rate": 54.31,
+              "national3Rate": 76.72,
+              "localWinRate": 5.92,
+              "local2Rate": 40.82,
+              "local3Rate": 57.14,
+              "motor2Rate": 39.11,
+              "motor3Rate": 56.93,
+              "boat2Rate": 34.62,
+              "boat3Rate": 52.4
             }
           ],
           "result": {
@@ -19450,7 +20052,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=09&rno=12",
-            "previewFetchedAt": "2026-11-05T17:21:31.237574+09:00"
+            "previewFetchedAt": "2026-11-05T17:21:31.237574+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=09&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:57:12.425461+09:00"
           }
         }
       ],
@@ -29363,7 +29969,9 @@
               "exhibitionTime": 6.82
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "逃げ"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -29671,7 +30279,9 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=5",
-            "previewFetchedAt": "2026-11-05T17:05:28.629163+09:00"
+            "previewFetchedAt": "2026-11-05T17:05:28.629163+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:49.303480+09:00"
           }
         },
         {
@@ -29701,7 +30311,8 @@
               "motor2Rate": 29.23,
               "motor3Rate": 44.62,
               "boat2Rate": 41.94,
-              "boat3Rate": 59.68
+              "boat3Rate": 59.68,
+              "exhibitionTime": 6.79
             },
             {
               "boatNumber": 2,
@@ -29725,7 +30336,8 @@
               "motor2Rate": 45.11,
               "motor3Rate": 63.16,
               "boat2Rate": 30.47,
-              "boat3Rate": 47.66
+              "boat3Rate": 47.66,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 3,
@@ -29749,7 +30361,8 @@
               "motor2Rate": 32.09,
               "motor3Rate": 49.25,
               "boat2Rate": 31.09,
-              "boat3Rate": 50.42
+              "boat3Rate": 50.42,
+              "exhibitionTime": 6.86
             },
             {
               "boatNumber": 4,
@@ -29773,7 +30386,8 @@
               "motor2Rate": 35.07,
               "motor3Rate": 52.24,
               "boat2Rate": 36.67,
-              "boat3Rate": 55.83
+              "boat3Rate": 55.83,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 5,
@@ -29797,7 +30411,8 @@
               "motor2Rate": 37.19,
               "motor3Rate": 53.72,
               "boat2Rate": 35.94,
-              "boat3Rate": 51.56
+              "boat3Rate": 51.56,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 6,
@@ -29821,16 +30436,19 @@
               "motor2Rate": 38.58,
               "motor3Rate": 59.06,
               "boat2Rate": 40.17,
-              "boat3Rate": 54.7
+              "boat3Rate": 54.7,
+              "exhibitionTime": 6.84
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "まくり"
+          },
           "environment": {
-            "airTemperature": 21.0,
+            "airTemperature": 20.0,
             "waterTemperature": 19.0,
-            "windSpeed": 2.0,
+            "windSpeed": 1.0,
             "waveHeight": 1.0,
-            "weather": "曇",
+            "weather": "雨",
             "windDirection": "西"
           },
           "carteSource": {
@@ -29838,10 +30456,12 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=6",
             "raceCardFetchedAt": "2026-11-05T16:57:29.237737+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=6",
-            "previewFetchedAt": "2026-11-05T16:59:58.858903+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:19.224315+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:29.547408+09:00"
           }
         },
         {
@@ -29871,7 +30491,8 @@
               "motor2Rate": 28.79,
               "motor3Rate": 46.21,
               "boat2Rate": 33.07,
-              "boat3Rate": 49.61
+              "boat3Rate": 49.61,
+              "exhibitionTime": 6.79
             },
             {
               "boatNumber": 2,
@@ -29895,7 +30516,8 @@
               "motor2Rate": 33.07,
               "motor3Rate": 55.12,
               "boat2Rate": 36.52,
-              "boat3Rate": 55.65
+              "boat3Rate": 55.65,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 3,
@@ -29919,7 +30541,8 @@
               "motor2Rate": 39.2,
               "motor3Rate": 52.8,
               "boat2Rate": 30.23,
-              "boat3Rate": 45.74
+              "boat3Rate": 45.74,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 4,
@@ -29943,7 +30566,8 @@
               "motor2Rate": 30.89,
               "motor3Rate": 46.34,
               "boat2Rate": 30.71,
-              "boat3Rate": 44.88
+              "boat3Rate": 44.88,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 5,
@@ -29967,7 +30591,8 @@
               "motor2Rate": 40.6,
               "motor3Rate": 56.39,
               "boat2Rate": 28.46,
-              "boat3Rate": 43.09
+              "boat3Rate": 43.09,
+              "exhibitionTime": 6.79
             },
             {
               "boatNumber": 6,
@@ -29991,16 +30616,19 @@
               "motor2Rate": 38.52,
               "motor3Rate": 54.92,
               "boat2Rate": 31.36,
-              "boat3Rate": 44.07
+              "boat3Rate": 44.07,
+              "exhibitionTime": 6.8
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "逃げ"
+          },
           "environment": {
-            "airTemperature": 21.0,
+            "airTemperature": 20.0,
             "waterTemperature": 19.0,
-            "windSpeed": 2.0,
+            "windSpeed": 0.0,
             "waveHeight": 1.0,
-            "weather": "雨",
+            "weather": "曇",
             "windDirection": "西"
           },
           "carteSource": {
@@ -30008,10 +30636,12 @@
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=7",
             "raceCardFetchedAt": "2026-11-05T16:57:56.284516+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=7",
-            "previewFetchedAt": "2026-11-05T17:06:26.566377+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:19.342902+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:28.743051+09:00"
           }
         },
         {
@@ -30041,7 +30671,8 @@
               "motor2Rate": 45.74,
               "motor3Rate": 60.47,
               "boat2Rate": 38.14,
-              "boat3Rate": 55.93
+              "boat3Rate": 55.93,
+              "exhibitionTime": 6.8
             },
             {
               "boatNumber": 2,
@@ -30065,7 +30696,8 @@
               "motor2Rate": 32.12,
               "motor3Rate": 50.36,
               "boat2Rate": 33.33,
-              "boat3Rate": 56.41
+              "boat3Rate": 56.41,
+              "exhibitionTime": 6.9
             },
             {
               "boatNumber": 3,
@@ -30089,7 +30721,8 @@
               "motor2Rate": 35.34,
               "motor3Rate": 50.38,
               "boat2Rate": 36.13,
-              "boat3Rate": 51.26
+              "boat3Rate": 51.26,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 4,
@@ -30113,7 +30746,8 @@
               "motor2Rate": 36.72,
               "motor3Rate": 53.91,
               "boat2Rate": 41.46,
-              "boat3Rate": 57.72
+              "boat3Rate": 57.72,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 5,
@@ -30137,7 +30771,8 @@
               "motor2Rate": 32.85,
               "motor3Rate": 51.09,
               "boat2Rate": 38.79,
-              "boat3Rate": 62.93
+              "boat3Rate": 62.93,
+              "exhibitionTime": 6.8
             },
             {
               "boatNumber": 6,
@@ -30161,16 +30796,31 @@
               "motor2Rate": 33.58,
               "motor3Rate": 49.25,
               "boat2Rate": 31.4,
-              "boat3Rate": 52.89
+              "boat3Rate": 52.89,
+              "exhibitionTime": 6.9
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 20.0,
+            "waterTemperature": 19.0,
+            "windSpeed": 0.0,
+            "waveHeight": 1.0,
+            "weather": "雨"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=8",
-            "raceCardFetchedAt": "2026-11-05T17:04:05.156080+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:04:05.156080+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=8",
+            "previewFetchedAt": "2026-11-05T23:56:37.087644+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:45.469371+09:00"
           }
         },
         {
@@ -30200,7 +30850,8 @@
               "motor2Rate": 34.65,
               "motor3Rate": 54.33,
               "boat2Rate": 30.65,
-              "boat3Rate": 46.77
+              "boat3Rate": 46.77,
+              "exhibitionTime": 6.81
             },
             {
               "boatNumber": 2,
@@ -30224,7 +30875,8 @@
               "motor2Rate": 35.66,
               "motor3Rate": 54.26,
               "boat2Rate": 29.06,
-              "boat3Rate": 42.74
+              "boat3Rate": 42.74,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 3,
@@ -30248,7 +30900,8 @@
               "motor2Rate": 48.41,
               "motor3Rate": 62.7,
               "boat2Rate": 31.97,
-              "boat3Rate": 48.36
+              "boat3Rate": 48.36,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 4,
@@ -30272,7 +30925,8 @@
               "motor2Rate": 36.43,
               "motor3Rate": 51.94,
               "boat2Rate": 31.09,
-              "boat3Rate": 43.7
+              "boat3Rate": 43.7,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 5,
@@ -30296,7 +30950,8 @@
               "motor2Rate": 30.23,
               "motor3Rate": 41.09,
               "boat2Rate": 27.05,
-              "boat3Rate": 50.0
+              "boat3Rate": 50.0,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 6,
@@ -30320,16 +30975,31 @@
               "motor2Rate": 41.09,
               "motor3Rate": 60.47,
               "boat2Rate": 42.97,
-              "boat3Rate": 59.38
+              "boat3Rate": 59.38,
+              "exhibitionTime": 6.83
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 20.0,
+            "waterTemperature": 19.0,
+            "windSpeed": 0.0,
+            "waveHeight": 1.0,
+            "weather": "曇"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=9",
-            "raceCardFetchedAt": "2026-11-05T17:04:33.503943+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:04:33.503943+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=9",
+            "previewFetchedAt": "2026-11-05T23:56:38.113832+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:47.425236+09:00"
           }
         },
         {
@@ -30359,7 +31029,8 @@
               "motor2Rate": 37.19,
               "motor3Rate": 53.72,
               "boat2Rate": 35.94,
-              "boat3Rate": 51.56
+              "boat3Rate": 51.56,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 2,
@@ -30383,7 +31054,8 @@
               "motor2Rate": 31.39,
               "motor3Rate": 56.2,
               "boat2Rate": 36.29,
-              "boat3Rate": 46.77
+              "boat3Rate": 46.77,
+              "exhibitionTime": 6.85
             },
             {
               "boatNumber": 3,
@@ -30407,7 +31079,8 @@
               "motor2Rate": 28.57,
               "motor3Rate": 52.63,
               "boat2Rate": 32.54,
-              "boat3Rate": 51.59
+              "boat3Rate": 51.59,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 4,
@@ -30431,7 +31104,8 @@
               "motor2Rate": 36.09,
               "motor3Rate": 57.14,
               "boat2Rate": 46.43,
-              "boat3Rate": 59.82
+              "boat3Rate": 59.82,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 5,
@@ -30455,7 +31129,8 @@
               "motor2Rate": 44.44,
               "motor3Rate": 58.52,
               "boat2Rate": 31.96,
-              "boat3Rate": 48.45
+              "boat3Rate": 48.45,
+              "exhibitionTime": 6.86
             },
             {
               "boatNumber": 6,
@@ -30479,16 +31154,32 @@
               "motor2Rate": 32.06,
               "motor3Rate": 44.27,
               "boat2Rate": 36.89,
-              "boat3Rate": 53.28
+              "boat3Rate": 53.28,
+              "exhibitionTime": 6.89
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 20.0,
+            "waterTemperature": 19.0,
+            "windSpeed": 1.0,
+            "waveHeight": 1.0,
+            "weather": "曇",
+            "windDirection": "南東"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=10",
-            "raceCardFetchedAt": "2026-11-05T17:05:01.512199+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:05:01.512199+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=10",
+            "previewFetchedAt": "2026-11-05T23:56:46.199230+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:55.482361+09:00"
           }
         },
         {
@@ -30505,7 +31196,21 @@
               "age": 32,
               "weight": 51.0,
               "motorNumber": 11,
-              "boatPart": 65
+              "boatPart": 65,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 7.28,
+              "national2Rate": 40.4,
+              "national3Rate": 60.61,
+              "localWinRate": 7.7,
+              "local2Rate": 61.11,
+              "local3Rate": 74.44,
+              "motor2Rate": 39.84,
+              "motor3Rate": 54.69,
+              "boat2Rate": 35.48,
+              "boat3Rate": 56.45,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 2,
@@ -30516,7 +31221,21 @@
               "age": 38,
               "weight": 53.0,
               "motorNumber": 57,
-              "boatPart": 28
+              "boatPart": 28,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 7.16,
+              "national2Rate": 45.63,
+              "national3Rate": 64.08,
+              "localWinRate": 6.28,
+              "local2Rate": 32.76,
+              "local3Rate": 55.17,
+              "motor2Rate": 38.58,
+              "motor3Rate": 59.06,
+              "boat2Rate": 40.17,
+              "boat3Rate": 54.7,
+              "exhibitionTime": 6.86
             },
             {
               "boatNumber": 3,
@@ -30527,7 +31246,21 @@
               "age": 38,
               "weight": 52.0,
               "motorNumber": 35,
-              "boatPart": 57
+              "boatPart": 57,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.11,
+              "nationalWinRate": 6.83,
+              "national2Rate": 42.17,
+              "national3Rate": 61.45,
+              "localWinRate": 7.41,
+              "local2Rate": 53.06,
+              "local3Rate": 61.22,
+              "motor2Rate": 34.35,
+              "motor3Rate": 50.38,
+              "boat2Rate": 35.59,
+              "boat3Rate": 51.69,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 4,
@@ -30538,7 +31271,21 @@
               "age": 40,
               "weight": 52.0,
               "motorNumber": 29,
-              "boatPart": 29
+              "boatPart": 29,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 7.89,
+              "national2Rate": 43.21,
+              "national3Rate": 75.31,
+              "localWinRate": 8.03,
+              "local2Rate": 55.17,
+              "local3Rate": 72.41,
+              "motor2Rate": 48.85,
+              "motor3Rate": 63.36,
+              "boat2Rate": 36.13,
+              "boat3Rate": 51.26,
+              "exhibitionTime": 6.82
             },
             {
               "boatNumber": 5,
@@ -30549,7 +31296,21 @@
               "age": 39,
               "weight": 53.0,
               "motorNumber": 28,
-              "boatPart": 80
+              "boatPart": 80,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.55,
+              "national2Rate": 45.35,
+              "national3Rate": 60.47,
+              "localWinRate": 7.14,
+              "local2Rate": 40.91,
+              "local3Rate": 65.91,
+              "motor2Rate": 28.68,
+              "motor3Rate": 49.26,
+              "boat2Rate": 29.84,
+              "boat3Rate": 37.9,
+              "exhibitionTime": 6.86
             },
             {
               "boatNumber": 6,
@@ -30560,12 +31321,45 @@
               "age": 46,
               "weight": 52.0,
               "motorNumber": 27,
-              "boatPart": 31
+              "boatPart": 31,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 7.01,
+              "national2Rate": 40.95,
+              "national3Rate": 61.9,
+              "localWinRate": 6.81,
+              "local2Rate": 32.08,
+              "local3Rate": 52.83,
+              "motor2Rate": 36.15,
+              "motor3Rate": 56.92,
+              "boat2Rate": 40.34,
+              "boat3Rate": 55.46,
+              "exhibitionTime": 6.87
             }
           ],
-          "result": null,
-          "environment": {},
-          "carteSource": {}
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 20.0,
+            "waterTemperature": 19.0,
+            "windSpeed": 0.0,
+            "waveHeight": 1.0,
+            "weather": "曇"
+          },
+          "carteSource": {
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=11",
+            "raceCardFetchedAt": "2026-11-05T23:56:20.247864+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=11",
+            "previewFetchedAt": "2026-11-05T23:56:28.510215+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:38.775980+09:00"
+          }
         },
         {
           "number": 12,
@@ -30581,7 +31375,21 @@
               "age": 42,
               "weight": 54.0,
               "motorNumber": 58,
-              "boatPart": 86
+              "boatPart": 86,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 7.63,
+              "national2Rate": 55.74,
+              "national3Rate": 65.57,
+              "localWinRate": 7.94,
+              "local2Rate": 52.0,
+              "local3Rate": 68.0,
+              "motor2Rate": 40.77,
+              "motor3Rate": 56.15,
+              "boat2Rate": 29.6,
+              "boat3Rate": 46.4,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 2,
@@ -30592,7 +31400,21 @@
               "age": 56,
               "weight": 52.0,
               "motorNumber": 24,
-              "boatPart": 75
+              "boatPart": 75,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 6.99,
+              "national2Rate": 46.23,
+              "national3Rate": 60.38,
+              "localWinRate": 7.31,
+              "local2Rate": 54.55,
+              "local3Rate": 74.83,
+              "motor2Rate": 42.75,
+              "motor3Rate": 57.97,
+              "boat2Rate": 31.54,
+              "boat3Rate": 52.31,
+              "exhibitionTime": 6.86
             },
             {
               "boatNumber": 3,
@@ -30603,7 +31425,21 @@
               "age": 44,
               "weight": 54.0,
               "motorNumber": 79,
-              "boatPart": 25
+              "boatPart": 25,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 6.81,
+              "national2Rate": 53.93,
+              "national3Rate": 64.04,
+              "localWinRate": 6.63,
+              "local2Rate": 48.39,
+              "local3Rate": 63.23,
+              "motor2Rate": 37.1,
+              "motor3Rate": 58.06,
+              "boat2Rate": 33.06,
+              "boat3Rate": 49.19,
+              "exhibitionTime": 6.8
             },
             {
               "boatNumber": 4,
@@ -30614,7 +31450,21 @@
               "age": 44,
               "weight": 54.0,
               "motorNumber": 81,
-              "boatPart": 62
+              "boatPart": 62,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 7.19,
+              "national2Rate": 44.66,
+              "national3Rate": 63.11,
+              "localWinRate": 7.05,
+              "local2Rate": 42.11,
+              "local3Rate": 65.79,
+              "motor2Rate": 33.33,
+              "motor3Rate": 52.59,
+              "boat2Rate": 29.63,
+              "boat3Rate": 43.52,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 5,
@@ -30625,7 +31475,21 @@
               "age": 38,
               "weight": 53.0,
               "motorNumber": 39,
-              "boatPart": 66
+              "boatPart": 66,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 6.99,
+              "national2Rate": 43.9,
+              "national3Rate": 54.88,
+              "localWinRate": 6.59,
+              "local2Rate": 37.25,
+              "local3Rate": 47.06,
+              "motor2Rate": 37.3,
+              "motor3Rate": 49.21,
+              "boat2Rate": 34.48,
+              "boat3Rate": 47.41,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 6,
@@ -30636,12 +31500,45 @@
               "age": 36,
               "weight": 55.0,
               "motorNumber": 85,
-              "boatPart": 72
+              "boatPart": 72,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 7.6,
+              "national2Rate": 50.91,
+              "national3Rate": 71.82,
+              "localWinRate": 6.59,
+              "local2Rate": 34.09,
+              "local3Rate": 52.27,
+              "motor2Rate": 40.32,
+              "motor3Rate": 58.06,
+              "boat2Rate": 37.4,
+              "boat3Rate": 53.66,
+              "exhibitionTime": 6.86
             }
           ],
-          "result": null,
-          "environment": {},
-          "carteSource": {}
+          "result": {
+            "kimarite": "まくり差し"
+          },
+          "environment": {
+            "airTemperature": 20.0,
+            "waterTemperature": 19.0,
+            "windSpeed": 0.0,
+            "waveHeight": 1.0,
+            "weather": "曇"
+          },
+          "carteSource": {
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=12&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:56:19.388932+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=12&rno=12",
+            "previewFetchedAt": "2026-11-05T23:56:27.725196+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:36.007097+09:00"
+          }
         }
       ],
       "boatcast": "https://race.boatcast.jp/?jo=12"
@@ -31340,7 +32237,20 @@
               "weight": 53.0,
               "motorNumber": 53,
               "boatPart": 37,
-              "exhibitionTime": 6.95
+              "exhibitionTime": 6.95,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 4.07,
+              "national2Rate": 18.92,
+              "national3Rate": 31.08,
+              "localWinRate": 5.4,
+              "local2Rate": 40.0,
+              "local3Rate": 50.0,
+              "motor2Rate": 19.23,
+              "motor3Rate": 34.62,
+              "boat2Rate": 37.5,
+              "boat3Rate": 60.94
             },
             {
               "boatNumber": 2,
@@ -31351,7 +32261,20 @@
               "age": 59,
               "weight": 54.0,
               "motorNumber": 33,
-              "boatPart": 49
+              "boatPart": 49,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 5.98,
+              "national2Rate": 41.09,
+              "national3Rate": 55.81,
+              "localWinRate": 5.29,
+              "local2Rate": 28.95,
+              "local3Rate": 52.63,
+              "motor2Rate": 28.57,
+              "motor3Rate": 38.1,
+              "boat2Rate": 26.23,
+              "boat3Rate": 32.79
             },
             {
               "boatNumber": 3,
@@ -31363,7 +32286,20 @@
               "weight": 55.0,
               "motorNumber": 65,
               "boatPart": 28,
-              "exhibitionTime": 6.97
+              "exhibitionTime": 6.97,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 6.34,
+              "national2Rate": 47.46,
+              "national3Rate": 66.1,
+              "localWinRate": 6.12,
+              "local2Rate": 42.86,
+              "local3Rate": 64.29,
+              "motor2Rate": 39.13,
+              "motor3Rate": 69.57,
+              "boat2Rate": 21.31,
+              "boat3Rate": 36.07
             },
             {
               "boatNumber": 4,
@@ -31374,7 +32310,20 @@
               "age": 44,
               "weight": 52.0,
               "motorNumber": 59,
-              "boatPart": 51
+              "boatPart": 51,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 4.79,
+              "national2Rate": 26.37,
+              "national3Rate": 42.86,
+              "localWinRate": 5.17,
+              "local2Rate": 33.33,
+              "local3Rate": 56.67,
+              "motor2Rate": 16.0,
+              "motor3Rate": 40.0,
+              "boat2Rate": 32.81,
+              "boat3Rate": 48.44
             },
             {
               "boatNumber": 5,
@@ -31386,7 +32335,20 @@
               "weight": 52.0,
               "motorNumber": 56,
               "boatPart": 60,
-              "exhibitionTime": 6.97
+              "exhibitionTime": 6.97,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 4.65,
+              "national2Rate": 16.25,
+              "national3Rate": 47.5,
+              "localWinRate": 4.23,
+              "local2Rate": 17.95,
+              "local3Rate": 35.9,
+              "motor2Rate": 15.38,
+              "motor3Rate": 26.92,
+              "boat2Rate": 27.12,
+              "boat3Rate": 35.59
             },
             {
               "boatNumber": 6,
@@ -31398,7 +32360,20 @@
               "weight": 55.0,
               "motorNumber": 15,
               "boatPart": 23,
-              "exhibitionTime": 6.96
+              "exhibitionTime": 6.96,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 5.26,
+              "national2Rate": 29.55,
+              "national3Rate": 54.55,
+              "localWinRate": 0.0,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 28.0,
+              "motor3Rate": 48.0,
+              "boat2Rate": 27.42,
+              "boat3Rate": 38.71
             }
           ],
           "result": {
@@ -31568,7 +32543,11 @@
             "preview": "official-beforeinfo-v4-partial",
             "previewParsedRacers": 4,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=3",
-            "previewFetchedAt": "2026-11-05T17:21:50.031455+09:00"
+            "previewFetchedAt": "2026-11-05T17:21:50.031455+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=3",
+            "raceCardFetchedAt": "2026-11-05T23:56:53.785947+09:00"
           },
           "resultCheck": {
             "state": "confirmed",
@@ -32046,7 +33025,9 @@
               "exhibitionTime": 6.99
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "まくり差し"
+          },
           "odds": {
             "source": "official-web-snapshot",
             "policy": "scheduled-15-minute-refresh",
@@ -32354,7 +33335,9 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=5",
-            "previewFetchedAt": "2026-11-05T16:59:19.375074+09:00"
+            "previewFetchedAt": "2026-11-05T16:59:19.375074+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:30.697677+09:00"
           },
           "resultCheck": {
             "state": "waiting",
@@ -32389,7 +33372,8 @@
               "motor2Rate": 45.0,
               "motor3Rate": 60.0,
               "boat2Rate": 41.54,
-              "boat3Rate": 63.08
+              "boat3Rate": 63.08,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 2,
@@ -32413,7 +33397,8 @@
               "motor2Rate": 31.82,
               "motor3Rate": 50.0,
               "boat2Rate": 37.88,
-              "boat3Rate": 53.03
+              "boat3Rate": 53.03,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 3,
@@ -32437,7 +33422,8 @@
               "motor2Rate": 18.52,
               "motor3Rate": 29.63,
               "boat2Rate": 25.0,
-              "boat3Rate": 50.0
+              "boat3Rate": 50.0,
+              "exhibitionTime": 6.93
             },
             {
               "boatNumber": 4,
@@ -32461,7 +33447,8 @@
               "motor2Rate": 21.43,
               "motor3Rate": 42.86,
               "boat2Rate": 36.92,
-              "boat3Rate": 49.23
+              "boat3Rate": 49.23,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 5,
@@ -32472,7 +33459,8 @@
               "age": 20,
               "weight": 47.0,
               "motorNumber": 57,
-              "boatPart": 55
+              "boatPart": 55,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 6,
@@ -32496,27 +33484,32 @@
               "motor2Rate": 32.14,
               "motor3Rate": 46.43,
               "boat2Rate": 41.43,
-              "boat3Rate": 52.86
+              "boat3Rate": 52.86,
+              "exhibitionTime": 6.98
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "差し"
+          },
           "environment": {
             "airTemperature": 18.0,
             "waterTemperature": 22.0,
-            "windSpeed": 2.0,
-            "waveHeight": 2.0,
+            "windSpeed": 1.0,
+            "waveHeight": 1.0,
             "weather": "曇",
-            "windDirection": "北東"
+            "windDirection": "北西"
           },
           "carteSource": {
             "raceCard": "official-racelist-v4-partial",
             "raceCardParsedRacers": 5,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=6",
             "raceCardFetchedAt": "2026-11-05T16:57:20.812504+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=6",
-            "previewFetchedAt": "2026-11-05T16:59:49.437776+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:31.698441+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:41.009000+09:00"
           }
         },
         {
@@ -32546,7 +33539,8 @@
               "motor2Rate": 24.24,
               "motor3Rate": 36.36,
               "boat2Rate": 29.82,
-              "boat3Rate": 50.88
+              "boat3Rate": 50.88,
+              "exhibitionTime": 6.9
             },
             {
               "boatNumber": 2,
@@ -32570,7 +33564,8 @@
               "motor2Rate": 26.32,
               "motor3Rate": 36.84,
               "boat2Rate": 33.33,
-              "boat3Rate": 53.03
+              "boat3Rate": 53.03,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 3,
@@ -32594,7 +33589,8 @@
               "motor2Rate": 4.76,
               "motor3Rate": 9.52,
               "boat2Rate": 26.67,
-              "boat3Rate": 43.33
+              "boat3Rate": 43.33,
+              "exhibitionTime": 6.94
             },
             {
               "boatNumber": 4,
@@ -32618,7 +33614,8 @@
               "motor2Rate": 19.23,
               "motor3Rate": 34.62,
               "boat2Rate": 37.5,
-              "boat3Rate": 60.94
+              "boat3Rate": 60.94,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 5,
@@ -32642,7 +33639,8 @@
               "motor2Rate": 38.1,
               "motor3Rate": 61.9,
               "boat2Rate": 26.32,
-              "boat3Rate": 50.88
+              "boat3Rate": 50.88,
+              "exhibitionTime": 6.92
             },
             {
               "boatNumber": 6,
@@ -32666,27 +33664,32 @@
               "motor2Rate": 19.05,
               "motor3Rate": 57.14,
               "boat2Rate": 34.29,
-              "boat3Rate": 48.57
+              "boat3Rate": 48.57,
+              "exhibitionTime": 6.95
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "逃げ"
+          },
           "environment": {
             "airTemperature": 18.0,
             "waterTemperature": 22.0,
             "windSpeed": 2.0,
             "waveHeight": 2.0,
-            "weather": "曇",
-            "windDirection": "北東"
+            "weather": "雨",
+            "windDirection": "北西"
           },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=7",
             "raceCardFetchedAt": "2026-11-05T16:57:47.964912+09:00",
-            "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=7",
-            "previewFetchedAt": "2026-11-05T17:00:16.488760+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:21.359883+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:29.671198+09:00"
           }
         },
         {
@@ -32716,7 +33719,8 @@
               "motor2Rate": 40.74,
               "motor3Rate": 48.15,
               "boat2Rate": 42.25,
-              "boat3Rate": 59.15
+              "boat3Rate": 59.15,
+              "exhibitionTime": 6.92
             },
             {
               "boatNumber": 2,
@@ -32740,7 +33744,8 @@
               "motor2Rate": 5.56,
               "motor3Rate": 22.22,
               "boat2Rate": 20.34,
-              "boat3Rate": 32.2
+              "boat3Rate": 32.2,
+              "exhibitionTime": 6.92
             },
             {
               "boatNumber": 3,
@@ -32764,7 +33769,8 @@
               "motor2Rate": 22.73,
               "motor3Rate": 27.27,
               "boat2Rate": 30.77,
-              "boat3Rate": 44.62
+              "boat3Rate": 44.62,
+              "exhibitionTime": 6.97
             },
             {
               "boatNumber": 4,
@@ -32788,7 +33794,8 @@
               "motor2Rate": 20.0,
               "motor3Rate": 26.67,
               "boat2Rate": 32.26,
-              "boat3Rate": 40.32
+              "boat3Rate": 40.32,
+              "exhibitionTime": 6.92
             },
             {
               "boatNumber": 5,
@@ -32812,7 +33819,8 @@
               "motor2Rate": 43.75,
               "motor3Rate": 53.13,
               "boat2Rate": 25.86,
-              "boat3Rate": 51.72
+              "boat3Rate": 51.72,
+              "exhibitionTime": 6.95
             },
             {
               "boatNumber": 6,
@@ -32839,14 +33847,16 @@
               "boat3Rate": 44.07
             }
           ],
-          "result": null,
+          "result": {
+            "kimarite": "まくり差し"
+          },
           "environment": {
-            "airTemperature": 18.0,
+            "airTemperature": 19.0,
             "waterTemperature": 22.0,
-            "windSpeed": 2.0,
-            "waveHeight": 2.0,
+            "windSpeed": 1.0,
+            "waveHeight": 1.0,
             "weather": "曇",
-            "windDirection": "北東"
+            "windDirection": "東"
           },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
@@ -32854,9 +33864,11 @@
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=8",
             "raceCardFetchedAt": "2026-11-05T16:59:01.726500+09:00",
             "preview": "official-beforeinfo-v4-partial",
-            "previewParsedRacers": 0,
+            "previewParsedRacers": 5,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=8",
-            "previewFetchedAt": "2026-11-05T17:22:09.773101+09:00"
+            "previewFetchedAt": "2026-11-05T23:56:38.083208+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:46.473566+09:00"
           }
         },
         {
@@ -32910,7 +33922,8 @@
               "motor2Rate": 33.33,
               "motor3Rate": 55.56,
               "boat2Rate": 37.29,
-              "boat3Rate": 57.63
+              "boat3Rate": 57.63,
+              "exhibitionTime": 6.91
             },
             {
               "boatNumber": 3,
@@ -32934,7 +33947,8 @@
               "motor2Rate": 19.23,
               "motor3Rate": 34.62,
               "boat2Rate": 32.79,
-              "boat3Rate": 45.9
+              "boat3Rate": 45.9,
+              "exhibitionTime": 6.93
             },
             {
               "boatNumber": 4,
@@ -32958,7 +33972,8 @@
               "motor2Rate": 38.1,
               "motor3Rate": 57.14,
               "boat2Rate": 15.79,
-              "boat3Rate": 29.82
+              "boat3Rate": 29.82,
+              "exhibitionTime": 6.94
             },
             {
               "boatNumber": 5,
@@ -32982,7 +33997,8 @@
               "motor2Rate": 22.73,
               "motor3Rate": 40.91,
               "boat2Rate": 32.84,
-              "boat3Rate": 55.22
+              "boat3Rate": 55.22,
+              "exhibitionTime": 6.91
             },
             {
               "boatNumber": 6,
@@ -33006,16 +34022,31 @@
               "motor2Rate": 0.0,
               "motor3Rate": 8.0,
               "boat2Rate": 30.43,
-              "boat3Rate": 47.83
+              "boat3Rate": 47.83,
+              "exhibitionTime": 6.87
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 19.0,
+            "waterTemperature": 22.0,
+            "windSpeed": 0.0,
+            "waveHeight": 0.0,
+            "weather": "雨"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=9",
-            "raceCardFetchedAt": "2026-11-05T17:04:24.089945+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:04:24.089945+09:00",
+            "preview": "official-beforeinfo-v4-partial",
+            "previewParsedRacers": 5,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=9",
+            "previewFetchedAt": "2026-11-05T23:56:38.977601+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:49.281030+09:00"
           }
         },
         {
@@ -33045,7 +34076,8 @@
               "motor2Rate": 21.43,
               "motor3Rate": 42.86,
               "boat2Rate": 36.92,
-              "boat3Rate": 49.23
+              "boat3Rate": 49.23,
+              "exhibitionTime": 6.93
             },
             {
               "boatNumber": 2,
@@ -33069,7 +34101,8 @@
               "motor2Rate": 37.93,
               "motor3Rate": 44.83,
               "boat2Rate": 40.3,
-              "boat3Rate": 62.69
+              "boat3Rate": 62.69,
+              "exhibitionTime": 6.95
             },
             {
               "boatNumber": 3,
@@ -33093,7 +34126,8 @@
               "motor2Rate": 30.0,
               "motor3Rate": 60.0,
               "boat2Rate": 33.33,
-              "boat3Rate": 50.79
+              "boat3Rate": 50.79,
+              "exhibitionTime": 6.77
             },
             {
               "boatNumber": 4,
@@ -33117,7 +34151,8 @@
               "motor2Rate": 39.13,
               "motor3Rate": 69.57,
               "boat2Rate": 21.31,
-              "boat3Rate": 36.07
+              "boat3Rate": 36.07,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 5,
@@ -33141,7 +34176,8 @@
               "motor2Rate": 28.57,
               "motor3Rate": 38.1,
               "boat2Rate": 26.23,
-              "boat3Rate": 32.79
+              "boat3Rate": 32.79,
+              "exhibitionTime": 6.88
             },
             {
               "boatNumber": 6,
@@ -33165,16 +34201,31 @@
               "motor2Rate": 45.0,
               "motor3Rate": 60.0,
               "boat2Rate": 41.54,
-              "boat3Rate": 63.08
+              "boat3Rate": 63.08,
+              "exhibitionTime": 6.93
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 19.0,
+            "waterTemperature": 22.0,
+            "windSpeed": 0.0,
+            "waveHeight": 0.0,
+            "weather": "雨"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=10",
-            "raceCardFetchedAt": "2026-11-05T17:04:51.153103+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:04:51.153103+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=10",
+            "previewFetchedAt": "2026-11-05T23:56:44.409686+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:54.695618+09:00"
           }
         },
         {
@@ -33204,7 +34255,8 @@
               "motor2Rate": 19.05,
               "motor3Rate": 57.14,
               "boat2Rate": 34.29,
-              "boat3Rate": 48.57
+              "boat3Rate": 48.57,
+              "exhibitionTime": 6.9
             },
             {
               "boatNumber": 2,
@@ -33228,7 +34280,8 @@
               "motor2Rate": 24.24,
               "motor3Rate": 36.36,
               "boat2Rate": 29.82,
-              "boat3Rate": 50.88
+              "boat3Rate": 50.88,
+              "exhibitionTime": 6.87
             },
             {
               "boatNumber": 3,
@@ -33252,7 +34305,8 @@
               "motor2Rate": 40.74,
               "motor3Rate": 48.15,
               "boat2Rate": 42.25,
-              "boat3Rate": 59.15
+              "boat3Rate": 59.15,
+              "exhibitionTime": 6.94
             },
             {
               "boatNumber": 4,
@@ -33276,7 +34330,8 @@
               "motor2Rate": 25.0,
               "motor3Rate": 39.29,
               "boat2Rate": 34.78,
-              "boat3Rate": 63.77
+              "boat3Rate": 63.77,
+              "exhibitionTime": 6.83
             },
             {
               "boatNumber": 5,
@@ -33300,7 +34355,8 @@
               "motor2Rate": 31.82,
               "motor3Rate": 50.0,
               "boat2Rate": 37.88,
-              "boat3Rate": 53.03
+              "boat3Rate": 53.03,
+              "exhibitionTime": 6.78
             },
             {
               "boatNumber": 6,
@@ -33324,16 +34380,32 @@
               "motor2Rate": 15.38,
               "motor3Rate": 38.46,
               "boat2Rate": 27.59,
-              "boat3Rate": 53.45
+              "boat3Rate": 53.45,
+              "exhibitionTime": 6.94
             }
           ],
-          "result": null,
-          "environment": {},
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 19.0,
+            "waterTemperature": 22.0,
+            "windSpeed": 1.0,
+            "waveHeight": 1.0,
+            "weather": "雨",
+            "windDirection": "南"
+          },
           "carteSource": {
             "raceCard": "official-racelist-v4-validated-cells",
             "raceCardParsedRacers": 6,
             "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=11",
-            "raceCardFetchedAt": "2026-11-05T17:05:20.195946+09:00"
+            "raceCardFetchedAt": "2026-11-05T17:05:20.195946+09:00",
+            "preview": "official-beforeinfo-v4-validated-cells",
+            "previewParsedRacers": 6,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=11",
+            "previewFetchedAt": "2026-11-05T23:56:49.335438+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:59.622280+09:00"
           }
         },
         {
@@ -33350,7 +34422,21 @@
               "age": 51,
               "weight": 56.0,
               "motorNumber": 41,
-              "boatPart": 44
+              "boatPart": 44,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 5.54,
+              "national2Rate": 35.71,
+              "national3Rate": 51.19,
+              "localWinRate": 4.53,
+              "local2Rate": 21.05,
+              "local3Rate": 42.11,
+              "motor2Rate": 20.0,
+              "motor3Rate": 26.67,
+              "boat2Rate": 32.26,
+              "boat3Rate": 40.32,
+              "exhibitionTime": 6.84
             },
             {
               "boatNumber": 2,
@@ -33361,7 +34447,20 @@
               "age": 43,
               "weight": 52.0,
               "motorNumber": 56,
-              "boatPart": 60
+              "boatPart": 60,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 4.65,
+              "national2Rate": 16.25,
+              "national3Rate": 47.5,
+              "localWinRate": 4.23,
+              "local2Rate": 17.95,
+              "local3Rate": 35.9,
+              "motor2Rate": 15.38,
+              "motor3Rate": 26.92,
+              "boat2Rate": 27.12,
+              "boat3Rate": 35.59
             },
             {
               "boatNumber": 3,
@@ -33372,7 +34471,21 @@
               "age": 42,
               "weight": 57.0,
               "motorNumber": 43,
-              "boatPart": 30
+              "boatPart": 30,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.13,
+              "nationalWinRate": 5.03,
+              "national2Rate": 32.0,
+              "national3Rate": 50.0,
+              "localWinRate": 3.88,
+              "local2Rate": 20.83,
+              "local3Rate": 25.0,
+              "motor2Rate": 5.56,
+              "motor3Rate": 22.22,
+              "boat2Rate": 20.34,
+              "boat3Rate": 32.2,
+              "exhibitionTime": 6.94
             },
             {
               "boatNumber": 4,
@@ -33383,7 +34496,21 @@
               "age": 52,
               "weight": 53.0,
               "motorNumber": 55,
-              "boatPart": 18
+              "boatPart": 18,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 5.17,
+              "national2Rate": 32.11,
+              "national3Rate": 48.62,
+              "localWinRate": 4.17,
+              "local2Rate": 24.14,
+              "local3Rate": 34.48,
+              "motor2Rate": 22.73,
+              "motor3Rate": 31.82,
+              "boat2Rate": 23.08,
+              "boat3Rate": 38.46,
+              "exhibitionTime": 6.94
             },
             {
               "boatNumber": 5,
@@ -33394,7 +34521,21 @@
               "age": 24,
               "weight": 48.0,
               "motorNumber": 31,
-              "boatPart": 36
+              "boatPart": 36,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 4.82,
+              "national2Rate": 32.35,
+              "national3Rate": 42.65,
+              "localWinRate": 4.62,
+              "local2Rate": 29.85,
+              "local3Rate": 41.04,
+              "motor2Rate": 26.32,
+              "motor3Rate": 36.84,
+              "boat2Rate": 33.33,
+              "boat3Rate": 53.03,
+              "exhibitionTime": 6.96
             },
             {
               "boatNumber": 6,
@@ -33405,12 +34546,46 @@
               "age": 30,
               "weight": 47.0,
               "motorNumber": 44,
-              "boatPart": 20
+              "boatPart": 20,
+              "flyingCount": 1,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 7.46,
+              "national2Rate": 60.82,
+              "national3Rate": 77.32,
+              "localWinRate": 0.0,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 29.03,
+              "motor3Rate": 45.16,
+              "boat2Rate": 32.31,
+              "boat3Rate": 44.62,
+              "exhibitionTime": 6.88
             }
           ],
-          "result": null,
-          "environment": {},
-          "carteSource": {}
+          "result": {
+            "kimarite": "逃げ"
+          },
+          "environment": {
+            "airTemperature": 19.0,
+            "waterTemperature": 22.0,
+            "windSpeed": 1.0,
+            "waveHeight": 1.0,
+            "weather": "曇",
+            "windDirection": "東"
+          },
+          "carteSource": {
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=15&rno=12",
+            "raceCardFetchedAt": "2026-11-05T23:56:21.428718+09:00",
+            "preview": "official-beforeinfo-v4-partial",
+            "previewParsedRacers": 5,
+            "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=15&rno=12",
+            "previewFetchedAt": "2026-11-05T23:56:31.731577+09:00",
+            "resultDetail": "official-raceresult",
+            "resultDetailFetchedAt": "2026-11-05T23:56:41.982509+09:00"
+          }
         }
       ],
       "boatcast": "https://race.boatcast.jp/?jo=15"
@@ -40553,7 +41728,20 @@
               "weight": 54.0,
               "motorNumber": 59,
               "boatPart": 170,
-              "exhibitionTime": 6.78
+              "exhibitionTime": 6.78,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 5.58,
+              "national2Rate": 31.58,
+              "national3Rate": 60.0,
+              "localWinRate": 5.88,
+              "local2Rate": 33.33,
+              "local3Rate": 66.67,
+              "motor2Rate": 23.28,
+              "motor3Rate": 37.93,
+              "boat2Rate": 37.12,
+              "boat3Rate": 53.79
             },
             {
               "boatNumber": 2,
@@ -40565,7 +41753,20 @@
               "weight": 61.0,
               "motorNumber": 43,
               "boatPart": 139,
-              "exhibitionTime": 6.85
+              "exhibitionTime": 6.85,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 3.43,
+              "national2Rate": 12.0,
+              "national3Rate": 26.67,
+              "localWinRate": 3.46,
+              "local2Rate": 14.29,
+              "local3Rate": 26.98,
+              "motor2Rate": 33.86,
+              "motor3Rate": 48.03,
+              "boat2Rate": 33.59,
+              "boat3Rate": 50.78
             },
             {
               "boatNumber": 3,
@@ -40577,7 +41778,20 @@
               "weight": 54.0,
               "motorNumber": 15,
               "boatPart": 162,
-              "exhibitionTime": 6.78
+              "exhibitionTime": 6.78,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 4.21,
+              "national2Rate": 27.06,
+              "national3Rate": 37.65,
+              "localWinRate": 1.6,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 30.0,
+              "motor3Rate": 45.38,
+              "boat2Rate": 36.8,
+              "boat3Rate": 52.8
             },
             {
               "boatNumber": 4,
@@ -40589,7 +41803,20 @@
               "weight": 53.0,
               "motorNumber": 53,
               "boatPart": 163,
-              "exhibitionTime": 6.83
+              "exhibitionTime": 6.83,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 5.79,
+              "national2Rate": 34.78,
+              "national3Rate": 60.87,
+              "localWinRate": 5.64,
+              "local2Rate": 38.89,
+              "local3Rate": 58.33,
+              "motor2Rate": 29.06,
+              "motor3Rate": 41.88,
+              "boat2Rate": 32.06,
+              "boat3Rate": 53.44
             },
             {
               "boatNumber": 5,
@@ -40601,7 +41828,20 @@
               "weight": 52.0,
               "motorNumber": 57,
               "boatPart": 166,
-              "exhibitionTime": 6.84
+              "exhibitionTime": 6.84,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 3.28,
+              "national2Rate": 13.33,
+              "national3Rate": 25.0,
+              "localWinRate": 1.22,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 33.88,
+              "motor3Rate": 44.63,
+              "boat2Rate": 40.15,
+              "boat3Rate": 55.3
             },
             {
               "boatNumber": 6,
@@ -40613,7 +41853,20 @@
               "weight": 52.0,
               "motorNumber": 13,
               "boatPart": 113,
-              "exhibitionTime": 6.74
+              "exhibitionTime": 6.74,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.14,
+              "nationalWinRate": 5.42,
+              "national2Rate": 37.74,
+              "national3Rate": 51.89,
+              "localWinRate": 5.63,
+              "local2Rate": 36.84,
+              "local3Rate": 47.37,
+              "motor2Rate": 37.19,
+              "motor3Rate": 53.72,
+              "boat2Rate": 42.97,
+              "boat3Rate": 57.81
             }
           ],
           "result": {
@@ -40772,7 +42025,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=21&rno=9",
-            "previewFetchedAt": "2026-11-05T17:24:43.892734+09:00"
+            "previewFetchedAt": "2026-11-05T17:24:43.892734+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=21&rno=9",
+            "raceCardFetchedAt": "2026-11-05T23:56:56.476376+09:00"
           },
           "environment": {
             "airTemperature": 17.0,
@@ -43688,7 +44945,20 @@
               "weight": 55.0,
               "motorNumber": 26,
               "boatPart": 104,
-              "exhibitionTime": 6.83
+              "exhibitionTime": 6.83,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 4.71,
+              "national2Rate": 25.61,
+              "national3Rate": 46.34,
+              "localWinRate": 4.49,
+              "local2Rate": 22.08,
+              "local3Rate": 41.56,
+              "motor2Rate": 33.86,
+              "motor3Rate": 51.97,
+              "boat2Rate": 31.88,
+              "boat3Rate": 47.1
             },
             {
               "boatNumber": 2,
@@ -43700,7 +44970,20 @@
               "weight": 55.0,
               "motorNumber": 44,
               "boatPart": 102,
-              "exhibitionTime": 6.85
+              "exhibitionTime": 6.85,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 5.1,
+              "national2Rate": 32.99,
+              "national3Rate": 46.39,
+              "localWinRate": 5.05,
+              "local2Rate": 15.79,
+              "local3Rate": 57.89,
+              "motor2Rate": 30.98,
+              "motor3Rate": 50.0,
+              "boat2Rate": 29.85,
+              "boat3Rate": 39.55
             },
             {
               "boatNumber": 3,
@@ -43712,7 +44995,20 @@
               "weight": 49.0,
               "motorNumber": 12,
               "boatPart": 169,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 4.45,
+              "national2Rate": 21.05,
+              "national3Rate": 44.21,
+              "localWinRate": 4.18,
+              "local2Rate": 18.37,
+              "local3Rate": 36.73,
+              "motor2Rate": 37.04,
+              "motor3Rate": 56.79,
+              "boat2Rate": 35.46,
+              "boat3Rate": 51.77
             },
             {
               "boatNumber": 4,
@@ -43724,7 +45020,20 @@
               "weight": 47.0,
               "motorNumber": 43,
               "boatPart": 149,
-              "exhibitionTime": 6.88
+              "exhibitionTime": 6.88,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 6.26,
+              "national2Rate": 40.63,
+              "national3Rate": 64.58,
+              "localWinRate": 6.18,
+              "local2Rate": 40.91,
+              "local3Rate": 68.18,
+              "motor2Rate": 56.56,
+              "motor3Rate": 77.05,
+              "boat2Rate": 35.29,
+              "boat3Rate": 55.15
             },
             {
               "boatNumber": 5,
@@ -43736,7 +45045,20 @@
               "weight": 52.0,
               "motorNumber": 70,
               "boatPart": 127,
-              "exhibitionTime": 6.77
+              "exhibitionTime": 6.77,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.1,
+              "national2Rate": 43.51,
+              "national3Rate": 58.02,
+              "localWinRate": 6.21,
+              "local2Rate": 44.83,
+              "local3Rate": 65.52,
+              "motor2Rate": 37.08,
+              "motor3Rate": 51.12,
+              "boat2Rate": 38.24,
+              "boat3Rate": 51.47
             },
             {
               "boatNumber": 6,
@@ -43748,7 +45070,20 @@
               "weight": 47.0,
               "motorNumber": 55,
               "boatPart": 123,
-              "exhibitionTime": 6.8
+              "exhibitionTime": 6.8,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.19,
+              "nationalWinRate": 1.57,
+              "national2Rate": 1.54,
+              "national3Rate": 3.08,
+              "localWinRate": 0.0,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 33.33,
+              "motor3Rate": 50.98,
+              "boat2Rate": 49.64,
+              "boat3Rate": 67.15
             }
           ],
           "result": {
@@ -43907,7 +45242,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=22&rno=6",
-            "previewFetchedAt": "2026-11-05T17:24:05.413273+09:00"
+            "previewFetchedAt": "2026-11-05T17:24:05.413273+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=22&rno=6",
+            "raceCardFetchedAt": "2026-11-05T23:57:00.667292+09:00"
           },
           "environment": {
             "airTemperature": 20.0,
@@ -45204,7 +46543,20 @@
               "weight": 56.0,
               "motorNumber": 37,
               "boatPart": 119,
-              "exhibitionTime": 6.88
+              "exhibitionTime": 6.88,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.11,
+              "nationalWinRate": 6.82,
+              "national2Rate": 51.72,
+              "national3Rate": 65.52,
+              "localWinRate": 0.0,
+              "local2Rate": 0.0,
+              "local3Rate": 0.0,
+              "motor2Rate": 30.92,
+              "motor3Rate": 48.03,
+              "boat2Rate": 31.16,
+              "boat3Rate": 50.0
             },
             {
               "boatNumber": 2,
@@ -45216,7 +46568,20 @@
               "weight": 47.0,
               "motorNumber": 43,
               "boatPart": 149,
-              "exhibitionTime": 6.84
+              "exhibitionTime": 6.84,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.17,
+              "nationalWinRate": 6.26,
+              "national2Rate": 40.63,
+              "national3Rate": 64.58,
+              "localWinRate": 6.18,
+              "local2Rate": 40.91,
+              "local3Rate": 68.18,
+              "motor2Rate": 56.56,
+              "motor3Rate": 77.05,
+              "boat2Rate": 35.29,
+              "boat3Rate": 55.15
             },
             {
               "boatNumber": 3,
@@ -45228,7 +46593,20 @@
               "weight": 52.0,
               "motorNumber": 20,
               "boatPart": 122,
-              "exhibitionTime": 6.88
+              "exhibitionTime": 6.88,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 6.44,
+              "national2Rate": 49.18,
+              "national3Rate": 65.57,
+              "localWinRate": 5.65,
+              "local2Rate": 42.5,
+              "local3Rate": 57.5,
+              "motor2Rate": 35.5,
+              "motor3Rate": 48.52,
+              "boat2Rate": 31.34,
+              "boat3Rate": 48.51
             },
             {
               "boatNumber": 4,
@@ -45240,7 +46618,20 @@
               "weight": 54.0,
               "motorNumber": 41,
               "boatPart": 133,
-              "exhibitionTime": 6.91
+              "exhibitionTime": 6.91,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.18,
+              "nationalWinRate": 4.46,
+              "national2Rate": 22.58,
+              "national3Rate": 37.63,
+              "localWinRate": 4.2,
+              "local2Rate": 15.0,
+              "local3Rate": 35.0,
+              "motor2Rate": 23.88,
+              "motor3Rate": 34.33,
+              "boat2Rate": 41.61,
+              "boat3Rate": 56.93
             },
             {
               "boatNumber": 5,
@@ -45252,7 +46643,20 @@
               "weight": 57.0,
               "motorNumber": 67,
               "boatPart": 109,
-              "exhibitionTime": 6.95
+              "exhibitionTime": 6.95,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.16,
+              "nationalWinRate": 5.59,
+              "national2Rate": 33.33,
+              "national3Rate": 48.65,
+              "localWinRate": 6.23,
+              "local2Rate": 41.94,
+              "local3Rate": 66.13,
+              "motor2Rate": 39.84,
+              "motor3Rate": 61.72,
+              "boat2Rate": 38.41,
+              "boat3Rate": 57.25
             },
             {
               "boatNumber": 6,
@@ -45264,7 +46668,20 @@
               "weight": 45.0,
               "motorNumber": 24,
               "boatPart": 128,
-              "exhibitionTime": 6.85
+              "exhibitionTime": 6.85,
+              "flyingCount": 0,
+              "lateCount": 0,
+              "averageStart": 0.15,
+              "nationalWinRate": 7.21,
+              "national2Rate": 60.48,
+              "national3Rate": 78.23,
+              "localWinRate": 6.58,
+              "local2Rate": 38.46,
+              "local3Rate": 61.54,
+              "motor2Rate": 28.87,
+              "motor3Rate": 44.37,
+              "boat2Rate": 32.12,
+              "boat3Rate": 46.72
             }
           ],
           "result": {
@@ -45425,7 +46842,11 @@
             "preview": "official-beforeinfo-v4-validated-cells",
             "previewParsedRacers": 6,
             "previewOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20261105&jcd=22&rno=11",
-            "previewFetchedAt": "2026-11-05T17:22:37.943403+09:00"
+            "previewFetchedAt": "2026-11-05T17:22:37.943403+09:00",
+            "raceCard": "official-racelist-v4-validated-cells",
+            "raceCardParsedRacers": 6,
+            "raceCardOfficialUrl": "https://www.boatrace.jp/owpc/pc/race/racelist?hd=20261105&jcd=22&rno=11",
+            "raceCardFetchedAt": "2026-11-05T23:57:05.958701+09:00"
           }
         },
         {
@@ -45876,5 +47297,6 @@
     "oddsDebug": "cached=9 candidates=3 fetched=3 recent=0 requests=15 stored=12 entries=2544",
     "fastResultDebug": "cached=0 candidates=3 fetched=2 pending=1 requests=3 selection=venue-round-robin storedWeb=13 total=121"
   },
-  "raceCarteEnrichedAt": "2026-11-05T17:03:30.670467+09:00"
+  "raceCarteEnrichedAt": "2026-11-05T17:03:30.670467+09:00",
+  "raceCarteHistoryBackfilledAt": "2026-11-05T23:56:10.857543+09:00"
 }
