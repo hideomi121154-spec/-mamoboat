@@ -547,6 +547,7 @@
   }
 
   let S = load();
+  if (window.MAMO_MEMBERSHIP?.isLive) S.pressroom.plan = "free";
 
   const save = () => {
     if (S.accepted === true) rememberAcceptedOnboarding();
@@ -3233,7 +3234,8 @@
   };
 
   function pressPlan() {
-    return PRESS_PLANS[S.pressroom.plan] || PRESS_PLANS.free;
+    const verified = window.MAMO_MEMBERSHIP?.isLive ? window.MAMO_MEMBERSHIP.verifiedPlan() : S.pressroom.plan;
+    return PRESS_PLANS[verified] || PRESS_PLANS.free;
   }
 
   function reportRequiredRank(type) {
@@ -3399,6 +3401,7 @@
   };
 
   window.openMembershipPlans = () => {
+    if (window.MAMO_MEMBERSHIP?.open) return window.MAMO_MEMBERSHIP.open();
     openModal(`<div class="plan-modal"><span class="kicker">MAMO BOAT PRESS</span><h2>FREE / BRONZE / SILVER / GOLD</h2><p>価格は検証中です。PILOT版では料金は発生せず、分析の深さだけを4段階で確認します。</p>
       <div class="plan-modal-grid">
         ${Object.entries(PRESS_PLANS).map(([key, plan]) => `<button class="plan-option ${S.pressroom.plan === key ? "current" : ""}" type="button" onclick="selectPilotPlan('${key}');closeModal()"><span>${esc(plan.label)}</span><h3>${esc(plan.name)}</h3><b>${esc(plan.price)}</b><small>${key === "free" ? "基本5項目・安全機能・小さな気づき1件" : key === "bronze" ? "7日・30日と単独条件の比較" : key === "silver" ? "複数条件を組み合わせた週間分析" : "朝刊・週間・月刊・長期変化"}</small></button>`).join("")}
@@ -3410,6 +3413,7 @@
 
   window.selectPilotPlan = (key) => {
     if (!PRESS_PLANS[key]) return;
+    if (window.MAMO_MEMBERSHIP?.isLive) return window.MAMO_MEMBERSHIP.open(key);
     S.pressroom.plan = key;
     const pressEnabled = key === "gold";
     S.pressroom.morningEnabled = pressEnabled;
@@ -3418,6 +3422,19 @@
     trackEvent("pilot_plan_selected", { plan: key, billing_started: false });
     save();
     updatePlanUI();
+  };
+
+  window.MAMO_SET_VERIFIED_PLAN = (key) => {
+    if (!window.MAMO_MEMBERSHIP?.isLive) return;
+    const next = PRESS_PLANS[key] ? key : "free";
+    if (S.pressroom.plan === next) return;
+    S.pressroom.plan = next;
+    const enabled = next === "gold";
+    S.pressroom.morningEnabled = enabled;
+    S.pressroom.weeklyEnabled = enabled;
+    S.pressroom.monthlyEnabled = enabled;
+    save();
+    renderAll();
   };
 
   window.openDeepInterview = () => {
@@ -3755,6 +3772,7 @@ B的中: ${stats.virtualHits}件
 
   window.addEventListener("mamo:state-synced", () => {
     S = load();
+    if (window.MAMO_MEMBERSHIP?.isLive) S.pressroom.plan = window.MAMO_MEMBERSHIP.verifiedPlan();
     renderAll();
   });
 
